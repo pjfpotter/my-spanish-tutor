@@ -4,7 +4,7 @@
 
 - [x] 1.1 Scaffold the Next.js TypeScript app with PWA manifest and deploy a hello-world preview to Vercel; verify the preview URL loads on a phone and can be added to the home screen
 - [x] 1.2 Create the Neon database and an initial migration for courses, chunks, questions, profiles, answers, attempts, mastery, coin ledger, plans and cost log; verify migration applies cleanly on a fresh branch
-- [ ] 1.3 Build the external-call wrapper (budget check, per-profile rate limit, cost log, fallback hook) with unit tests for cap reached, rate limited and logged cost
+- [x] 1.3 Build the external-call wrapper (budget check, per-profile rate limit, cost log, fallback hook) with unit tests for cap reached, rate limited and logged cost
 - [ ] 1.4 Set up the unit test runner and a CI check on push; verify a failing test blocks the check
 - [ ] 1.5 Write a short README covering setup, environment variables, and how to run the tests; verify a fresh clone follows it successfully
 
