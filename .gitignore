@@ -1,0 +1,22 @@
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+
+# Next.js / Vercel
+/.next/
+/out/
+.vercel/
+next-env.d.ts
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Local photos (may contain people)
+/notes/*.jpg
