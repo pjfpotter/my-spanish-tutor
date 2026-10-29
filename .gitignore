@@ -20,3 +20,6 @@ next-env.d.ts
 
 # Local photos (may contain people)
 /notes/*.jpg
+*.tsbuildinfo
+.vercel
+.env*
