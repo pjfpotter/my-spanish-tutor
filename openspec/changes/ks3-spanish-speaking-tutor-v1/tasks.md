@@ -1,5 +1,7 @@
 # Tasks
 
+Verification rule (deadline): every task is verified by automated tests (unit tests, or Playwright on headless Chromium with a mocked or fake microphone). Checks that need a real device or a real person are marked "Optional manual check" and never block ticking a task. Untested devices are recorded as unverified in the device matrix (2.3).
+
 ## 1. Project setup and shared foundations
 
 - [x] 1.1 Scaffold the Next.js TypeScript app with PWA manifest and deploy a hello-world preview to Vercel; verify the preview URL loads on a phone and can be added to the home screen
@@ -10,9 +12,9 @@
 
 ## 2. Speech and device spike (de-risk first)
 
-- [ ] 2.1 Build a throwaway page that records a Spanish sentence with browser recognition and prints the transcript; verify it on an Android phone, an iPhone and a Chromebook with built-in microphone and with a headset
-- [ ] 2.2 Test a server-side transcription fallback with a short in-memory clip and verify transcript quality and latency for a 13-year-old's accent (use Dolores and one friend with consent)
-- [ ] 2.3 Record the results in a device matrix document and choose the recognition path per device; verify the document lists a decision for each device
+- [x] 2.1 Build a throwaway page that records a Spanish sentence with browser recognition and prints the transcript; verify with Playwright (mocked recogniser, phone and Chromebook profiles). Optional manual check: run `/spike/speech` on an Android phone, an iPhone and a Chromebook with built-in microphone and with a headset, and paste each device's matrix block into 2.3
+- [ ] 2.2 Test a server-side transcription fallback with a short in-memory clip; verify with a test that the clip is never stored and that the cost router is called. Optional manual check: transcript quality and latency for a 13-year-old's accent (Dolores and one friend with consent)
+- [ ] 2.3 Record the results in a device matrix document and choose the recognition path per device (untested devices default to the server fallback and are marked unverified); verify the document lists a decision for each device
 
 ## 3. Course content, joining and anonymous identity
 
@@ -35,7 +37,7 @@
 
 ## 5. Spoken-answer feedback
 
-- [ ] 5.1 Implement speech capture with permission handling and the chosen recognition path per device; verify the permission-denied and unsupported-browser paths on real devices
+- [ ] 5.1 Implement speech capture with permission handling and the chosen recognition path per device; verify the permission-denied and unsupported-browser paths with Playwright. Optional manual check: the same paths on real devices
 - [ ] 5.2 Implement word-level diff scoring with accuracy percentage; verify unit tests for missing, extra, swapped and accent-tolerant words
 - [ ] 5.3 Implement the confusion table (me/mi, final o, silent h, j, ll, v/b, z/c) and tip display; verify unit tests map each entry and an unmatched mismatch shows no tip
 - [ ] 5.4 Implement syllable breakdown with slow word audio for missed words; verify on five sample words
@@ -57,7 +59,7 @@
 
 ## 8. Answer memorisation phase
 
-- [ ] 8.1 Build English-prompt recall with spoken attempts and accuracy percentage; verify result time under two seconds on a phone
+- [ ] 8.1 Build English-prompt recall with spoken attempts and accuracy percentage; verify result time under two seconds with Playwright on the phone profile
 - [ ] 8.2 Implement scaffold fading and chunk isolation; verify unit tests for threshold changes
 - [ ] 8.3 Implement memorisation mastery across sessions and encouraging single-next-step feedback; verify unit tests and copy review
 
@@ -112,8 +114,8 @@
 
 ## 16. Integration, user testing and demo
 
-- [ ] 16.1 Run one scripted end-to-end pass of all four phases on the seeded course; verify it completes on phone and Chromebook
-- [ ] 16.2 Run user testing with Dolores and up to five classmates with parental consent, collect feedback on enjoyment, fairness of scores and lip-sync; verify notes are saved and the top three issues are fixed
+- [ ] 16.1 Run one scripted end-to-end pass of all four phases on the seeded course; verify it completes with Playwright on the phone and Chromebook profiles. Optional manual check: the same run on a real phone and Chromebook
+- [ ] 16.2 Optional manual check, skipped if there is no time: run user testing with Dolores and up to five classmates with parental consent, collect feedback on enjoyment, fairness of scores and lip-sync; verify notes are saved and the top three issues are fixed
 - [ ] 16.3 Capture measured cost per student from real usage and add it to the demo; verify the figure comes from the cost log
 - [ ] 16.4 Prepare the demo script and short write-up covering education, creativity and technical choices; verify a dry run fits the allotted time
 
