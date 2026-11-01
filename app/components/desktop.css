@@ -1,0 +1,152 @@
+.desktop {
+  max-width: 68rem;
+  margin: 0 auto;
+  padding: 3.5rem max(1rem, env(safe-area-inset-left)) 3rem;
+  display: grid;
+  gap: 1rem;
+}
+.desktop-title {
+  margin: 0;
+  font-size: clamp(2rem, 7vw, 3rem);
+  color: var(--ink-navy);
+}
+.desktop-tele {
+  display: grid;
+  gap: 0.75rem;
+  align-content: start;
+}
+.desktop-windows {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+
+/* Tele stays pinned on wide screens, windows beside it. */
+@media (min-width: 52rem) {
+  .desktop {
+    grid-template-columns: minmax(18rem, 26rem) minmax(0, 1fr);
+    grid-template-areas: 'title title' 'tele windows';
+    column-gap: 2rem;
+  }
+  .desktop-title {
+    grid-area: title;
+  }
+  .desktop-tele {
+    grid-area: tele;
+    position: sticky;
+    top: 3.5rem;
+  }
+  .desktop-windows {
+    grid-area: windows;
+  }
+}
+
+.days {
+  margin: 0;
+  font-family: var(--font-status);
+  font-size: 1.6rem;
+  line-height: 1;
+}
+.days strong {
+  font-size: 3.2rem;
+}
+.days-en,
+.muted {
+  margin: 0.25rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.phases {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+.phase {
+  position: relative;
+  display: grid;
+  gap: 0.1rem;
+  width: 100%;
+  min-height: var(--tap-min);
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  color: var(--black);
+  background: var(--window-chrome);
+  border: 0;
+  box-shadow: var(--bevel-out);
+  text-decoration: none;
+  cursor: pointer;
+}
+.phase-open:hover {
+  background: #d2d2d2;
+}
+.phase-es {
+  font-family: var(--font-ui);
+  font-size: 1.15rem;
+}
+.phase-en {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+/* A locked phase is static: noise behind a white label chip, so the words stay readable. */
+.phase-locked {
+  overflow: hidden;
+  cursor: not-allowed;
+  padding: 0.35rem;
+}
+.phase-static {
+  position: absolute;
+  inset: 0;
+  background-color: #6b6b6b;
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: static-shift 0.4s steps(4) infinite; /* stilled by the accessibility layer */
+}
+@keyframes static-shift {
+  to {
+    background-position: 37px 53px;
+  }
+}
+.phase-chip {
+  position: relative;
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.5rem 0.65rem;
+  background: var(--window-body);
+  color: var(--window-body-text);
+  justify-items: start;
+}
+.phase-reason {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.files {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+}
+.file {
+  display: grid;
+  justify-items: center;
+  gap: 0.25rem;
+  /* Question numbers must be unambiguous, so filenames use the reading face, not the pixel one. */
+  font-family: var(--font-read);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+.tele-poke {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 18px;
+  background: none;
+  cursor: pointer;
+}

@@ -1,0 +1,80 @@
+/* Tele's caption window: an old-OS object, same colours always. Reading text is black on white. */
+.win {
+  background: var(--window-chrome);
+  color: var(--black);
+  padding: 3px;
+  box-shadow: var(--bevel-out), 4px 4px 0 rgba(0, 0, 0, 0.35);
+  max-width: var(--read-measure);
+}
+.win-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 26px;
+  padding: 0 3px 0 6px;
+  background: var(--title-bar);
+  color: var(--title-bar-text);
+  font-family: var(--font-ui);
+  font-size: 1rem;
+}
+.win-buttons {
+  display: flex;
+  gap: 2px;
+}
+.win-buttons i {
+  display: block;
+  width: 18px;
+  height: 16px;
+  background: var(--window-chrome);
+  box-shadow: var(--bevel-out);
+}
+.win-body {
+  margin: 5px;
+  padding: 0.6rem 0.75rem;
+  min-height: 4.5rem;
+  background: var(--window-body);
+  color: var(--window-body-text);
+  box-shadow: var(--bevel-in);
+}
+.cap {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.45;
+}
+.cap-idle {
+  color: var(--text-muted);
+}
+.cap .cw {
+  padding: 0 0.12em;
+  border-radius: 2px;
+}
+/* The spoken word is inverted and underlined, so it never depends on colour alone. */
+.cap .cw[data-active='true'] {
+  background: var(--title-navy);
+  color: var(--white);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+.cap-en {
+  margin: 0.3rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+.win-foot {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 5px 5px;
+}
+.win-foot button {
+  padding: 0 0.75rem;
+  background: var(--window-chrome);
+  color: var(--black);
+  border: 0;
+  box-shadow: var(--bevel-out);
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.win-foot button[aria-checked='true'] {
+  box-shadow: var(--bevel-in);
+}

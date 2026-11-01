@@ -24,7 +24,7 @@ Read from the official pages on 2026-11-01 (both "Last Updated: 09 October 2026"
 2. **Account holder must be 18+.** Fine: the developer holds the account and students never use ElevenLabs directly.
 3. **Commercial use needs a paid plan.** Terms section 1(c): Free users may only use the Services for non-commercial purposes; paid users may use them commercially, subject to the Use Policy. Output rights stay with the user (section 4(c)(ii)). The terms contain no attribution requirement. A third-party guide says the Free plan requires attribution; the official terms don't say so.
 4. **Pricing (unverified):** Free is about 10,000 credits a month. Starter is about $6 a month with about 30,000 credits and a commercial licence. Roughly one credit per character on the standard model.
-5. **Timestamps and speed (unverified, from docs search results):** `POST /v1/text-to-speech/{voice_id}/with-timestamps` returns per-character timing, and `voice_settings.speed` runs about 0.7 to 1.2. A 0.7 floor may not be slow enough for the "slow" variant; check by listening.
+5. **Timestamps and speed (verified 2026-11-01 with a live call on the Starter plan):** `POST /v1/text-to-speech/{voice_id}/with-timestamps` returns `audio_base64` plus `alignment` with a start and end time for every character, on both `eleven_multilingual_v2` and `eleven_v3`. `voice_settings.speed` is accepted: 0.7 made a 2.0 second line 2.6 seconds, about 30% longer. Whether that is slow enough for the "slow" variant is a listening check for task 4.2. No `output_format` above 128 kbps mp3 was needed.
 6. **Budget fit.** About 30 question clips plus a phrase bank of around 100 short lines is a few thousand characters per full build, well inside either plan. A real cost estimate comes from the first build.
 
 ## Options
@@ -42,4 +42,4 @@ Do A now, build M1 against the ElevenLabs voice meanwhile (the build script isol
 ## Still to decide
 
 - The second voice for question rotation (parked). The comprehension phase must not repeat the same voice back to back, so each question needs at least two distinct voices unless the spec is amended.
-- Verify the unverified API notes (timestamps, speed range) against the English ElevenLabs API reference when the build script is written (4.2).
+- Which model sounds best for Tele, `eleven_multilingual_v2` (default) or `eleven_v3`, which is slower and more expressive. Set `ELEVENLABS_MODEL` and run `npm run tele-line -- hola --force` to compare. This is a listening decision.

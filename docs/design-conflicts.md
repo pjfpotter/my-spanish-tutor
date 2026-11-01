@@ -26,7 +26,7 @@ Status key: **Decided** (user said so), **Assumed** (proposed default, awaiting 
 | I | Many watching eyes might make self-conscious students uneasy. | Not a concern for this design. Still worth asking the 2 or 3 extra testers. | **Decided** | None |
 | J | Photo provenance; virtual-pet toy trade dress; Windows-style chrome. | Log every photo in `docs/asset-credits.md` before it ships. Avoid the toy's name and trade dress. No brand logos or recognisable people. | **Decided** | New task: create `docs/asset-credits.md` when the first photo is added |
 | K | Scope against a two-week, £30 plan. | Build in milestones M0 to M7, aesthetic early, frills last. | **Decided** | `tasks.md` reordering |
-| L | Tele is canvas code; the art pipeline prefers layered SVG from Recraft. | Which route v1 uses. | **Open** | Decide at M1 |
+| L | Tele is canvas code; the art pipeline prefers layered SVG from Recraft. | v1 keeps the canvas drawing, ported into `lib/tele/`. Layered SVG is a later option. | **Decided** (2026-11-01) | Recorded in design.md D7 |
 
 ## Build sequence
 

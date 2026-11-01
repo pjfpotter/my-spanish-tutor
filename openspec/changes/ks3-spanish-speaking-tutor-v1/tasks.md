@@ -109,7 +109,7 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 - [ ] 12.3 Implement situation-based line selection avoiding immediate repeats and the subtitle toggle; verify unit tests
 - [ ] 12.4 Moved to stretch (17.3): interest-tag flavoured banks
 - [ ] 12.5 Moved to stretch (17.3): own-drawing tutor
-- [ ] 12.6 Implement reduced-motion behaviour and the calm switch; verify with the system setting enabled and with the switch on that idle motion, glitches and camcorder effects stop and the caption still follows the voice
+- [x] 12.6 Implement reduced-motion behaviour and the calm switch; verify with the system setting enabled and with the switch on that idle motion, glitches and camcorder effects stop and the caption still follows the voice
 
 ## 13. Engagement and rewards
 
@@ -146,13 +146,13 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 ## 18. Tele and the dreamcore desktop (built early, in M1)
 
 - [x] 18.1 Create the single dreamcore token set (colours, fonts, backgrounds, motion intensity) and a separate learner-controlled accessibility layer; verify with an automated contrast check that reading surfaces meet 4.5:1 and that no state is conveyed by colour alone
-- [ ] 18.2 Build the Tele component with eye, antennae, picture and world driven by a feeling vector and voice loudness, deciding canvas code versus layered SVG per docs/art-pipeline.md and recording the decision in design.md; verify with Playwright that all six feelings render and the idle character runs without console errors
-- [ ] 18.3 Build the caption window with the Spanish line, English subtitle, word highlight and subtitle toggle; verify the subtitle can be hidden and the highlighted word follows a stub timeline
-- [ ] 18.4 Build the desktop home with the countdown stub, the five question files and locked phases shown as static; verify a locked phase cannot be opened
-- [ ] 18.5 Add poke-for-a-line using hand-written placeholder lines until 12.1 and 12.2 land; verify no coins or progress are awarded
-- [ ] 18.6 Set and record a performance budget (asset size and frame rate) by measuring on an old Chromebook, with effects limited to the home desktop and empty states; verify with a build-size check in CI. Optional manual check: run on a real school Chromebook
-- [ ] 18.7 Create docs/asset-credits.md and log every photo and third-party asset before it ships; verify a test fails if an image under public/ has no entry
-- [ ] 18.8 Play one ElevenLabs line through Tele with its caption and a baked feeling; verify with Playwright using a stub clip, and manually check that the real voice sounds right on a phone
+- [x] 18.2 Build the Tele component with eye, antennae, picture and world driven by a feeling vector and voice loudness, deciding canvas code versus layered SVG per docs/art-pipeline.md and recording the decision in design.md; verify with Playwright that all six feelings render and the idle character runs without console errors
+- [x] 18.3 Build the caption window with the Spanish line, English subtitle, word highlight and subtitle toggle; verify the subtitle can be hidden and the highlighted word follows a stub timeline
+- [x] 18.4 Build the desktop home with the countdown stub, the five question files and locked phases shown as static; verify a locked phase cannot be opened
+- [x] 18.5 Add poke-for-a-line using hand-written placeholder lines until 12.1 and 12.2 land; verify no coins or progress are awarded
+- [x] 18.6 Set and record a performance budget (asset size and frame rate) by measuring on an old Chromebook, with effects limited to the home desktop and empty states; verify with a build-size check in CI. Optional manual check: run on a real school Chromebook
+- [x] 18.7 Create docs/asset-credits.md and log every photo and third-party asset before it ships; verify a test fails if an image under public/ has no entry
+- [x] 18.8 Play one ElevenLabs line through Tele with its caption and a baked feeling; verify with Playwright using a stub clip, and manually check that the real voice sounds right on a phone
 
 ## Workflow follow-up
 
