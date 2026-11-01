@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bicho.exe Screens</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Pixelify+Sans:wght@400;600;700&family=VT323&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.px{font-family:'Pixelify Sans',sans-serif}
+.cap{font-family:'Atkinson Hyperlegible',sans-serif;font-size:16px;font-weight:700;color:#fff;margin-bottom:12px;text-shadow:0 1px 3px rgba(11,42,74,0.6)}
+.ph{width:390px;height:844px;box-sizing:border-box;border:3px solid #0B2A4A;border-radius:36px;position:relative;overflow:hidden;font-family:'Atkinson Hyperlegible',sans-serif;color:#0B2A4A;background:radial-gradient(ellipse 360px 190px at 25% 98%,#8FDB4A 69%,transparent 70%),radial-gradient(ellipse 420px 210px at 88% 100%,#5BBB2E 69%,transparent 70%),linear-gradient(180deg,#4FA9F0 0%,#9AD6FF 55%,#DDF3FF 70%)}
+.glass{position:absolute;box-sizing:border-box;background:#C0C0C0;box-shadow:inset -1px -1px 0 #0A0A0A,inset 1px 1px 0 #FFFFFF,inset -2px -2px 0 #808080,inset 2px 2px 0 #DFDFDF,4px 4px 0 rgba(0,0,0,0.35);padding:3px;overflow:hidden}
+.gt{height:26px;display:flex;align-items:center;justify-content:space-between;padding:0 3px 0 6px;background:linear-gradient(90deg,#000080,#0A5CC0);color:#fff;font-family:'Pixelify Sans',sans-serif;font-size:16px;font-weight:600;text-shadow:-0.6px 0 rgba(0,229,229,0.7),0.6px 0 rgba(255,31,169,0.7)}
+.gt i{display:block;width:18px;height:16px;margin-left:2px;background:#C0C0C0;box-shadow:inset -1px -1px 0 #0A0A0A,inset 1px 1px 0 #fff,inset -2px -2px 0 #808080}
+.gc{padding:8px 12px}
+.pill{flex:1;min-height:52px;box-sizing:border-box;border:0;background:#C0C0C0;box-shadow:inset -1px -1px 0 #0A0A0A,inset 1px 1px 0 #FFFFFF,inset -2px -2px 0 #808080,inset 2px 2px 0 #DFDFDF;color:#000;font-family:'Pixelify Sans',sans-serif;font-size:18px;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;text-decoration:none;padding:0 4px}
+.pill small{font-family:'Atkinson Hyperlegible',sans-serif;font-size:12px;font-weight:400}
+.pillp{outline:1px solid #000;outline-offset:0}
+.lab{font-size:12px;line-height:1.15;background:#000080;color:#fff;padding:1px 5px;text-align:center}
+.ico{position:absolute;width:86px;display:flex;flex-direction:column;align-items:center;gap:3px}
+.spr{filter:drop-shadow(3px 0 0 #0B2A4A) drop-shadow(-3px 0 0 #0B2A4A) drop-shadow(0 3px 0 #0B2A4A) drop-shadow(0 -3px 0 #0B2A4A) drop-shadow(0 0 8px rgba(255,255,255,0.95))}
+.bub{position:absolute;background:#FFFFE1;border:1px solid #000;border-radius:8px;box-shadow:2px 2px 0 rgba(0,0,0,0.4);padding:6px 10px;box-sizing:border-box}
+.fern{position:absolute;bottom:60px;pointer-events:none}
+.task{position:absolute;left:0;right:0;bottom:0;height:46px;background:#C0C0C0;border-top:2px solid #fff;box-shadow:inset 0 1px 0 #DFDFDF;display:flex;align-items:center;gap:4px;padding:0 3px;box-sizing:border-box}
+.task .st{min-height:38px;padding:0 12px;display:flex;align-items:center;background:#C0C0C0;box-shadow:inset -1px -1px 0 #0A0A0A,inset 1px 1px 0 #FFFFFF,inset -2px -2px 0 #808080,inset 2px 2px 0 #DFDFDF;font-family:'Pixelify Sans',sans-serif;font-size:16px;font-weight:700}
+.task .tr{margin-left:auto;font-family:'Pixelify Sans',sans-serif;font-size:14px;box-shadow:inset 1px 1px 0 #808080,inset -1px -1px 0 #fff;padding:6px 10px;font-weight:600}
+.sun{position:absolute;width:104px;height:104px;background:radial-gradient(circle,#FFD35A 40%,#FF9A1F);clip-path:polygon(50.0% 0.0%,59.3% 15.2%,75.0% 6.7%,75.5% 24.5%,93.3% 25.0%,84.8% 40.7%,100.0% 50.0%,84.8% 59.3%,93.3% 75.0%,75.5% 75.5%,75.0% 93.3%,59.3% 84.8%,50.0% 100.0%,40.7% 84.8%,25.0% 93.3%,24.5% 75.5%,6.7% 75.0%,15.2% 59.3%,0.0% 50.0%,15.2% 40.7%,6.7% 25.0%,24.5% 24.5%,25.0% 6.7%,40.7% 15.2%)}
+.se{position:absolute;border-radius:50%;background:#fff;border:3px solid #0B2A4A;box-sizing:border-box}
+.se i{position:absolute;border-radius:50%;background:#7A3B2E}
+.se b{position:absolute;border-radius:50%;background:#0B2A4A}
+.blk{display:flex;gap:3px}
+.blk i{display:block;width:20px;height:14px}
+.on{background:#000080}
+.off{background:#fff;box-shadow:inset 1px 1px 0 #808080}
+.stat{display:flex;align-items:center;gap:8px;font-size:14px;margin-bottom:4px;min-height:22px}
+.stat b{width:64px;font-family:'Pixelify Sans',sans-serif;font-weight:600;font-size:16px}
+</style>
+</helmet>
+<div style="width:1860px;height:900px;box-sizing:border-box;padding:28px 60px;background:#0B2A4A;display:flex;gap:60px;align-items:flex-start">
+
+<!-- HOME -->
+<div>
+<div class="cap">Home: Bicho mid-mischief</div>
+<div class="ph">
+<div style="position:absolute;left:0;top:0"><dc-import name="collage" w="384" h="838" fx="light" mood="odd" look-x="-0.5" look-y="0.5" hint-size="384px,838px"></dc-import></div>
+<div style="position:absolute;left:0;top:0;z-index:50;pointer-events:none"><dc-import name="fx" w="384" h="838" mood="odd" stamp-b="52" hint-size="384px,838px"></dc-import></div>
+
+
+
+<div class="glass" style="top:12px">
+<div class="gt"><span>Examen.exe</span><span style="display:flex"><i></i></span></div>
+<div class="gc" style="display:flex;gap:14px;align-items:center;padding:6px 12px">
+<div style="text-align:center"><div class="px" style="font-size:44px;font-weight:700;line-height:0.9;color:#2A5CE6">9</div><div class="px" style="font-size:15px">días</div></div>
+<div style="flex:1"><div style="font-size:13px;margin-bottom:3px">Test-ready: 62%</div><div style="height:18px;background:#fff;box-shadow:inset 1px 1px 0 #808080,inset -1px -1px 0 #fff;padding:2px;box-sizing:border-box"><i style="display:block;width:62%;height:100%;background:repeating-linear-gradient(90deg,#000080 0 9px,transparent 9px 12px)"></i></div></div>
+</div>
+</div>
+<div style="position:absolute;left:14px;top:134px;width:362px;min-height:34px;box-sizing:border-box;background:#FFFF80;padding:5px 12px;font-size:13.5px;line-height:1.3;display:flex;align-items:center;border:1px solid #000;box-shadow:2px 2px 0 rgba(0,0,0,0.4)">Bicho took Pregunta2.txt. Tap the file to get it back.</div>
+
+<div class="ico" style="left:14px;top:182px"><svg width="44" height="44" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="16" fill="#EF3B2D"/><ellipse cx="14" cy="13" rx="6" ry="4" fill="#fff" opacity="0.6"/></svg><span class="lab">Pregunta1.txt</span></div>
+<div class="ico" style="left:198px;top:182px"><svg width="44" height="44" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 3l14 30H6z" fill="#2A5CE6"/><path d="M20 3l14 30h-9z" fill="#1B3FA8"/><path d="M18 8l-8 20" stroke="#fff" opacity="0.5" stroke-width="3"/></svg><span class="lab">Pregunta3.txt</span></div>
+<div class="ico" style="left:290px;top:182px"><svg width="44" height="44" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 4l16 28H4z" fill="#A468E8"/><path d="M20 4l16 28-16-6z" fill="#7B3FBF"/></svg><span class="lab">Pregunta4.txt</span></div>
+<div class="ico" style="left:14px;top:282px"><svg width="44" height="44" viewBox="0 0 40 40" aria-hidden="true"><path d="M8 10v20a12 5 0 0 0 24 0V10a12 5 0 0 1-24 0z" fill="#7BD43B"/><ellipse cx="20" cy="10" rx="12" ry="5" fill="#C5F57E"/></svg><span class="lab">Pregunta5.txt</span></div>
+<div class="ico" style="left:106px;top:282px"><svg width="44" height="44" viewBox="0 0 40 40" aria-hidden="true"><path d="M8 10h24l-3 26H11z" fill="#CFEFFF" fill-opacity="0.85" stroke="#0B2A4A" stroke-width="1.5"/><path d="M6 10h28M16 5h8" stroke="#0B2A4A" stroke-width="2.5" stroke-linecap="round"/></svg><span class="lab">Papelera</span></div>
+
+<div class="bub" style="left:90px;top:292px;width:150px"><div class="px" style="font-size:17px;font-weight:600;line-height:1.15">¡Mío!</div><div style="font-size:12.5px;color:#31506E">Mine!</div></div>
+<div class="ico" style="left:206px;top:318px;width:60px;filter:drop-shadow(0 0 8px #FF4FA3)"><svg width="44" height="44" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 4l15 8-15 8-15-8z" fill="#FFE766"/><path d="M5 12l15 8v16L5 28z" fill="#FFD21F"/><path d="M35 12l-15 8v16l15-8z" fill="#E0AA00"/></svg></div>
+<div style="position:absolute;left:176px;top:370px;transform:scaleX(-1)"><div style="display:block;line-height:0"><dc-import name="bicho" mood="talk" size="72" halo="false" holo="false" hint-size="72px,78px"></dc-import></div></div>
+
+<svg class="fern" width="150" height="130" viewBox="0 0 150 130" style="left:-6px" aria-hidden="true"><path d="M0 130Q30 60 120 20" fill="none" stroke="#1F7A2E" stroke-width="22" stroke-dasharray="2 7"/><path d="M0 130Q40 80 100 60" fill="none" stroke="#3FAE3B" stroke-width="18" stroke-dasharray="2 7"/></svg>
+<svg class="fern" width="150" height="130" viewBox="0 0 150 130" style="right:-6px;transform:scaleX(-1)" aria-hidden="true"><path d="M0 130Q30 60 120 20" fill="none" stroke="#1F7A2E" stroke-width="22" stroke-dasharray="2 7"/><path d="M0 130Q40 80 100 60" fill="none" stroke="#3FAE3B" stroke-width="18" stroke-dasharray="2 7"/></svg>
+
+<div class="glass" style="top:572px">
+<div class="gt"><span>Cuidar a Bicho.exe</span><span style="display:flex"><i></i></span></div>
+<div class="gc" style="padding:8px 12px 10px">
+<div class="stat"><b>Hambre</b><span class="blk"><i class="on"></i><i class="on"></i><i class="on"></i><i class="off"></i><i class="off"></i></span><span style="font-size:12px;color:#31506E">words</span></div>
+<div class="stat"><b>Ánimo</b><span class="blk"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="off"></i></span><span style="font-size:12px;color:#31506E">speaking</span></div>
+<div class="stat"><b>Energía</b><span class="blk"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="off"></i></span><span style="font-size:12px;color:#31506E">rest</span></div>
+<div style="display:flex;gap:8px;margin-top:6px"><a class="pill" href="#">Comer<small>listen</small></a><a class="pill" href="#">Jugar<small>speed</small></a><a class="pill" href="#">Dormir<small>rest</small></a></div>
+</div>
+</div>
+<div class="task"><div class="st">Inicio</div><div class="tr">12 monedas · 3:33</div></div>
+</div>
+</div>
+
+<!-- PRACTICE -->
+<div>
+<div class="cap">Speaking practice: Bicho on the title bar</div>
+<div class="ph">
+<div style="position:absolute;left:0;top:0"><dc-import name="collage" w="384" h="838" fx="light" mood="odd" look-x="-0.5" look-y="0.5" hint-size="384px,838px"></dc-import></div>
+<div style="position:absolute;left:0;top:0;z-index:50;pointer-events:none"><dc-import name="fx" w="384" h="838" mood="odd" stamp-b="52" hint-size="384px,838px"></dc-import></div>
+
+
+<div class="bub" style="left:104px;top:14px;width:268px"><div class="px" style="font-size:19px;font-weight:600;line-height:1.15">¿Qué haces en tu tiempo libre?</div><div style="font-size:12.5px;color:#31506E;margin-top:2px">What do you do in your free time?</div></div>
+<div style="position:absolute;left:22px;top:48px;z-index:2"><div style="display:block;line-height:0"><dc-import name="bicho" mood="talk" size="76" halo="false" holo="false" hint-size="76px,82px"></dc-import></div></div>
+
+<div class="glass" style="top:106px;height:560px;transform:rotate(-1.2deg)">
+<div class="gt"><span>Tutor.exe: Pregunta 2</span><span style="display:flex"><i></i></span></div>
+<div class="gc" style="padding:14px 16px;display:flex;flex-direction:column;gap:12px">
+<div>
+<div style="font-size:13px;color:#31506E;margin-bottom:2px">You said</div>
+<div style="font-size:19px;line-height:1.65;font-weight:700"><span style="background:rgba(124,208,248,0.55);border-radius:6px;padding:0 3px">En mi tiempo libre</span> <span style="background:rgba(255,95,168,0.4);border-radius:6px;padding:0 3px">juego</span> <span style="background:rgba(124,208,248,0.55);border-radius:6px;padding:0 3px">a videojuegos y leo manga</span></div>
+</div>
+<div style="background:rgba(255,255,255,0.8);border:2px solid #0B2A4A;border-radius:12px;padding:10px 12px;display:flex;gap:12px;align-items:flex-start">
+<div style="flex:none;width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#7CD0F8 45%,#2A5CE6);display:flex;align-items:center;justify-content:center;font-family:'Pixelify Sans',sans-serif;font-size:26px;font-weight:700;color:#fff;border:2px solid #0B2A4A">i</div>
+<div><div class="px" style="font-size:36px;font-weight:700;line-height:1;color:#2A5CE6">86%</div><div style="font-size:14.5px;line-height:1.4;margin-top:4px">Error 404: “j” not found. The Spanish <b>j</b> is a breathy h. Everything else ran fine.</div></div>
+</div>
+<div style="font-size:14px;line-height:1.4"><span class="px" style="font-size:16px;font-weight:600">Bicho says:</span> “¡Casi perfecto!”<br><span style="color:#31506E;font-size:12.5px">Nearly perfect!</span></div>
+<div style="display:flex;gap:8px;margin-top:auto"><a class="pill" href="#" style="min-height:48px">Oír</a><a class="pill" href="#" style="min-height:48px">Lento</a><a class="pill" href="#" style="min-height:48px">Siguiente</a></div>
+</div>
+</div>
+
+<svg class="fern" width="150" height="130" viewBox="0 0 150 130" style="left:-6px;bottom:30px" aria-hidden="true"><path d="M0 130Q30 60 120 20" fill="none" stroke="#1F7A2E" stroke-width="22" stroke-dasharray="2 7"/><path d="M0 130Q40 80 100 60" fill="none" stroke="#3FAE3B" stroke-width="18" stroke-dasharray="2 7"/></svg>
+<a href="#" class="pill pillp" style="position:absolute;left:30px;right:30px;bottom:38px;min-height:68px;flex-direction:row;gap:10px;font-size:24px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0B2A4A" stroke-width="2.6" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>Hablar</a>
+</div>
+</div>
+
+<!-- CUIDAR -->
+<div>
+<div class="cap">Cuidar: a real photo, cut out, with Bicho on its screen</div>
+<div class="ph" style="background:radial-gradient(ellipse 360px 190px at 25% 98%,#8FDB4A 69%,transparent 70%),radial-gradient(ellipse 420px 210px at 88% 100%,#5BBB2E 69%,transparent 70%),linear-gradient(180deg,#4FA9F0 0%,#9AD6FF 55%,#DDF3FF 70%)">
+<div style="position:absolute;left:0;top:0"><dc-import name="collage" w="384" h="838" fx="light" mood="odd" look-x="-0.5" look-y="0.5" hint-size="384px,838px"></dc-import></div>
+<div style="position:absolute;left:0;top:0;z-index:50;pointer-events:none"><dc-import name="fx" w="384" h="838" mood="odd" stamp-b="52" hint-size="384px,838px"></dc-import></div>
+
+
+<img src="/_blob/d779b33b7f35ebed5e9a29d85fb8e9b2" alt="A pink egg-shaped digital pet toy on a keyring, photographed and cut out, with its screen cleared" style="position:absolute;left:57px;top:4px;width:270px;height:auto;filter:drop-shadow(3px 5px 4px rgba(0,0,0,0.5))">
+<div style="position:absolute;left:129px;top:321px;width:115px;height:112px;display:flex;align-items:center;justify-content:center"><div style="line-height:0"><dc-import name="bicho" mood="idle" size="84" halo="false" hint-size="84px,91px"></dc-import></div></div>
+<div class="glass" style="left:8px;top:540px;width:368px">
+<div class="gt"><span>Cuidar a Bicho.exe</span><span style="display:flex"><i></i></span></div>
+<div class="gc" style="padding:8px 12px 10px">
+<div class="stat"><b>Hambre</b><span class="blk"><i class="on"></i><i class="on"></i><i class="on"></i><i class="off"></i><i class="off"></i></span><span style="font-size:12px;color:#31506E">words</span></div>
+<div class="stat"><b>Ánimo</b><span class="blk"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="off"></i></span><span style="font-size:12px;color:#31506E">speaking</span></div>
+<div class="stat"><b>Energía</b><span class="blk"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="off"></i></span><span style="font-size:12px;color:#31506E">rest</span></div>
+<div style="display:flex;gap:8px;margin-top:6px"><a class="pill" href="#">Comer<small>listen</small></a><a class="pill" href="#">Jugar<small>speed</small></a><a class="pill" href="#">Dormir<small>rest</small></a></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- EVOLUCION -->
+<div>
+<div class="cap">Rewards: evolution and toy box</div>
+<div class="ph" style="background:#150A3A">
+<div style="position:absolute;left:0;top:0"><dc-import name="collage" w="384" h="838" fx="light" mood="odd" look-x="-0.5" look-y="0.5" hint-size="384px,838px"></dc-import></div>
+<div style="position:absolute;left:0;top:0;z-index:50;pointer-events:none"><dc-import name="fx" w="384" h="838" mood="odd" stamp-b="52" hint-size="384px,838px"></dc-import></div>
+
+<div class="glass" style="left:6px;top:332px;width:372px;height:498px"></div>
+<div style="position:absolute;left:0;right:0;top:0;height:330px;background:conic-gradient(from 30deg at 50% 62%,#FF9ED8,#FFE29A,#9FFFD0,#8FD0FF,#C9A6FF,#FF9ED8);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:16px;gap:4px">
+<div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 62%,rgba(255,255,255,0.85) 0,rgba(255,255,255,0) 55%)"></div>
+<div style="position:relative;margin-bottom:6px;line-height:0"><dc-import name="bicho" mood="talk" size="162" halo="true" holo="false" hint-size="162px,176px"></dc-import></div>
+<div style="position:relative;font-family:'Fredoka',sans-serif;font-weight:700;font-size:34px;line-height:1;color:#fff;-webkit-text-stroke:4px #0B2A4A;paint-order:stroke fill;text-shadow:0 4px 0 #0B2A4A">¡Bicho Guay!</div>
+<div style="position:relative;font-size:14px;font-weight:700;background:rgba(255,255,255,0.9);border-radius:10px;padding:1px 10px">Your answers just reached “good”</div>
+</div>
+
+<div style="position:absolute;left:14px;right:14px;top:346px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<div style="background:rgba(255,255,255,0.9);border:2px solid #0B2A4A;border-radius:12px;padding:8px 12px"><div class="px" style="font-size:34px;font-weight:700;line-height:1;color:#F0489C">+35</div><div style="font-size:13px;line-height:1.3">monedas for three brave tries</div></div>
+<div style="background:rgba(255,255,255,0.9);border:2px solid #0B2A4A;border-radius:12px;padding:8px 12px"><div class="px" style="font-size:17px;font-weight:600;line-height:1.1">Caracol → <b style="color:#2A5CE6">Gato</b></div><div style="font-size:13px;line-height:1.3;margin-top:2px">2.1 s, was 3.4 s</div></div>
+</div>
+
+<div style="position:absolute;left:14px;right:14px;top:442px">
+<div class="px" style="font-size:19px;font-weight:600;margin-bottom:6px">Caja de juguetes</div>
+<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
+<div style="aspect-ratio:1;border-radius:14px;background:#EAF6FF;border:2px solid #0B2A4A;display:flex;align-items:center;justify-content:center"><svg width="34" height="34" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="16" fill="#EF3B2D"/><ellipse cx="14" cy="13" rx="6" ry="4" fill="#fff" opacity="0.6"/></svg></div>
+<div style="aspect-ratio:1;border-radius:14px;background:#EAF6FF;border:2px solid #0B2A4A;display:flex;align-items:center;justify-content:center"><svg width="34" height="34" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 4l15 8-15 8-15-8z" fill="#FFE766"/><path d="M5 12l15 8v16L5 28z" fill="#FFD21F"/><path d="M35 12l-15 8v16l15-8z" fill="#E0AA00"/></svg></div>
+<div style="aspect-ratio:1;border-radius:14px;background:#EAF6FF;border:2px solid #0B2A4A;display:flex;align-items:center;justify-content:center"><svg width="34" height="34" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 3l14 30H6z" fill="#2A5CE6"/><path d="M20 3l14 30h-9z" fill="#1B3FA8"/></svg></div>
+<div style="aspect-ratio:1;border-radius:14px;background:linear-gradient(120deg,#FF9ED8,#FFE29A,#9FFFD0,#8FD0FF,#C9A6FF);border:2px solid #0B2A4A;display:flex;align-items:center;justify-content:center"><svg width="34" height="34" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 4l16 28H4z" fill="#fff" fill-opacity="0.8"/></svg></div>
+<div style="aspect-ratio:1;border-radius:14px;border:2px dashed #7A93AB;display:flex;align-items:center;justify-content:center;font-family:'Pixelify Sans',sans-serif;font-size:20px;color:#7A93AB">?</div>
+</div>
+<div style="font-size:12.5px;color:#31506E;margin-top:4px">Shiny ones are rare. They come from speed, not luck.</div>
+</div>
+
+<div style="position:absolute;left:14px;right:14px;top:600px">
+<div class="px" style="font-size:19px;font-weight:600;margin-bottom:6px">Papel tapiz <span style="font-size:13px;font-family:'Atkinson Hyperlegible',sans-serif;font-weight:400;color:#31506E">50 monedas each</span></div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+<div><div style="height:78px;border-radius:10px;border:2px solid #0B2A4A;background:radial-gradient(ellipse 120px 60px at 30% 110%,#8FDB4A 69%,transparent 70%),radial-gradient(ellipse 60px 20px at 70% 30%,#fff 60%,transparent 64%),linear-gradient(180deg,#4FA9F0,#BFE6FF)"></div><div style="font-size:12.5px;text-align:center;margin-top:3px">Colinas</div></div>
+<div><div style="height:78px;border-radius:10px;border:2px solid #0B2A4A;background:linear-gradient(180deg,#F8B5D2,#F4A8C8);position:relative;overflow:hidden"><i style="position:absolute;left:8px;top:30px;width:26px;height:22px;background:#E6DFC8;border:2px solid #0B2A4A;border-radius:3px"></i><i style="position:absolute;left:44px;top:34px;width:20px;height:17px;background:#E6DFC8;border:2px solid #0B2A4A;border-radius:3px"></i><i style="position:absolute;left:72px;top:36px;width:16px;height:14px;background:#E6DFC8;border:2px solid #0B2A4A;border-radius:3px"></i><i style="position:absolute;left:0;right:0;bottom:0;height:22px;background:repeating-linear-gradient(90deg,#2E8B3E 0 3px,#5BC25A 3px 8px)"></i></div><div style="font-size:12.5px;text-align:center;margin-top:3px">Oficina rosa</div></div>
+<div><div style="height:78px;border-radius:10px;border:2px solid #0B2A4A;background:linear-gradient(180deg,#2A3FA8,#6FA3F0 60%,#3E7A2E 61%);position:relative;overflow:hidden"><span style="position:absolute;left:6px;top:4px;font-family:'VT323',monospace;font-size:14px;color:#F4F4D0;line-height:1">PLAY ▶</span><span style="position:absolute;left:6px;bottom:3px;font-family:'VT323',monospace;font-size:14px;color:#F4F4D0;line-height:1">PM 6:32</span></div><div style="font-size:12.5px;text-align:center;margin-top:3px">Recreo 1997</div></div>
+</div>
+</div>
+
+<div style="position:absolute;left:14px;right:14px;bottom:18px;display:flex;gap:8px"><a class="pill pillp" href="#" style="min-height:56px">Seguir creciendo</a></div>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1860,"height":900}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

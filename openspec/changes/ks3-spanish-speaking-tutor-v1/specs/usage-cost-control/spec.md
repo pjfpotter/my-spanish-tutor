@@ -14,7 +14,7 @@ Each task SHALL be handled by the cheapest tier that can do it, in this order: s
 - **THEN** the stored clip is served and no generation call is made
 
 ### Requirement: Language model usage limits
-Language models SHALL be used only for drafting answers, personalising wording, generating persona phrase banks and importing photos. Live practice loops MUST NOT call a language model.
+Language models SHALL be used only for drafting answers, personalising wording, generating the character's phrase bank and importing photos. Live practice loops MUST NOT call a language model.
 
 #### Scenario: Practice round
 - **WHEN** a student completes a full automatisation round

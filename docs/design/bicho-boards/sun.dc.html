@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Watching Sun</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width:{{s}}px;height:{{s}}px">
+<svg viewBox="0 0 200 200" width="{{s}}" height="{{s}}" role="img" aria-label="A child's painted sun with no mouth and two realistic eyes cut from a photograph, watching">
+<defs>
+<radialGradient id="snG" cx="45%" cy="42%" r="60%"><stop offset="0" stop-color="#FFF176"/><stop offset="0.6" stop-color="#FFD400"/><stop offset="1" stop-color="#FF9A00"/></radialGradient>
+<radialGradient id="snScl" cx="50%" cy="45%" r="62%"><stop offset="0" stop-color="#FFFFFF"/><stop offset="0.7" stop-color="#F8E4DE"/><stop offset="1" stop-color="#D08A80"/></radialGradient>
+<radialGradient id="snIrs" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#3DFFC4"/><stop offset="0.55" stop-color="#1AA7D8"/><stop offset="0.9" stop-color="#1B2A8A"/><stop offset="1" stop-color="#0B1040"/></radialGradient>
+<clipPath id="snEyc"><path d="M-27 0Q0 -23 27 0Q0 21 -27 0Z"/></clipPath>
+<path id="snRay" d="M100 4Q106 20 100 40" fill="none" stroke-width="12" stroke-linecap="round"/>
+<filter id="snPaint" x="-12%" y="-12%" width="124%" height="124%"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="8" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="8"/></filter>
+<filter id="snGrain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="3" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 1  0 0 0 0 0.55  0 0 0 0 0  0 0 0 -1.6 1.15" result="m"/><feComposite in="m" in2="SourceAlpha" operator="in"/></filter>
+<filter id="snCut" x="-25%" y="-35%" width="150%" height="170%"><feMorphology in="SourceAlpha" operator="dilate" radius="3" result="d"/><feFlood flood-color="#FFFFFF" result="w"/><feComposite in="w" in2="d" operator="in" result="o"/><feGaussianBlur in="o" stdDeviation="2" result="b"/><feOffset in="b" dx="3" dy="4" result="s"/><feColorMatrix in="s" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.55 0" result="sh"/><feMerge><feMergeNode in="sh"/><feMergeNode in="o"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<g filter="url(#snPaint)">
+<g stroke="#FF7A00"><use href="#snRay" transform="rotate(0 100 100)"/><use href="#snRay" transform="rotate(45 100 100)"/><use href="#snRay" transform="rotate(90 100 100)"/><use href="#snRay" transform="rotate(135 100 100)"/><use href="#snRay" transform="rotate(180 100 100)"/><use href="#snRay" transform="rotate(225 100 100)"/><use href="#snRay" transform="rotate(270 100 100)"/><use href="#snRay" transform="rotate(315 100 100)"/></g>
+<g stroke="#FFC400"><use href="#snRay" transform="rotate(22.5 100 100)"/><use href="#snRay" transform="rotate(67.5 100 100)"/><use href="#snRay" transform="rotate(112.5 100 100)"/><use href="#snRay" transform="rotate(157.5 100 100)"/><use href="#snRay" transform="rotate(202.5 100 100)"/><use href="#snRay" transform="rotate(247.5 100 100)"/><use href="#snRay" transform="rotate(292.5 100 100)"/><use href="#snRay" transform="rotate(337.5 100 100)"/></g>
+<circle cx="100" cy="100" r="58" fill="url(#snG)" stroke="#C2410C" stroke-width="4"/>
+<path d="M84 154Q82 170 86 176M118 156Q120 168 117 174" fill="none" stroke="#FFB300" stroke-width="5" stroke-linecap="round"/>
+</g>
+<circle cx="100" cy="100" r="58" fill="#FFFFFF" filter="url(#snGrain)" opacity="0.7"/>
+<g opacity="{{eyeOp}}">
+<g filter="url(#snCut)" transform="translate(68 98) rotate(-6)">
+<ellipse rx="37" ry="25" fill="#E3AE92"/>
+<ellipse rx="37" ry="25" fill="none" stroke="#B47A5E" stroke-width="2"/>
+<path d="M-30 -14Q0 -34 30 -14" fill="none" stroke="#4A2616" stroke-width="5" stroke-linecap="round"/>
+<path d="M-27 0Q0 -23 27 0Q0 21 -27 0Z" fill="url(#snScl)"/>
+<g clip-path="url(#snEyc)">
+<g transform="translate({{ix}} {{iy}})">
+<circle r="15" fill="url(#snIrs)"/>
+<path d="M0 -14V-8M10 -10L6 -6M-10 -10L-6 -6M14 0H8M-14 0H-8M10 10L6 6M-10 10L-6 6M0 14V8" stroke="#B6FFE8" stroke-width="0.9" opacity="0.7"/>
+<circle r="15" fill="none" stroke="#0B1040" stroke-width="1.6"/>
+<circle r="6.5" fill="#020208"/>
+<circle cx="-5" cy="-6" r="3.2" fill="#FFFFFF"/>
+<circle cx="5" cy="5" r="1.4" fill="#FFFFFF" opacity="0.7"/>
+</g>
+<path d="M-27 0Q0 -23 27 0Q0 -11 -27 0Z" fill="#000" opacity="0.16"/>
+<path d="M-27 1Q-19 -2 -13 -4M-26 3Q-19 5 -14 3M27 1Q19 -1 14 -3" stroke="#D63A2A" stroke-width="0.8" fill="none" opacity="0.6"/>
+</g>
+<path d="M-27 0Q0 -23 27 0Q0 21 -27 0Z" fill="none" stroke="#6A2A14" stroke-width="2"/>
+</g>
+<g filter="url(#snCut)" transform="translate(134 102) rotate(7) scale(0.92)">
+<ellipse rx="37" ry="25" fill="#DDA286"/>
+<ellipse rx="37" ry="25" fill="none" stroke="#B47A5E" stroke-width="2"/>
+<path d="M-30 -14Q0 -34 30 -14" fill="none" stroke="#4A2616" stroke-width="5" stroke-linecap="round"/>
+<path d="M-27 0Q0 -23 27 0Q0 21 -27 0Z" fill="url(#snScl)"/>
+<g clip-path="url(#snEyc)">
+<g transform="translate({{ix}} {{iy}})">
+<circle r="15" fill="url(#snIrs)"/>
+<path d="M0 -14V-8M10 -10L6 -6M-10 -10L-6 -6M14 0H8M-14 0H-8M10 10L6 6M-10 10L-6 6M0 14V8" stroke="#B6FFE8" stroke-width="0.9" opacity="0.7"/>
+<circle r="15" fill="none" stroke="#0B1040" stroke-width="1.6"/>
+<circle r="6.5" fill="#020208"/>
+<circle cx="-5" cy="-6" r="3.2" fill="#FFFFFF"/>
+<circle cx="5" cy="5" r="1.4" fill="#FFFFFF" opacity="0.7"/>
+</g>
+<path d="M-27 0Q0 -23 27 0Q0 -11 -27 0Z" fill="#000" opacity="0.16"/>
+<path d="M-27 1Q-19 -2 -13 -4M27 2Q19 5 14 3" stroke="#D63A2A" stroke-width="0.8" fill="none" opacity="0.6"/>
+</g>
+<path d="M-27 0Q0 -23 27 0Q0 21 -27 0Z" fill="none" stroke="#6A2A14" stroke-width="2"/>
+</g>
+</g>
+</svg>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"size":{"editor":"int","default":200,"min":40,"max":500},"lookX":{"editor":"float","default":0,"min":-1,"max":1,"step":0.1},"lookY":{"editor":"float","default":0,"min":-1,"max":1,"step":0.1},"eyes":{"editor":"boolean","default":true},"$preview":{"width":200,"height":200}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = Number(this.props.size || 200);
+    const lx = Number(this.props.lookX || 0);
+    const ly = Number(this.props.lookY || 0);
+    const e = this.props.eyes;
+    const on = !(e === false || e === 'false' || e === '0' || e === 0);
+    return { s: s, ix: Math.max(-9, Math.min(9, lx * 9)), iy: Math.max(-3.5, Math.min(3.5, ly * 3.5)), eyeOp: on ? 1 : 0 };
+  }
+}
+</script>
+</body>
+</html>

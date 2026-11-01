@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Provides natural Spanish audio and mouth-movement timelines for questions and tutor lines, generated once and reused, so listening practice is varied and cheap.
+Provides natural Spanish audio and clip timelines (word times, loudness and feelings) for questions and tutor lines, generated once and reused, so listening practice is varied and cheap.
 
 ## ADDED Requirements
 
@@ -12,6 +12,13 @@ Each test question SHALL have pre-generated audio in at least two distinct voice
 #### Scenario: Variants available
 - **WHEN** a course is published
 - **THEN** every question has audio for each voice and speed
+
+### Requirement: Character voice
+The tutor's lines SHALL be spoken in the licensed character voice chosen for production. An unofficial or prototype voice MUST NOT ship.
+
+#### Scenario: Production build
+- **WHEN** the production audio is built
+- **THEN** every tutor line uses the licensed character voice
 
 ### Requirement: Natural slow speech
 Slow audio SHALL be produced by synthesising at a slower speaking rate and not by time-stretching normal audio.
@@ -27,12 +34,12 @@ Audio for identical text, voice and speed SHALL be generated at most once and re
 - **WHEN** two courses contain the same question text
 - **THEN** one stored clip serves both
 
-### Requirement: Mouth timelines
-Every clip spoken by an avatar SHALL have a mouth timeline created when the clip is generated, containing timed mouth shapes that stay in sync with the audio when played at any supported speed.
+### Requirement: Clip timelines
+Every clip spoken by the tutor SHALL have a timeline created when the clip is generated, containing word times, a downsampled loudness envelope and a feeling track, and it SHALL stay aligned with the audio when played at any supported speed.
 
 #### Scenario: Slow playback
 - **WHEN** a clip plays at half speed
-- **THEN** mouth shapes remain aligned with the sounds
+- **THEN** word highlighting and loudness response remain aligned with the sounds
 
 ### Requirement: Spanish-only tutor audio
 The app SHALL NOT produce or play English speech for the tutor. English SHALL appear only as subtitles.

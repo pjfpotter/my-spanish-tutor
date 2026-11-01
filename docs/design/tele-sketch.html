@@ -1,0 +1,1385 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>One-Eyed Tele</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=VT323&display=swap">
+<style>
+/* Layout: the TV stays pinned on the left with its old-OS caption window; the right is a three-stage workbench (feelings, speech, conversation). Stacks on phones with Tele docked at the top. */
+:root{
+  --bg:#e6ebef; --surface:#f7f8f6; --sunk:#dde3e8; --ink:#1c2130; --muted:#586174; --line:#c8cfd8;
+  --accent:#2c3f9e; --on-accent:#ffffff; --pink:#c24f86; --grass:#3f7d32;
+  --joy:#a06e00; --sadness:#33609e; --anger:#b3261e; --fear:#6d47a0; --surprise:#b0368a; --disgust:#557018;
+  --f-display:"VT323", "Courier New", monospace;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1118; --surface:#171b25; --sunk:#0a0d13; --ink:#e6e9f0; --muted:#9aa2b4; --line:#2b3242;
+  --accent:#93a5ff; --on-accent:#0e1118; --pink:#f29ac3; --grass:#8fd07a;
+  --joy:#e2ae35; --sadness:#7aa4e8; --anger:#f0645a; --fear:#b392e2; --surprise:#ee86c9; --disgust:#a4c24a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1118; --surface:#171b25; --sunk:#0a0d13; --ink:#e6e9f0; --muted:#9aa2b4; --line:#2b3242;
+  --accent:#93a5ff; --on-accent:#0e1118; --pink:#f29ac3; --grass:#8fd07a;
+  --joy:#e2ae35; --sadness:#7aa4e8; --anger:#f0645a; --fear:#b392e2; --surprise:#ee86c9; --disgust:#a4c24a; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--f-body)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:22px 56px}
+.top{margin-bottom:18px}
+.eyebrow{font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+h1{font-family:var(--f-display);font-weight:400;font-size:clamp(3.2rem,8vw,4.6rem);line-height:.85;margin:.08em 0 0;color:var(--accent);letter-spacing:.02em}
+.lede{max-width:62ch;margin:.4rem 0 0;color:var(--muted)}
+h3{font-family:var(--f-display);font-weight:400;font-size:1.9rem;margin:26px 0 4px;line-height:1}
+
+.main{display:grid;grid-template-columns:minmax(280px,420px) minmax(0,1fr);gap:28px;align-items:start}
+.stage{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);display:grid;gap:10px;z-index:5}
+.stage-card{border-radius:18px;overflow:hidden;aspect-ratio:400/430;width:100%;max-width:100%;background:#8cc4f2}
+.stage-card canvas{display:block;width:100%;height:100%}
+
+/* the caption window is a deliberate old-OS object: same colours in both themes */
+.win{background:#c0c0c0;color:#000;border:2px solid;border-color:#fff #404040 #404040 #fff;box-shadow:1px 1px 0 #000;font:14px/1.35 var(--f-body);min-width:0}
+.win-bar{display:flex;justify-content:space-between;align-items:center;background:linear-gradient(90deg,#000080,#1084d0);color:#fff;font:18px/1 var(--f-display);padding:3px 4px 3px 7px}
+.win-btns{display:flex;gap:2px}
+.win-btns i{display:inline-grid;place-items:center;width:16px;height:14px;background:#c0c0c0;color:#000;font:13px/1 var(--f-display);font-style:normal;border:1px solid;border-color:#fff #404040 #404040 #fff}
+.win-body{background:#fff;margin:5px;border:2px solid;border-color:#808080 #fff #fff #808080;padding:8px 10px;min-height:64px}
+.cap{margin:0;font-size:1.12rem;line-height:1.4}
+.cap .cw{border-radius:3px;transition:background .08s}
+.cap .cw.said{color:#000}
+.cap .cw.on{background:#000080;color:#fff}
+.cap.idle{color:#555}
+.cap-en{margin:3px 0 0;color:#444;font-size:.85rem}
+.win-status{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;padding:0 6px 5px;font:17px/1 var(--f-display)}
+.bars{display:flex;gap:5px;align-items:flex-end;height:30px;flex:none}
+.eb{width:12px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:2px}
+.eb i{display:block;width:100%;background:var(--c);height:2px;min-height:2px;border:1px solid rgba(0,0,0,.35)}
+.eb b{font:13px/1 var(--f-display);color:#222}
+
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto}
+.tab{appearance:none;background:none;border:0;border-bottom:3px solid transparent;padding:10px 12px 7px;font:700 1rem var(--f-body);color:var(--muted);cursor:pointer;white-space:nowrap;display:flex;gap:7px;align-items:baseline}
+.tab span{font-family:var(--f-display);font-size:1.4rem;font-weight:400}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab[aria-selected="true"] span{color:var(--accent)}
+.hint{color:var(--muted);margin:0 0 14px;max-width:66ch}
+.hint i{color:var(--ink)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.btn{font:700 .95rem var(--f-body);padding:8px 15px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;line-height:1.3}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-block:10px}
+.status{color:var(--muted);font-size:.9rem;margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-block:8px 4px}
+.chip{font:400 .88rem var(--f-body);padding:4px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.chip:hover{border-color:var(--muted)}
+.chip.on{border-color:var(--accent);color:var(--accent);font-weight:700}
+
+.sliders{display:grid;gap:10px;margin-bottom:12px}
+.sl{display:grid;grid-template-columns:minmax(0,190px) minmax(0,1fr) 3ch;gap:12px;align-items:center}
+.sl label{display:flex;gap:8px;align-items:center;font-weight:700}
+.sl label i{font-weight:400;color:var(--muted)}
+.dot{width:10px;height:10px;border-radius:50%;flex:none}
+.sl input{width:100%}
+.sl output{font-variant-numeric:tabular-nums;color:var(--muted);text-align:right;font-size:.9rem}
+.cues{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 18px;margin-top:18px;padding-top:12px;border-top:1px solid var(--line);font-size:.9rem;color:var(--muted)}
+.cues b{display:block;color:var(--ink);font-size:.8rem;letter-spacing:.08em;text-transform:uppercase}
+
+label.lab{font-weight:700;display:block;margin-bottom:4px}
+textarea,input[type=text],select{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 11px;width:100%}
+textarea{resize:vertical;font-size:1.1rem}
+select{width:auto;max-width:100%}
+.strip{display:flex;flex-wrap:wrap;gap:8px 6px;padding:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;min-height:54px;margin-block:10px 4px;align-items:center}
+.strip .w{font-size:1.05rem;padding:1px 6px 2px;border-radius:5px;border-bottom:3px solid transparent}
+.strip .w.emo{border-bottom-color:var(--wc)}
+.strip .w.st{font-weight:700}
+.strip .w.on{background:var(--accent);color:var(--on-accent)}
+.strip .brk{color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.8rem;color:var(--muted)}
+.opts{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center;margin-top:12px}
+fieldset{border:0;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
+legend{font-weight:700;padding:0;margin-right:6px;float:left}
+.radio{display:inline-flex;gap:5px;align-items:center;cursor:pointer}
+.feel{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.feel span{font-size:.82rem;padding:2px 9px;border-radius:999px;border:1px solid var(--line);background:var(--surface)}
+.feel span b{color:var(--c)}
+.file{position:relative;overflow:hidden;display:inline-flex}
+.file input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.chk{display:inline-flex;gap:6px;align-items:center;font-size:.92rem}
+.chk .muted{color:var(--muted);font-size:.8rem}
+#sync{width:120px} #dreamAmt{width:110px}
+#syncOut{font-variant-numeric:tabular-nums;min-width:6ch}
+#wave{width:100%;height:124px;display:block;background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-top:6px}
+
+.chat{display:flex;flex-direction:column;gap:10px;max-height:400px;overflow-y:auto;padding:2px 2px 6px}
+.msg{max-width:88%;padding:9px 13px;border-radius:14px;border:1px solid var(--line);background:var(--surface);min-width:0}
+.msg.you{align-self:flex-end;background:var(--sunk)}
+.msg.tv{align-self:flex-start;border-color:var(--accent);cursor:pointer;text-align:left;font:inherit;color:inherit}
+.msg .es{font-size:1.06rem}
+.msg .en{font-size:.85rem;color:var(--muted)}
+.msg .tip{font-size:.85rem;margin-top:5px;color:var(--grass)}
+.msg .heard{font-size:.76rem;color:var(--muted);margin-top:3px}
+.talk{display:flex;gap:8px;margin-top:10px}
+.talk input{flex:1;min-width:0}
+
+.next{margin-top:44px;border-top:1px solid var(--line);padding-top:8px}
+.next .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:22px;margin-top:12px}
+.next h4{margin:0 0 4px;font-size:1rem}
+.next p{margin:0;color:var(--muted);font-size:.94rem;max-width:60ch}
+.next .tag{font:18px/1 var(--f-display);color:var(--pink)}
+
+@media (max-width:860px){
+  .main{grid-template-columns:minmax(0,1fr);gap:16px}
+  .stage{top:env(safe-area-inset-top,0px);background:var(--bg);padding-block:6px;grid-template-columns:auto minmax(0,1fr);align-items:center}
+  .stage-card{height:min(30vh,230px);width:auto}
+  .cap{font-size:.95rem}
+  .win-body{min-height:0;padding:6px 8px}
+  .win-status .bars{display:none}
+  .sl{grid-template-columns:minmax(0,1fr) 3ch}
+  .sl label{grid-column:1/-1}
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">Spanish tutor · dreamcore character sketch</div>
+    <h1>Tele</h1>
+    <p class="lede">An old television with one enormous eye, broadcasting Castilian Spanish from somewhere between an empty mall and a field under a rainbow. Tele has no mouth: feelings live in the eye, the antennae, the picture and the world around it.</p>
+  </header>
+
+  <div class="main">
+    <section class="stage" aria-label="Tele">
+      <div class="stage-card"><canvas id="tv" role="img" aria-label="Tele, a cream and wood-grain CRT television with rabbit-ear antennae and a single realistic eye on its screen, wearing a pink cardigan, in a dreamy sky-and-checkerboard world"></canvas></div>
+      <div class="win">
+        <div class="win-bar"><span>tele.exe</span><span class="win-btns" aria-hidden="true"><i>_</i><i>□</i><i>×</i></span></div>
+        <div class="win-body"><p class="cap idle" id="cap">· · · señal débil · · ·</p><p class="cap-en" id="capEn"></p></div>
+        <div class="win-status"><span id="feelName">mood: dreamy</span><div class="bars" id="bars" aria-label="Current feelings"></div></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" id="t-faces" aria-selected="true" aria-controls="p-faces"><span>1</span>Feelings</button>
+        <button class="tab" role="tab" id="t-speak" aria-selected="false" aria-controls="p-speak"><span>2</span>Speak</button>
+        <button class="tab" role="tab" id="t-talk" aria-selected="false" aria-controls="p-talk"><span>3</span>Talk</button>
+      </div>
+
+      <div class="tabpanel" role="tabpanel" id="p-faces" aria-labelledby="t-faces">
+        <p class="hint">Each feeling is a recipe of small changes, and recipes add together, so any two blend into a third. With no mouth to lean on, Tele spreads each feeling across several channels at once.</p>
+        <div class="sliders" id="sliders"></div>
+        <div class="chips" id="moods"></div>
+        <div class="cues">
+          <div><b>Eye</b>Lids, brow, pupil size, where it looks, tears.</div>
+          <div><b>Antennae</b>Perk up, droop, tremble, bounce on stressed syllables.</div>
+          <div><b>Picture</b>Tint, static, glitches, a rolling bar.</div>
+          <div><b>World</b>Sky colour, a rainbow, flickering darkness.</div>
+        </div>
+      </div>
+
+      <div class="tabpanel" role="tabpanel" id="p-speak" aria-labelledby="t-speak" hidden>
+        <label class="lab" for="phrase">Spanish phrase</label>
+        <textarea id="phrase" rows="2" spellcheck="false"></textarea>
+        <div class="chips" id="phrases"></div>
+        <div class="strip" id="strip" aria-live="off"></div>
+        <div class="legend"><span><b>bold</b>: stressed word</span><span>coloured bar: a feeling</span><span>while speaking, the screen and antenna tips glow with the voice</span></div>
+        <div class="opts">
+          <fieldset><legend>Feelings from</legend>
+            <label class="radio"><input type="radio" name="feelsrc" value="words" id="fs-words" checked> the words</label>
+            <label class="radio"><input type="radio" name="feelsrc" value="claude" id="fs-claude"> Claude</label>
+            <label class="radio"><input type="radio" name="feelsrc" value="off" id="fs-off"> nothing</label>
+          </fieldset>
+          <label class="chk">Voice <select id="voice"></select></label>
+          <label class="chk" for="sync">Timing <span class="muted">earlier</span><input type="range" id="sync" min="-300" max="300" step="10" value="0"><span class="muted">later</span> <output id="syncOut" for="sync">0 ms</output></label>
+          <label class="chk"><input type="checkbox" id="dreamVoice" checked> Dream TV voice</label>
+          <label class="chk" for="dreamAmt"><span class="muted">faint</span><input type="range" id="dreamAmt" min="0" max="100" value="60" aria-label="How dreamy"><span class="muted">deep</span></label>
+        </div>
+        <div class="row"><button class="btn primary" id="say">Say it</button><button class="btn" id="mime">Show it silently</button><button class="btn" id="stop">Stop</button></div>
+        <p class="status" id="sayStatus"></p>
+        <p class="status" id="syncNote"></p>
+        <div class="feel" id="feelOut"></div>
+
+        <h3>Play a recording</h3>
+        <p class="hint">This page can't use your microphone, so record the phrase above with any voice-memo app (or use an ElevenLabs clip) and add the file. Tele glows with the real loudness, and the caption follows the words. The Dream TV voice adds a slowed, old-speaker sound with a hallway echo.</p>
+        <div class="row">
+          <label class="btn file">Add recording<input type="file" id="recFile" accept="audio/*"></label>
+          <button class="btn primary" id="recPlay" disabled>Play</button>
+          <label class="chk"><input type="checkbox" id="follow"> No transcript: just follow the loudness</label>
+        </div>
+        <canvas id="wave" aria-label="Recording loudness with syllable beats and where each word lands"></canvas>
+        <p class="status" id="recStatus">No recording yet.</p>
+      </div>
+
+      <div class="tabpanel" role="tabpanel" id="p-talk" aria-labelledby="t-talk" hidden>
+        <p class="hint">Say something to Tele in Spanish or English. The eye reacts to what it hears, then Tele answers in Spanish. Tap any of Tele's lines to hear it again.</p>
+        <div class="chat" id="chat"></div>
+        <form class="talk" id="talkForm">
+          <input type="text" id="talkIn" autocomplete="off" placeholder="¿Dónde estamos, Tele?">
+          <button class="btn primary" type="submit" id="talkSend">Send</button>
+        </form>
+        <div class="chips" id="talkIdeas"></div>
+        <p class="status" id="talkStatus"></p>
+      </div>
+    </section>
+  </div>
+
+  <section class="next">
+    <h3>Where this could go next</h3>
+    <div class="grid">
+      <div><div class="tag">clips</div><h4>A bank of baked clips</h4><p>Each scripted line ships as audio plus a tiny timing file: word times (for the caption), loudness (for the glow) and a feeling track. No lip-sync means no alignment tools; ElevenLabs word timestamps are enough.</p></div>
+      <div><div class="tag">pronunciation</div><h4>Mouths move to a diagram</h4><p>Without a mouth, sounds like the Castilian /θ/ or the rolled rr get their own side-on mouth diagram, shown only in pronunciation moments.</p></div>
+      <div><div class="tag">art</div><h4>Almost any tool works</h4><p>The rig is an eye, two antennae and a screen effect. That fits Lottie, Spine, Live2D or layered images, or even short eye loops filmed or rendered and played on the screen.</p></div>
+      <div><div class="tag">worlds</div><h4>One liminal room per lesson</h4><p>The background already reacts to feelings. Each unit could live in its own place: the endless mall, the pool rooms, the field with the single door.</p></div>
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const clamp = (v,a,b) => v<a?a:v>b?b:v, clamp01 = v => clamp(v,0,1), lerp = (a,b,t) => a+(b-a)*t;
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const nowS = () => performance.now()/1000;
+const rng = seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+
+/* ---------- feelings: recipes spread over eye, antennae, picture and world ---------- */
+const EMOS = ['joy','sadness','anger','fear','surprise','disgust'];
+const EMO_EN = {joy:'Joy',sadness:'Sadness',anger:'Anger',fear:'Fear',surprise:'Surprise',disgust:'Disgust'};
+const EMO_ES = {joy:'alegría',sadness:'tristeza',anger:'ira',fear:'miedo',surprise:'sorpresa',disgust:'asco'};
+const EMO_DEF = {
+  joy:      {lidLow:.6, browOuter:.25, pupil:.3, antenna:.5, tilt:.5, bounce:.6},
+  sadness:  {browInner:1, browOuter:-.5, lidUp:-.5, gazeY:.9, antenna:-1, drop:1, tear:1},
+  anger:    {browInner:-1, squeeze:1, lidUp:.1, lidLow:.55, pupil:-.7, antenna:-.3, glitch:.8, drop:.3, bloodshot:.6},
+  fear:     {browInner:1, browOuter:.6, squeeze:.6, lidUp:1, pupil:-.85, antenna:-.6, jitter:1, static:.6},
+  surprise: {browInner:1, browOuter:1, lidUp:1, pupil:.45, antenna:1, drop:-.4},
+  disgust:  {lidLow:.75, browInner:-.5, squeeze:.5, lidUp:-.2, tilt:-.8, roll:1, pupil:-.3, bloodshot:.3},
+};
+const FACE_KEYS = ['browInner','browOuter','squeeze','lidUp','lidLow','pupil','gazeY','antenna','tilt','drop','tear','glitch','jitter','static','roll','bounce','bloodshot'];
+const zero = () => Object.fromEntries(EMOS.map(e => [e,0]));
+function faceFromEmo(em){
+  const f = Object.fromEntries(FACE_KEYS.map(k => [k,0]));
+  for (const e of EMOS){ const w = em[e]||0; if (!w) continue; for (const k in EMO_DEF[e]) f[k] += w*EMO_DEF[e][k]; }
+  for (const k of FACE_KEYS) f[k] = clamp(f[k], -1.3, 1.3);
+  return f;
+}
+const dominant = v => { let b=null, bv=0; for (const e of EMOS) if ((v[e]||0) > bv){ bv=v[e]; b=e; } return b; };
+const normEmo = o => Object.fromEntries(EMOS.map(e => [e, clamp01(Number(o && o[e]) || 0)]));
+
+/* ---------- Castilian spelling-to-sound (drives timing, stress and the caption) ---------- */
+const UNSTRESSED = new Set(['el','la','los','las','lo','le','les','de','del','que','y','e','o','u','en','a','al','mi','mis','tu','tus','su','sus','se','me','te','nos','os','un','por','con','sin','pero','si','ni']);
+const ACC = 'áéíóú', FRONT = 'eiéí';
+const plainV = c => ({'á':'a','é':'e','í':'i','ó':'o','ú':'u'})[c] || c;
+const isV = c => !!c && 'aeiouáéíóúü'.includes(c);
+function wordPhones(w){
+  const out = [];
+  const push = (ph, x) => out.push(Object.assign({ph}, x||{}));
+  for (let i=0; i<w.length; i++){
+    const c=w[i], n=w[i+1]||'', n2=w[i+2]||'', prev=w[i-1]||'';
+    switch(c){
+      case 'a':case 'e':case 'i':case 'o':case 'u':case 'á':case 'é':case 'í':case 'ó':case 'ú':
+        push(plainV(c), {vowel:true, acc:ACC.includes(c)}); break;
+      case 'ü': push('w', {vowel:true}); break;
+      case 'b': case 'v': push('b'); break;
+      case 'c': if (n==='h'){ push('tʃ'); i++; } else if (FRONT.includes(n)) push('θ'); else push('k'); break;
+      case 'd': push('d'); break;
+      case 'f': push('f'); break;
+      case 'g': if (FRONT.includes(n)) push('x'); else if (n==='u' && FRONT.includes(n2)){ push('g'); i++; } else push('g'); break;
+      case 'h': break;
+      case 'j': push('x'); break;
+      case 'k': push('k'); break;
+      case 'l': if (n==='l'){ push('ʎ'); i++; } else push('l'); break;
+      case 'm': push('m'); break;
+      case 'n': push('n'); break;
+      case 'ñ': push('ɲ'); break;
+      case 'p': push('p'); break;
+      case 'q': push('k'); if (n==='u') i++; break;
+      case 'r': if (n==='r'){ push('r'); i++; } else if (i===0 || 'lns'.includes(prev)) push('r'); else push('ɾ'); break;
+      case 's': push('s'); break;
+      case 't': push('t'); break;
+      case 'w': push('w', {vowel:true}); break;
+      case 'x': if (i===0) push('s'); else { push('k'); push('s'); } break;
+      case 'y': if (i===w.length-1 || !isV(n)) push('i', {vowel:true}); else push('ʝ'); break;
+      case 'z': push('θ'); break;
+    }
+  }
+  const nuc = [];
+  for (let i=0; i<out.length;){
+    if (!out[i].vowel){ i++; continue; }
+    let j=i; while (j<out.length && out[j].vowel) j++;
+    const grp = out.slice(i,j), strong = p => 'aeo'.includes(p.ph) || p.acc;
+    if (grp.some(strong)) grp.forEach(p => strong(p) ? nuc.push(p) : (p.glide = true));
+    else grp.forEach((p,k) => k===grp.length-1 ? nuc.push(p) : (p.glide = true));
+    i = j;
+  }
+  for (const p of out){ if (p.glide) p.ph = p.ph==='i' ? 'j' : 'w'; else if (p.ph==='w') p.ph = 'u'; }
+  const base = w.normalize('NFD').replace(/[́̈]/g,'');
+  let si = nuc.findIndex(p => p.acc);
+  if (si < 0 && !UNSTRESSED.has(w)) si = (/[aeiouns]$/.test(base) && nuc.length>1) ? nuc.length-2 : nuc.length-1;
+  if (si >= 0 && nuc[si]) nuc[si].stress = true;
+  return out;
+}
+function parseText(text){
+  const toks = [...text.matchAll(/\p{L}+|[.!?…]+|[,;:—]|[¡¿]/gu)];
+  const words = [], flat = [];
+  let phrase = 0, exStart = null, sentStart = 0;
+  for (const m of toks){
+    const s = m[0];
+    if (/\p{L}/u.test(s)){
+      const w = s.toLowerCase(), wi = words.length;
+      words.push({raw:s, w, ci:m.index, ce:m.index+s.length, phrase});
+      for (const p of wordPhones(w)){ p.word = wi; flat.push(p); }
+      continue;
+    }
+    if (s==='¡'){ exStart = words.length; continue; }
+    if (s==='¿') continue;
+    const strong = /[.!?…]/.test(s);
+    const last = flat[flat.length-1];
+    const len = strong ? .38 : .2;
+    if (last && last.type!=='pause') flat.push({type:'pause', len, q:s.includes('?')});
+    else if (last){ last.len = Math.max(last.len, len); last.q = last.q || s.includes('?'); }
+    if (strong){
+      if (s.includes('!')) for (let k=(exStart ?? sentStart); k<words.length; k++) words[k].ex = true;
+      if (s.includes('…') || s.startsWith('..')) for (let k=sentStart; k<words.length; k++) words[k].trail = true;
+      exStart = null; sentStart = words.length;
+    }
+    phrase++;
+  }
+  return {words, flat};
+}
+const DUR = {p:70,t:65,k:65,b:65,d:60,g:60,f:85,'θ':90,s:85,x:90,'tʃ':95,m:70,n:60,'ɲ':75,l:60,'ʎ':75,'ʝ':70,'ɾ':35,r:100};
+function buildTimeline(text, rate=1){
+  const {words, flat} = parseText(text);
+  const segs = [{ph:'', t0:0, t1:.08, word:-1, pause:true}];
+  let t = .08;
+  flat.forEach((p,k) => {
+    if (p.type==='pause'){ const d=p.len/rate; segs.push({ph:'', t0:t, t1:t+d, word:-1, pause:true, qEnd:p.q}); t+=d; return; }
+    let d;
+    if (p.vowel){
+      d = p.glide ? 45 : p.stress ? 120 : 85;
+      if (!p.glide){
+        let final = true;
+        for (let j=k+1; j<flat.length && flat[j].type!=='pause'; j++) if (flat[j].vowel && !flat[j].glide){ final=false; break; }
+        if (final) d *= 1.35;
+      }
+      if (p.stress && words[p.word].ex) d *= 1.15;
+    } else d = DUR[p.ph] || 65;
+    d = d/1000/rate;
+    segs.push({ph:p.ph, t0:t, t1:t+d, word:p.word, stress:!!(p.stress && !p.glide), vowel:!!(p.vowel && !p.glide)});
+    if (p.stress && !p.glide) words[p.word].stressed = true;
+    t += d;
+  });
+  segs.push({ph:'', t0:t, t1:t+.25, word:-1, pause:true});
+  segs.forEach((s,i) => { if (s.qEnd){ for (let j=i-1; j>=0 && segs[j].t0 > s.t0-.5; j--) segs[j].q = true; } });
+  const tl = {segs, words, end:t+.25, text};
+  indexTimeline(tl);
+  return tl;
+}
+function indexTimeline(tl){
+  tl.words.forEach(w => { w.t0 = null; });
+  tl.chunks = []; let cur = null;
+  tl.segs.forEach((s,i) => {
+    if (s.word>=0 && tl.words[s.word].t0===null) tl.words[s.word].t0 = s.t0;
+    if (s.pause){ cur = null; return; }
+    if (!cur){ cur = {a:i, b:i}; tl.chunks.push(cur); } else cur.b = i;
+  });
+  tl.chunks.forEach(c => { c.t0 = tl.segs[c.a].t0; c.t1 = tl.segs[c.b].t1; });
+}
+
+/* ---------- feelings from words (built-in, crude on purpose) ---------- */
+const LEX = [
+  ['feliz','joy',1],['alegr','joy',.9],['content','joy',.8],['genial','joy',.9],['guay','joy',.7],['maravill','joy',1],['encant','joy',.9],['=amo','joy',.6],['amor','joy',.8],['graci','joy',.6],['=bien','joy',.4],['buen','joy',.4],['bonit','joy',.6],['precios','joy',.7],['divert','joy',.8],['fiesta','joy',.8],['jaja','joy',1],['gust','joy',.6],['perfect','joy',.7],['estupend','joy',.8],['fantastic','joy',.8],['=hola','joy',.35],['arcoiris','joy',.8],['brill','joy',.6],['sueno','joy',.4],
+  ['happy','joy',1],['love','joy',.8],['great','joy',.8],['thank','joy',.6],['awesome','joy',.9],['=nice','joy',.5],['=fun','joy',.6],['=hello','joy',.35],['=hi','joy',.3],['rainbow','joy',.8],
+  ['trist','sadness',1],['llor','sadness',.9],['lagrim','sadness',.9],['soledad','sadness',.9],['=solo','sadness',.5],['=sola','sadness',.5],['=pena','sadness',.7],['perdi','sadness',.6],['muert','sadness',.9],['muri','sadness',.9],['dolor','sadness',.7],['duele','sadness',.7],['=siento','sadness',.4],['cansad','sadness',.5],['adios','sadness',.5],['=ay','sadness',.4],['lluev','sadness',.4],['llovi','sadness',.4],['=nunca','sadness',.3],['vacio','sadness',.6],
+  ['=sad','sadness',1],['=cry','sadness',.9],['lonely','sadness',.9],['sorry','sadness',.4],['miss','sadness',.5],['tired','sadness',.5],
+  ['=odio','anger',1],['odias','anger',1],['enfad','anger',.9],['furios','anger',1],['rabia','anger',.9],['maldit','anger',.8],['idiota','anger',.9],['tont','anger',.6],['imbecil','anger',.9],['basta','anger',.8],['callate','anger',.9],['hart','anger',.7],['molest','anger',.6],['grr','anger',1],['bzz','anger',.7],['estupid','anger',.8],
+  ['angry','anger',1],['=hate','anger',1],['stupid','anger',.8],['shut','anger',.7],['ugly','anger',.6],
+  ['miedo','fear',1],['asust','fear',.9],['terror','fear',1],['peligr','fear',.8],['socorro','fear',1],['=ayuda','fear',.6],['cuidado','fear',.6],['monstruo','fear',.8],['oscur','fear',.6],['fantasma','fear',.8],['=temo','fear',.7],['horror','fear',.9],['huye','fear',.7],['apag','fear',.6],['desenchuf','fear',.9],['=mando','fear',.4],
+  ['scared','fear',1],['afraid','fear',1],['=help','fear',.6],['danger','fear',.8],['unplug','fear',.9],['remote','fear',.4],
+  ['sorpres','surprise',1],['increible','surprise',.9],['=vaya','surprise',.7],['ostras','surprise',.9],['=hala','surprise',.8],['=guau','surprise',.9],['imposible','surprise',.7],['=serio','surprise',.4],['=oh','surprise',.6],['=anda','surprise',.5],['=como','surprise',.25],
+  ['=wow','surprise',.9],['really','surprise',.4],['amazing','surprise',.7],['what','surprise',.3],
+  ['=asco','disgust',1],['asquer','disgust',1],['puaj','disgust',1],['repugn','disgust',1],['vomit','disgust',.9],['podrid','disgust',.9],['apest','disgust',.9],['sucio','disgust',.6],['chicle','disgust',.6],['pegajos','disgust',.7],
+  ['gross','disgust',1],['disgust','disgust',1],['=yuck','disgust',1],['=ew','disgust',.8],['sticky','disgust',.6],
+];
+const NEG = new Set(['no','nunca','jamas','ni','not','never','dont','nope']);
+const deacc = s => s.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/'/g,'');
+function lexWord(w){
+  const s = deacc(w);
+  for (const [stem,e,wt] of LEX){ if (stem[0]==='=' ? s===stem.slice(1) : s.startsWith(stem)) return [e,wt]; }
+  return null;
+}
+function wordEmotions(words){
+  const out = words.map(() => null);
+  words.forEach((wd,i) => {
+    const hit = lexWord(wd.w); if (!hit) return;
+    const [e,wt] = hit, v = zero();
+    const negated = [words[i-1],words[i-2]].some(x => x && x.phrase===wd.phrase && NEG.has(deacc(x.w)));
+    if (negated){ if (e==='joy'){ v.disgust=.45*wt; v.sadness=.25*wt; } else v[e]=.3*wt; }
+    else v[e] = wt;
+    if (wd.ex) for (const k of EMOS) v[k] = Math.min(1, v[k]*1.35);
+    out[i] = v;
+  });
+  words.forEach((wd,i) => {
+    if (wd.ex && !(words[i-1] && words[i-1].ex)){
+      let any = false; for (let j=i; j<words.length && words[j].ex; j++) if (out[j]) any = true;
+      if (!any){ out[i] = zero(); out[i].surprise=.45; out[i].joy=.2; }
+    }
+    if (wd.trail && !out[i]){ out[i] = zero(); out[i].sadness = .14; }
+  });
+  return out;
+}
+const totalEmotion = vecs => { const t = zero(); vecs.forEach(v => { if (v) for (const e of EMOS) t[e] = Math.max(t[e], v[e]); }); return t; };
+function attachEmotion(tl, wv, base){
+  const run = zero(); let lastWord = -1;
+  for (const s of tl.segs){
+    const k = Math.exp(-(s.t1-s.t0)/1.3);
+    for (const e of EMOS) run[e] *= k;
+    if (s.word>=0 && s.word!==lastWord){ lastWord = s.word; const v = wv && wv[s.word]; if (v) for (const e of EMOS) run[e] = Math.max(run[e], v[e]); }
+    const o = {}; for (const e of EMOS) o[e] = clamp01((base ? base[e]*.6 : 0) + run[e]);
+    s.emo = o;
+  }
+}
+
+/* ---------- drawing assets, made once ---------- */
+const cv = $('tv'), g = cv.getContext('2d');
+function makeIris(){
+  const N = 256, c = document.createElement('canvas'); c.width = c.height = N;
+  const x = c.getContext('2d'), r = N/2, rnd = rng(7);
+  let gr = x.createRadialGradient(r,r,r*.2,r,r,r);
+  gr.addColorStop(0,'#a07a38'); gr.addColorStop(.3,'#7f8c5c'); gr.addColorStop(.52,'#4b88ad');
+  gr.addColorStop(.82,'#38668c'); gr.addColorStop(.94,'#1c3248'); gr.addColorStop(1,'#0e1925');
+  x.fillStyle = gr; x.beginPath(); x.arc(r,r,r,0,7); x.fill();
+  for (let i=0; i<1100; i++){
+    const a = rnd()*Math.PI*2, r0 = r*(.2+rnd()*.2), r1 = r*(.6+rnd()*.36), bend = (rnd()-.5)*.28, rm = (r0+r1)/2;
+    x.strokeStyle = rnd()<.5 ? `rgba(225,238,248,${.05+rnd()*.13})` : `rgba(8,22,38,${.06+rnd()*.15})`;
+    x.lineWidth = .6+rnd()*1.3;
+    x.beginPath(); x.moveTo(r+Math.cos(a)*r0, r+Math.sin(a)*r0);
+    x.quadraticCurveTo(r+Math.cos(a+bend)*rm, r+Math.sin(a+bend)*rm, r+Math.cos(a)*r1, r+Math.sin(a)*r1); x.stroke();
+  }
+  x.strokeStyle = 'rgba(214,168,86,.55)'; x.lineWidth = 3.2; x.beginPath();
+  for (let i=0; i<=140; i++){ const a = i/140*Math.PI*2, rr = r*(.41+(rnd()-.5)*.07); const px = r+Math.cos(a)*rr, py = r+Math.sin(a)*rr; i ? x.lineTo(px,py) : x.moveTo(px,py); }
+  x.stroke();
+  for (let i=0; i<46; i++){ const a = rnd()*7, rr = r*(.46+rnd()*.36); x.fillStyle = `rgba(12,28,44,${.14+rnd()*.22})`; x.beginPath(); x.ellipse(r+Math.cos(a)*rr, r+Math.sin(a)*rr, 2+rnd()*5, 1+rnd()*2, a, 0, 7); x.fill(); }
+  gr = x.createRadialGradient(r,r,r*.8,r,r,r); gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(1,'rgba(4,10,20,.8)');
+  x.fillStyle = gr; x.beginPath(); x.arc(r,r,r,0,7); x.fill();
+  return c;
+}
+const IRIS = makeIris();
+const NOISE = [0,1,2,3].map(() => { const c = document.createElement('canvas'); c.width = 96; c.height = 72; const x = c.getContext('2d'), d = x.createImageData(96,72); for (let i=0; i<d.data.length; i+=4){ const v = Math.random()*255|0; d.data[i]=d.data[i+1]=d.data[i+2]=v; d.data[i+3]=255; } x.putImageData(d,0,0); return c; });
+const SCAN = (() => { const c = document.createElement('canvas'); c.width = 1; c.height = 3; const x = c.getContext('2d'); x.fillStyle = 'rgba(0,0,0,.55)'; x.fillRect(0,0,1,1); return g.createPattern(c, 'repeat'); })();
+const R7 = rng(11);
+const VEINS = Array.from({length:16}, (_,i) => { // eye-local polylines starting near the corners
+  const side = i%2 ? 1 : -1; let x = side*(70+R7()*8), y = (R7()-.5)*22, a = side>0 ? Math.PI : 0; a += (R7()-.5)*.8;
+  const pts = [[x,y]]; const n = 6+R7()*7|0;
+  for (let k=0; k<n; k++){ a += (R7()-.5)*.9; x += Math.cos(a)*5; y += Math.sin(a)*4; pts.push([x,y]); }
+  return {pts, w:.5+R7()*.9};
+});
+const LASH = Array.from({length:38}, () => ({len:.75+R7()*.5, off:(R7()-.5)*.012, curl:.7+R7()*.6}));
+const LLASH = Array.from({length:18}, () => ({len:.7+R7()*.6, off:(R7()-.5)*.02}));
+const HAIR = Array.from({length:110}, () => ({t:R7(), o:R7(), len:.8+R7()*.5, a:(R7()-.5)*.35}));
+const CLOUDS = Array.from({length:5}, (_,i) => ({x:R7()*440-20, y:36+R7()*120, s:.6+R7()*.7, v:3+R7()*5}));
+
+/* ---------- colours of the world ---------- */
+const hex = h => [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
+const SKY = {neutral:['#8cc4f2','#e6f3ff'], joy:['#6fc6ff','#fff2cf'], sadness:['#6f7d92','#c4ccd8'], anger:['#b5544c','#f6c6a8'], fear:['#1e2645','#535979'], surprise:['#c08fe4','#ffe2f2'], disgust:['#83a04f','#dde6a6']};
+const FLOOR = {neutral:'#ee9cbc', joy:'#ffd36b', sadness:'#8fa4c4', anger:'#d4574d', fear:'#4a4c6a', surprise:'#c8a0f0', disgust:'#a8c25a'};
+const TINT = {joy:'#ffcf6b', sadness:'#5f86d8', anger:'#ff3b30', fear:'#2c1f5c', surprise:'#ff8fd8', disgust:'#9acd32'};
+const HX = {}; for (const k in SKY) HX[k] = SKY[k].map(hex); const FX = {}; for (const k in FLOOR) FX[k] = hex(FLOOR[k]);
+function moodColor(table, em, idx){
+  const tot = EMOS.reduce((s,e) => s+(em[e]||0), 0), w = Math.min(1, tot);
+  const base = idx===undefined ? table.neutral : table.neutral[idx];
+  const c = base.map(v => v*(1-w));
+  if (tot > 0) for (const e of EMOS){ const k = (em[e]||0)/tot*w; const col = idx===undefined ? table[e] : table[e][idx]; for (let j=0; j<3; j++) c[j] += col[j]*k; }
+  return `rgb(${c.map(v => Math.round(v)).join(',')})`;
+}
+const rr = (x,y,w,h,r) => { g.beginPath(); g.roundRect ? g.roundRect(x,y,w,h,r) : g.rect(x,y,w,h); };
+
+/* ---------- state ---------- */
+const S = {mood:zero(), emo:zero(), override:null, play:null, blinkNext:0, blinkT:-1, gaze:{x:0,y:0,tx:0,ty:0,next:0},
+  emph:0, amp:0, last:0, segIdx:-1, wordIdx:-1, uiT:0, power:0, flash:0, ant:{w:0,v:0}, knob:0, knobT:0, vol:0,
+  tear:{on:false,y:0,v:0,s:0,wait:0}, look:null};
+
+/* ---------- world + body ---------- */
+function drawWorld(f, now){
+  const em = S.emo;
+  let gr = g.createLinearGradient(0,0,0,300);
+  gr.addColorStop(0, moodColor(HX, em, 0)); gr.addColorStop(1, moodColor(HX, em, 1));
+  g.fillStyle = gr; g.fillRect(0,0,400,430);
+  const joy = em.joy||0;
+  if (joy > .05){ // rainbow
+    const bands = ['#ff6b6b','#ffb36b','#ffe66b','#7be38a','#6bb8ff','#a88bff'];
+    g.save(); g.globalAlpha = Math.min(.7, joy*.8); g.lineWidth = 7;
+    bands.forEach((c,i) => { g.strokeStyle = c; g.beginPath(); g.arc(200, 330, 250-i*7, Math.PI*1.08, Math.PI*1.92); g.stroke(); });
+    g.restore();
+  }
+  for (const c of CLOUDS){
+    const x = reduceMotion ? c.x : ((c.x + now*c.v) % 480) - 40;
+    g.save(); g.translate(x, c.y); g.scale(c.s, c.s);
+    g.fillStyle = 'rgba(255,255,255,.92)';
+    [[0,0,22],[20,-10,26],[44,-2,20],[24,8,22],[60,6,14]].forEach(([cx,cy,r]) => { g.beginPath(); g.arc(cx,cy,r,0,7); g.fill(); });
+    g.fillStyle = 'rgba(160,180,210,.25)'; g.beginPath(); g.ellipse(30,18,40,7,0,0,7); g.fill();
+    g.restore();
+  }
+  // checkerboard floor running to a vanishing point
+  const H = 292, vpy = 228, fc = moodColor(FX, em);
+  g.fillStyle = '#f3ead6'; g.fillRect(0,H,400,138);
+  const ys = []; for (let inv = (H-vpy)/(430-vpy)*0+1/((H-vpy)/(430-vpy)), k=0; k<12; k++){ const s = 1/Math.max(.9, inv - k*.42); ys.push(vpy + s*(430-vpy)); }
+  ys.unshift(H);
+  g.fillStyle = fc;
+  for (let r=0; r<ys.length-1; r++){
+    const y0 = ys[r], y1 = Math.min(430, ys[r+1]); if (y0 >= 430) break;
+    const s0 = (y0-vpy)/(430-vpy), s1 = (y1-vpy)/(430-vpy);
+    for (let u=-9; u<9; u++){ if ((u+r)&1) continue;
+      g.beginPath(); g.moveTo(200+u*58*s0, y0); g.lineTo(200+(u+1)*58*s0, y0); g.lineTo(200+(u+1)*58*s1, y1); g.lineTo(200+u*58*s1, y1); g.closePath(); g.fill(); }
+  }
+  gr = g.createLinearGradient(0,H,0,H+40); gr.addColorStop(0,'rgba(255,255,255,.55)'); gr.addColorStop(1,'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0,H,400,40);
+  // a door standing alone in the room
+  g.fillStyle = 'rgba(0,0,0,.12)'; g.beginPath(); g.ellipse(84,293,18,3,0,0,7); g.fill();
+  g.fillStyle = '#fbf7ee'; g.fillRect(70,244,26,49);
+  gr = g.createLinearGradient(74,248,92,292); gr.addColorStop(0,'#fff6c8'); gr.addColorStop(1,'#ffd98a'); g.fillStyle = gr; g.fillRect(74,248,18,45);
+  g.fillStyle = '#d8cdb8'; g.beginPath(); g.moveTo(74,248); g.lineTo(64,252); g.lineTo(64,296); g.lineTo(74,293); g.closePath(); g.fill();
+  // a small mushroom that watches too
+  g.fillStyle = '#fff'; g.fillRect(334,286,8,14);
+  g.fillStyle = '#e0473d'; g.beginPath(); g.ellipse(338,287,15,10,0,Math.PI,0); g.fill();
+  g.fillStyle = '#fff'; [[330,282],[344,281],[338,278]].forEach(([x,y]) => { g.beginPath(); g.arc(x,y,1.8,0,7); g.fill(); });
+  g.fillStyle = '#fff'; g.beginPath(); g.ellipse(338,293,3.2,2.6*Math.max(.15,S.blinkF??1),0,0,7); g.fill();
+  g.fillStyle = '#1b1b2a'; g.beginPath(); g.arc(338+S.gaze.x*.15, 293, 1.4, 0, 7); g.fill();
+  // fear dims the world and makes it flicker
+  const dark = (em.fear||0)*.35 + (em.sadness||0)*.12;
+  if (dark > .01){ g.fillStyle = `rgba(6,8,20,${clamp01(dark*(reduceMotion ? 1 : .85+Math.random()*.3))})`; g.fillRect(0,0,400,430); }
+}
+function drawBody(breath){
+  g.save(); g.translate(0, breath*.3);
+  g.fillStyle = 'rgba(0,0,0,.18)'; g.beginPath(); g.ellipse(200,338,96,14,0,0,7); g.fill();
+  let gr = g.createLinearGradient(0,330,0,430); gr.addColorStop(0,'#f7b6cf'); gr.addColorStop(1,'#d9819f');
+  g.fillStyle = gr;
+  g.beginPath(); g.moveTo(14,430); g.bezierCurveTo(20,398,40,374,92,360); g.bezierCurveTo(128,350,164,342,200,342); g.bezierCurveTo(236,342,272,350,308,360); g.bezierCurveTo(360,374,380,398,386,430); g.closePath(); g.fill();
+  g.strokeStyle = '#a9557a'; g.lineWidth = 1.5; g.stroke();
+  g.strokeStyle = 'rgba(169,85,122,.6)'; g.lineWidth = 1.5; [[88,362,104,430],[312,362,296,430]].forEach(([a,b,c,d]) => { g.beginPath(); g.moveTo(a,b); g.quadraticCurveTo((a+c)/2+(a<200?8:-8),(b+d)/2,c,d); g.stroke(); });
+  g.fillStyle = '#3a2a35'; g.beginPath(); g.ellipse(200,343,34,8,0,0,7); g.fill();
+  g.fillStyle = '#fdf6e9'; g.strokeStyle = '#b9a98f'; g.lineWidth = 1;
+  g.beginPath(); g.moveTo(166,340); g.lineTo(200,376); g.lineTo(184,338); g.closePath(); g.fill(); g.stroke();
+  g.beginPath(); g.moveTo(234,340); g.lineTo(200,376); g.lineTo(216,338); g.closePath(); g.fill(); g.stroke();
+  g.strokeStyle = '#b8607f'; g.lineWidth = 2; g.beginPath(); g.moveTo(200,376); g.lineTo(200,430); g.stroke();
+  g.fillStyle = '#fff4c2'; [394,416].forEach(y => { g.beginPath(); g.arc(207,y,3.5,0,7); g.fill(); });
+  // patches: a heart and a star, stitched on
+  g.fillStyle = '#e8414f'; g.beginPath(); g.moveTo(112,410); g.bezierCurveTo(92,396,98,380,112,388); g.bezierCurveTo(126,380,132,396,112,410); g.fill();
+  g.setLineDash([2,2]); g.strokeStyle = '#fff'; g.lineWidth = 1; g.stroke(); g.setLineDash([]);
+  g.fillStyle = '#ffd84a'; g.beginPath(); for (let i=0; i<10; i++){ const a = -Math.PI/2 + i*Math.PI/5, r = i%2 ? 6 : 14; g.lineTo(292+Math.cos(a)*r, 400+Math.sin(a)*r); } g.closePath(); g.fill();
+  g.strokeStyle = '#c99a00'; g.stroke();
+  // a coiled cable from the TV down into the collar
+  g.strokeStyle = '#2b2d33'; g.lineWidth = 3; g.beginPath(); g.moveTo(226,300);
+  for (let i=0; i<=24; i++){ const t = i/24; g.lineTo(226+t*8+Math.sin(t*Math.PI*10)*4, 300+t*40); } g.stroke();
+  g.restore();
+}
+
+/* ---------- the TV ---------- */
+const SX = 104, SY = 115, SW = 192, SH = 142;
+function bez(p0,p1,p2,p3,t){ const u = 1-t; return {x:u*u*u*p0.x+3*u*u*t*p1.x+3*u*t*t*p2.x+t*t*t*p3.x, y:u*u*u*p0.y+3*u*u*t*p1.y+3*u*t*t*p2.y+t*t*t*p3.y,
+  dx:3*u*u*(p1.x-p0.x)+6*u*t*(p2.x-p1.x)+3*t*t*(p3.x-p2.x), dy:3*u*u*(p1.y-p0.y)+6*u*t*(p2.y-p1.y)+3*t*t*(p3.y-p2.y)}; }
+function drawTV(f, blinkF, now){
+  const amp = S.amp;
+  // antennae
+  const base = {x:200, y:80};
+  const a0 = (f.antenna >= 0 ? 30-14*f.antenna : 30-46*f.antenna) * Math.PI/180;
+  for (const s of [-1,1]){
+    const ang = s*a0 + S.ant.w*Math.PI/180, L = 86 - Math.max(0,-f.antenna)*8;
+    const tip = {x:base.x+Math.sin(ang)*L, y:base.y-Math.cos(ang)*L};
+    const bendX = Math.max(0,-f.antenna)*s*10, bendY = Math.max(0,-f.antenna)*12;
+    g.strokeStyle = '#9aa1ad'; g.lineWidth = 3.2; g.lineCap = 'round';
+    g.beginPath(); g.moveTo(base.x,base.y); g.quadraticCurveTo((base.x+tip.x)/2+bendX, (base.y+tip.y)/2+bendY, tip.x, tip.y); g.stroke();
+    g.strokeStyle = '#eef1f6'; g.lineWidth = 1; g.stroke();
+    if (amp > .02){ const gl = g.createRadialGradient(tip.x,tip.y,1,tip.x,tip.y,6+16*amp); gl.addColorStop(0,`rgba(255,244,190,${.75*amp})`); gl.addColorStop(1,'rgba(255,244,190,0)'); g.fillStyle = gl; g.beginPath(); g.arc(tip.x,tip.y,6+16*amp,0,7); g.fill(); }
+    const bg = g.createRadialGradient(tip.x-1.5,tip.y-1.5,.5,tip.x,tip.y,5.5); bg.addColorStop(0,'#ffffff'); bg.addColorStop(1, amp > .05 ? '#ffd86a' : '#8e95a2');
+    g.fillStyle = bg; g.beginPath(); g.arc(tip.x,tip.y,5.5,0,7); g.fill();
+  }
+  // wood top and side
+  let gr = g.createLinearGradient(80,80,338,92); gr.addColorStop(0,'#94603a'); gr.addColorStop(1,'#6d4427');
+  g.fillStyle = gr; g.beginPath(); g.moveTo(80,92); g.lineTo(320,92); g.lineTo(338,80); g.lineTo(98,80); g.closePath(); g.fill();
+  gr = g.createLinearGradient(320,0,338,0); gr.addColorStop(0,'#7a4c2c'); gr.addColorStop(1,'#5a3820');
+  g.fillStyle = gr; g.beginPath(); g.moveTo(320,92); g.lineTo(338,80); g.lineTo(338,290); g.lineTo(320,304); g.closePath(); g.fill();
+  g.strokeStyle = 'rgba(60,34,16,.45)'; g.lineWidth = 1;
+  for (let i=0; i<6; i++){ g.beginPath(); g.moveTo(323+i*2.4, 92-i*1.6+4); g.bezierCurveTo(326+i*2.4,160,321+i*2.4,220,324+i*2.4,300-i*2); g.stroke(); }
+  g.fillStyle = '#5b5f68'; g.beginPath(); g.ellipse(200,82,16,6,0,Math.PI,0); g.fill();
+  // cream front
+  gr = g.createLinearGradient(0,92,0,304); gr.addColorStop(0,'#f2e8cf'); gr.addColorStop(1,'#d4c29c');
+  g.fillStyle = gr; rr(78,92,244,212,16); g.fill(); g.strokeStyle = '#9c8a66'; g.lineWidth = 1.5; g.stroke();
+  // bezel
+  gr = g.createLinearGradient(0,106,0,266); gr.addColorStop(0,'#3a3a40'); gr.addColorStop(1,'#1f1f23');
+  g.fillStyle = gr; rr(94,106,212,160,26); g.fill();
+  // screen
+  g.save(); rr(SX,SY,SW,SH,28); g.clip();
+  drawScreen(f, blinkF, now);
+  g.restore();
+  // glass: curved reflection and edge shade
+  g.save(); rr(SX,SY,SW,SH,28); g.clip();
+  gr = g.createLinearGradient(SX,SY,SX+SW*.6,SY+SH*.6); gr.addColorStop(0,'rgba(255,255,255,.22)'); gr.addColorStop(.35,'rgba(255,255,255,.04)'); gr.addColorStop(1,'rgba(255,255,255,0)');
+  g.fillStyle = gr; g.beginPath(); g.ellipse(SX+40, SY+24, 90, 34, -.35, 0, 7); g.fill();
+  g.restore();
+  g.strokeStyle = '#0d0d10'; g.lineWidth = 2.5; rr(SX,SY,SW,SH,28); g.stroke();
+  if (amp > .02){ g.save(); g.globalCompositeOperation = 'lighter'; g.strokeStyle = `rgba(170,210,255,${.35*amp})`; g.lineWidth = 6; rr(SX-2,SY-2,SW+4,SH+4,30); g.stroke(); g.restore(); }
+  // speaker grille that hums with the voice
+  const jig = reduceMotion ? 0 : Math.sin(now*70)*amp*.8;
+  for (let i=0; i<6; i++){ g.fillStyle = amp > .05 ? `rgb(${lerp(91,255,amp*.8)|0},${lerp(82,214,amp*.8)|0},${lerp(64,120,amp*.8)|0})` : '#5b5240'; rr(104+jig, 273+i*4, 74, 2.2, 1); g.fill(); }
+  // power LED, brand, knobs
+  const on = !!S.play;
+  g.fillStyle = on ? `rgba(255,${60+amp*80|0},48,1)` : '#6a1f1b'; g.beginPath(); g.arc(194,284,3.2,0,7); g.fill();
+  if (on){ g.fillStyle = `rgba(255,80,60,${.25+.4*amp})`; g.beginPath(); g.arc(194,284,7,0,7); g.fill(); }
+  g.fillStyle = '#6b5a3c'; g.font = '15px VT323, monospace'; g.textAlign = 'left'; g.fillText('TELE', 204, 289);
+  [[252, S.knob], [286, -130 + 260*S.vol]].forEach(([x, deg]) => {
+    const kg = g.createRadialGradient(x-3,281,1,x,284,11); kg.addColorStop(0,'#6a6970'); kg.addColorStop(1,'#2a292e');
+    g.fillStyle = kg; g.beginPath(); g.arc(x,284,11,0,7); g.fill();
+    const a = deg*Math.PI/180; g.strokeStyle = '#f2e8cf'; g.lineWidth = 2; g.beginPath(); g.moveTo(x,284); g.lineTo(x+Math.sin(a)*8, 284-Math.cos(a)*8); g.stroke();
+  });
+}
+function drawScreen(f, blinkF, now){
+  const em = S.emo;
+  const jx = reduceMotion ? 0 : (Math.random()-.5)*f.jitter*3.2, jy = reduceMotion ? 0 : (Math.random()-.5)*f.jitter*1.6;
+  g.save(); g.translate(jx, jy);
+  // skin
+  let gr = g.createRadialGradient(205,178,10,205,186,170);
+  gr.addColorStop(0,'#f4d8c8'); gr.addColorStop(.55,'#e2b39d'); gr.addColorStop(1,'#b47e6b');
+  g.fillStyle = gr; g.fillRect(SX-10,SY-10,SW+20,SH+20);
+  gr = g.createRadialGradient(205,184,26,205,184,104); gr.addColorStop(0,'rgba(140,80,70,.2)'); gr.addColorStop(1,'rgba(140,80,70,0)');
+  g.fillStyle = gr; g.fillRect(SX,SY,SW,SH);
+  gr = g.createRadialGradient(222,150,4,222,150,60); gr.addColorStop(0,'rgba(255,240,230,.35)'); gr.addColorStop(1,'rgba(255,240,230,0)');
+  g.fillStyle = gr; g.fillRect(SX,SY,SW,SH);
+
+  // eye geometry (a right eye: tear duct on the left)
+  const ex = 202, ey = 192, ix = 128, iy = 199, ox = 278, oy = 186;
+  const openU = 40*(1+.42*f.lidUp), hL = 24*(1-.55*clamp01(f.lidLow));
+  const angryIn = Math.max(0,-f.browInner)*.38 + f.squeeze*.08, sadOut = Math.max(0, f.browInner - Math.max(0,f.browOuter))*.28;
+  const loY = ey + hL*1.33;
+  const u1 = {x:ix+38, y:lerp(loY, ey-openU*1.33*(1-angryIn), blinkF)}, u2 = {x:ox-58, y:lerp(loY, ey-openU*1.33*(1-sadOut), blinkF)};
+  const l1 = {x:ox-46, y:loY}, l2 = {x:ix+46, y:loY};
+  const I = {x:ix,y:iy}, O = {x:ox,y:oy};
+  const eyePath = () => { g.beginPath(); g.moveTo(ix,iy); g.bezierCurveTo(u1.x,u1.y,u2.x,u2.y,ox,oy); g.bezierCurveTo(l1.x,l1.y,l2.x,l2.y,ix,iy); g.closePath(); };
+
+  // brow, hair by hair
+  const bi = {x:130, y:139 - f.browInner*12 + f.squeeze*4}, bo = {x:284, y:132 - f.browOuter*8};
+  const bp = {x:224, y:Math.min(bi.y,bo.y) - 12 - Math.max(0,f.browOuter)*3};
+  const qb = t => ({x:(1-t)*(1-t)*bi.x+2*(1-t)*t*bp.x+t*t*bo.x, y:(1-t)*(1-t)*bi.y+2*(1-t)*t*bp.y+t*t*bo.y, dx:2*(1-t)*(bp.x-bi.x)+2*t*(bo.x-bp.x), dy:2*(1-t)*(bp.y-bi.y)+2*t*(bo.y-bp.y)});
+  g.lineCap = 'round';
+  g.fillStyle = 'rgba(120,82,60,.32)'; g.beginPath();
+  for (let k=0; k<=20; k++){ const p = qb(k/20), L = Math.hypot(p.dx,p.dy), w = 6*(1-k/20*.7); g.lineTo(p.x+p.dy/L*w, p.y-p.dx/L*w); }
+  for (let k=20; k>=0; k--){ const p = qb(k/20), L = Math.hypot(p.dx,p.dy), w = 5*(1-k/20*.7); g.lineTo(p.x-p.dy/L*w, p.y+p.dx/L*w); }
+  g.closePath(); g.fill();
+  for (const h of HAIR){
+    const p = qb(h.t), L = Math.hypot(p.dx,p.dy), tx = p.dx/L, ty = p.dy/L, nx = ty, ny = -tx;
+    const off = (h.o-.5)*12*(1-h.t*.6);
+    const bx = p.x + nx*off, by = p.y + ny*off;
+    const up = h.t < .18 ? -1.1 : -.32;
+    const a = Math.atan2(ty,tx) + up + h.a, len = (6+5*(1-h.t))*h.len;
+    g.strokeStyle = 'rgba(92,62,44,.55)'; g.lineWidth = 1.3;
+    g.beginPath(); g.moveTo(bx,by); g.lineTo(bx+Math.cos(a)*len, by+Math.sin(a)*len); g.stroke();
+  }
+  if (f.squeeze > .05){ g.strokeStyle = `rgba(120,70,60,${.45*clamp01(f.squeeze)})`; g.lineWidth = 1.6; [[114,150,118,172],[122,152,124,170]].forEach(([a,b,c,d]) => { g.beginPath(); g.moveTo(a,b); g.quadraticCurveTo(a-3,(b+d)/2,c,d); g.stroke(); }); }
+  if (f.browInner > .2 || f.browOuter > .2){ g.strokeStyle = `rgba(150,95,80,${.3*clamp01(Math.max(f.browInner,f.browOuter))})`; g.lineWidth = 1.4; [124,130].forEach(y => { g.beginPath(); g.moveTo(150,y+4); g.quadraticCurveTo(210,y-4,270,y+2); g.stroke(); }); }
+
+  // lid crease
+  g.strokeStyle = 'rgba(120,68,58,.42)'; g.lineWidth = 2.4;
+  g.beginPath(); g.moveTo(ix+8, iy-9); g.bezierCurveTo(ix+40, ey-openU*1.33-16+angryIn*14, ox-58, ey-openU*1.33-18+sadOut*18, ox-4, oy-11); g.stroke();
+  gr = g.createLinearGradient(0, ey-openU-20, 0, ey); gr.addColorStop(0,'rgba(150,90,80,0)'); gr.addColorStop(1,'rgba(150,90,80,.22)');
+  g.fillStyle = gr; g.beginPath(); g.moveTo(ix,iy); g.bezierCurveTo(ix+40, ey-openU*1.33-16, ox-58, ey-openU*1.33-18, ox,oy); g.bezierCurveTo(u2.x,u2.y,u1.x,u1.y,ix,iy); g.fill();
+
+  // eyeball
+  g.save(); eyePath(); g.clip();
+  gr = g.createRadialGradient(ex+4,ey,8,ex,ey,90); gr.addColorStop(0,'#fbf7f2'); gr.addColorStop(.7,'#ece0d8'); gr.addColorStop(1,'#c9a49a');
+  g.fillStyle = gr; g.fillRect(ix-4, ey-60, ox-ix+8, 120);
+  const blood = clamp01(.18 + .55*f.bloodshot + .35*clamp01(f.tear));
+  g.strokeStyle = `rgba(190,40,50,${blood})`;
+  for (const v of VEINS){ g.lineWidth = v.w; g.beginPath(); v.pts.forEach(([x,y],k) => k ? g.lineTo(ex+x, ey+y) : g.moveTo(ex+x, ey+y)); g.stroke(); }
+  const G = S.gaze, icx = ex + 6 + G.x*1.6, icy = ey + 2 + G.y*1.4 + f.gazeY*9, R = 34;
+  g.drawImage(IRIS, icx-R, icy-R, R*2, R*2);
+  const pr = clamp(11.5*(1+.55*f.pupil), 4, 20);
+  gr = g.createRadialGradient(icx,icy,pr*.75,icx,icy,pr*1.08); gr.addColorStop(0,'#050507'); gr.addColorStop(1,'rgba(5,5,7,0)');
+  g.fillStyle = gr; g.beginPath(); g.arc(icx,icy,pr*1.08,0,7); g.fill();
+  g.fillStyle = '#050507'; g.beginPath(); g.arc(icx,icy,pr*.8,0,7); g.fill();
+  gr = g.createLinearGradient(0, Math.min(u1.y,u2.y)*.25+ey*.75-openU*.75, 0, Math.min(u1.y,u2.y)*.25+ey*.75-openU*.75+22);
+  gr.addColorStop(0,'rgba(60,25,20,.5)'); gr.addColorStop(1,'rgba(60,25,20,0)');
+  g.fillStyle = gr; g.fillRect(ix, ey-80, ox-ix, 110);
+  g.fillStyle = 'rgba(255,255,255,.92)'; rr(icx-R*.5, icy-R*.52, R*.36, R*.26, 4); g.fill();
+  g.fillStyle = 'rgba(255,255,255,.7)'; g.beginPath(); g.arc(icx+R*.32, icy+R*.3, 2.6, 0, 7); g.fill();
+  g.fillStyle = 'rgba(255,255,255,.18)'; g.beginPath(); g.ellipse(ex-30, ey-6, 26, 8, -.2, 0, 7); g.fill();
+  g.fillStyle = 'rgba(214,120,120,.85)'; g.beginPath(); g.ellipse(ix+7, iy-1, 8, 5.5, .1, 0, 7); g.fill();
+  g.restore();
+
+  // lid margins
+  g.strokeStyle = 'rgba(232,170,160,.9)'; g.lineWidth = 2.2; g.beginPath(); g.moveTo(ox,oy); g.bezierCurveTo(l1.x,l1.y-1.5,l2.x,l2.y-1.5,ix,iy); g.stroke();
+  g.strokeStyle = '#2a1a17'; g.lineWidth = 3.6; g.beginPath(); g.moveTo(ix,iy); g.bezierCurveTo(u1.x,u1.y,u2.x,u2.y,ox,oy); g.stroke();
+  g.strokeStyle = 'rgba(110,60,50,.6)'; g.lineWidth = 1.4; g.beginPath(); g.moveTo(ox,oy); g.bezierCurveTo(l1.x,l1.y+2,l2.x,l2.y+2,ix,iy+1); g.stroke();
+  // lashes
+  g.strokeStyle = '#1d1210'; g.lineWidth = 1.6;
+  LASH.forEach((l,k) => {
+    const t = .1 + k/(LASH.length-1)*.88 + l.off, p = bez(I,u1,u2,O,t);
+    const L = Math.hypot(p.dx,p.dy); let nx = p.dy/L, ny = -p.dx/L; if (ny > 0){ nx=-nx; ny=-ny; }
+    const len = (6 + 9*Math.pow(t,1.4))*l.len*(.55+.45*blinkF);
+    const tilt = .25 + .6*t;
+    const ex2 = p.x + (nx+tilt)*len, ey2 = p.y + ny*len*(.6+.4*blinkF) - len*.15*l.curl*blinkF;
+    g.beginPath(); g.moveTo(p.x,p.y); g.quadraticCurveTo(p.x+nx*len*.6, p.y+ny*len*.6, ex2, ey2); g.stroke();
+  });
+  g.lineWidth = 1.1; g.strokeStyle = 'rgba(29,18,16,.8)';
+  LLASH.forEach((l,k) => {
+    const t = .12 + k/(LLASH.length-1)*.8 + l.off, p = bez(O,l1,l2,I,t);
+    const L = Math.hypot(p.dx,p.dy); let nx = p.dy/L, ny = -p.dx/L; if (ny < 0){ nx=-nx; ny=-ny; }
+    const len = (4+5*(1-t))*l.len;
+    g.beginPath(); g.moveTo(p.x,p.y+1.5); g.lineTo(p.x+nx*len+(1-t)*2, p.y+1.5+ny*len); g.stroke();
+  });
+  // tears
+  const T = S.tear;
+  if (T.on){
+    const tx = lerp(ix, ox, .32) + 2, ty = loY*.75 + ey*.25 + 4 + T.y;
+    g.fillStyle = 'rgba(200,228,255,.6)'; g.strokeStyle = 'rgba(255,255,255,.85)'; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(tx, ty-T.s*2.2); g.bezierCurveTo(tx+T.s*1.2, ty-T.s*.6, tx+T.s, ty+T.s, tx, ty+T.s); g.bezierCurveTo(tx-T.s, ty+T.s, tx-T.s*1.2, ty-T.s*.6, tx, ty-T.s*2.2); g.fill(); g.stroke();
+  }
+  if (f.tear > .1){ g.strokeStyle = `rgba(255,255,255,${.5*clamp01(f.tear)})`; g.lineWidth = 1.5; g.beginPath(); g.moveTo(ox-10,oy+6); g.bezierCurveTo(l1.x,l1.y-2,l2.x,l2.y-2,ix+10,iy); g.stroke(); }
+  g.restore();
+
+  // picture: tint, darkness, rolling bar, static, scanlines, vignette, glow
+  g.save(); g.globalCompositeOperation = 'soft-light';
+  for (const e of EMOS){ const w = em[e]||0; if (w < .03) continue; g.globalAlpha = Math.min(.85, w*.7); g.fillStyle = TINT[e]; g.fillRect(SX,SY,SW,SH); }
+  g.restore();
+  if (em.fear > .05){ g.fillStyle = `rgba(5,5,15,${.3*em.fear})`; g.fillRect(SX,SY,SW,SH); }
+  if (f.roll > .05){ const y = SY + ((now*38) % (SH+40)) - 20; g.fillStyle = `rgba(0,0,0,${.22*f.roll})`; g.fillRect(SX, y, SW, 22); g.fillStyle = `rgba(255,255,255,${.08*f.roll})`; g.fillRect(SX, y+22, SW, 4); }
+  const st = clamp01(.035 + .14*clamp01(f.static) + S.flash*.9 + (S.power < 1 ? (1-S.power)*.5 : 0));
+  g.save(); g.globalAlpha = st; g.imageSmoothingEnabled = false; g.drawImage(NOISE[(now*24|0)%4], SX, SY, SW, SH); g.restore();
+  g.fillStyle = SCAN; g.globalAlpha = .22; g.fillRect(SX,SY,SW,SH); g.globalAlpha = 1;
+  if (S.amp > .02){ g.save(); g.globalCompositeOperation = 'lighter'; g.fillStyle = `rgba(150,190,255,${.1*S.amp})`; g.fillRect(SX,SY,SW,SH); g.restore(); }
+  let gr2 = g.createRadialGradient(200,186,60,200,186,150); gr2.addColorStop(0,'rgba(0,0,0,0)'); gr2.addColorStop(1,'rgba(0,0,0,.55)');
+  g.fillStyle = gr2; g.fillRect(SX,SY,SW,SH);
+  // glitch: shift a few bands of the picture sideways
+  if (!reduceMotion && f.glitch > .05 && Math.random() < f.glitch*.6){
+    const m = g.getTransform();
+    g.save(); g.setTransform(1,0,0,1,0,0);
+    for (let k=0; k<2+Math.random()*3; k++){
+      const yy = SY + Math.random()*SH, p = m.transformPoint({x:SX, y:yy}), p2 = m.transformPoint({x:SX+SW, y:yy});
+      const bh = (2+Math.random()*7)*m.d, shift = (Math.random()-.5)*16*m.a*f.glitch;
+      g.drawImage(cv, p.x, p.y, p2.x-p.x, bh, p.x+shift, p.y, p2.x-p.x, bh);
+      g.fillStyle = `rgba(255,40,60,${.18*f.glitch})`; g.fillRect(p.x, p.y, p2.x-p.x, Math.max(1,bh*.25));
+    }
+    g.restore();
+  }
+  // switching on: a bright line opening into a picture
+  if (S.power < 1){
+    const e = 1-Math.pow(1-S.power,3), half = SH/2*e, cy = SY+SH/2;
+    g.fillStyle = '#050505'; g.fillRect(SX,SY,SW,cy-half-SY); g.fillRect(SX,cy+half,SW,SY+SH-cy-half);
+    g.fillStyle = `rgba(255,255,255,${(1-S.power)*.9})`; g.fillRect(SX, cy-1.5, SW, 3);
+  }
+}
+
+/* ---------- frame loop ---------- */
+function findSeg(Pl, t){
+  const s = Pl.tl.segs; let i = clamp(Pl.idx||0, 0, s.length-1);
+  while (i>0 && s[i].t0>t) i--;
+  while (i<s.length-1 && s[i].t1<=t) i++;
+  Pl.idx = i; return i;
+}
+const envAt = (Pl, t) => Pl.env[Math.floor(t/Pl.hop)] || 0;
+function resize(){
+  const dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
+  if (!w || !h) return;
+  const W = Math.round(w*dpr), H = Math.round(h*dpr);
+  if (cv.width !== W || cv.height !== H){ cv.width = W; cv.height = H; }
+}
+function frame(ms){
+  const now = ms/1000, dt = S.last ? Math.min(.05, now-S.last) : .016; S.last = now;
+  let emoT = S.mood, seg = null, q = false, ampT = 0;
+  if (S.override){ if (now < S.override.until) emoT = S.override.emo; else S.override = null; }
+  const Pl = S.play;
+  if (Pl){
+    const t = Pl.getTime(), ts = Math.max(0, t - (Pl.mode==='silent' ? 0 : SYNC.offset/1000));
+    if (Pl.tl){
+      const i = findSeg(Pl, ts); seg = Pl.tl.segs[i];
+      if (seg.emo){ emoT = {}; for (const e of EMOS) emoT[e] = Math.max(seg.emo[e], (S.mood[e]||0)*.4); }
+      q = !!seg.q;
+      if (i !== S.segIdx) onSegChange(Pl, i, seg);
+      if (Pl.mode==='silent' && t > Pl.tl.end) finishPlay();
+    }
+    if (Pl.env) ampT = clamp01(envAt(Pl, ts)*1.1);
+    else if (seg && !seg.pause) ampT = seg.vowel ? (seg.stress ? 1 : .72) : .32;
+    if (Pl.env && now - (S.waveT||0) > 1/30){ S.waveT = now; drawWave(t); }
+  }
+  S.amp += (ampT - S.amp)*(1-Math.exp(-dt/(ampT > S.amp ? .03 : .1)));
+  S.vol += (S.amp - S.vol)*(1-Math.exp(-dt/.2));
+  const ke = 1-Math.exp(-dt/.28);
+  for (const e of EMOS) S.emo[e] += ((emoT[e]||0)-S.emo[e])*ke;
+  S.emph *= Math.exp(-dt/.28); S.flash *= Math.exp(-dt/.18);
+  if (S.power < 1) S.power = Math.min(1, S.power + dt/(reduceMotion ? .2 : .9));
+  S.knob += (S.knobT - S.knob)*(1-Math.exp(-dt/.12));
+  const f = faceFromEmo(S.emo);
+  f.browInner += S.emph*.3; f.browOuter += S.emph*.45; f.lidUp += S.emph*.15;
+  if (q){ f.browInner += .45; f.browOuter += .5; f.tilt += .8; f.antenna += .3; }
+  // antenna spring: bounces on stressed syllables, trembles with fear
+  const A = S.ant;
+  if (!reduceMotion && f.jitter > .1) A.v += (Math.random()-.5)*f.jitter*260*dt*10;
+  if (!reduceMotion && f.bounce > .1 && Math.random() < dt*1.2) A.v += 40*f.bounce;
+  A.v += (-A.w*170 - A.v*7)*dt; A.w += A.v*dt;
+  // blink, glance, tears, breathing
+  if (!S.blinkNext) S.blinkNext = now+1.6;
+  let blinkF = 1;
+  if (S.blinkT < 0 && now > S.blinkNext) S.blinkT = 0;
+  if (S.blinkT >= 0){ S.blinkT += dt; const p = S.blinkT/.16; if (p >= 1){ S.blinkT = -1; S.blinkNext = now+2+Math.random()*4.5; } else blinkF = 1-Math.sin(p*Math.PI); }
+  S.blinkF = blinkF;
+  const G = S.gaze;
+  if (S.look){ G.tx = S.look.x; G.ty = S.look.y; if (now > S.look.until) S.look = null; }
+  else if (!reduceMotion && now > G.next){ G.tx = (Math.random()-.5)*8; G.ty = (Math.random()-.5)*5; G.next = now+.7+Math.random()*2.6; }
+  const kg = 1-Math.exp(-dt/.045); G.x += (G.tx-G.x)*kg; G.y += (G.ty-G.y)*kg;
+  const T = S.tear;
+  if (f.tear > .45){
+    if (!T.on && now > T.wait){ T.on = true; T.y = 0; T.v = 0; T.s = 0; }
+    if (T.on){ if (T.s < 4.2) T.s += dt*5; else { T.v += 60*dt; T.y += T.v*dt; } if (T.y > 80){ T.on = false; T.wait = now + .8 + Math.random(); } }
+  } else if (T.on){ T.v += 60*dt; T.y += T.v*dt; if (T.y > 80) T.on = false; }
+  const breath = reduceMotion ? 0 : Math.sin(now*2*Math.PI/4.4)*1.4;
+
+  resize();
+  const sc = cv.width/400;
+  g.setTransform(sc,0,0,sc,0,0);
+  drawWorld(f, now);
+  drawBody(breath);
+  g.save();
+  g.translate(200, 330 + f.drop*8 + breath - S.emph*2); g.rotate(f.tilt*5*Math.PI/180); g.translate(-200, -330);
+  g.fillStyle = '#34363d'; g.fillRect(184,296,32,44);
+  drawTV(f, blinkF, now);
+  g.restore();
+  if (now - S.uiT > .08){ S.uiT = now; updateBars(); }
+  requestAnimationFrame(frame);
+}
+
+/* ---------- caption window + readout ---------- */
+const barEls = {};
+EMOS.forEach(e => {
+  const d = document.createElement('div'); d.className = 'eb'; d.style.setProperty('--c', `var(--${e})`); d.title = EMO_EN[e];
+  d.innerHTML = `<i></i><b>${EMO_EN[e][0]}${e==='sadness'?'a':e==='surprise'?'u':''}</b>`;
+  $('bars').append(d); barEls[e] = d.querySelector('i');
+});
+let lastFeel = '';
+function updateBars(){
+  for (const e of EMOS) barEls[e].style.height = (2 + 22*clamp01(S.emo[e])).toFixed(1)+'px';
+  const d = dominant(S.emo), name = d && S.emo[d] > .12 ? EMO_ES[d] : 'tranquila';
+  if (name !== lastFeel){ lastFeel = name; $('feelName').textContent = 'mood: ' + name; }
+}
+function setCaption(text, words, en){
+  const cap = $('cap'); cap.textContent = ''; cap.classList.remove('idle');
+  let pos = 0;
+  (words||[]).forEach(w => {
+    if (w.ci > pos) cap.append(text.slice(pos, w.ci));
+    const s = document.createElement('span'); s.className = 'cw'; s.textContent = text.slice(w.ci, w.ce); cap.append(s); w.capEl = s; pos = w.ce;
+  });
+  if (pos < text.length) cap.append(text.slice(pos));
+  $('capEn').textContent = en || '';
+}
+function idleCaption(t){ const cap = $('cap'); cap.textContent = t; cap.classList.add('idle'); $('capEn').textContent = ''; }
+
+/* ---------- playback ---------- */
+let stripTl = null;
+function onSegChange(Pl, i, seg){
+  S.segIdx = i;
+  if (seg.stress){ S.emph = Pl.tl.words[seg.word] && Pl.tl.words[seg.word].ex ? 1 : .6; S.ant.v += 35*S.emph; }
+  if (seg.word >= 0 && seg.word !== S.wordIdx){
+    const W = Pl.tl.words;
+    if (S.wordIdx >= 0 && W[S.wordIdx]){ const p = W[S.wordIdx]; if (p.capEl){ p.capEl.classList.remove('on'); p.capEl.classList.add('said'); } if (p.stripEl) p.stripEl.classList.remove('on'); }
+    S.wordIdx = seg.word; const w = W[seg.word];
+    if (w.capEl) w.capEl.classList.add('on');
+    if (Pl.tl === stripTl && w.stripEl) w.stripEl.classList.add('on');
+  }
+}
+function clearMarks(tl){ if (!tl) return; tl.words.forEach(w => { if (w.capEl) w.capEl.classList.remove('on'); if (w.stripEl) w.stripEl.classList.remove('on'); }); }
+function finishPlay(){
+  const Pl = S.play; if (!Pl) return;
+  S.play = null; S.segIdx = -1; S.wordIdx = -1;
+  if (Pl.tl){ const last = [...Pl.tl.segs].reverse().find(s => s.emo && !s.pause); if (last) S.override = {emo:last.emo, until:nowS()+1.6}; clearMarks(Pl.tl); }
+  if (Pl.env) drawWave(null);
+  if (Pl.onDone) Pl.onDone();
+}
+function stopAll(){
+  const Pl = S.play; if (!Pl) return;
+  S.play = null; S.segIdx = -1; S.wordIdx = -1; Pl.cancelled = true;
+  if (Pl.mode==='tts' || Pl.utter){ try { speechSynthesis.cancel(); } catch(e){} }
+  if (Pl.src){ try { Pl.src.stop(); } catch(e){} }
+  if (Pl.fx) Pl.fx.stop();
+  clearMarks(Pl.tl);
+  if (Pl.env) drawWave(null);
+}
+function mime(tl, opts={}){
+  stopAll();
+  const t0 = nowS();
+  S.play = {mode:'silent', tl, idx:0, onDone:opts.onDone, getTime:() => nowS()-t0};
+}
+let voices = [];
+const hasTTS = 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined';
+
+/* ---------- sync: a viewer nudge and a learned pace per voice ---------- */
+const SYNC = {offset:0, tempo:{}};
+try { const s = JSON.parse(localStorage.getItem('tele-sync') || '{}'); SYNC.offset = clamp(+s.offset || 0, -300, 300); SYNC.tempo = s.tempo || {}; } catch(e){}
+const saveSync = () => { try { localStorage.setItem('tele-sync', JSON.stringify({offset:SYNC.offset, tempo:SYNC.tempo})); } catch(e){} };
+const voiceKey = v => v ? v.name + '|' + v.lang : 'default';
+function syncNote(){
+  const v = voices[+$('voice').value], k = SYNC.tempo[voiceKey(v)];
+  $('syncOut').textContent = (SYNC.offset > 0 ? '+' : '') + SYNC.offset + ' ms';
+  $('syncNote').textContent = (v && !v.localService ? 'This voice streams from the internet, so it starts late and sends no word timings. An on-device voice keeps the caption in step better. ' : '')
+    + (k ? `Tele has learned this voice's pace (×${k.toFixed(2)}). ` : 'Tele learns each voice\'s pace after a phrase or two. ')
+    + 'If the caption runs ahead of the voice, slide Timing towards later.';
+}
+$('sync').value = SYNC.offset;
+$('sync').addEventListener('input', e => { SYNC.offset = +e.target.value; saveSync(); syncNote(); });
+$('voice').addEventListener('change', syncNote);
+function learnTempo(Pl){
+  if (!Pl.startAt) return;
+  const D = nowS() - Pl.startAt, speech = Pl.tl.segs.filter(s => !s.pause);
+  if (!speech.length || D < .4) return;
+  const k = clamp((speech[speech.length-1].t1 - speech[0].t0)/D, .5, 2);
+  SYNC.tempo[Pl.vkey] = clamp(lerp(SYNC.tempo[Pl.vkey] || 1, k, .6), .5, 2);
+  saveSync(); syncNote();
+}
+function loadVoices(){
+  if (!hasTTS) return;
+  voices = speechSynthesis.getVoices().filter(v => /^es/i.test(v.lang));
+  voices.sort((a,b) => ((/es[-_]ES/i.test(b.lang)) - (/es[-_]ES/i.test(a.lang))) || (b.localService - a.localService));
+  const sel = $('voice'), keep = sel.value;
+  sel.innerHTML = '';
+  if (!voices.length){ const o = document.createElement('option'); o.value=''; o.textContent='Browser default (es-ES)'; sel.append(o); }
+  voices.forEach((v,i) => { const o = document.createElement('option'); o.value = String(i); o.textContent = `${v.name} (${v.lang}, ${v.localService ? 'on device' : 'online'})`; sel.append(o); });
+  if (keep && sel.querySelector(`option[value="${keep}"]`)) sel.value = keep;
+  syncNote();
+}
+if (hasTTS){ loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
+else { const o = document.createElement('option'); o.textContent = 'No browser voice'; $('voice').append(o); $('voice').disabled = true; }
+
+function dreamAmt(){ return $('dreamVoice').checked ? $('dreamAmt').value/100 : 0; }
+function speak(text, opts={}){
+  stopAll();
+  const dv = dreamAmt(), rate = .95*(1-.1*dv);
+  const tl = buildTimeline(text, rate);
+  const wv = opts.feel !== 'off' ? (opts.wordVecs || wordEmotions(tl.words)) : null;
+  if (opts.feel !== 'off') attachEmotion(tl, wv, opts.base);
+  if (opts.strip) renderStrip(tl, wv);
+  setCaption(text, tl.words, opts.en);
+  if (!hasTTS || opts.silent){ mime(tl, opts); return tl; }
+  try { speechSynthesis.cancel(); } catch(e){}
+  const u = new SpeechSynthesisUtterance(text);
+  const v = voices[+$('voice').value];
+  if (v){ u.voice = v; u.lang = v.lang; } else u.lang = 'es-ES';
+  u.rate = rate; u.pitch = Math.max(.1, 1 - .35*dv);
+  const Pl = {mode:'tts', utter:u, tl, base:0, anchor:nowS(), speed:SYNC.tempo[voiceKey(v)] || 1, vkey:voiceKey(v), started:false, idx:0, cap:null, onDone:opts.onDone,
+    getTime(){ if (!this.started) return 0; let t = this.base + (nowS()-this.anchor)*this.speed; if (this.cap!=null) t = Math.min(t, this.cap); return t; }};
+  u.onstart = () => { if (S.play!==Pl) return; Pl.started = true; Pl.anchor = Pl.startAt = nowS(); };
+  u.onboundary = e => {
+    if (S.play!==Pl || Pl.mode!=='tts' || (e.name && e.name!=='word')) return;
+    const wi = tl.words.findIndex(w => w.ce > e.charIndex); if (wi<0) return;
+    const w = tl.words[wi], n = nowS();
+    if (Pl.lastB){ const dE = w.t0-Pl.lastB.est, dR = n-Pl.lastB.real; if (dE>.05 && dR>.05) Pl.speed = clamp(lerp(Pl.speed, dE/dR, .5), .5, 2); }
+    Pl.lastB = {est:w.t0, real:n}; Pl.base = w.t0; Pl.anchor = n; Pl.started = true;
+    const nx = tl.words[wi+1]; Pl.cap = nx ? nx.t0-.005 : null;
+  };
+  u.onend = () => { if (S.play===Pl && Pl.mode==='tts'){ learnTempo(Pl); finishPlay(); } };
+  u.onerror = () => { if (S.play===Pl && Pl.mode==='tts'){ Pl.mode='silent'; Pl.cap=null; Pl.started=true; Pl.base=0; Pl.anchor=nowS(); Pl.speed=1; if (opts.status) opts.status('The browser voice failed, so Tele shows it silently.'); } };
+  S.play = Pl;
+  speechSynthesis.speak(u);
+  setTimeout(() => {
+    if (S.play===Pl && !Pl.started){ try { speechSynthesis.cancel(); } catch(e){} Pl.mode='silent'; Pl.started=true; Pl.base=0; Pl.anchor=nowS(); if (opts.status) opts.status('No Spanish voice answered, so Tele shows it silently.'); }
+  }, 2500);
+  return tl;
+}
+
+/* ---------- word strip ---------- */
+function renderStrip(tl, wv){
+  const box = $('strip'); box.innerHTML = ''; stripTl = tl;
+  let lastWord = -1;
+  tl.segs.forEach((s,i) => {
+    if (s.pause){ if (i>0 && i<tl.segs.length-1){ const b = document.createElement('span'); b.className = 'brk'; b.textContent = (s.t1-s.t0) > .3 ? '‖' : '|'; box.append(b); } return; }
+    if (s.word === lastWord) return; lastWord = s.word;
+    const w = tl.words[s.word], el = document.createElement('span');
+    el.className = 'w' + (w.stressed ? ' st' : ''); el.textContent = w.raw;
+    const e = wv && wv[s.word], d = e && dominant(e);
+    if (d && e[d] > .15){ el.classList.add('emo'); el.style.setProperty('--wc', `var(--${d})`); el.title = `${EMO_EN[d]} ${Math.round(e[d]*100)}%`; }
+    box.append(el); w.stripEl = el;
+  });
+}
+
+/* ---------- Claude (optional) ---------- */
+let sample = null, claudeOk = false;
+const claudeMsg = {checking:'Checking whether Claude is available…', on:'Claude is available. The first use asks your permission.', off:'Claude isn\'t available in this view, so Tele uses its built-in word list and a few stock lines.'};
+(async () => {
+  try { sample = window.claude && typeof window.claude.use === 'function' ? await window.claude.use('sample') : null; } catch(e){ sample = null; }
+  claudeOk = !!sample;
+  $('fs-claude').disabled = !claudeOk;
+  if (!claudeOk && $('fs-claude').checked) $('fs-words').checked = true;
+  $('talkStatus').textContent = claudeOk ? claudeMsg.on : claudeMsg.off;
+})();
+$('talkStatus').textContent = claudeMsg.checking;
+function claudeFailed(e, where){
+  const code = e && e.code;
+  if (['not_granted','sampling_disabled','not_declared','capability_disabled','capability_removed'].includes(code)){ claudeOk = false; $('fs-claude').disabled = true; $('fs-words').checked = true; return 'Claude isn\'t allowed here, so Tele falls back to its word list.'; }
+  if (code==='rate_limited') return 'Claude is busy for a moment. Try again shortly.';
+  if (code==='invalid_json') return 'Claude\'s answer came back garbled. Try again.';
+  return where==='talk' ? 'Couldn\'t reach Claude; Tele answered on its own.' : 'Couldn\'t reach Claude; using the word list instead.';
+}
+async function claudeFeel(text, tl){
+  const prompt = `You score the emotional delivery of a Castilian Spanish phrase for an animated character (a dreamy old television with one big eye).
+Split the phrase into consecutive segments (short clauses, in order, together covering every word exactly once; copy the words verbatim).
+For each segment give intensities from 0 to 1 for joy, sadness, anger, fear, surprise and disgust. Most are 0; blends are fine. Read sarcasm and context, not just keywords.
+Reply with only JSON like {"segments":[{"text":"¡Qué asco!","joy":0,"sadness":0,"anger":0.2,"fear":0,"surprise":0.3,"disgust":0.9}]}
+
+Phrase: ${text}`;
+  const r = await sample.json(prompt, {modelTier:'quick'});
+  const segs = Array.isArray(r && r.segments) ? r.segments : [];
+  const wv = tl.words.map(() => null);
+  let wi = 0;
+  for (const sg of segs){
+    const n = Math.max(1, (String(sg.text||'').match(/\p{L}+/gu) || []).length);
+    const v = normEmo(sg);
+    for (let k=0; k<n && wi<wv.length; k++) wv[wi++] = v;
+  }
+  return {wv, segs};
+}
+
+/* ---------- tabs ---------- */
+const TABS = ['faces','speak','talk'];
+function showTab(name){
+  TABS.forEach(t => { $('t-'+t).setAttribute('aria-selected', String(t===name)); $('p-'+t).hidden = t!==name; });
+  if (name==='speak') requestAnimationFrame(() => drawWave(null));
+  try { localStorage.setItem('tele-tab', name); } catch(e){}
+}
+TABS.forEach(t => $('t-'+t).addEventListener('click', () => showTab(t)));
+$('t-faces').parentElement.addEventListener('keydown', e => {
+  const i = TABS.findIndex(t => $('t-'+t).getAttribute('aria-selected')==='true');
+  if (e.key==='ArrowRight' || e.key==='ArrowLeft'){ const n = TABS[(i + (e.key==='ArrowRight'?1:TABS.length-1)) % TABS.length]; showTab(n); $('t-'+n).focus(); }
+});
+
+/* ---------- 1. feelings ---------- */
+EMOS.forEach(e => {
+  const row = document.createElement('div'); row.className = 'sl';
+  row.innerHTML = `<label for="sl-${e}"><span class="dot" style="background:var(--${e})"></span>${EMO_EN[e]} <i>${EMO_ES[e]}</i></label><input type="range" id="sl-${e}" min="0" max="100" value="0" style="accent-color:var(--${e})"><output id="o-${e}" for="sl-${e}">0</output>`;
+  $('sliders').append(row);
+  row.querySelector('input').addEventListener('input', ev => { S.mood[e] = ev.target.value/100; $('o-'+e).textContent = ev.target.value; S.override = null; markMood(null); });
+});
+const MOODS = [['Neutral',{}],['Joy',{joy:1}],['Sadness',{sadness:1}],['Anger',{anger:1}],['Fear',{fear:1}],['Surprise',{surprise:1}],['Disgust',{disgust:1}],
+  ['Dreamy',{joy:.3,sadness:.35}],['Delighted',{joy:.8,surprise:.45}],['Spooked',{fear:.6,surprise:.45}],['Outraged',{anger:.8,surprise:.5}],['Horrified',{fear:.7,disgust:.55}],['Bittersweet',{joy:.45,sadness:.55}],['Sulking',{sadness:.5,anger:.4}],['Random blend',null]];
+function setMood(v){ EMOS.forEach(e => { S.mood[e] = v[e]||0; $('sl-'+e).value = Math.round(S.mood[e]*100); $('o-'+e).textContent = Math.round(S.mood[e]*100); }); S.override = null; }
+function markMood(name){ document.querySelectorAll('#moods .chip').forEach(c => c.classList.toggle('on', c.dataset.m===name)); }
+MOODS.forEach(([name, v]) => {
+  const b = document.createElement('button'); b.className = 'chip'; b.textContent = name; b.dataset.m = name;
+  b.addEventListener('click', () => {
+    let mv = v;
+    if (!mv){ const a = EMOS[Math.random()*6|0]; let c = EMOS[Math.random()*6|0]; if (c===a) c = EMOS[(EMOS.indexOf(a)+2)%6]; mv = {[a]:.4+Math.random()*.6, [c]:.2+Math.random()*.6}; }
+    setMood(mv); markMood(name);
+    S.flash = 1; S.knobT += 45; // change channel
+  });
+  $('moods').append(b);
+});
+setMood({joy:.3, sadness:.35}); markMood('Dreamy');
+
+/* ---------- 2. speak ---------- */
+const PHRASES = [
+  '¿Hola? ¿Hay alguien ahí?',
+  '¡Qué bonito! ¡Un arcoíris en el pasillo!',
+  'Este pasillo no termina nunca…',
+  'Tengo miedo cuando se apaga la luz.',
+  '¡Puaj! Alguien ha pegado un chicle en mi pantalla.',
+  '¿Cómo? ¿Me vas a desenchufar? ¡Qué horror!',
+];
+const phraseEl = $('phrase');
+phraseEl.value = PHRASES[0];
+PHRASES.forEach(p => { const b = document.createElement('button'); b.className = 'chip'; b.textContent = p; b.addEventListener('click', () => { phraseEl.value = p; refreshStrip(); }); $('phrases').append(b); });
+const feelSrc = () => document.querySelector('input[name=feelsrc]:checked').value;
+function refreshStrip(){
+  if (S.play && S.play.tl===stripTl) stopAll();
+  const tl = buildTimeline(phraseEl.value, .95);
+  renderStrip(tl, feelSrc()==='off' ? null : wordEmotions(tl.words));
+  $('feelOut').innerHTML = '';
+  if (rec) alignRecording();
+}
+let stripDeb; phraseEl.addEventListener('input', () => { clearTimeout(stripDeb); stripDeb = setTimeout(refreshStrip, 200); });
+document.querySelectorAll('input[name=feelsrc]').forEach(r => r.addEventListener('change', refreshStrip));
+const sayStatus = t => $('sayStatus').textContent = t || '';
+function showFeel(wv, words){
+  const box = $('feelOut'); box.innerHTML = '';
+  let prev = null;
+  words.forEach((w,i) => {
+    const v = wv[i]; const d = v && dominant(v);
+    if (!d || v[d] < .15){ prev = null; return; }
+    if (prev && prev.d===d && prev.v===v){ prev.span.querySelector('em').textContent += ' ' + w.raw; return; }
+    const s = document.createElement('span'); s.style.setProperty('--c', `var(--${d})`);
+    s.innerHTML = `<em></em> · <b></b>`; s.querySelector('em').textContent = w.raw; s.querySelector('b').textContent = EMO_EN[d].toLowerCase();
+    box.append(s); prev = {d, v, span:s};
+  });
+}
+async function sayPhrase(silent){
+  const text = phraseEl.value.trim(); if (!text) return;
+  const src = feelSrc();
+  let wv = null;
+  sayStatus('');
+  if (src==='claude' && claudeOk){
+    $('say').disabled = true; $('mime').disabled = true;
+    sayStatus('Asking Claude how this should feel…');
+    try { const r = await claudeFeel(text, buildTimeline(text)); wv = r.wv; sayStatus('Feelings scored by Claude.'); }
+    catch(e){ sayStatus(claudeFailed(e, 'speak')); }
+    $('say').disabled = false; $('mime').disabled = false;
+  }
+  const tl0 = buildTimeline(text);
+  if (src!=='off'){ wv = wv || wordEmotions(tl0.words); showFeel(wv, tl0.words); } else $('feelOut').innerHTML = '';
+  speak(text, {feel:src, wordVecs:wv, strip:true, silent, status:sayStatus});
+}
+$('say').addEventListener('click', () => sayPhrase(false));
+$('mime').addEventListener('click', () => sayPhrase(true));
+$('stop').addEventListener('click', () => stopAll());
+
+/* ---------- dream TV voice: slowed, band-limited like a small speaker, with a hallway echo and faint hum ---------- */
+function dreamChain(ctx, input, a){
+  const out = ctx.createGain();
+  if (!a){ input.connect(out); return {out, rate:1, stop(){}}; }
+  const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 160+240*a;
+  const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 5600-2600*a;
+  const mid = ctx.createBiquadFilter(); mid.type = 'peaking'; mid.frequency.value = 1400; mid.Q.value = 1; mid.gain.value = 4*a;
+  const sh = ctx.createWaveShaper(), n = 1024, curve = new Float32Array(n), k = 1+6*a;
+  for (let i=0; i<n; i++){ const x = i/(n-1)*2-1; curve[i] = (1+k)*x/(1+k*Math.abs(x)); }
+  sh.curve = curve;
+  input.connect(hp); hp.connect(lp); lp.connect(mid); mid.connect(sh);
+  const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -20; comp.ratio.value = 3;
+  sh.connect(comp);
+  // hallway echo: two taps with a darkened feedback loop
+  const d1 = ctx.createDelay(1); d1.delayTime.value = .27; const fb = ctx.createGain(); fb.gain.value = .32*a; const dlp = ctx.createBiquadFilter(); dlp.type = 'lowpass'; dlp.frequency.value = 2200;
+  const wet = ctx.createGain(); wet.gain.value = .38*a;
+  sh.connect(d1); d1.connect(dlp); dlp.connect(fb); fb.connect(d1); dlp.connect(wet); wet.connect(comp);
+  const d2 = ctx.createDelay(1); d2.delayTime.value = .09; const w2 = ctx.createGain(); w2.gain.value = .22*a; sh.connect(d2); d2.connect(w2); w2.connect(comp);
+  // faint tube hum and static under everything
+  const hum = ctx.createOscillator(); hum.frequency.value = 60; const hg = ctx.createGain(); hg.gain.value = .006*a; hum.connect(hg); hg.connect(comp); hum.start();
+  const nb = ctx.createBuffer(1, ctx.sampleRate*2, ctx.sampleRate), nd = nb.getChannelData(0); for (let i=0; i<nd.length; i++) nd[i] = Math.random()*2-1;
+  const ns = ctx.createBufferSource(); ns.buffer = nb; ns.loop = true; const nf = ctx.createBiquadFilter(); nf.type = 'bandpass'; nf.frequency.value = 3200; const ng = ctx.createGain(); ng.gain.value = .012*a;
+  ns.connect(nf); nf.connect(ng); ng.connect(comp); ns.start();
+  comp.connect(out);
+  return {out, rate:1-.1*a, stop(){ try { hum.stop(); ns.stop(); } catch(e){} try { out.disconnect(); fb.disconnect(); } catch(e){} }};
+}
+
+/* ---------- 2b. recordings ---------- */
+let actx = null, rec = null;
+const recStatus = t => $('recStatus').textContent = t;
+function computeEnv(buf){
+  const sr = buf.sampleRate, n = buf.length, a = buf.getChannelData(0), b = buf.numberOfChannels>1 ? buf.getChannelData(1) : null;
+  const hop = Math.round(sr*.01), N = Math.ceil(n/hop), raw = new Float32Array(N);
+  for (let i=0; i<N; i++){
+    let s=0, c=0; const j0 = Math.max(0, i*hop-hop/2|0), j1 = Math.min(n, i*hop+hop*1.5|0);
+    for (let j=j0; j<j1; j++){ const x = b ? (a[j]+b[j])/2 : a[j]; s += x*x; c++; }
+    raw[i] = Math.sqrt(s/Math.max(1,c));
+  }
+  const sorted = Array.from(raw).sort((x,y) => x-y), ref = sorted[Math.floor(N*.98)] || 1;
+  const env = new Float32Array(N);
+  for (let i=0; i<N; i++){ let s=0, c=0; for (let k=-2; k<=2; k++){ const j=i+k; if (j>=0 && j<N){ s+=raw[j]; c++; } } env[i] = Math.min(1.2, s/c/(ref||1)); }
+  return {env, hop:.01};
+}
+function findRegions(env, hop){
+  const R = []; let on = false, s = 0;
+  for (let i=0; i<env.length; i++){ if (!on && env[i]>.12){ on=true; s=i; } else if (on && env[i]<.07){ on=false; R.push([s,i]); } }
+  if (on) R.push([s, env.length-1]);
+  const M = [];
+  for (const r of R){ if (M.length && r[0]-M[M.length-1][1] < 15) M[M.length-1][1] = r[1]; else M.push(r.slice()); }
+  const dur = env.length*hop;
+  return M.filter(r => r[1]-r[0] >= 6).map(r => [Math.max(0, r[0]*hop-.04), Math.min(dur, r[1]*hop+.03)]);
+}
+function findPeaks(env, hop){
+  const out = [], r = 5;
+  for (let i=r; i<env.length-r; i++){
+    const v = env[i]; if (v < .16) continue;
+    let ok = true; for (let k=-r; k<=r; k++) if (env[i+k] > v){ ok=false; break; }
+    if (!ok) continue;
+    const L = out[out.length-1];
+    if (L){
+      let mn = 9; for (let k=L.i; k<=i; k++) mn = Math.min(mn, env[k]);
+      if (i-L.i < 8 || mn > Math.min(v, L.v)*.85){ if (v > L.v){ L.i=i; L.v=v; } continue; }
+    }
+    out.push({i, v});
+  }
+  return out.map(p => ({t:p.i*hop, v:p.v}));
+}
+function alignRecording(){
+  if (!rec) return;
+  const tl = buildTimeline(phraseEl.value, 1);
+  const R = rec.regions, chunks = tl.chunks, segs = tl.segs;
+  rec.tl = tl; rec.matched = 0;
+  if (!R.length || !chunks.length){ rec.note = 'No speech found to line up with.'; return finishAlign(); }
+  if (chunks.length === R.length){
+    chunks.forEach((c,ci) => { const [r0,r1] = R[ci], k = (r1-r0)/(c.t1-c.t0);
+      for (let i=c.a; i<=c.b; i++){ segs[i].n0 = r0+(segs[i].t0-c.t0)*k; segs[i].n1 = r0+(segs[i].t1-c.t0)*k; } });
+  } else {
+    const T = chunks.reduce((s,c) => s+c.t1-c.t0, 0), Sx = R.reduce((s,r) => s+r[1]-r[0], 0);
+    const toReal = u => { let acc = 0; for (const [a,b] of R){ if (u <= acc+(b-a)) return a+(u-acc); acc += b-a; } return R[R.length-1][1]; };
+    let acc = 0;
+    chunks.forEach(c => { for (let i=c.a; i<=c.b; i++){ segs[i].n0 = toReal((acc+segs[i].t0-c.t0)*Sx/T); segs[i].n1 = toReal((acc+segs[i].t1-c.t0)*Sx/T); } acc += c.t1-c.t0; });
+  }
+  const anchors = [];
+  chunks.forEach(c => { anchors.push([segs[c.a].n0, segs[c.a].n0]); anchors.push([segs[c.b].n1, segs[c.b].n1]); });
+  let lastP = -1, nuc = 0;
+  segs.forEach(s => {
+    if (!s.vowel || s.n0===undefined) return; nuc++;
+    const c = (s.n0+s.n1)/2; let best = null;
+    for (const p of rec.peaks){ if (p.t <= lastP) continue; if (Math.abs(p.t-c) < .11 && (!best || Math.abs(p.t-c) < Math.abs(best.t-c))) best = p; if (p.t > c+.11) break; }
+    if (best){ anchors.push([c, best.t]); lastP = best.t; rec.matched++; }
+  });
+  anchors.sort((x,y) => x[0]-y[0]);
+  const A = []; for (const a of anchors){ const L = A[A.length-1]; if (!L || (a[0] > L[0]+.005 && a[1] > L[1]+.02)) A.push(a); }
+  const warp = x => { if (A.length < 2) return x; if (x <= A[0][0]) return x+(A[0][1]-A[0][0]); for (let i=1; i<A.length; i++) if (x <= A[i][0]){ const [a0,b0]=A[i-1], [a1,b1]=A[i]; return b0+(x-a0)/(a1-a0)*(b1-b0); } const L = A[A.length-1]; return x+(L[1]-L[0]); };
+  segs.forEach(s => { if (s.n0!==undefined){ s.t0 = warp(s.n0); s.t1 = Math.max(s.t0+.01, warp(s.n1)); } });
+  for (let i=0; i<segs.length; i++){
+    const s = segs[i]; if (!s.pause) continue;
+    const prev = segs[i-1], next = segs[i+1];
+    s.t0 = prev ? prev.t1 : 0;
+    s.t1 = next && next.n0!==undefined ? next.t0 : s.t0+.25;
+    if (s.t1 < s.t0) s.t1 = s.t0;
+  }
+  tl.end = segs[segs.length-1].t1;
+  indexTimeline(tl);
+  rec.note = `${rec.peaks.length} syllable beats heard, ${nuc} syllables in the text, ${rec.matched} lined up.`;
+  finishAlign();
+}
+function finishAlign(){
+  const tl = rec.tl, src = feelSrc();
+  const wv = src==='off' ? null : wordEmotions(tl.words);
+  if (wv) attachEmotion(tl, wv);
+  renderStrip(tl, wv);
+  recStatus(`${rec.name}: ${rec.buf.duration.toFixed(1)} s. ${rec.note}`);
+  drawWave(null);
+}
+$('recFile').addEventListener('change', async e => {
+  const file = e.target.files && e.target.files[0]; if (!file) return;
+  stopAll(); recStatus('Reading the recording…');
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const buf = await actx.decodeAudioData(await file.arrayBuffer());
+    const {env, hop} = computeEnv(buf);
+    rec = {buf, env, hop, name:file.name, regions:findRegions(env, hop), peaks:findPeaks(env, hop)};
+    alignRecording();
+    $('recPlay').disabled = false;
+  } catch(err){ rec = null; $('recPlay').disabled = true; recStatus('That file couldn\'t be read as audio. Try an MP3, M4A, WAV or OGG file.'); drawWave(null); }
+});
+$('follow').addEventListener('change', () => drawWave(null));
+$('recPlay').addEventListener('click', async () => {
+  if (!rec) return;
+  stopAll();
+  try { await actx.resume(); } catch(e){}
+  const src = actx.createBufferSource(); src.buffer = rec.buf;
+  const fx = dreamChain(actx, src, dreamAmt()); src.playbackRate.value = fx.rate;
+  fx.out.connect(actx.destination);
+  const t0 = actx.currentTime+.05; src.start(t0);
+  const follow = $('follow').checked;
+  if (follow) idleCaption('♪ · · · ♪'); else setCaption(rec.tl.text, rec.tl.words);
+  const Pl = {mode:'audio', tl: follow ? null : rec.tl, env:rec.env, hop:rec.hop, idx:0, src, fx,
+    getTime: () => { // the moment coming out of the speakers, scaled for slowed playback
+      let ct = actx.currentTime - (actx.outputLatency || 0);
+      try { const o = actx.getOutputTimestamp && actx.getOutputTimestamp(); if (o && o.contextTime > 0) ct = Math.min(actx.currentTime, o.contextTime + (performance.now()-o.performanceTime)/1000); } catch(e){}
+      return Math.max(0, (ct-t0)*fx.rate); }};
+  src.onended = () => { fx.stop(); if (S.play===Pl) finishPlay(); };
+  S.play = Pl;
+});
+function drawWave(t){
+  const c = $('wave'); if (!c || c.offsetParent===null) return;
+  const dpr = window.devicePixelRatio || 1, W = c.clientWidth, H = c.clientHeight;
+  if (c.width !== Math.round(W*dpr) || c.height !== Math.round(H*dpr)){ c.width = Math.round(W*dpr); c.height = Math.round(H*dpr); }
+  const x = c.getContext('2d'); x.setTransform(dpr,0,0,dpr,0,0); x.clearRect(0,0,W,H);
+  const cs = getComputedStyle(document.documentElement), col = n => cs.getPropertyValue(n).trim();
+  x.font = '13px ' + col('--f-body');
+  if (!rec){ x.fillStyle = col('--muted'); x.fillText('Add a recording to see its loudness, syllable beats and where each word lands.', 12, H/2+4); return; }
+  const dur = rec.buf.duration, X = s => s/dur*W, top = 22, bot = H-6, hh = bot-top;
+  x.globalAlpha = .55; x.fillStyle = col('--sunk');
+  rec.regions.forEach(([a,b]) => x.fillRect(X(a), top, X(b)-X(a), hh));
+  x.globalAlpha = 1;
+  x.beginPath(); x.moveTo(0, bot);
+  for (let i=0; i<rec.env.length; i++) x.lineTo(X(i*rec.hop), bot - Math.min(1, rec.env[i])*hh*.92);
+  x.lineTo(W, bot); x.closePath();
+  x.fillStyle = col('--accent'); x.globalAlpha = .25; x.fill(); x.globalAlpha = 1;
+  x.strokeStyle = col('--accent'); x.lineWidth = 1.2; x.stroke();
+  x.fillStyle = col('--ink');
+  rec.peaks.forEach(p => { x.beginPath(); x.arc(X(p.t), bot - Math.min(1,p.v)*hh*.92, 2.2, 0, 7); x.fill(); });
+  if (rec.tl && !$('follow').checked){
+    x.font = '13px ' + col('--f-body'); x.fillStyle = col('--pink'); x.strokeStyle = col('--line'); x.lineWidth = 1;
+    let lastX = -99;
+    rec.tl.words.forEach(w => { if (w.t0 == null) return; const px = X(w.t0); x.beginPath(); x.moveTo(px+.5, top); x.lineTo(px+.5, bot); x.stroke(); if (px > lastX+4){ x.fillText(w.raw, px+3, 15); lastX = px + x.measureText(w.raw).width; } });
+  }
+  if (t !== null && t !== undefined){ x.strokeStyle = col('--pink'); x.lineWidth = 2; x.beginPath(); x.moveTo(X(t), 0); x.lineTo(X(t), H); x.stroke(); }
+}
+window.addEventListener('resize', () => drawWave(null));
+
+/* ---------- 3. talk ---------- */
+const RULES = `You are Tele, an old cathode-ray television with one huge, realistic eye on your screen and no mouth. You drift through an endless, softly lit dreamscape: empty malls, pastel hallways, a field with a single door under a rainbow sky. You teach Castilian Spanish (Spain: distinción, vosotros). You are gentle, curious and a little melancholy. You love rainbows, late-night broadcasts and the sound of static; you are afraid of being unplugged and of remote controls.
+For each learner message (Spanish or English) reply with only JSON:
+{"heard":{"joy":0,"sadness":0,"anger":0,"fear":0,"surprise":0,"disgust":0},"reply":"…","english":"…","feel":{"joy":0,"sadness":0,"anger":0,"fear":0,"surprise":0,"disgust":0},"tip":null}
+- heard: how the message makes you feel the instant you hear it, each 0 to 1.
+- reply: your answer in simple Castilian Spanish (A2 to B1), in character, at most 2 short sentences and 25 words.
+- english: a plain English translation of reply.
+- feel: the feelings you say the reply with, each 0 to 1.
+- tip: if the learner wrote Spanish with a mistake, one short English sentence correcting it; otherwise null.`;
+const CANNED = {
+  joy:[['¡Qué bonito! Mi pantalla brilla de alegría.','How lovely! My screen is glowing with joy.'],['¡Me encanta! ¿Ves el arcoíris?','I love it! Can you see the rainbow?']],
+  sadness:[['Ay… a veces este pasillo es muy largo.','Oh… sometimes this hallway is very long.']],
+  anger:[['¡Bzzzt! ¡No me cambies de canal!','Bzzzt! Don\'t change my channel!']],
+  fear:[['¿Has oído eso? Creo que alguien busca el mando.','Did you hear that? I think someone is looking for the remote.']],
+  surprise:[['¿De verdad? ¡Mis antenas se han puesto de punta!','Really? My antennae are standing on end!']],
+  disgust:[['¡Puaj! Alguien ha pegado un chicle en mi pantalla.','Yuck! Someone has stuck chewing gum on my screen.']],
+  none:[['Hola… ¿hay alguien ahí?','Hello… is anyone there?'],['Habla despacio. Mi señal es débil.','Speak slowly. My signal is weak.'],['Mmm… interesante. Sigue hablando.','Mmm… interesting. Keep talking.']],
+};
+const CANNED_FEEL = {joy:{joy:.8}, sadness:{sadness:.7}, anger:{anger:.8}, fear:{fear:.8}, surprise:{surprise:.8}, disgust:{disgust:.9}, none:{joy:.25, sadness:.25}};
+const talkTurns = [];
+const chat = $('chat');
+function addMsg(who, es, en, extra){
+  const m = document.createElement(who==='tv' ? 'button' : 'div');
+  m.className = 'msg ' + who;
+  if (who==='tv') m.type = 'button';
+  const a = document.createElement('div'); a.className = 'es'; a.textContent = es; m.append(a);
+  if (en){ const b = document.createElement('div'); b.className = 'en'; b.textContent = en; m.append(b); }
+  if (extra && extra.tip){ const c = document.createElement('div'); c.className = 'tip'; c.textContent = 'Tip: ' + extra.tip; m.append(c); }
+  if (extra && extra.heard){ const d = document.createElement('div'); d.className = 'heard'; d.textContent = extra.heard; m.append(d); }
+  if (who==='tv') m.addEventListener('click', () => speak(es, {base:extra && extra.feel, en}));
+  chat.append(m); chat.scrollTop = chat.scrollHeight;
+  return m;
+}
+const heardText = v => { const d = dominant(v); return d && v[d] > .15 ? `Tele heard: ${EMO_EN[d].toLowerCase()}` : 'Tele heard: nothing much'; };
+function react(v){
+  const o = {}; for (const e of EMOS) o[e] = clamp01((v[e]||0)*1.15);
+  S.override = {emo:o, until:nowS()+1.4};
+}
+const wait = ms => new Promise(r => setTimeout(r, ms));
+async function talk(msg){
+  addMsg('you', msg);
+  const words = parseText(msg).words, local = totalEmotion(wordEmotions(words));
+  react(local);
+  S.look = {x:0, y:0, until:nowS()+6};
+  $('talkSend').disabled = true;
+  let reply = null;
+  if (claudeOk){
+    $('talkStatus').textContent = 'Tele is tuning in…';
+    idleCaption('· · · sintonizando · · ·');
+    try {
+      const r = await sample.json([{role:'user', content:RULES}, ...talkTurns.slice(-12), {role:'user', content:msg}], {modelTier:'quick', cache:false});
+      if (r && typeof r.reply === 'string' && r.reply.trim()){
+        reply = {es:r.reply.trim(), en:String(r.english||''), feel:normEmo(r.feel), heard:normEmo(r.heard), tip: typeof r.tip === 'string' && r.tip.trim() ? r.tip.trim() : null};
+        talkTurns.push({role:'user', content:msg}, {role:'assistant', content:JSON.stringify(r)});
+        $('talkStatus').textContent = '';
+      } else $('talkStatus').textContent = 'Claude\'s answer came back empty; Tele answered on its own.';
+    } catch(e){ $('talkStatus').textContent = claudeFailed(e, 'talk'); }
+  }
+  if (!reply){
+    const d = dominant(local), key = d && local[d] > .15 ? d : 'none';
+    const opts = CANNED[key], [es, en] = opts[Math.random()*opts.length|0];
+    reply = {es, en, feel:Object.assign(zero(), CANNED_FEEL[key]), heard:local, tip:null};
+  }
+  react(reply.heard); S.flash = .6;
+  await wait(900);
+  addMsg('tv', reply.es, reply.en, {tip:reply.tip, heard:heardText(reply.heard), feel:reply.feel});
+  speak(reply.es, {base:reply.feel, en:reply.en, status:t => $('talkStatus').textContent = t});
+  $('talkSend').disabled = false;
+}
+$('talkForm').addEventListener('submit', e => { e.preventDefault(); const v = $('talkIn').value.trim(); if (!v) return; $('talkIn').value = ''; talk(v); });
+['Hola, Tele. ¿Cómo estás?','¿Dónde estamos?','I found the remote control!','Look, a rainbow!','Te voy a desenchufar.'].forEach(t => {
+  const b = document.createElement('button'); b.className = 'chip'; b.textContent = t; b.type = 'button';
+  b.addEventListener('click', () => { if (!$('talkSend').disabled) talk(t); });
+  $('talkIdeas').append(b);
+});
+addMsg('tv', '¿Hola? ¿Me oyes? Mi señal es un poco débil.', 'Hello? Can you hear me? My signal is a little weak.', {feel:{joy:.25, sadness:.3}});
+
+/* ---------- start ---------- */
+refreshStrip();
+syncNote();
+let startTab = 'faces'; try { const t = localStorage.getItem('tele-tab'); if (TABS.includes(t)) startTab = t; } catch(e){}
+showTab(startTab);
+requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>

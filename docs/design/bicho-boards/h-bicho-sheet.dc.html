@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bicho 3D Model Sheet</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Pixelify+Sans:wght@400;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.hw{background:#C0C0C0;box-shadow:inset -1px -1px 0 #0A0A0A,inset 1px 1px 0 #FFFFFF,inset -2px -2px 0 #808080,inset 2px 2px 0 #DFDFDF,4px 4px 0 rgba(0,0,0,0.35);padding:3px;display:flex;flex-direction:column}
+.ht{height:26px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 3px 0 6px;background:linear-gradient(90deg,#000080,#0A5CC0);color:#fff;font-family:'Pixelify Sans',sans-serif;font-size:16px;font-weight:600;text-shadow:-0.6px 0 rgba(0,229,229,0.7),0.6px 0 rgba(255,31,169,0.7)}
+.ht i{display:block;width:18px;height:16px;margin-left:2px;background:#C0C0C0;box-shadow:inset -1px -1px 0 #0A0A0A,inset 1px 1px 0 #fff,inset -2px -2px 0 #808080}
+.cell{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:13.5px;line-height:1.3;color:#0B2A4A}
+.cell b{font-family:'Pixelify Sans',sans-serif;font-size:17px;font-weight:600}
+</style>
+</helmet>
+<div style="width:1100px;height:560px;box-sizing:border-box;padding:28px 34px;position:relative;overflow:hidden;background:radial-gradient(ellipse 600px 150px at 15% 108%,#8FDB4A 69%,transparent 70%),radial-gradient(ellipse 700px 170px at 92% 110%,#5BBB2E 69%,transparent 70%),linear-gradient(180deg,#4FA9F0 0%,#9AD6FF 60%,#DDF3FF 80%);display:flex;flex-direction:column;gap:16px;isolation:isolate">
+<div style="position:absolute;left:0;top:0;z-index:-1"><dc-import name="collage" w="1100" h="560" fx="light" mood="odd" look-x="-0.6" look-y="0.4" hint-size="1100px,560px"></dc-import></div>
+<div style="position:absolute;left:0;top:0;z-index:60;pointer-events:none"><dc-import name="fx" w="1100" h="560" mood="odd" stamp-b="14" hint-size="1100px,560px"></dc-import></div>
+
+
+<div style="display:flex;align-items:center;justify-content:space-between;position:relative">
+<div style="font-family:'Fredoka',sans-serif;font-weight:700;font-size:44px;line-height:1;color:#fff;-webkit-text-stroke:4px #0B2A4A;paint-order:stroke fill;text-shadow:0 4px 0 #0B2A4A">Bicho Guay: sin boca</div>
+</div>
+
+<div class="hw" style="position:relative;flex:1">
+<div class="ht"><span>Bicho.model</span><span style="display:flex"><i></i></span></div>
+<div style="flex:1;display:grid;grid-template-columns:repeat(6,1fr);gap:8px;padding:14px 12px 10px;align-items:end">
+<div class="cell"><dc-import name="bicho" mood="idle" size="132" look="0.4" hint-size="132px,143px"></dc-import><b>Quieto</b>Stares. The pupil follows you.</div>
+<div class="cell"><dc-import name="bicho" mood="talk" size="132" look="0" hint-size="132px,143px"></dc-import><b>Habla</b>No mouth. Rings pulse, the pupil swells.</div>
+<div class="cell"><dc-import name="bicho" mood="happy" size="132" hint-size="132px,143px"></dc-import><b>Contento</b>Petals bloom, the eye smiles shut.</div>
+<div class="cell"><dc-import name="bicho" mood="sleep" size="132" hint-size="132px,143px"></dc-import><b>Duerme</b>Eyelid closes, petals droop.</div>
+<div class="cell"><dc-import name="bicho" mood="happy" halo="true" size="132" hint-size="132px,143px"></dc-import><b>Bicho Guay</b>Halo: reached “good”.</div>
+<div class="cell"><dc-import name="bicho" mood="happy" halo="true" holo="true" size="132" hint-size="132px,143px"></dc-import><b>Bicho Estrella</b>Holo petals and iris: showing off.</div>
+</div>
+<div style="padding:0 14px 10px;font-family:'Atkinson Hyperlegible',sans-serif;font-size:13.5px;line-height:1.4;color:#0B2A4A">No mouth, on purpose. Bicho Guay is a cut-out: a photo eye on a paper flower, a white scissor edge, off-register colour. Speech shows as pulsing rings and a swelling pupil, never a jaw.</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1100,"height":560}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

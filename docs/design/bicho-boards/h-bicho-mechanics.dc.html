@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bicho.exe How It Plays</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Pixelify+Sans:wght@400;600;700&family=VT323&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.hw{background:#C0C0C0;box-shadow:inset -1px -1px 0 #0A0A0A,inset 1px 1px 0 #FFFFFF,inset -2px -2px 0 #808080,inset 2px 2px 0 #DFDFDF,4px 4px 0 rgba(0,0,0,0.35);padding:3px;display:flex;flex-direction:column}
+.ht{height:26px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 3px 0 6px;background:linear-gradient(90deg,#000080,#0A5CC0);color:#fff;font-family:'Pixelify Sans',sans-serif;font-size:16px;font-weight:600;text-shadow:-0.6px 0 rgba(0,229,229,0.7),0.6px 0 rgba(255,31,169,0.7)}
+.ht i{display:block;width:18px;height:16px;margin-left:2px;background:#C0C0C0;box-shadow:inset -1px -1px 0 #0A0A0A,inset 1px 1px 0 #fff,inset -2px -2px 0 #808080}
+.hc{padding:10px 14px;color:#000;font-family:'Atkinson Hyperlegible',sans-serif;font-size:14.5px;line-height:1.5;flex:1}
+.pillb{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:0 12px;background:#C0C0C0;box-shadow:inset -1px -1px 0 #0A0A0A,inset 1px 1px 0 #FFFFFF,inset -2px -2px 0 #808080,inset 2px 2px 0 #DFDFDF;color:#000;font-family:'Pixelify Sans',sans-serif;font-size:16px;font-weight:600}
+.row{display:grid;grid-template-columns:120px 22px 1fr;gap:8px;align-items:center;margin-bottom:9px}
+.row .arr{font-family:'Pixelify Sans',sans-serif;font-size:18px;text-align:center}
+.spr{filter:drop-shadow(3px 0 0 #0B2A4A) drop-shadow(-3px 0 0 #0B2A4A) drop-shadow(0 3px 0 #0B2A4A) drop-shadow(0 -3px 0 #0B2A4A)}
+.card{background:#C0C0C0;border:0;box-shadow:inset -1px -1px 0 #0A0A0A,inset 1px 1px 0 #FFFFFF,inset -2px -2px 0 #808080,inset 2px 2px 0 #DFDFDF;padding:8px 10px;display:flex;flex-direction:column;gap:5px}
+.card b{font-family:'Pixelify Sans',sans-serif;font-size:16px;font-weight:600;line-height:1.1}
+.card span.t{font-size:13px;line-height:1.3}
+.scene{height:62px;border:2px solid #0B2A4A;position:relative;overflow:hidden;background:linear-gradient(180deg,#6FB8F2,#BFE6FF 70%,#8FDB4A 71%)}
+</style>
+</helmet>
+<div style="width:1100px;height:760px;box-sizing:border-box;padding:26px 34px;position:relative;overflow:hidden;background:radial-gradient(ellipse 600px 150px at 15% 104%,#8FDB4A 69%,transparent 70%),radial-gradient(ellipse 700px 170px at 92% 106%,#5BBB2E 69%,transparent 70%),linear-gradient(180deg,#4FA9F0 0%,#9AD6FF 60%,#DDF3FF 78%);display:flex;flex-direction:column;gap:14px;isolation:isolate">
+<div style="position:absolute;left:0;top:0;z-index:-1"><dc-import name="collage" w="1100" h="760" fx="light" mood="odd" look-x="-0.6" look-y="0.4" hint-size="1100px,760px"></dc-import></div>
+<div style="position:absolute;left:0;top:0;z-index:60;pointer-events:none"><dc-import name="fx" w="1100" h="760" mood="odd" stamp-b="14" hint-size="1100px,760px"></dc-import></div>
+
+
+<div style="font-family:'Fredoka',sans-serif;font-weight:700;font-size:44px;line-height:1;color:#fff;-webkit-text-stroke:4px #0B2A4A;paint-order:stroke fill;text-shadow:0 4px 0 #0B2A4A">Cómo se juega <span style="font-family:'VT323',monospace;font-size:24px;-webkit-text-stroke:0;text-shadow:none;color:#F4F4D0;background:rgba(11,42,74,0.88);padding:0 8px;vertical-align:middle;font-weight:400">PLAY ▶ cuidar = repasar</span></div>
+
+<div style="display:grid;grid-template-columns:560px 1fr;gap:18px">
+
+<div class="hw">
+<div class="ht"><span>Cuidar.txt</span><span style="display:flex"><i></i></span></div>
+<div class="hc">
+<div class="row"><span class="pillb">Comer</span><span class="arr">→</span><span><b>Hambre.</b> Hear a question, pick what it means. That is listening practice.</span></div>
+<div class="row"><span class="pillb">Jugar</span><span class="arr">→</span><span><b>Ánimo.</b> Answer before the window shrinks. That is speed, and every try earns coins.</span></div>
+<div class="row"><span class="pillb">Dormir</span><span class="arr">→</span><span><b>Energía.</b> Rest days and spaced sessions. Bicho sleeping is you remembering.</span></div>
+<div class="row"><span class="pillb">Limpiar</span><span class="arr">→</span><span><b>Papelera.</b> Review the words you keep missing, one at a time.</span></div>
+<div class="row" style="margin-bottom:0"><span class="pillb">Crecer</span><span class="arr">→</span><span><b>Evolución.</b> Moves up when the mark scheme says so: rules, not a model.</span></div>
+</div>
+</div>
+
+<div class="hw">
+<div class="ht"><span>Evolución.exe</span><span style="display:flex"><i></i></span></div>
+<div class="hc" style="display:flex;flex-direction:column;justify-content:space-between">
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center;align-items:end">
+
+<div><svg viewBox="0 0 60 70" width="52" height="61" role="img" aria-label="Egg"><defs><radialGradient id="eggG" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#FFFFFF"/><stop offset="0.6" stop-color="#FFE9A8"/><stop offset="1" stop-color="#E0B85A"/></radialGradient></defs><ellipse cx="30" cy="64" rx="20" ry="4" fill="#0B2A4A" opacity="0.3"/><path d="M30 4C46 4 54 28 54 42 54 56 44 64 30 64 16 64 6 56 6 42 6 28 14 4 30 4Z" fill="url(#eggG)" stroke="#7A5A10" stroke-opacity="0.4"/><circle cx="22" cy="42" r="5" fill="#FF5FA8"/><circle cx="38" cy="32" r="4" fill="#2A5CE6"/><circle cx="36" cy="50" r="3.5" fill="#7BD43B"/><ellipse cx="20" cy="22" rx="5" ry="9" fill="#fff" opacity="0.6" transform="rotate(20 20 22)"/></svg><div class="px" style="font-family:'Pixelify Sans',sans-serif;font-size:14px;font-weight:600;margin-top:6px">Huevo</div><div style="font-size:11.5px;line-height:1.2">Just starting</div></div>
+
+<div><div style="display:block;line-height:0"><dc-import name="bicho" mood="idle" size="60" halo="false" holo="false" hint-size="60px,65px"></dc-import></div><div style="font-family:'Pixelify Sans',sans-serif;font-size:14px;font-weight:600;margin-top:10px">Bicho</div><div style="font-size:11.5px;line-height:1.2">Survival</div></div>
+
+<div><div style="display:block;line-height:0"><dc-import name="bicho" mood="talk" size="65" halo="true" holo="false" hint-size="65px,70px"></dc-import></div><div style="font-family:'Pixelify Sans',sans-serif;font-size:14px;font-weight:600;margin-top:2px">Bicho Guay</div><div style="font-size:11.5px;line-height:1.2">Good</div></div>
+
+<div><div style="display:block;line-height:0"><dc-import name="bicho" mood="talk" size="65" halo="true" holo="true" hint-size="65px,70px"></dc-import></div><div style="font-family:'Pixelify Sans',sans-serif;font-size:14px;font-weight:600;margin-top:2px">Bicho Estrella</div><div style="font-size:11.5px;line-height:1.2">Showing off</div></div>
+
+</div>
+<div style="font-size:13.5px;line-height:1.4;margin-top:8px;border-top:2px dashed rgba(11,42,74,0.35);padding-top:8px"><b>Bicho never dies, never loses coins, never sulks at you.</b> Skip a few days and it naps in the Papelera, then comes back with a cheeky line.</div>
+</div>
+</div>
+</div>
+
+<div class="hw" style="flex:1">
+<div class="ht"><span>Travesuras.exe</span><span style="display:flex"><i></i></span></div>
+<div class="hc" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:10px 12px">
+
+<div class="card"><div class="scene"><svg width="30" height="30" viewBox="0 0 40 40" style="position:absolute;left:14px;top:12px" aria-hidden="true"><path d="M20 4l15 8-15 8-15-8z" fill="#FFE766"/><path d="M5 12l15 8v16L5 28z" fill="#FFD21F"/><path d="M35 12l-15 8v16l15-8z" fill="#E0AA00"/></svg><span style="position:absolute;left:52px;top:18px;font-family:'Pixelify Sans',sans-serif;font-size:20px">→</span><div style="position:absolute;right:14px;top:14px;line-height:0"><dc-import name="bicho" mood="idle" size="38" halo="false" holo="false" hint-size="38px,41px"></dc-import></div></div><b>Roba un archivo</b><span class="t">Takes the next question you should practise. Tap the file to chase it back and earn coins.</span></div>
+
+<div class="card"><div class="scene"><div style="position:absolute;left:12px;top:12px;line-height:0"><dc-import name="bicho" mood="sleep" size="44" halo="false" holo="false" hint-size="44px,48px"></dc-import></div><span style="position:absolute;left:62px;top:8px;font-family:'Pixelify Sans',sans-serif;font-size:20px">z z</span><div style="position:absolute;right:8px;top:30px;width:90px;height:22px;background:linear-gradient(180deg,#D6F4FF,#4DB9F0);border:2px solid #0B2A4A;border-radius:6px"></div></div><b>Duerme en una ventana</b><span class="t">Napping on a window banks a rest day. Spaced practice, disguised as a pet.</span></div>
+
+<div class="card"><div class="scene"><div style="position:absolute;right:-16px;top:12px;line-height:0"><dc-import name="bicho" mood="idle" size="44" halo="false" holo="false" hint-size="44px,48px"></dc-import></div><span style="position:absolute;left:12px;top:20px;font-family:'Pixelify Sans',sans-serif;font-size:17px">¿Me ves?</span></div><b>Asoma por el borde</b><span class="t">A soft nudge from the screen edge. Only if you opted in to reminders.</span></div>
+
+<div class="card"><div class="scene"><svg width="34" height="38" viewBox="0 0 20 23" shape-rendering="crispEdges" style="position:absolute;left:14px;top:10px" aria-hidden="true"><path d="M1 1h12l6 6v15H1z" fill="#fff" stroke="#0B2A4A"/><circle cx="16" cy="18" r="4" fill="#BFE6FF"/></svg><span style="position:absolute;left:58px;top:20px;font-family:'Pixelify Sans',sans-serif;font-size:15px">Pregunta3 (mordido)</span></div><b>Muerde un archivo</b><span class="t">A bite out of a file marks a word chunk you keep missing. Tap to review it.</span></div>
+
+<div class="card"><div class="scene"><svg width="34" height="38" viewBox="0 0 40 40" style="position:absolute;left:14px;top:10px" aria-hidden="true"><path d="M8 10h24l-3 26H11z" fill="#CFEFFF" fill-opacity="0.85" stroke="#0B2A4A" stroke-width="1.5"/><path d="M6 10h28M16 5h8" stroke="#0B2A4A" stroke-width="2.5" stroke-linecap="round"/></svg><span style="position:absolute;left:58px;top:20px;font-family:'Pixelify Sans',sans-serif;font-size:15px">zzz… volví</span></div><b>Se esconde en la Papelera</b><span class="t">If you have been away, it hides in the bin and returns with a cheeky line. No guilt.</span></div>
+
+<div class="card"><div class="scene" style="background:#0B2A4A"><span style="position:absolute;left:10px;top:6px;font-family:'VT323',monospace;font-size:17px;color:#F4F4D0;line-height:1">PLAY ▶</span><span style="position:absolute;left:10px;bottom:5px;font-family:'VT323',monospace;font-size:17px;color:#F4F4D0;line-height:1">9 DÍAS · PM 6:32</span><div style="position:absolute;right:6px;top:4px;width:54px;height:54px"><dc-import name="sun" size="54" look-x="-0.5" look-y="0.2" eyes="true" hint-size="54px,54px"></dc-import></div></div><b>El sol te mira</b><span class="t">The sun in the sky is your test countdown. Its eyes get wider each day closer to the test.</span></div>
+
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1100,"height":760}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

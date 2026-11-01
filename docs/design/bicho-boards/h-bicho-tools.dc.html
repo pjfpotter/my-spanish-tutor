@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bicho.exe Notes and Doodle Pad</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Pixelify+Sans:wght@400;600;700&family=Atkinson+Hyperlegible:wght@400;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.px{font-family:'Pixelify Sans',sans-serif}
+.cap{font-family:'Atkinson Hyperlegible',sans-serif;font-size:16px;font-weight:700;color:#fff;margin-bottom:12px}
+.ph{width:390px;height:844px;box-sizing:border-box;border:3px solid #0B2A4A;border-radius:36px;position:relative;overflow:hidden;font-family:'Atkinson Hyperlegible',sans-serif;color:#0B2A4A;background:radial-gradient(ellipse 360px 190px at 25% 98%,#8FDB4A 69%,transparent 70%),radial-gradient(ellipse 420px 210px at 88% 100%,#5BBB2E 69%,transparent 70%),linear-gradient(180deg,#4FA9F0 0%,#9AD6FF 55%,#DDF3FF 70%)}
+.glass{position:absolute;box-sizing:border-box;background:#C0C0C0;box-shadow:inset -1px -1px 0 #0A0A0A,inset 1px 1px 0 #FFFFFF,inset -2px -2px 0 #808080,inset 2px 2px 0 #DFDFDF,4px 4px 0 rgba(0,0,0,0.35);padding:3px;overflow:hidden}
+.gt{height:26px;display:flex;align-items:center;justify-content:space-between;padding:0 3px 0 6px;background:linear-gradient(90deg,#000080,#0A5CC0);color:#fff;font-family:'Pixelify Sans',sans-serif;font-size:16px;font-weight:600;text-shadow:-0.6px 0 rgba(0,229,229,0.7),0.6px 0 rgba(255,31,169,0.7)}
+.gt i{display:block;width:18px;height:16px;margin-left:2px;background:#C0C0C0;box-shadow:inset -1px -1px 0 #0A0A0A,inset 1px 1px 0 #fff,inset -2px -2px 0 #808080}
+.pill{flex:1;min-height:52px;box-sizing:border-box;border:0;background:#C0C0C0;box-shadow:inset -1px -1px 0 #0A0A0A,inset 1px 1px 0 #FFFFFF,inset -2px -2px 0 #808080,inset 2px 2px 0 #DFDFDF;color:#000;font-family:'Pixelify Sans',sans-serif;font-size:18px;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;text-decoration:none;padding:0 4px}
+.pillp{outline:1px solid #000;outline-offset:0}
+.vtab{position:absolute;width:36px;height:104px;box-sizing:border-box;border-radius:8px 0 0 8px;background:#C0C0C0;box-shadow:inset -2px -2px 0 #808080,inset 2px 2px 0 #FFFFFF,-3px 3px 0 rgba(11,42,74,0.35);writing-mode:vertical-rl;font-family:'Pixelify Sans',sans-serif;font-size:17px;font-weight:600;color:#0B2A4A;display:flex;align-items:center;justify-content:center;text-decoration:none}
+.w98{background:#C0C0C0;box-shadow:inset -1px -1px 0 #0A0A0A,inset 1px 1px 0 #FFFFFF,inset -2px -2px 0 #808080,inset 2px 2px 0 #DFDFDF,-5px 5px 16px rgba(11,42,74,0.45)}
+.w98t{height:28px;background:linear-gradient(90deg,#00006E,#0A58B8);color:#fff;font-family:'Pixelify Sans',sans-serif;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:space-between;padding:0 4px 0 8px;margin:3px 3px 0}
+.w98x{width:22px;height:20px;background:#C0C0C0;box-shadow:inset -1px -1px 0 #0A0A0A,inset 1px 1px 0 #fff,inset -2px -2px 0 #808080;font-family:'Pixelify Sans',sans-serif;font-size:14px;color:#0A0A0A;display:flex;align-items:center;justify-content:center}
+.sheet{padding:6px 6px 0 6px;display:flex;gap:2px;margin-top:6px}
+.sheet span{min-height:30px;padding:0 10px;background:#C0C0C0;box-shadow:inset 1px 1px 0 #fff,inset -1px 0 0 #808080;border-radius:4px 4px 0 0;font-family:'Pixelify Sans',sans-serif;font-size:15px;font-weight:600;color:#0A0A0A;display:flex;align-items:center}
+.paper{font-family:'Courier Prime',monospace;font-size:16px;line-height:26px;color:#0B2A4A;background:repeating-linear-gradient(0deg,#FFFFFF 0 25px,#B8D0F0 25px 26px);padding:2px 10px 0 12px;white-space:pre-wrap;height:100%;box-sizing:border-box}
+.tool{width:56px;height:52px;box-sizing:border-box;border:3px solid #0B2A4A;border-radius:12px;background:#FFFFFF;box-shadow:0 3px 0 #0B2A4A;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Fredoka',sans-serif;font-weight:600;font-size:11px;color:#0B2A4A;line-height:1}
+.tube{width:38px;height:44px;box-sizing:border-box;border:3px solid #0B2A4A;border-radius:8px;position:relative}
+.tube::after{content:"";position:absolute;left:4px;top:3px;width:6px;height:30px;border-radius:3px;background:rgba(255,255,255,0.45)}
+.bub{position:absolute;background:#FFFFE1;border:1px solid #000;border-radius:8px;box-shadow:2px 2px 0 rgba(0,0,0,0.4);padding:6px 10px;box-sizing:border-box}
+</style>
+</helmet>
+<div style="width:1410px;height:900px;box-sizing:border-box;padding:28px 60px;background:#0B2A4A;display:flex;gap:60px;align-items:flex-start">
+
+<!-- CLOSED TABS -->
+<div>
+<div class="cap">Tabs on the edge while you practise</div>
+<div class="ph">
+<div style="position:absolute;left:0;top:0"><dc-import name="collage" w="384" h="838" fx="light" mood="odd" look-x="-0.5" look-y="0.5" hint-size="384px,838px"></dc-import></div>
+<div style="position:absolute;left:0;top:0;z-index:50;pointer-events:none"><dc-import name="fx" w="384" h="838" mood="odd" stamp-b="52" hint-size="384px,838px"></dc-import></div>
+
+<div class="bub" style="left:100px;top:14px;width:240px"><div class="px" style="font-size:19px;font-weight:600;line-height:1.15">¿Qué haces en tu tiempo libre?</div><div style="font-size:12.5px;color:#31506E;margin-top:2px">What do you do in your free time?</div></div>
+<div style="position:absolute;left:14px;top:46px"><dc-import name="bicho" mood="talk" size="78" look="0.5" hint-size="78px,85px"></dc-import></div>
+<div class="glass" style="left:10px;top:130px;width:330px;height:400px">
+<div class="gt"><span>Tutor.exe: Pregunta 2</span><span style="display:flex"><i></i></span></div>
+<div style="padding:14px 16px;display:flex;flex-direction:column;gap:12px">
+<div><div style="font-size:13px;color:#31506E;margin-bottom:2px">You said</div>
+<div style="font-size:19px;line-height:1.65;font-weight:700"><span style="background:rgba(124,208,248,0.55);border-radius:6px;padding:0 3px">En mi tiempo libre</span> <span style="background:rgba(255,95,168,0.4);border-radius:6px;padding:0 3px">juego</span> <span style="background:rgba(124,208,248,0.55);border-radius:6px;padding:0 3px">a videojuegos y leo manga</span></div></div>
+<div style="background:rgba(255,255,255,0.8);border:2px solid #0B2A4A;border-radius:12px;padding:10px 12px"><span class="px" style="font-size:34px;font-weight:700;line-height:1;color:#2A5CE6">86%</span><div style="font-size:14.5px;line-height:1.4;margin-top:4px">The Spanish <b>j</b> is a breathy h. Everything else ran fine.</div></div>
+</div>
+</div>
+<div class="pill pillp" style="position:absolute;left:30px;width:290px;bottom:40px;min-height:68px;font-size:24px">Hablar</div>
+<div class="vtab" style="top:190px;right:0">Apuntes</div>
+<div class="vtab" style="top:306px;right:0">Garabatos</div>
+</div>
+</div>
+
+<!-- NOTES OPEN -->
+<div>
+<div class="cap">Apuntes: the old-computer side tab, open</div>
+<div class="ph">
+<div style="position:absolute;left:0;top:0"><dc-import name="collage" w="384" h="838" fx="light" mood="odd" look-x="-0.5" look-y="0.5" hint-size="384px,838px"></dc-import></div>
+<div style="position:absolute;left:0;top:0;z-index:50;pointer-events:none"><dc-import name="fx" w="384" h="838" mood="odd" stamp-b="52" hint-size="384px,838px"></dc-import></div>
+
+<div class="glass" style="left:8px;top:90px;width:124px;height:330px">
+<div class="gt" style="font-size:14px;padding:0 6px"><span>Pregunta 2</span></div>
+<div style="padding:8px"><div class="px" style="font-size:17px;font-weight:600;line-height:1.15">¿Qué haces en tu tiempo libre?</div><div style="font-size:12px;color:#31506E;margin-top:4px;line-height:1.3">What do you do in your free time?</div>
+<div class="pill pillp" style="margin-top:12px;min-height:48px;font-size:17px">Hablar</div></div>
+</div>
+<div style="position:absolute;left:20px;top:440px"><dc-import name="bicho" mood="idle" size="86" look="0.9" hint-size="86px,93px"></dc-import></div>
+<div class="bub" style="left:12px;top:410px;width:116px;padding:4px 8px"><div class="px" style="font-size:14px;font-weight:600;line-height:1.15">¡Apunta!</div></div>
+
+<div class="vtab" style="top:190px;right:252px;background:#FFFFFF">Apuntes</div>
+<div class="vtab" style="top:306px;right:252px;opacity:0.9">Garabatos</div>
+<div class="w98" style="position:absolute;right:0;top:80px;width:252px;height:690px;box-sizing:border-box;display:flex;flex-direction:column">
+<div class="w98t"><span>Apuntes</span><span class="w98x">X</span></div>
+<div class="sheet"><span style="background:#fff;position:relative;top:1px;min-height:32px">Notas</span><span>Palabras</span><span>Dudas</span></div>
+<div style="margin:0 6px;flex:1;background:#fff;box-shadow:inset 1px 1px 0 #808080,inset -1px -1px 0 #fff,inset 2px 2px 0 #0A0A0A;padding:2px;min-height:0">
+<div class="paper">¿Qué haces en tu
+tiempo libre?
+
+- juego a
+  videojuegos
+- leo manga
+- OJO: la j suena
+  como h
+
+Preguntar: ¿"a"
+con jugar?▌</div>
+</div>
+<div style="margin:6px;height:24px;box-shadow:inset 1px 1px 0 #808080,inset -1px -1px 0 #fff;font-family:'Pixelify Sans',sans-serif;font-size:13.5px;color:#0A0A0A;display:flex;align-items:center;padding:0 8px;box-sizing:border-box">Se guarda en este dispositivo</div>
+</div>
+</div>
+</div>
+
+<!-- GARABATOS -->
+<div>
+<div class="cap">Garabatos: the doodle pad</div>
+<div class="ph">
+<div style="position:absolute;left:0;top:0"><dc-import name="collage" w="384" h="838" fx="light" mood="odd" look-x="-0.5" look-y="0.5" hint-size="384px,838px"></dc-import></div>
+<div style="position:absolute;left:0;top:0;z-index:50;pointer-events:none"><dc-import name="fx" w="384" h="838" mood="odd" stamp-b="52" hint-size="384px,838px"></dc-import></div>
+
+<div style="position:absolute;left:224px;top:22px;z-index:3"><dc-import name="bicho" mood="happy" size="82" look="-0.5" hint-size="82px,89px"></dc-import></div>
+<div class="bub" style="left:24px;top:30px;width:190px;z-index:3"><div class="px" style="font-size:17px;font-weight:600;line-height:1.15">¡Qué bonito!</div><div style="font-size:12.5px;color:#31506E">How pretty!</div></div>
+
+<div style="position:absolute;left:10px;top:100px;width:340px;height:524px;box-sizing:border-box;border:4px solid #0B2A4A;border-radius:18px;background:#9ADBFF;box-shadow:0 8px 0 rgba(11,42,74,0.45);overflow:hidden">
+<div style="height:36px;background:linear-gradient(90deg,#EF3B2D,#FF8A1F,#FFD21F,#7BD43B,#2A5CE6,#A468E8);border-bottom:4px solid #0B2A4A;display:flex;align-items:center;justify-content:space-between;padding:0 8px 0 12px">
+<span style="font-family:'Fredoka',sans-serif;font-weight:700;font-size:22px;line-height:1;color:#fff;-webkit-text-stroke:3px #0B2A4A;paint-order:stroke fill">Garabatos</span>
+<span style="width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#FF9A8A 40%,#E23B2B);border:2.5px solid #0B2A4A;font-family:'Fredoka',sans-serif;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;color:#0B2A4A">x</span>
+</div>
+<div style="display:flex;gap:8px;padding:8px 8px 0 8px">
+<div style="display:flex;flex-direction:column;gap:5px;flex:none">
+<div class="tool"><svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><path d="M5 27l3-9 15-15 6 6-15 15z" fill="#FFD21F" stroke="#0B2A4A" stroke-width="2" stroke-linejoin="round"/><path d="M5 27l3-9 6 6z" fill="#F4C79A" stroke="#0B2A4A" stroke-width="2" stroke-linejoin="round"/></svg><span>Lápiz</span></div>
+<div class="tool" style="background:#FFE766;transform:translateY(2px);box-shadow:0 1px 0 #0B2A4A"><svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><path d="M26 4L15 15" stroke="#0B2A4A" stroke-width="5" stroke-linecap="round"/><path d="M26 4L15 15" stroke="#EF3B2D" stroke-width="2.5" stroke-linecap="round"/><path d="M15 15c-5 0-6 5-10 7 5 3 12 3 14-3z" fill="#2A5CE6" stroke="#0B2A4A" stroke-width="2" stroke-linejoin="round"/></svg><span>Pincel</span></div>
+<div class="tool"><svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><rect x="9" y="12" width="12" height="16" rx="3" fill="#7BD43B" stroke="#0B2A4A" stroke-width="2"/><rect x="12" y="6" width="6" height="6" fill="#fff" stroke="#0B2A4A" stroke-width="2"/><circle cx="24" cy="7" r="1.5" fill="#0B2A4A"/><circle cx="28" cy="11" r="1.5" fill="#0B2A4A"/><circle cx="26" cy="3" r="1.5" fill="#0B2A4A"/></svg><span>Spray</span></div>
+<div class="tool"><svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 20l12-12 10 10-8 8H10z" fill="#FF9AD0" stroke="#0B2A4A" stroke-width="2" stroke-linejoin="round"/><path d="M11 13l10 10" stroke="#0B2A4A" stroke-width="2"/></svg><span>Goma</span></div>
+<div class="tool"><svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4l11 6-11 6-11-6z" fill="#FFE766" stroke="#0B2A4A" stroke-width="2" stroke-linejoin="round"/><path d="M5 10v11l11 6V16z" fill="#FFD21F" stroke="#0B2A4A" stroke-width="2" stroke-linejoin="round"/><path d="M27 10v11l-11 6V16z" fill="#E0AA00" stroke="#0B2A4A" stroke-width="2" stroke-linejoin="round"/></svg><span>cubo</span></div>
+<div class="tool" style="background:#FFE766"><svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><path d="M12 2L5 9l7 7M5 9h14a8 8 0 0 1 0 16" fill="none" stroke="#0B2A4A" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Deshacer</span></div>
+<div class="tool" style="background:#FFB3A8"><svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><path d="M8 9h16l-2 18H10z" fill="#fff" stroke="#0B2A4A" stroke-width="2.5" stroke-linejoin="round"/><path d="M6 9h20M13 5h6" stroke="#0B2A4A" stroke-width="2.5" stroke-linecap="round"/></svg><span>Borrar</span></div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center">
+<div style="border:3px solid #0B2A4A;background:#fff;box-shadow:3px 3px 0 rgba(11,42,74,0.5);line-height:0">
+<svg width="244" height="372" viewBox="0 0 244 372" aria-label="A doodle: Bicho drawn in brush, two stamped toys and some notes in pencil" role="img" style="display:block">
+<g fill="none" stroke-linecap="round" stroke-linejoin="round">
+<path d="M58 160C40 120 62 84 112 80 164 76 196 112 188 160 182 198 150 214 118 214 84 214 66 196 58 160Z" stroke="#FF5FA8" stroke-width="9"/>
+<path d="M82 84L66 52M150 82L168 50" stroke="#FF5FA8" stroke-width="6"/>
+<circle cx="66" cy="48" r="8" fill="#EF3B2D" stroke="#EF3B2D" stroke-width="3"/>
+<circle cx="168" cy="46" r="8" fill="#EF3B2D" stroke="#EF3B2D" stroke-width="3"/>
+<circle cx="96" cy="140" r="15" stroke="#0B2A4A" stroke-width="4"/>
+<circle cx="140" cy="144" r="10" stroke="#0B2A4A" stroke-width="4"/>
+<circle cx="99" cy="142" r="5" fill="#0B2A4A" stroke="#0B2A4A"/>
+<circle cx="142" cy="146" r="3.5" fill="#0B2A4A" stroke="#0B2A4A"/>
+<path d="M92 176C108 196 142 196 156 174" stroke="#0B2A4A" stroke-width="4.5"/>
+<path d="M18 252C40 240 54 262 78 250S112 244 132 256 170 246 190 254" stroke="#2A5CE6" stroke-width="2.5"/>
+<path d="M18 276C36 268 52 286 74 276S110 270 126 280" stroke="#2A5CE6" stroke-width="2.5"/>
+<path d="M18 300C44 292 60 308 90 300S130 294 150 304" stroke="#2A5CE6" stroke-width="2.5"/>
+<path d="M200 252l5 12 13 1-10 8 4 13-12-7-12 7 4-13-10-8 13-1z" stroke="#FF8A1F" stroke-width="3.5" fill="#FFD21F"/>
+</g>
+<g fill="#7BD43B"><circle cx="30" cy="40" r="1.6"/><circle cx="36" cy="46" r="1.6"/><circle cx="26" cy="50" r="1.6"/><circle cx="40" cy="36" r="1.6"/><circle cx="33" cy="30" r="1.6"/><circle cx="22" cy="38" r="1.6"/><circle cx="42" cy="50" r="1.6"/><circle cx="30" cy="56" r="1.6"/><circle cx="46" cy="42" r="1.6"/><circle cx="20" cy="46" r="1.6"/></g>
+<path d="M200 70l18 9-18 9-18-9z" fill="#FFE766"/><path d="M182 79l18 9v20l-18-9z" fill="#FFD21F"/><path d="M218 79l-18 9v20l18-9z" fill="#E0AA00"/>
+<path d="M198 190l16 34h-32z" fill="#2A5CE6"/><path d="M198 190l16 34h-10z" fill="#1B3FA8"/>
+<path d="M30 332l8-4 8 4" fill="none" stroke="#0B2A4A" stroke-width="0"/>
+</svg>
+</div>
+</div>
+</div>
+<div style="display:flex;gap:3px;padding:8px 8px 0 8px;justify-content:center">
+<div class="tube" style="background:#0B2A4A"></div><div class="tube" style="background:#EF3B2D"></div><div class="tube" style="background:#FF8A1F"></div><div class="tube" style="background:#FFD21F"></div><div class="tube" style="background:#7BD43B"></div><div class="tube" style="background:#2A5CE6"></div><div class="tube" style="background:#A468E8"></div><div class="tube" style="background:#FF5FA8;transform:translateY(-4px);box-shadow:0 4px 0 #0B2A4A"></div>
+</div>
+<div style="text-align:center;font-family:'Fredoka',sans-serif;font-weight:600;font-size:12.5px;color:#0B2A4A;margin-top:5px">Se queda en tu dispositivo · stays on your device</div>
+</div>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1410,"height":900}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

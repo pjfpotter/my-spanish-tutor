@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bicho Guay Remix</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width:{{w}}px;height:{{h}}px;filter:drop-shadow(1.5px 0 0 #fff) drop-shadow(-1.5px 0 0 #fff) drop-shadow(0 1.5px 0 #fff) drop-shadow(0 -1.5px 0 #fff) drop-shadow(2px 4px 3px rgba(0,0,0,0.5))">
+<svg viewBox="0 -8 120 138" width="{{w}}" height="{{h}}" role="img" aria-label="Bicho Guay, a mouthless cut-paper creature with a flower of petals around one giant eye, a halo, and stilt legs">
+<defs>
+<radialGradient id="bcAqua" cx="38%" cy="28%" r="78%"><stop offset="0" stop-color="#E6FBFF"/><stop offset="0.35" stop-color="#4FF0FF"/><stop offset="0.75" stop-color="#0FA8E8"/><stop offset="1" stop-color="#0A5C9A"/></radialGradient>
+<radialGradient id="bcScl" cx="50%" cy="42%" r="62%"><stop offset="0" stop-color="#FFFFFF"/><stop offset="0.72" stop-color="#FBE6E6"/><stop offset="1" stop-color="#D58A92"/></radialGradient>
+<radialGradient id="bcIris" cx="50%" cy="50%" r="50%"><stop offset="0.3" stop-color="#FF1FA9"/><stop offset="0.5" stop-color="#FFEB00"/><stop offset="0.72" stop-color="#00F0E0"/><stop offset="0.92" stop-color="#2A1BD0"/><stop offset="1" stop-color="#100848"/></radialGradient>
+<radialGradient id="bcIrisH" cx="50%" cy="50%" r="50%"><stop offset="0.3" stop-color="#FFD1F0"/><stop offset="0.5" stop-color="#FFF2B5"/><stop offset="0.72" stop-color="#B9FFDC"/><stop offset="0.92" stop-color="#B3DCFF"/><stop offset="1" stop-color="#8A6AE0"/></radialGradient>
+<radialGradient id="bcSphP" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#FFD0E8"/><stop offset="0.5" stop-color="#FF3DB5"/><stop offset="1" stop-color="#A0126A"/></radialGradient>
+<ellipse id="bcP" cx="60" cy="19" rx="9" ry="15"/>
+<clipPath id="bcClip"><ellipse cx="60" cy="46" rx="21" ry="{{eyeRy}}"/></clipPath>
+</defs>
+<ellipse cx="60" cy="127" rx="34" ry="4" fill="#0B0F2A" opacity="0.35"/>
+<path d="M56 106L59 106L51 123L47 123Z" fill="#0FA8E8" stroke="#0A5C9A" stroke-width="0.8" stroke-linejoin="round"/>
+<path d="M61 106L64 106L73 123L69 123Z" fill="#0FA8E8" stroke="#0A5C9A" stroke-width="0.8" stroke-linejoin="round"/>
+<circle cx="53" cy="115" r="3" fill="url(#bcSphP)"/>
+<circle cx="67" cy="115" r="3" fill="url(#bcSphP)"/>
+<ellipse cx="47" cy="125" rx="9" ry="3" fill="#150A3A"/>
+<ellipse cx="73" cy="125" rx="9" ry="3" fill="#150A3A"/>
+<path d="{{armL}}" fill="none" stroke="#0FA8E8" stroke-width="2.4" stroke-linecap="round"/>
+<path d="{{armR}}" fill="none" stroke="#0FA8E8" stroke-width="2.4" stroke-linecap="round"/>
+<circle cx="{{hLx}}" cy="{{hLy}}" r="4.5" fill="url(#bcSphP)"/>
+<circle cx="{{hRx}}" cy="{{hRy}}" r="4.5" fill="url(#bcSphP)"/>
+<circle cx="60" cy="98" r="10" fill="url(#bcAqua)"/>
+<path d="M52 98q2.5 -3 5 0t5 0t5 0" fill="none" stroke="#FFEB00" stroke-width="2" stroke-linecap="round"/>
+<g transform="{{petalT}}">
+<g fill="{{pc3}}" stroke="#FFFFFF" stroke-width="2.4" stroke-linejoin="round"><use href="#bcP" transform="rotate(60 60 46)"/><use href="#bcP" transform="rotate(150 60 46)"/><use href="#bcP" transform="rotate(240 60 46)"/><use href="#bcP" transform="rotate(330 60 46)"/></g>
+<g fill="{{pc2}}" stroke="#FFFFFF" stroke-width="2.4" stroke-linejoin="round"><use href="#bcP" transform="rotate(30 60 46)"/><use href="#bcP" transform="rotate(120 60 46)"/><use href="#bcP" transform="rotate(210 60 46)"/><use href="#bcP" transform="rotate(300 60 46)"/></g>
+<g fill="{{pc1}}" stroke="#FFFFFF" stroke-width="2.4" stroke-linejoin="round"><use href="#bcP" transform="rotate(0 60 46)"/><use href="#bcP" transform="rotate(90 60 46)"/><use href="#bcP" transform="rotate(180 60 46)"/><use href="#bcP" transform="rotate(270 60 46)"/></g>
+</g>
+<circle cx="60" cy="46" r="25" fill="#E3AE92" stroke="#B47A5E" stroke-width="1.5"/>
+<path d="M37 38Q60 18 83 38" fill="none" stroke="#6A2A14" stroke-width="2.6" stroke-linecap="round" opacity="0.7"/>
+<ellipse cx="58.4" cy="46" rx="21" ry="{{eyeRy}}" fill="none" stroke="#00F0FF" stroke-width="1.6" opacity="0.7"/>
+<ellipse cx="61.6" cy="46" rx="21" ry="{{eyeRy}}" fill="none" stroke="#FF1FA9" stroke-width="1.6" opacity="0.7"/>
+<ellipse cx="60" cy="46" rx="21" ry="{{eyeRy}}" fill="url(#bcScl)"/>
+<g clip-path="url(#bcClip)">
+<g transform="translate({{irX}} {{irY}})">
+<circle cx="60" cy="46" r="15" fill="{{irisFill}}"/>
+<path d="M60 32V38M70 36L66 40M50 36L54 40M74 46H68M46 46H52M70 56L66 52M50 56L54 52M60 60V54" stroke="#FFFFFF" stroke-width="0.9" opacity="0.6"/>
+<circle cx="60" cy="46" r="15" fill="none" stroke="#100848" stroke-width="1.6"/>
+<circle cx="60" cy="46" r="{{pupR}}" fill="#020208"/>
+<circle cx="55" cy="40" r="3.6" fill="#FFFFFF"/>
+<circle cx="66" cy="52" r="1.6" fill="#FFFFFF" opacity="0.75"/>
+</g>
+<path d="M39 46Q60 24 81 46Q60 36 39 46Z" fill="#000" opacity="0.15"/>
+<path d="M39 47Q46 44 51 41M40 51Q46 52 50 50M81 47Q74 45 70 42" stroke="#E0302A" stroke-width="0.8" fill="none" opacity="0.6"/>
+</g>
+<ellipse cx="60" cy="46" rx="21" ry="{{eyeRy}}" fill="none" stroke="#5A1440" stroke-width="2"/>
+<path d="M38 46Q60 52 82 46" fill="none" stroke="#2A0A28" stroke-width="2.6" stroke-linecap="round" opacity="{{lashOp}}"/>
+<g fill="none" stroke="#FFFFFF" stroke-width="1.4" stroke-dasharray="3 3" opacity="{{ringOp}}">
+<circle cx="60" cy="46" r="32"/>
+<circle cx="60" cy="46" r="38"/>
+<circle cx="60" cy="46" r="44"/>
+</g>
+<g fill="#FFEB00" stroke="#FFFFFF" stroke-width="1" opacity="{{sparkOp}}">
+<path d="M18 14l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/>
+<path d="M104 20l1.6 4 4 1.6-4 1.6-1.6 4-1.6-4-4-1.6 4-1.6z"/>
+<path d="M100 74l1.4 3.4 3.4 1.4-3.4 1.4-1.4 3.4-1.4-3.4-3.4-1.4 3.4-1.4z"/>
+</g>
+<polygon points="46,-2 52,-7 68,-7 74,-2 68,3 52,3" fill="none" stroke="#0B0F2A" stroke-opacity="0.4" stroke-width="4" stroke-linejoin="round" opacity="{{haloOp}}" transform="translate(0 2)"/>
+<polygon points="46,-2 52,-7 68,-7 74,-2 68,3 52,3" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round" opacity="{{haloOp}}"/>
+</svg>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mood":{"editor":"enum","options":["idle","talk","happy","sleep"],"default":"idle"},"size":{"editor":"int","default":160,"min":24,"max":400},"halo":{"editor":"boolean","default":true},"holo":{"editor":"boolean","default":false},"look":{"editor":"float","default":0,"min":-1,"max":1,"step":0.1},"$preview":{"width":160,"height":184}}'>
+const truthy = (v) => v === true || v === 'true' || v === '1' || v === 1;
+const falsy = (v) => v === false || v === 'false' || v === '0' || v === 0;
+class Component extends DCLogic {
+  renderVals() {
+    const mood = this.props.mood || 'idle';
+    const size = Number(this.props.size || 160);
+    const look = Number(this.props.look || 0);
+    const holo = truthy(this.props.holo);
+    const halo = this.props.halo === undefined ? true : !falsy(this.props.halo);
+    const o = {
+      w: size, h: Math.round(size * 138 / 120),
+      pc1: holo ? '#FFD1F0' : '#FF1FA9', pc2: holo ? '#FFF2B5' : '#FFEB00', pc3: holo ? '#B3E9FF' : '#00E5E5',
+      irisFill: holo ? 'url(#bcIrisH)' : 'url(#bcIris)',
+      eyeRy: 21, pupR: 6.5, irX: look * 6, irY: 0, ringOp: 0, sparkOp: 0, lashOp: 0,
+      petalT: 'translate(60 46) scale(1) translate(-60 -46)',
+      armL: 'M52 97Q42 102 36 108', armR: 'M68 97Q78 102 84 108', hLx: 35.5, hLy: 109, hRx: 84.5, hRy: 109,
+      haloOp: halo ? 1 : 0
+    };
+    if (mood === 'talk') { o.pupR = 10; o.ringOp = 0.85; o.petalT = 'translate(60 46) scale(1.05) translate(-60 -46)'; o.armL = 'M52 97Q40 92 32 82'; o.hLx = 31; o.hLy = 81; }
+    if (mood === 'happy') {
+      o.eyeRy = 12; o.sparkOp = 1; o.petalT = 'translate(60 46) scale(1.1) translate(-60 -46)';
+      o.armL = 'M52 97Q40 90 30 80'; o.armR = 'M68 97Q80 90 90 80'; o.hLx = 29; o.hLy = 79; o.hRx = 91; o.hRy = 79;
+    }
+    if (mood === 'sleep') {
+      o.eyeRy = 1.6; o.lashOp = 1; o.petalT = 'translate(60 46) scale(0.9) translate(-60 -46)';
+      o.armL = 'M52 99Q46 106 44 112'; o.armR = 'M68 99Q74 106 76 112'; o.hLx = 43.5; o.hLy = 113; o.hRx = 76.5; o.hRy = 113;
+    }
+    return o;
+  }
+}
+</script>
+</body>
+</html>

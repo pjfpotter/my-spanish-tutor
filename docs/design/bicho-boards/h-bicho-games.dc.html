@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Juegos.exe Mini Games</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.px{font-family:'Pixelify Sans',sans-serif}
+.w98{background:#C0C0C0;box-shadow:inset -1px -1px 0 #0A0A0A,inset 1px 1px 0 #FFFFFF,inset -2px -2px 0 #808080,inset 2px 2px 0 #DFDFDF;padding:3px}
+.w98t{height:26px;flex:none;background:linear-gradient(90deg,#000080,#0A5CC0);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 3px 0 6px;font-family:'Pixelify Sans',sans-serif;font-size:16px;font-weight:600;text-shadow:-0.6px 0 rgba(0,229,229,0.7),0.6px 0 rgba(255,31,169,0.7)}
+.tbs{display:flex;gap:2px}
+.tbs i,.tbs a{width:20px;height:18px;background:#C0C0C0;box-shadow:inset -1px -1px 0 #0A0A0A,inset 1px 1px 0 #FFFFFF,inset -2px -2px 0 #808080;color:#000;font-family:'Pixelify Sans',sans-serif;font-size:13px;display:flex;align-items:center;justify-content:center;text-decoration:none;font-style:normal;line-height:1}
+.b98{box-sizing:border-box;min-height:44px;padding:0 12px;border:0;border-radius:0;background:#C0C0C0;box-shadow:inset -1px -1px 0 #0A0A0A,inset 1px 1px 0 #FFFFFF,inset -2px -2px 0 #808080,inset 2px 2px 0 #DFDFDF;font-family:'Pixelify Sans',sans-serif;font-size:17px;font-weight:600;color:#000;cursor:pointer;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.1}
+.b98:active,.b98.dn{box-shadow:inset 1px 1px 0 #0A0A0A,inset -1px -1px 0 #FFFFFF,inset 2px 2px 0 #808080,inset -2px -2px 0 #DFDFDF;padding:2px 12px 0 14px}
+.b98:focus-visible{outline:2px dotted #000;outline-offset:-6px}
+.sunk{background:#FFFFFF;box-shadow:inset 1px 1px 0 #808080,inset -1px -1px 0 #FFFFFF,inset 2px 2px 0 #0A0A0A,inset -2px -2px 0 #DFDFDF}
+.mb{display:flex;height:26px;flex:none;align-items:center;padding:0 2px}
+.mb button{background:none;border:0;font-family:'Pixelify Sans',sans-serif;font-size:15px;color:#000;min-height:26px;padding:0 10px;cursor:pointer}
+.mb button:focus-visible{outline:2px dotted #000;outline-offset:-3px}
+.mb button:hover{background:#000080;color:#fff}
+.stb{height:26px;flex:none;display:flex;gap:3px;padding-top:3px;font-family:'Pixelify Sans',sans-serif;font-size:14px;color:#000}
+.stb div{box-shadow:inset 1px 1px 0 #808080,inset -1px -1px 0 #FFFFFF;display:flex;align-items:center;padding:0 8px;box-sizing:border-box}
+.card{box-sizing:border-box;min-height:92px;border:0;border-radius:0;background:#C0C0C0;box-shadow:inset -1px -1px 0 #0A0A0A,inset 1px 1px 0 #FFFFFF,inset -2px -2px 0 #808080,inset 2px 2px 0 #DFDFDF;font-family:'Pixelify Sans',sans-serif;font-size:17px;font-weight:600;line-height:1.15;cursor:pointer;padding:4px;display:flex;align-items:center;justify-content:center;text-align:center}
+.card:focus-visible{outline:2px dotted #000;outline-offset:-6px}
+.chip{box-sizing:border-box;min-height:44px;padding:0 10px;border:0;background:#C0C0C0;box-shadow:inset -1px -1px 0 #0A0A0A,inset 1px 1px 0 #FFFFFF,inset -2px -2px 0 #808080,inset 2px 2px 0 #DFDFDF;font-family:'Pixelify Sans',sans-serif;font-size:17px;font-weight:600;color:#000;cursor:pointer}
+.chip:focus-visible{outline:2px dotted #000;outline-offset:-6px}
+.tip{position:absolute;background:#FFFFE1;border:1px solid #000;border-radius:8px;box-shadow:2px 2px 0 rgba(0,0,0,0.4);padding:8px 10px;box-sizing:border-box;color:#000}
+.gm{display:flex;align-items:center;gap:12px;width:100%;box-sizing:border-box;min-height:100px;text-align:left}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.bob{animation:bob 1.2s steps(2) infinite}
+@media (prefers-reduced-motion:reduce){.bob{animation:none}}
+</style>
+</helmet>
+<div style="width:390px;height:844px;position:relative;overflow:hidden;background:radial-gradient(ellipse 360px 190px at 25% 98%,#8FDB4A 69%,transparent 70%),radial-gradient(ellipse 420px 210px at 88% 100%,#5BBB2E 69%,transparent 70%),linear-gradient(180deg,#4FA9F0 0%,#9AD6FF 55%,#DDF3FF 70%);font-family:'Atkinson Hyperlegible',sans-serif;color:#000">
+
+<div style="position:absolute;left:0;top:0"><dc-import name="collage" w="390" h="844" fx="light" mood="odd" look-x="-0.6" look-y="0.4" hint-size="390px,844px"></dc-import></div>
+
+<div class="w98" style="position:absolute;left:8px;top:10px;width:374px;height:604px;box-sizing:border-box;display:flex;flex-direction:column;box-shadow:inset -1px -1px 0 #0A0A0A,inset 1px 1px 0 #FFFFFF,inset -2px -2px 0 #808080,inset 2px 2px 0 #DFDFDF,4px 4px 0 rgba(0,0,0,0.35)">
+<div class="w98t"><span>Juegos.exe{{winTitle}}</span><span class="tbs"><i aria-hidden="true">_</i><i aria-hidden="true">o</i><a href="h-bicho-play.dc.html" aria-label="Close and go back to the desktop">X</a></span></div>
+<div class="mb"><button type="button" onClick="{{newGame}}">Juego</button><button type="button" onClick="{{toMenu}}">Menú</button><button type="button" onClick="{{toggleHelp}}">Ayuda</button></div>
+<div class="sunk" style="flex:1;margin:0 1px;overflow:hidden;position:relative;display:flex;flex-direction:column;min-height:0">
+
+<sc-if value="{{showMenu}}" hint-placeholder-val="{{true}}">
+<div style="padding:12px;display:flex;flex-direction:column;gap:10px;height:100%;box-sizing:border-box">
+<div class="px" style="font-size:22px;font-weight:700;line-height:1.1">Elige un juego</div>
+<button type="button" class="b98 gm" onClick="{{openPairs}}"><svg width="52" height="52" viewBox="0 0 48 48" aria-hidden="true" style="flex:none"><rect x="3" y="10" width="26" height="34" fill="#fff" stroke="#000" stroke-width="2"/><circle cx="16" cy="27" r="8" fill="#EF3B2D"/><rect x="18" y="5" width="26" height="34" fill="#FFE766" stroke="#000" stroke-width="2"/><path d="M31 12l9 18H22z" fill="#2A5CE6"/></svg><span><span class="px" style="font-size:20px;display:block">Parejas</span><span style="font-family:'Atkinson Hyperlegible',sans-serif;font-weight:400;font-size:13.5px;line-height:1.3;display:block">Flip cards. Match each Spanish phrase with its English meaning.</span></span></button>
+<button type="button" class="b98 gm" onClick="{{openBuild}}"><svg width="52" height="52" viewBox="0 0 48 48" aria-hidden="true" style="flex:none"><rect x="2" y="16" width="14" height="16" fill="#7BD43B" stroke="#000" stroke-width="2"/><rect x="17" y="16" width="14" height="16" fill="#FFD21F" stroke="#000" stroke-width="2"/><rect x="32" y="16" width="14" height="16" fill="#FF6FB5" stroke="#000" stroke-width="2"/><path d="M16 22h2v4h-2zM31 22h2v4h-2z" fill="#000"/></svg><span><span class="px" style="font-size:20px;display:block">Arma la frase</span><span style="font-family:'Atkinson Hyperlegible',sans-serif;font-weight:400;font-size:13.5px;line-height:1.3;display:block">Tap the chunks in order to build a sentence.</span></span></button>
+<button type="button" class="b98 gm" onClick="{{openRain}}"><svg width="52" height="52" viewBox="0 0 48 48" aria-hidden="true" style="flex:none"><ellipse cx="24" cy="15" rx="17" ry="9" fill="#fff" stroke="#000" stroke-width="2"/><path d="M13 29l-3 8M24 31l-3 10M35 29l-3 8" stroke="#2A5CE6" stroke-width="3.5" stroke-linecap="round"/></svg><span><span class="px" style="font-size:20px;display:block">Lluvia de palabras</span><span style="font-family:'Atkinson Hyperlegible',sans-serif;font-weight:400;font-size:13.5px;line-height:1.3;display:block">Catch the English meaning before the word lands.</span></span></button>
+</div>
+</sc-if>
+
+<sc-if value="{{showPairs}}" hint-placeholder-val="{{false}}">
+<div style="padding:8px;display:flex;flex-direction:column;gap:8px;height:100%;box-sizing:border-box">
+<div style="display:flex;justify-content:space-between;font-family:'Pixelify Sans',sans-serif;font-size:16px;font-weight:600"><span>Intentos: {{pTries}}</span><span>Tiempo: {{pSecs}} s</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;flex:1;align-content:start">
+<sc-for list="{{cards}}" as="cd" hint-placeholder-count="12">
+<button type="button" class="card" onClick="{{cd.tap}}" style="{{cd.style}}" aria-label="{{cd.aria}}">{{cd.txt}}</button>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{showBuild}}" hint-placeholder-val="{{false}}">
+<div style="padding:10px;display:flex;flex-direction:column;gap:8px;height:100%;box-sizing:border-box">
+<div class="px" style="font-size:16px;font-weight:600">Frase {{bRound}} de 3</div>
+<div style="background:#FFFFE1;border:1px solid #000;padding:8px 10px;font-size:16px;line-height:1.35">{{bEn}}</div>
+<div class="sunk" style="min-height:92px;padding:6px;display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start;background:#fff">
+<sc-for list="{{bChosen}}" as="ch" hint-placeholder-count="2"><span class="px" style="min-height:40px;padding:0 10px;display:flex;align-items:center;background:#000080;color:#fff;font-size:16px;font-weight:600">{{ch.txt}}</span></sc-for>
+</div>
+<div class="px" style="min-height:22px;font-size:15px;font-weight:600;color:#000080">{{bMsg}}</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px">
+<sc-for list="{{bPool}}" as="pl" hint-placeholder-count="4"><button type="button" class="chip" onClick="{{pl.tap}}" style="{{pl.style}}">{{pl.txt}}</button></sc-for>
+</div>
+<div style="display:flex;gap:6px;margin-top:auto">
+<button type="button" class="b98" style="flex:1" onClick="{{bHint}}">Pista</button>
+<button type="button" class="b98" style="flex:1" onClick="{{bBack}}">Borrar</button>
+<sc-if value="{{bDone}}" hint-placeholder-val="{{false}}"><button type="button" class="b98" style="flex:1.4;background:#FFFF80" onClick="{{bNext}}">Siguiente</button></sc-if>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{showRain}}" hint-placeholder-val="{{false}}">
+<div style="padding:8px;display:flex;flex-direction:column;gap:8px;height:100%;box-sizing:border-box">
+<div style="display:flex;justify-content:space-between;font-family:'Pixelify Sans',sans-serif;font-size:15px;font-weight:600"><span>Aciertos: {{rScore}}</span><span>Racha: {{rStreak}}</span><span>{{rN}} de 8</span></div>
+<div style="height:218px;position:relative;overflow:hidden;box-shadow:inset 1px 1px 0 #808080,inset -1px -1px 0 #fff;background:linear-gradient(180deg,#6FB8F2,#CDEBFF 70%,#8FDB4A 71%)">
+<div class="px" style="{{rWordStyle}}">{{rWord}}</div>
+<sc-if value="{{rLanded}}" hint-placeholder-val="{{false}}"><div style="position:absolute;left:0;right:0;bottom:8px;text-align:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:14px"><span style="background:#FFFFE1;border:1px solid #000;padding:2px 8px">It means “{{rAns}}”. Next one coming.</span></div></sc-if>
+</div>
+<div style="font-family:'Pixelify Sans',sans-serif;font-size:15px;font-weight:600;min-height:20px;color:#000080">{{rMsg}}</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<sc-for list="{{rOpts}}" as="op" hint-placeholder-count="3"><button type="button" class="b98" onClick="{{op.tap}}">{{op.txt}}</button></sc-for>
+</div>
+<button type="button" class="b98" style="margin-top:auto;min-height:40px" onClick="{{rPause}}">{{rPauseLabel}}</button>
+</div>
+</sc-if>
+
+</div>
+<div class="stb"><div style="flex:1">{{status}}</div><div style="width:110px">{{coins}} monedas</div></div>
+</div>
+
+<sc-if value="{{hasDlg}}" hint-placeholder-val="{{false}}">
+<div style="position:absolute;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,0.25);z-index:40">
+<div class="w98" style="position:absolute;left:30px;right:30px;top:200px;box-shadow:inset -1px -1px 0 #0A0A0A,inset 1px 1px 0 #FFFFFF,inset -2px -2px 0 #808080,inset 2px 2px 0 #DFDFDF,5px 5px 0 rgba(0,0,0,0.4)">
+<div class="w98t"><span>{{dlgTitle}}</span><span class="tbs"><i aria-hidden="true">X</i></span></div>
+<div style="padding:16px 14px 8px;display:flex;gap:14px;align-items:flex-start"><div style="flex:none;width:36px;height:36px;border-radius:50%;background:#0A5CC0;color:#fff;font-family:'Pixelify Sans',sans-serif;font-weight:700;font-size:24px;display:flex;align-items:center;justify-content:center;border:2px solid #000">i</div><div style="font-size:15px;line-height:1.4">{{dlgText}}</div></div>
+<div style="display:flex;justify-content:center;padding:8px 0 10px"><button type="button" class="b98" style="min-width:110px;outline:1px solid #000" onClick="{{dlgOk}}">Aceptar</button></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{showHelp}}" hint-placeholder-val="{{true}}">
+<div class="tip" style="left:8px;top:626px;width:268px;height:150px;z-index:30">
+<div style="position:absolute;right:-9px;top:70px;width:0;height:0;border-top:9px solid transparent;border-bottom:9px solid transparent;border-left:10px solid #000"></div>
+<div style="position:absolute;right:-7px;top:71px;width:0;height:0;border-top:8px solid transparent;border-bottom:8px solid transparent;border-left:9px solid #FFFFE1"></div>
+<div style="display:flex;align-items:center;gap:6px"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h3l4-3v10l-4-3H2z" fill="#000"/><path d="M11 5q3 3 0 6M13 3q5 5 0 10" fill="none" stroke="#000" stroke-width="1.5"/></svg><span class="px" style="font-size:18px;font-weight:700;line-height:1.1">{{sayEs}}</span></div>
+<div style="font-size:13.5px;line-height:1.35;margin-top:5px;border-top:1px solid #808080;padding-top:5px"><b>How to play.</b> {{sayEn}}</div>
+</div>
+</sc-if>
+<div style="position:absolute;left:284px;top:652px;z-index:31">
+<dc-import name="bicho" mood="{{mood}}" size="92" look="-0.6" hint-size="92px,100px"></dc-import>
+</div>
+
+<div style="position:absolute;left:0;right:0;bottom:0;height:46px;background:#C0C0C0;border-top:2px solid #FFFFFF;box-shadow:inset 0 1px 0 #DFDFDF;display:flex;align-items:center;gap:4px;padding:0 3px;box-sizing:border-box;z-index:20">
+<a href="h-bicho-play.dc.html" class="b98" style="min-height:38px;text-decoration:none;gap:6px;font-weight:700;padding:0 10px"><svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="8" r="7" fill="#2FA8DC" stroke="#000"/><circle cx="7" cy="7" r="1.6" fill="#fff"/><circle cx="13" cy="7" r="1.6" fill="#fff"/><path d="M6 17l2-4M14 17l-2-4" stroke="#000" stroke-width="1.5"/></svg>Inicio</a>
+<div class="b98 dn" style="min-height:38px;flex:1;justify-content:flex-start;font-size:15px;background:repeating-conic-gradient(#C0C0C0 0 25%,#FFFFFF 0 50%) 0 0/2px 2px">Juegos.exe</div>
+<div class="px" style="min-height:34px;padding:0 10px;display:flex;align-items:center;box-shadow:inset 1px 1px 0 #808080,inset -1px -1px 0 #fff;font-size:14px;font-weight:600">{{clock}}</div>
+</div>
+<div style="position:absolute;left:0;top:0;z-index:60;pointer-events:none"><dc-import name="fx" w="390" h="844" mood="odd" stamp="PM 6:32 · JUEGOS" stamp-b="52" hint-size="390px,844px"></dc-import></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+const PAIRS = [['juego', 'I play'], ['leo', 'I read'], ['me gusta', 'I like'], ['mi casa', 'my house'], ['tiempo libre', 'free time'], ['mis amigos', 'my friends']];
+const BUILD = [
+  { en: 'In my free time I play video games.', chunks: ['En mi tiempo libre', 'juego', 'a videojuegos'] },
+  { en: 'I like reading manga because it is fun.', chunks: ['Me gusta', 'leer manga', 'porque', 'es divertido'] },
+  { en: 'At the weekend I am going to go to the cinema with my friends.', chunks: ['El fin de semana', 'voy a ir', 'al cine', 'con mis amigos'] }
+];
+const RAIN = [['juego', 'I play'], ['leo', 'I read'], ['amigos', 'friends'], ['casa', 'house'], ['instituto', 'school'], ['fin de semana', 'weekend'], ['me gusta', 'I like'], ['porque', 'because'], ['divertido', 'fun'], ['tiempo libre', 'free time']];
+const HELP = {
+  menu: ['¡Elige un juego!', 'Pick any game and I will explain it here. They are all quick, and nothing bad happens if you get something wrong.'],
+  pairs: ['¡Busca las parejas!', 'Flip two cards. If a Spanish phrase and its English meaning match, they stay face up. If not, they flip back. Take as many tries as you like.'],
+  build: ['¡Arma la frase!', 'Read the English sentence, then tap the Spanish chunks in the right order to build it. Stuck? Press Pista and I will point at the next chunk.'],
+  rain: ['¡Atrápalas!', 'A Spanish word is falling. Tap its English meaning before it lands. If it lands, nothing bad happens: I will just show you the answer.']
+};
+const DEF = { screen: 'menu', help: true, talkT: 5, coins: 12, dlg: null, n: 0,
+  deck: [], up: [], done: {}, tries: 0, secs: 0, lock: false,
+  round: 0, pool: [], chosen: [], bMsg: '', bDone: false, hintIdx: -1,
+  rq: [], ri: 0, ry: 0, rScore: 0, rStreak: 0, rLanded: false, rLandT: 0, rOpts: [], rMsg: '', rPaused: false };
+const shuf = (a) => a.map(x => [Math.random(), x]).sort((p, q) => p[0] - q[0]).map(p => p[1]);
+
+class Component extends DCLogic {
+  S() { return Object.assign({}, DEF, this.state || {}); }
+  componentDidMount() { this._t = setInterval(() => this.tick(), 500); }
+  componentWillUnmount() { clearInterval(this._t); clearTimeout(this._to); }
+
+  tick() {
+    const s = this.S();
+    const p = { n: s.n + 1 };
+    if (s.talkT > 0) p.talkT = s.talkT - 1;
+    if (s.screen === 'pairs' && !s.dlg && s.deck.length && s.n % 2 === 0) p.secs = s.secs + 1;
+    if (s.screen === 'rain' && !s.dlg && !s.rPaused) {
+      if (s.rLanded) {
+        if (s.rLandT <= 0) { this.setState(p); this.nextRain(); return; }
+        p.rLandT = s.rLandT - 1;
+      } else {
+        p.ry = s.ry + 7;
+        if (p.ry >= 100) { p.ry = 100; p.rLanded = true; p.rLandT = 3; p.rStreak = 0; p.rMsg = ''; }
+      }
+    }
+    this.setState(p);
+  }
+  say(screen) { return { screen: screen, talkT: 5, help: true }; }
+  toMenu() { clearTimeout(this._to); this.setState(Object.assign(this.say('menu'), { dlg: null, lock: false })); }
+  newGame() { const s = this.S(); if (s.screen === 'pairs') this.openPairs(); else if (s.screen === 'build') this.openBuild(); else if (s.screen === 'rain') this.openRain(); }
+  toggleHelp() { const s = this.S(); this.setState({ help: !s.help, talkT: s.help ? 0 : 5 }); }
+
+  openPairs() {
+    clearTimeout(this._to);
+    const deck = [];
+    PAIRS.forEach((pr, i) => { deck.push({ k: i, txt: pr[0], lang: 'es' }); deck.push({ k: i, txt: pr[1], lang: 'en' }); });
+    this.setState(Object.assign(this.say('pairs'), { deck: shuf(deck), up: [], done: {}, tries: 0, secs: 0, lock: false, dlg: null }));
+  }
+  tapCard(i) {
+    const s = this.S();
+    const c = s.deck[i];
+    if (s.lock || s.done[c.k] || s.up.indexOf(i) >= 0) return;
+    const up = s.up.concat([i]);
+    if (up.length < 2) { this.setState({ up: up }); return; }
+    const a = s.deck[up[0]], b = s.deck[up[1]];
+    if (a.k === b.k) {
+      const done = Object.assign({}, s.done); done[a.k] = true;
+      const all = Object.keys(done).length === PAIRS.length;
+      this.setState({ up: [], done: done, tries: s.tries + 1, coins: all ? s.coins + 10 : s.coins, dlg: all ? { title: '¡Muy bien!', text: 'You matched all six pairs in ' + (s.tries + 1) + ' tries. +10 monedas. Pick another game?' } : null });
+    } else {
+      this.setState({ up: up, tries: s.tries + 1, lock: true });
+      this._to = setTimeout(() => this.setState({ up: [], lock: false }), 900);
+    }
+  }
+
+  openBuild() { this.startRound(0); }
+  startRound(r) {
+    const items = BUILD[r].chunks.map((t, i) => ({ idx: i, txt: t }));
+    this.setState(Object.assign(this.say('build'), { round: r, pool: shuf(items), chosen: [], bMsg: '', bDone: false, hintIdx: -1, dlg: null }));
+  }
+  tapChunk(it) {
+    const s = this.S();
+    if (s.bDone) return;
+    if (it.idx === s.chosen.length) {
+      const chosen = s.chosen.concat([it]);
+      const full = chosen.length === BUILD[s.round].chunks.length;
+      this.setState({ chosen: chosen, bMsg: full ? '¡Bien! That is the sentence.' : '¡Bien!', bDone: full, hintIdx: -1 });
+    } else {
+      this.setState({ bMsg: 'Not that one yet. Try another chunk.' });
+    }
+  }
+  hintChunk() { const s = this.S(); if (!s.bDone) this.setState({ hintIdx: s.chosen.length, bMsg: 'The glowing chunk comes next.' }); }
+  backChunk() { const s = this.S(); if (s.chosen.length && !s.bDone) this.setState({ chosen: s.chosen.slice(0, -1), bMsg: '', hintIdx: -1 }); }
+  nextRound() {
+    const s = this.S();
+    if (s.round < BUILD.length - 1) this.startRound(s.round + 1);
+    else this.setState({ coins: s.coins + 10, dlg: { title: '¡Muy bien!', text: 'All three sentences built. +10 monedas. Try another game?' } });
+  }
+
+  openRain() {
+    const q = shuf(RAIN).slice(0, 8);
+    const reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    this.setState(Object.assign(this.say('rain'), { rq: q, ri: 0, ry: 0, rScore: 0, rStreak: 0, rLanded: false, rLandT: 0, rOpts: this.makeOpts(q[0]), rMsg: 'Press Empezar when you are ready.', rPaused: true, dlg: null }));
+  }
+  makeOpts(item) {
+    const others = shuf(RAIN.filter(x => x[1] !== item[1])).slice(0, 2).map(x => x[1]);
+    return shuf([item[1]].concat(others));
+  }
+  nextRain() {
+    const s = this.S();
+    const ri = s.ri + 1;
+    if (ri >= s.rq.length) { this.setState({ coins: s.coins + 10, dlg: { title: '¡Muy bien!', text: 'You caught ' + s.rScore + ' of ' + s.rq.length + ' words. +10 monedas. Another game?' } }); return; }
+    this.setState({ ri: ri, ry: 0, rLanded: false, rLandT: 0, rOpts: this.makeOpts(s.rq[ri]), rMsg: '' });
+  }
+  tapAnswer(txt) {
+    const s = this.S();
+    if (s.rLanded || s.dlg) return;
+    if (txt === s.rq[s.ri][1]) {
+      const streak = s.rStreak + 1;
+      this.setState({ rScore: s.rScore + 1, rStreak: streak, rMsg: '¡Sí!' });
+      this.nextRain();
+    } else {
+      this.setState({ rStreak: 0, rMsg: 'Not quite. Try another one.' });
+    }
+  }
+
+  renderVals() {
+    const s = this.S();
+    const sc = s.screen;
+    const titles = { menu: '', pairs: ' - Parejas', build: ' - Arma la frase', rain: ' - Lluvia de palabras' };
+    const cards = s.deck.map((c, i) => {
+      const matched = !!s.done[c.k];
+      const up = matched || s.up.indexOf(i) >= 0;
+      return {
+        txt: up ? c.txt : '?',
+        aria: up ? c.txt : 'Face-down card',
+        style: (matched ? 'background:#B8E8B8;box-shadow:inset 1px 1px 0 #808080,inset -1px -1px 0 #fff;' : up ? 'background:#FFFFFF;' : 'font-size:30px;') + (up ? 'color:' + (c.lang === 'es' ? '#000080' : '#006000') : ''),
+        tap: () => this.tapCard(i)
+      };
+    });
+    const round = BUILD[s.round] || BUILD[0];
+    const poolLeft = s.pool.filter(it => s.chosen.map(c => c.idx).indexOf(it.idx) < 0).map(it => ({
+      txt: it.txt,
+      style: s.hintIdx === it.idx ? 'background:#FFFF80;outline:2px solid #000080' : '',
+      tap: () => this.tapChunk(it)
+    }));
+    const cur = s.rq[s.ri] || RAIN[0];
+    const hh = s.dlg ? ['¡Muy bien!', 'Nice work. Pick another game whenever you are ready. There is no wrong order.'] : HELP[sc];
+    const mood = s.dlg ? 'happy' : (s.talkT > 0 && s.help) ? 'talk' : 'idle';
+    const now = new Date();
+    return {
+      winTitle: titles[sc],
+      showMenu: sc === 'menu', showPairs: sc === 'pairs', showBuild: sc === 'build', showRain: sc === 'rain',
+      newGame: () => this.newGame(), toMenu: () => this.toMenu(), toggleHelp: () => this.toggleHelp(),
+      openPairs: () => this.openPairs(), openBuild: () => this.openBuild(), openRain: () => this.openRain(),
+      cards: cards, pTries: s.tries, pSecs: s.secs,
+      bRound: s.round + 1, bEn: round.en, bChosen: s.chosen, bPool: poolLeft, bMsg: s.bMsg, bDone: s.bDone,
+      bHint: () => this.hintChunk(), bBack: () => this.backChunk(), bNext: () => this.nextRound(),
+      rScore: s.rScore, rStreak: s.rStreak, rN: Math.min(s.ri + 1, 8), rWord: cur[0], rAns: cur[1], rLanded: s.rLanded, rMsg: s.rMsg,
+      rWordStyle: 'position:absolute;left:50%;transform:translateX(-50%);top:' + Math.min(s.ry, 88) + '%;background:' + (s.rLanded ? '#FFFF80' : '#FFFFFF') + ';border:2px solid #000;padding:4px 12px;font-size:20px;font-weight:700;white-space:nowrap;box-shadow:2px 2px 0 rgba(0,0,0,0.4)',
+      rOpts: s.rOpts.map(t => ({ txt: t, tap: () => this.tapAnswer(t) })),
+      rPause: () => this.setState({ rPaused: !s.rPaused }), rPauseLabel: s.rPaused ? ((s.ri === 0 && s.ry === 0) ? 'Empezar' : 'Seguir') : 'Pausa',
+      status: s.dlg ? 'Listo' : sc === 'menu' ? 'Elige un juego' : sc === 'pairs' ? 'Parejas: ' + Object.keys(s.done).length + ' de 6' : sc === 'build' ? 'Frase ' + (s.round + 1) + ' de 3' : s.rPaused ? 'En pausa' : 'Cayendo…',
+      coins: s.coins,
+      hasDlg: !!s.dlg, dlgTitle: s.dlg ? s.dlg.title : '', dlgText: s.dlg ? s.dlg.text : '',
+      dlgOk: () => this.toMenu(),
+      showHelp: s.help, sayEs: hh[0], sayEn: hh[1], mood: mood,
+      clock: '14:02'
+    };
+  }
+}
+</script>
+</body>
+</html>

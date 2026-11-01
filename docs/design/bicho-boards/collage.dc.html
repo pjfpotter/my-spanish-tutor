@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dream Collage Wallpaper</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="position:relative;width:{{w}}px;height:{{h}}px;overflow:hidden;background:#0B63FF">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+<filter id="cvPix" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feFlood x="1" y="1" width="1" height="1"/><feComposite width="3" height="3"/><feTile result="a"/><feComposite in="SourceGraphic" in2="a" operator="in"/><feMorphology operator="dilate" radius="1"/></filter>
+<filter id="cvRgb" x="-2%" y="-2%" width="104%" height="104%" color-interpolation-filters="sRGB"><feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="r"/><feOffset in="r" dx="-1.5" dy="0" result="ro"/><feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="g"/><feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="b"/><feOffset in="b" dx="1.5" dy="0" result="bo"/><feBlend in="ro" in2="g" mode="screen" result="rg"/><feBlend in="rg" in2="bo" mode="screen"/></filter>
+</defs>
+</svg>
+<div style="position:absolute;left:0;top:0;width:{{w}}px;height:{{h}}px;overflow:hidden;filter:{{post}}">
+<div style="position:absolute;left:0;top:0;width:390px;height:844px;transform-origin:0 0;transform:{{xf}}">
+<svg viewBox="0 0 390 844" width="390" height="844" style="position:absolute;left:0;top:0">
+<defs>
+<linearGradient id="cvSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{{skyA}}"/><stop offset="0.5" stop-color="{{skyB}}"/><stop offset="1" stop-color="{{skyC}}"/></linearGradient>
+<linearGradient id="cvGrass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{{grassA}}"/><stop offset="1" stop-color="{{grassB}}"/></linearGradient>
+<linearGradient id="cvFloor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF8AD0"/><stop offset="1" stop-color="#FF1FA0"/></linearGradient>
+<linearGradient id="cvFog" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity="0.55"/></linearGradient>
+<linearGradient id="cvHyper" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FF1FA9"/><stop offset="0.5" stop-color="#FFEB00"/><stop offset="1" stop-color="#00E5E5"/></linearGradient>
+<linearGradient id="cvScreen" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5DF5E8"/><stop offset="1" stop-color="#0E6E78"/></linearGradient>
+<linearGradient id="cvFadeY" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.95"/><stop offset="0.75" stop-color="#fff" stop-opacity="0.7"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+<mask id="cvCldM"><rect width="390" height="520" fill="url(#cvFadeY)"/></mask>
+<radialGradient id="cvSclW" cx="50%" cy="45%" r="62%"><stop offset="0" stop-color="#FFFFFF"/><stop offset="0.7" stop-color="#F8E4DE"/><stop offset="1" stop-color="#D08A80"/></radialGradient>
+<radialGradient id="cvIrisW" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#3DFFC4"/><stop offset="0.55" stop-color="#1AA7D8"/><stop offset="0.9" stop-color="#1B2A8A"/><stop offset="1" stop-color="#0B1040"/></radialGradient>
+<radialGradient id="cvSph" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#FFFFFF"/><stop offset="0.7" stop-color="#EEF3FA"/><stop offset="1" stop-color="#9FB0C8"/></radialGradient>
+<linearGradient id="cvFogFade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="0.3" stop-color="#fff" stop-opacity="0.55"/><stop offset="0.5" stop-color="#fff" stop-opacity="1"/></linearGradient>
+<mask id="cvFogM"><rect x="0" y="84" width="390" height="585" fill="url(#cvFogFade)"/></mask>
+<linearGradient id="cvBalFade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="0.22" stop-color="#fff" stop-opacity="1"/></linearGradient>
+<mask id="cvBalM"><rect x="0" y="560" width="390" height="285" fill="url(#cvBalFade)"/></mask>
+<clipPath id="cvRound"><circle r="12"/></clipPath>
+<clipPath id="cvEyc"><path d="M-27 0Q0 -23 27 0Q0 21 -27 0Z"/></clipPath>
+<filter id="cvCldA" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="0.007 0.014" numOctaves="6" seed="11"/><feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  2.4 0 0 0 -0.95"/></filter>
+<filter id="cvCldB" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="0.007 0.014" numOctaves="6" seed="11"/><feColorMatrix type="matrix" values="0 0 0 0 0.9  0 0 0 0 0.45  0 0 0 0 0.85  2.4 0 0 0 -0.78"/></filter>
+<filter id="cvWob" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="5" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="5"/></filter>
+<filter id="cvCut" x="-30%" y="-30%" width="160%" height="160%"><feMorphology in="SourceAlpha" operator="dilate" radius="2.5" result="d"/><feFlood flood-color="#FFFFFF" result="w"/><feComposite in="w" in2="d" operator="in" result="o"/><feGaussianBlur in="o" stdDeviation="1.6" result="b"/><feOffset in="b" dx="2" dy="3" result="s"/><feColorMatrix in="s" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.55 0" result="sh"/><feMerge><feMergeNode in="sh"/><feMergeNode in="o"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<g id="cvEye"><path d="M-27 0Q0 -23 27 0Q0 21 -27 0Z" fill="url(#cvSclW)"/><g clip-path="url(#cvEyc)"><g transform="translate({{ix}} {{iy}})"><circle r="15" fill="url(#cvIrisW)"/><circle r="15" fill="none" stroke="#0B1040" stroke-width="1.6"/><circle r="6.5" fill="#020208"/><circle cx="-5" cy="-6" r="3.2" fill="#fff"/></g><path d="M-27 0Q0 -23 27 0Q0 -11 -27 0Z" fill="#000" opacity="0.16"/><path d="M-27 1Q-19 -2 -13 -4M27 1Q19 -1 14 -3" stroke="#D63A2A" stroke-width="0.8" fill="none" opacity="0.6"/></g><path d="M-27 0Q0 -23 27 0Q0 21 -27 0Z" fill="none" stroke="#6A2A14" stroke-width="2"/></g>
+<g id="cvToy"><circle r="12" fill="url(#cvSph)"/><circle cx="1" cy="1" r="6.5" fill="url(#cvIrisW)"/><circle cx="1" cy="1" r="2.8" fill="#020208"/><ellipse cx="-4" cy="-5" rx="3.4" ry="2" fill="#fff" transform="rotate(-30 -4 -5)"/></g>
+<g id="cvCrt"><rect x="-34" y="-8" width="68" height="8" fill="#FFF4FB" stroke="#D88AB8" stroke-width="1"/><rect x="-16" y="-42" width="32" height="29" rx="4" fill="#E8E0C8" stroke="#A89A78" stroke-width="1"/><rect x="-12" y="-38" width="24" height="19" rx="2" fill="url(#cvScreen)"/><circle cx="0" cy="-29" r="5.2" fill="#fff"/><circle cx="1" cy="-28.6" r="2.4" fill="#101040"/><rect x="-5" y="-13" width="10" height="5" fill="#D8D0B8"/><rect x="-14" y="-10" width="28" height="3" fill="#E8E0C8" stroke="#A89A78" stroke-width="0.6"/></g>
+</defs>
+
+<rect width="390" height="520" fill="url(#cvSky)"/>
+<image href="{{skySrc}}" x="0" y="0" width="390" height="520" preserveAspectRatio="xMaxYMin slice" opacity="{{skyOp}}"/>
+<g mask="url(#cvCldM)" opacity="{{cloudOp}}"><rect width="390" height="520" filter="url(#cvCldB)" transform="translate(0 8)" fill="#fff"/><rect width="390" height="520" filter="url(#cvCldA)" fill="#fff"/></g>
+
+<g transform="translate(96 168) scale(0.8)" opacity="0.92"><ellipse cx="0" cy="10" rx="70" ry="30" fill="#fff"/><ellipse cx="-40" cy="0" rx="34" ry="24" fill="#fff"/><ellipse cx="42" cy="2" rx="38" ry="26" fill="#fff"/><use href="#cvEye" transform="scale(1.1)"/></g>
+
+<g filter="url(#cvWob)" fill="none" stroke-linecap="round">
+<path d="M-10 330Q80 190 200 300" stroke="#FF2A2A" stroke-width="7"/>
+<path d="M-10 342Q80 204 196 312" stroke="#FFB300" stroke-width="7"/>
+<path d="M-10 354Q80 218 192 324" stroke="#22D24A" stroke-width="7"/>
+<path d="M-10 366Q80 232 188 336" stroke="#2A6BFF" stroke-width="7"/>
+</g>
+
+<g opacity="{{vecOp}}">
+<rect y="470" width="390" height="70" fill="url(#cvGrass)"/>
+<g>
+<rect x="52" y="436" width="7" height="40" fill="#EF2D2D"/><rect x="82" y="436" width="7" height="40" fill="#EF2D2D"/>
+<path d="M50 440L44 476M62 440L56 476" stroke="#FFD21F" stroke-width="2.5"/><path d="M47 452h13M45 464h13" stroke="#FFD21F" stroke-width="2.5"/>
+<rect x="46" y="428" width="48" height="9" fill="#FFD21F" stroke="#B88800"/>
+<polygon points="42,428 70,398 98,428" fill="#2A5CFF"/><polygon points="70,398 98,428 70,428" fill="#1C3FC0"/>
+<path d="M90 438Q122 442 146 476" fill="none" stroke="#FF2A2A" stroke-width="13" stroke-linecap="round"/><path d="M90 434Q122 438 144 470" fill="none" stroke="#FF9A9A" stroke-width="3" stroke-linecap="round"/>
+<rect x="152" y="447" width="40" height="30" fill="#1BC44A"/><ellipse cx="152" cy="462" rx="10" ry="15" fill="#0A6B2A"/><ellipse cx="192" cy="462" rx="10" ry="15" fill="#2BE05E" stroke="#0A6B2A" stroke-width="1.5"/><path d="M158 450H190" stroke="#B6FFC8" stroke-width="3"/>
+<g transform="translate(284 478) scale(0.85)"><rect x="-26" y="-42" width="7" height="42" fill="#FFD21F"/><rect x="19" y="-42" width="7" height="42" fill="#FFD21F"/><rect x="-30" y="-50" width="60" height="9" fill="#FF1FA9" stroke="#A0126A"/><polygon points="-34,-50 0,-84 34,-50" fill="#8A2BE2"/><polygon points="0,-84 34,-50 0,-50" fill="#5E1AB0"/><path d="M-24 -44Q-56 -40 -78 -2" fill="none" stroke="#FFD21F" stroke-width="14" stroke-linecap="round"/></g>
+<path d="M338 478L358 424L378 478M340 440H376" fill="none" stroke="#2A5CFF" stroke-width="4"/><path d="M346 440V462M370 440V462" stroke="#444" stroke-width="1.5"/><rect x="341" y="462" width="10" height="4" fill="#EF2D2D"/><rect x="366" y="462" width="10" height="4" fill="#EF2D2D"/>
+</g>
+</g>
+<image href="{{playSrc}}" x="0" y="84" width="390" height="585" preserveAspectRatio="xMidYMid slice" opacity="{{playOp}}" mask="url(#cvFogM)"/>
+<rect y="436" width="390" height="50" fill="url(#cvFog)" opacity="{{vecOp}}"/>
+
+<g opacity="{{vecFloorOp}}">
+<rect y="500" width="390" height="344" fill="url(#cvFloor)"/>
+<g stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="1.5">
+<path d="M195 500L-400 844M195 500L-320 844M195 500L-240 844M195 500L-160 844M195 500L-80 844M195 500L0 844M195 500L80 844M195 500L160 844M195 500L230 844M195 500L310 844M195 500L390 844M195 500L470 844M195 500L550 844M195 500L630 844M195 500L710 844M195 500L790 844"/>
+<path d="M0 508H390M0 531H390M0 570H390M0 626H390M0 695H390M0 778H390"/>
+</g>
+<use href="#cvCrt" transform="translate(137 540) scale(0.32)"/><use href="#cvCrt" transform="translate(253 540) scale(0.32)"/>
+<use href="#cvCrt" transform="translate(121 574) scale(0.45)"/><use href="#cvCrt" transform="translate(269 574) scale(0.45)"/>
+<use href="#cvCrt" transform="translate(91 630) scale(0.7)"/><use href="#cvCrt" transform="translate(299 630) scale(0.7)"/>
+<use href="#cvCrt" transform="translate(40 712) scale(1.05)"/><use href="#cvCrt" transform="translate(350 712) scale(1.05)"/>
+<use href="#cvCrt" transform="translate(-6 835) scale(1.5)"/><use href="#cvCrt" transform="translate(396 835) scale(1.5)"/>
+</g>
+<image href="{{officeSrc}}" x="0" y="560" width="390" height="585" preserveAspectRatio="xMidYMid slice" opacity="{{officeOp}}" mask="url(#cvBalM)"/>
+<g fill="none" stroke-dasharray="2 6" opacity="{{vecFloorOp}}"><path d="M-10 780Q40 700 120 690" stroke="#0E7A2E" stroke-width="22"/><path d="M400 780Q350 700 270 690" stroke="#0E7A2E" stroke-width="22"/><path d="M-10 780Q50 730 100 720" stroke="#35C04A" stroke-width="16"/><path d="M400 780Q340 730 290 720" stroke="#35C04A" stroke-width="16"/></g>
+
+<g filter="url(#cvWob)" transform="translate(14 250) rotate(-5)">
+<rect width="118" height="118" fill="#FFFFFF" stroke="#999" stroke-width="1"/>
+<path d="M0 22H118M0 44H118M0 66H118M0 88H118M0 110H118" stroke="#9EC5FF" stroke-width="1"/>
+<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5"><path d="M20 98V62H62V98Z" stroke="#FF2A2A"/><path d="M14 62L41 38L68 62" stroke="#2A5CFF"/><path d="M34 98V80H46V98" stroke="#7A4A1A"/><circle cx="92" cy="26" r="11" stroke="#FFB300"/><path d="M92 8V2M92 44V50M74 26H68M110 26H116" stroke="#FFB300"/><circle cx="88" cy="74" r="5" stroke="#111"/><path d="M88 79V94M88 84L78 90M88 84L98 90M88 94L81 106M88 94L95 106" stroke="#111" stroke-width="2.5"/></g>
+</g>
+<rect x="38" y="238" width="54" height="16" fill="#EFE0A8" opacity="0.85" transform="rotate(-8 38 238)"/>
+
+<g style="filter:url(#cvCut)"><use href="#cvToy" transform="translate(333 330) scale(1.2)"/></g>
+<g style="filter:url(#cvCut)"><use href="#cvToy" transform="translate(150 424) scale(0.8)"/></g>
+<g style="filter:url(#cvCut)"><use href="#cvToy" transform="translate(360 480) scale(0.9)"/></g>
+<g style="filter:url(#cvCut)"><use href="#cvToy" transform="translate(30 520) scale(1.0)"/></g>
+<g style="filter:url(#cvCut)"><use href="#cvToy" transform="translate(206 296) scale(0.7)"/></g>
+
+<g transform="translate(352 318) rotate(5)" style="filter:url(#cvCut)"><image href="/_blob/6c073c54a8b33e37e739a8a6515d5c1c" x="-31" y="-110" width="62" height="220" preserveAspectRatio="xMidYMid slice"/></g>
+<g transform="translate(62 420) rotate(-7)" style="filter:url(#cvCut)"><image href="/_blob/0d6017a08c1a97934a8ce3d03acd32ed" x="-56" y="-54" width="112" height="108" preserveAspectRatio="xMidYMid slice"/></g>
+<g transform="translate(222 212) rotate(-8)" style="filter:url(#cvCut)"><image href="/_blob/38c32ab1ca60564515248c9eaffd9d89" x="-46" y="-44" width="92" height="88" preserveAspectRatio="xMidYMid slice"/></g>
+<g opacity="{{eyeOp}}">
+<g style="filter:url(#cvCut)" transform="translate(333 330) scale(1.2)"><image href="{{eyeSrc}}" x="-12" y="-12" width="24" height="24" preserveAspectRatio="xMidYMid slice" clip-path="url(#cvRound)"/></g>
+<g style="filter:url(#cvCut)" transform="translate(150 424) scale(0.8)"><image href="{{eyeSrc}}" x="-12" y="-12" width="24" height="24" preserveAspectRatio="xMidYMid slice" clip-path="url(#cvRound)"/></g>
+<g style="filter:url(#cvCut)" transform="translate(360 480) scale(0.9)"><image href="{{eyeSrc}}" x="-12" y="-12" width="24" height="24" preserveAspectRatio="xMidYMid slice" clip-path="url(#cvRound)"/></g>
+<g style="filter:url(#cvCut)" transform="translate(30 520) scale(1.0)"><image href="{{eyeSrc}}" x="-12" y="-12" width="24" height="24" preserveAspectRatio="xMidYMid slice" clip-path="url(#cvRound)"/></g>
+<g style="filter:url(#cvCut)" transform="translate(206 296) scale(0.7)"><image href="{{eyeSrc}}" x="-12" y="-12" width="24" height="24" preserveAspectRatio="xMidYMid slice" clip-path="url(#cvRound)"/></g>
+</g>
+<g transform="translate(40 52) rotate(-12)" style="filter:url(#cvCut)"><polygon points="0,-34 8,-22 22,-28 22,-14 36,-10 28,2 38,14 24,18 24,32 10,28 0,38 -10,28 -24,32 -24,18 -38,14 -28,2 -36,-10 -22,-14 -22,-28 -8,-22" fill="#FFEB00" stroke="#FF1FA9" stroke-width="3"/><text x="0" y="5" text-anchor="middle" font-family="Pixelify Sans" font-weight="700" font-size="15" fill="#E0007A">¡NUEVO!</text></g>
+<g transform="translate(236 226) rotate(7)" style="filter:url(#cvCut)"><rect x="-70" y="-13" width="140" height="26" fill="url(#cvHyper)" stroke="#FFFFFF" stroke-width="2"/><text x="0" y="6" text-anchor="middle" font-family="Pixelify Sans" font-weight="700" font-size="14" fill="#FFFFFF" stroke="#150A3A" stroke-width="0.8">SUPER HABLAR 2000</text></g>
+<g fill="none" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+<path d="M300 380l16 28h-32z" stroke="#00E5E5"/><path d="M20 410q8 -10 16 0t16 0t16 0" stroke="#FF1FA9"/><path d="M330 560l10 -14 10 14 10 -14 10 14" stroke="#FFEB00"/><circle cx="262" cy="396" r="6" stroke="#FFEB00"/><circle cx="276" cy="410" r="4" stroke="#FF1FA9"/>
+</g>
+<g transform="translate(70 380)"><circle r="14" fill="url(#cvSph)"/><circle r="14" fill="#EF2D2D" opacity="0.8"/><ellipse cx="-5" cy="-6" rx="5" ry="3" fill="#fff" opacity="0.7"/></g>
+<g transform="translate(250 360)"><path d="M0 -14l14 8-14 8-14-8z" fill="#FFE766"/><path d="M-14 -6l14 8v14l-14-8z" fill="#FFD21F"/><path d="M14 -6l-14 8v14l14-8z" fill="#E0AA00"/></g>
+</svg>
+<div style="position:absolute;left:170px;top:330px;width:220px;height:220px;transform:rotate(8deg)">
+<dc-import name="sun" size="220" look-x="{{lookX}}" look-y="{{lookY}}" eyes="true" hint-size="220px,220px"></dc-import>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"w":{"editor":"int","default":390,"min":40,"max":3000},"h":{"editor":"int","default":844,"min":40,"max":3000},"fx":{"editor":"enum","options":["full","light","none"],"default":"full"},"mood":{"editor":"enum","options":["cozy","odd","haunted"],"default":"odd"},"lookX":{"editor":"float","default":0,"min":-1,"max":1,"step":0.1},"lookY":{"editor":"float","default":0,"min":-1,"max":1,"step":0.1},"skySrc":{"editor":"text","default":"","section":"Photos"},"playSrc":{"editor":"text","default":"","section":"Photos"},"officeSrc":{"editor":"text","default":"","section":"Photos"},"eyeSrc":{"editor":"text","default":"","section":"Photos"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const w = Number(this.props.w || 390);
+    const h = Number(this.props.h || 844);
+    const fx = this.props.fx || 'full';
+    const mood = this.props.mood || 'odd';
+    const k = Math.max(w / 390, h / 844);
+    const tx = (w - 390 * k) / 2, ty = (h - 844 * k) / 2;
+    const sat = mood === 'cozy' ? 1.1 : mood === 'odd' ? 1.35 : 1.7;
+    const hue = mood === 'haunted' ? ' hue-rotate(-12deg)' : '';
+    const tail = ' saturate(' + sat + ') contrast(1.06)' + hue;
+    const post = fx === 'full' ? 'url(#cvPix) url(#cvRgb)' + tail : fx === 'light' ? 'url(#cvRgb)' + tail : 'none';
+    const sky = mood === 'haunted' ? ['#5B1FA8', '#FF5FB5', '#FFD27A'] : ['#0B63FF', '#4DB8FF', '#FFC6EE'];
+    const grass = mood === 'haunted' ? ['#2FB090', '#0E6A5A'] : ['#3AE05A', '#0B8A30'];
+    const lx = Number(this.props.lookX || 0), ly = Number(this.props.lookY || 0);
+    const has = (v) => !!(v && String(v).length > 4);
+    const src = (v, d) => has(v) ? String(v) : (d || 'about:blank');
+    const dSky = '/_blob/0bce3c0e2a764461caec4152884a6c08', dPlay = '/_blob/80d34e8bf27adb0714d411122ca2a012', dFloor = '/_blob/ed6e073075bad7718c70163370fedbd3';
+    const playOn = true, floorOn = true;
+    return {
+      w: w, h: h, post: post,
+      xf: 'translate(' + tx + 'px,' + ty + 'px) scale(' + k + ')',
+      skyA: sky[0], skyB: sky[1], skyC: sky[2], grassA: grass[0], grassB: grass[1],
+      lookX: lx, lookY: ly,
+      skySrc: src(this.props.skySrc, dSky), skyOp: 1, cloudOp: 0, vecOp: 0, vecFloorOp: 0,
+      playSrc: src(this.props.playSrc, dPlay), playOp: 1,
+      officeSrc: src(this.props.officeSrc, dFloor), officeOp: 1,
+      eyeSrc: src(this.props.eyeSrc), eyeOp: has(this.props.eyeSrc) ? 1 : 0,
+      ix: Math.max(-9, Math.min(9, lx * 9)), iy: Math.max(-3.5, Math.min(3.5, ly * 3.5))
+    };
+  }
+}
+</script>
+</body>
+</html>

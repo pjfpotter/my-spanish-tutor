@@ -20,12 +20,30 @@ Students SHALL have a rank that rises as their recent average response time fall
 - **WHEN** a student's average response time drops below a rank boundary
 - **THEN** their rank increases and the change is celebrated
 
-### Requirement: Collectibles
-Coins SHALL buy items for the student's avatar and sticker collection, including random-draw packs that use only in-app coins. No real money SHALL be accepted anywhere in the app.
+### Requirement: Desktop unlocks
+Coins SHALL buy fixed-price items for the student's desktop and sticker collection, such as wallpapers and objects. There SHALL be no random draws. No real money SHALL be accepted anywhere in the app.
 
-#### Scenario: Pack opened
-- **WHEN** a student spends coins on a pack
-- **THEN** they receive items and no payment screen is shown
+#### Scenario: Item bought
+- **WHEN** a student spends coins on a wallpaper
+- **THEN** they receive exactly that item and no payment screen is shown
+
+### Requirement: Play earns nothing
+Coins and progress SHALL come only from practice. Exploring the desktop and poking the character SHALL NOT earn coins or progress, and SHALL have no timer or penalty.
+
+#### Scenario: Exploring
+- **WHEN** a student spends a session tapping around the desktop without practising
+- **THEN** no coins or progress are awarded and nothing is lost
+
+### Requirement: Progress shown in the world
+Phase progress SHALL be shown in the character's world without changing the gated order. Each question's channel SHALL clear from static as comprehension mastery rises and lock only after mastery has held across separate sessions, locked phases SHALL appear as static, and the response-time rank SHALL be shown as a ladder of named steps.
+
+#### Scenario: Mastery rises
+- **WHEN** a student's comprehension mastery of a question increases
+- **THEN** that question's channel shows a clearer picture
+
+#### Scenario: Locked phase
+- **WHEN** a student has not yet unlocked a phase
+- **THEN** it appears as static and cannot be opened
 
 ### Requirement: Streaks without punishment
 The app SHALL show a daily streak with a freeze that protects it on a missed day. There SHALL be no lives, hearts or loss of progress for mistakes.
