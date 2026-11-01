@@ -1,0 +1,62 @@
+/*
+ * The single dreamcore token set (task 18.1, docs/design-direction.md).
+ * Colours, fonts, backgrounds and motion intensity live here. Learner accessibility
+ * settings live in accessibility.css and are not a theme.
+ *
+ * Contrast rules (checked by lib/design/contrast.test.ts):
+ *   - Reading pairs listed in that test must reach 4.5:1.
+ *   - --hyper-pink, --lemon and --toxic-cyan are decoration only and never text.
+ * Keep colour values as plain hex so the test can read them.
+ */
+:root {
+  /* palette */
+  --white: #ffffff;
+  --black: #000000;
+  --win-grey: #c0c0c0;
+  --title-navy: #000080;
+  --title-navy-end: #0a5cc0;
+  --ink-navy: #0b2a4a;
+  --cream: #f4f4d0;
+  --soft-pink: #ff5fa8;
+  --candy-sky: #0b63ff;
+  --sky-top: #4fa9f0;
+  --sky-mid: #9ad6ff;
+  --sky-low: #ddf3ff;
+  --grass: #8fdb4a;
+  --grass-deep: #5bbb2e;
+  --text-muted: #404040;
+
+  /* decoration only, never text */
+  --hyper-pink: #ff1fa9;
+  --lemon: #ffeb00;
+  --toxic-cyan: #00e5e5;
+
+  /* roles */
+  --page-text: var(--ink-navy);
+  --window-chrome: var(--win-grey);
+  --window-body: var(--white);
+  --window-body-text: var(--black);
+  --title-bar-text: var(--white);
+  --focus-ink: var(--ink-navy);
+  --focus-halo: var(--white);
+
+  /* backgrounds */
+  --sky: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 60%, var(--sky-low) 78%);
+  --title-bar: linear-gradient(90deg, var(--title-navy), var(--title-navy-end));
+  --bevel-out: inset -1px -1px 0 #0a0a0a, inset 1px 1px 0 #ffffff, inset -2px -2px 0 #808080, inset 2px 2px 0 #dfdfdf;
+  --bevel-in: inset 1px 1px 0 #808080, inset -1px -1px 0 #ffffff, inset 2px 2px 0 #0a0a0a;
+
+  /* type: reading text is always --font-read; the others are for titles and short labels */
+  --font-read: var(--font-atkinson), 'Segoe UI', system-ui, sans-serif;
+  --font-title: var(--font-fredoka), var(--font-atkinson), system-ui, sans-serif;
+  --font-ui: var(--font-pixelify), var(--font-atkinson), system-ui, sans-serif;
+  --font-status: var(--font-vt323), 'Courier New', monospace;
+
+  /* sizing */
+  --tap-min: 44px;
+  --read-measure: 62ch;
+
+  /* motion intensity: 1 is full, 0 is still. The accessibility layer lowers these. */
+  --motion-scale: 1;
+  --fx-opacity: 1;
+}

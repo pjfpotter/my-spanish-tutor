@@ -27,8 +27,8 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 ## 2. Speech and device spike (de-risk first)
 
 - [x] 2.1 Build a throwaway page that records a Spanish sentence with browser recognition and prints the transcript; verify with Playwright (mocked recogniser, phone and Chromebook profiles). Optional manual check: run `/spike/speech` on an Android phone, an iPhone and a Chromebook with built-in microphone and with a headset, and paste each device's matrix block into 2.3
-- [ ] 2.2 Test a server-side transcription fallback with a short in-memory clip; verify with a test that the clip is never stored and that the cost router is called. Optional manual check: transcript quality and latency for a 13-year-old's accent (Dolores and one friend with consent)
-- [ ] 2.3 Record the results in a device matrix document and choose the recognition path per device (untested devices default to the server fallback and are marked unverified); verify the document lists a decision for each device
+- [x] 2.2 Test a server-side transcription fallback with a short in-memory clip; verify with a test that the clip is never stored and that the cost router is called. Optional manual check: transcript quality and latency for a 13-year-old's accent (Dolores and one friend with consent)
+- [x] 2.3 Record the results in a device matrix document and choose the recognition path per device (untested devices default to the server fallback and are marked unverified); verify the document lists a decision for each device
 
 ## 3. Course content, joining and anonymous identity
 
@@ -41,7 +41,7 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 
 ## 4. Speech audio assets and clip timelines
 
-- [ ] 4.1 Check the ElevenLabs character voice for production use: plan and cost against the budget, licence terms for school and under-18 use, availability of word timestamps and a speed setting, and a second voice for rotation; verify the decision is recorded with reasons and the unofficial prototype voice is not used in production
+- [x] 4.1 Check the ElevenLabs character voice for production use: plan and cost against the budget, licence terms for school and under-18 use, availability of word timestamps and a speed setting, and a second voice for rotation; verify the decision is recorded with reasons and the unofficial prototype voice is not used in production
 - [ ] 4.2 Write the build script that synthesises each question in two voices at slow, normal and fast rates using the provider's speed setting (not time-stretching) and stores clips by content hash; verify rerunning produces no new files for unchanged text
 - [ ] 4.3 Port the Spanish syllable-grouping and stress rules into a tested module; verify unit tests cover diphthongs, hiatus, silent h, qu, gu, ll, ch, final y and stress position
 - [ ] 4.4 Generate the per-clip timeline (word times from provider timestamps or rules, downsampled loudness envelope, feeling track) and store it beside each clip; verify timelines exist for every clip and unit tests cover envelope downsampling and the feeling track
@@ -145,7 +145,7 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 
 ## 18. Tele and the dreamcore desktop (built early, in M1)
 
-- [ ] 18.1 Create the single dreamcore token set (colours, fonts, backgrounds, motion intensity) and a separate learner-controlled accessibility layer; verify with an automated contrast check that reading surfaces meet 4.5:1 and that no state is conveyed by colour alone
+- [x] 18.1 Create the single dreamcore token set (colours, fonts, backgrounds, motion intensity) and a separate learner-controlled accessibility layer; verify with an automated contrast check that reading surfaces meet 4.5:1 and that no state is conveyed by colour alone
 - [ ] 18.2 Build the Tele component with eye, antennae, picture and world driven by a feeling vector and voice loudness, deciding canvas code versus layered SVG per docs/art-pipeline.md and recording the decision in design.md; verify with Playwright that all six feelings render and the idle character runs without console errors
 - [ ] 18.3 Build the caption window with the Spanish line, English subtitle, word highlight and subtitle toggle; verify the subtitle can be hidden and the highlighted word follows a stub timeline
 - [ ] 18.4 Build the desktop home with the countdown stub, the five question files and locked phases shown as static; verify a locked phase cannot be opened

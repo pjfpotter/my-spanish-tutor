@@ -1,0 +1,40 @@
+/*
+ * The learner-controlled accessibility layer (design D15). It is separate from the visual
+ * tokens and is never a theme. Two things switch it on: the device asking for reduced
+ * motion, or the student's calm switch (html[data-calm="on"]). Either one wins; calm can
+ * never turn motion back on against the device setting.
+ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-scale: 0;
+    --fx-opacity: 0;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+:root[data-calm='on'] {
+  --motion-scale: 0;
+  --fx-opacity: 0;
+}
+:root[data-calm='on'] *,
+:root[data-calm='on'] *::before,
+:root[data-calm='on'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Visible keyboard focus on any background: a dark ring with a light halo outside it. */
+:focus-visible {
+  outline: 3px solid var(--focus-ink);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px var(--focus-halo);
+}
