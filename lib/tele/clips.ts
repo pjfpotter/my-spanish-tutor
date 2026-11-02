@@ -1,16 +1,28 @@
 import { parseClipFile, type ClipFile } from './clip';
+import built from '../audio/built';
 
 /**
- * Tutor lines that have a built clip in public/audio/tele/. Add an id here after running
- * `npm run tele-line -- <id>`. The full list comes from the phrase bank in tasks 12.1 and 12.2.
+ * Clips live in public/audio/clips/<slot>.mp3 and .json, where the slot is a hash of the text and
+ * speed (see lib/audio/manifest.ts). `built.ts` lists the clips that exist, written by
+ * `npm run build-audio`, so the app only asks for clips it has and never guesses at a 404.
  */
-export const CLIP_IDS: readonly string[] = ['hola'];
+export interface BuiltClip {
+  slot: string;
+  text: string;
+  speed: number;
+}
+export const BUILT_CLIPS: readonly BuiltClip[] = built;
 
-export const clipUrls = (id: string) => ({ audio: `/audio/tele/${id}.mp3`, json: `/audio/tele/${id}.json` });
+/** The built clip for this exact text at this speed, or null when there is none yet. */
+export function findClip(text: string, speed = 1, clips: readonly BuiltClip[] = BUILT_CLIPS): string | null {
+  return clips.find((c) => c.text === text && c.speed === speed)?.slot ?? null;
+}
+
+export const clipUrls = (slot: string) => ({ audio: `/audio/clips/${slot}.mp3`, json: `/audio/clips/${slot}.json` });
 
 /** Loads and checks a clip's timeline. Throws a plain message if it is missing or malformed. */
-export async function loadClip(id: string, fetchImpl: typeof fetch = fetch): Promise<ClipFile> {
-  const res = await fetchImpl(clipUrls(id).json);
-  if (!res.ok) throw new Error(`clip ${id} not found (${res.status})`);
+export async function loadClip(slot: string, fetchImpl: typeof fetch = fetch): Promise<ClipFile> {
+  const res = await fetchImpl(clipUrls(slot).json);
+  if (!res.ok) throw new Error(`clip ${slot} not found (${res.status})`);
   return parseClipFile(await res.json());
 }

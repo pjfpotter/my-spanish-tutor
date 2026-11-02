@@ -32,41 +32,41 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 
 ## 3. Course content, joining and anonymous identity
 
-- [ ] 3.1 Define the course schema with chunk feature tags, five questions with English subtitles, test date and mark scheme; verify validation rejects incomplete courses (unit tests)
-- [ ] 3.2 Seed one hand-authored course and a seed script; verify the script creates it and re-running does not duplicate it
+- [x] 3.1 Define the course schema with chunk feature tags, five questions with English subtitles and answering topics, test date and the five-rung mark scheme with whole-test rules; verify validation rejects incomplete courses (unit tests)
+- [x] 3.2 Seed one hand-authored course and a seed script; verify the script creates it and re-running does not duplicate it
 - [ ] 3.3 Implement class codes and the join flow with the privacy notice; verify valid, unknown and repeat codes behave as specified
-- [ ] 3.4 Implement the anonymous profile, nickname picker, interest tag picker (fixed list) and recovery code; verify restore on a second browser works and that no free-text field exists
+- [x] 3.4 Implement the anonymous profile, nickname picker, interest tag picker (fixed list) and recovery code; verify restore on a second browser works and that no free-text field exists
 - [ ] 3.5 Implement delete-everything; verify all server rows for the profile are gone and the device returns to first-use
 - [ ] 3.6 Write the student-facing privacy notice and the one-page data-protection impact assessment; verify both are linked from the app and review the notice for reading age
 
 ## 4. Speech audio assets and clip timelines
 
 - [x] 4.1 Check the ElevenLabs character voice for production use: plan and cost against the budget, licence terms for school and under-18 use, availability of word timestamps and a speed setting, and a second voice for rotation; verify the decision is recorded with reasons and the unofficial prototype voice is not used in production
-- [ ] 4.2 Write the build script that synthesises each question in two voices at slow, normal and fast rates using the provider's speed setting (not time-stretching) and stores clips by content hash; verify rerunning produces no new files for unchanged text
-- [ ] 4.3 Port the Spanish syllable-grouping and stress rules into a tested module; verify unit tests cover diphthongs, hiatus, silent h, qu, gu, ll, ch, final y and stress position
-- [ ] 4.4 Generate the per-clip timeline (word times from provider timestamps or rules, downsampled loudness envelope, feeling track) and store it beside each clip; verify timelines exist for every clip and unit tests cover envelope downsampling and the feeling track
-- [ ] 4.5 Drive Tele's glow and the caption highlight from the audio clock using the timeline; verify words and glow stay aligned at 1×, 0.75× and 0.5× with a fake audio clock
-- [ ] 4.6 Implement the missing-clip fallback (text plus subtitle); verify it by blocking a clip in the browser
-- [ ] 4.7 Document the asset pipeline in docs/audio-pipeline.md; verify the documented commands regenerate a clip
+- [x] 4.2 Write the build script that synthesises each question in the character voice at slow, normal and fast rates using the provider's speed setting (not time-stretching) and stores clips by content hash; verify rerunning produces no new files for unchanged text
+- [x] 4.3 Port the Spanish syllable-grouping and stress rules into a tested module; verify unit tests cover diphthongs, hiatus, silent h, qu, gu, ll, ch, final y and stress position
+- [x] 4.4 Generate the per-clip timeline (word times from provider timestamps or rules, downsampled loudness envelope, feeling track) and store it beside each clip; verify timelines exist for every clip and unit tests cover envelope downsampling and the feeling track
+- [x] 4.5 Drive Tele's glow and the caption highlight from the audio clock using the timeline; verify words and glow stay aligned at 1×, 0.75× and 0.5× with a fake audio clock
+- [x] 4.6 Implement the missing-clip fallback (text plus subtitle); verify it by blocking a clip in the browser
+- [x] 4.7 Document the asset pipeline in docs/audio-pipeline.md; verify the documented commands regenerate a clip
 
 ## 5. Spoken-answer feedback
 
-- [ ] 5.1 Implement speech capture with permission handling and the chosen recognition path per device; verify the permission-denied and unsupported-browser paths with Playwright. Optional manual check: the same paths on real devices
-- [ ] 5.2 Implement word-level diff scoring with accuracy percentage; verify unit tests for missing, extra, swapped and accent-tolerant words
+- [x] 5.1 Implement speech capture with permission handling and the chosen recognition path per device; verify the permission-denied and unsupported-browser paths with Playwright. Optional manual check: the same paths on real devices
+- [x] 5.2 Implement word-level diff scoring with accuracy percentage; verify unit tests for missing, extra, swapped and accent-tolerant words
 - [ ] 5.3 Implement the confusion table (me/mi, final o, silent h, j, ll, v/b, z/c) and tip display; verify unit tests map each entry and an unmatched mismatch shows no tip
 - [ ] 5.4 Implement syllable breakdown with slow word audio for missed words; verify on five sample words
 - [ ] 5.5 Implement low-confidence handling (no penalty, retry offer); verify with a noisy recording
 
 ## 6. Question comprehension phase
 
-- [ ] 6.1 Build the hear-then-choose screen with voice rotation, speed progression, replay, slow and reveal; verify a revealed attempt does not count toward mastery
-- [ ] 6.2 Implement the mastery rule (three correct across two sessions, configurable) and in-session spaced return; verify unit tests including the single-session case
-- [ ] 6.3 Gate progression until all five questions are mastered; verify the next phase stays locked until then
-- [ ] 6.4 Show comprehension mastery as Tele's channels: the picture clears from static as mastery rises and locks only after the second session day; verify with seeded mastery records
+- [x] 6.1 Build the hear-then-choose screen with speed progression, replay, slow and reveal; verify a revealed attempt does not count toward mastery
+- [x] 6.2 Implement the mastery rule (three correct across two sessions, configurable) and in-session spaced return; verify unit tests including the single-session case
+- [x] 6.3 Gate progression until all five questions are mastered; verify the next phase stays locked until then
+- [x] 6.4 Show comprehension mastery as Tele's channels: the picture clears from static as mastery rises and locks only after the second session day; verify with seeded mastery records
 
 ## 7. Answer writing coach
 
-- [ ] 7.1 Implement the rubric engine counting tagged chunks into survival, good and showing off with a feature list; verify unit tests across three sample answers
+- [ ] 7.1 Implement the rubric engine counting tagged chunks into the five rungs (survival, opinion, detail, range, showing off), per answer and across all five answers (tenses, justified opinions), with a feature list and no grades; verify unit tests including detail without an opinion, the whole-test tense gate, phrases worth more than single words, and fancy features
 - [ ] 7.2 Implement the word-bank validator with an allowed-word list; verify out-of-bank words are caught
 - [ ] 7.3 Build the confidence and minutes questions and the draft request through the call wrapper, returning structured output; verify a draft passes the validator and rubric for each level
 - [ ] 7.4 Implement upgrade suggestions (recycled chunks first), interest-tag substitutions and the confirmation gate; verify each by a scripted run
@@ -82,7 +82,7 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 
 ## 9. Response automatisation phase
 
-- [ ] 9.1 Build hear-and-answer rounds with shuffled order and varied voices; verify the order differs between rounds
+- [ ] 9.1 Build hear-and-answer rounds with shuffled order and varied speeds; verify the order differs between rounds
 - [ ] 9.2 Measure response time from question end to speech start and store it per attempt; verify against a stopwatch test within a tolerance of a few hundred milliseconds
 - [ ] 9.3 Implement adaptive window, blank handling with first-words hint, and the repeat-question phrase; verify each by scripted attempts
 - [ ] 9.4 Implement the test-ready threshold and message; verify unit tests
@@ -90,7 +90,7 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 
 ## 10. Diagnostics and mood
 
-- [ ] 10.1 Implement attempt event logging and the closed cause-tag list; verify events carry all specified fields
+- [x] 10.1 Implement attempt event logging and the closed cause-tag list; verify events carry all specified fields
 - [ ] 10.2 Implement comprehension probes and tag rules (too fast, word not known, sound-spelling gap, thrown by context); verify unit tests for each pattern
 - [ ] 10.3 Implement recall cause tags and chunk hotspot detection; verify unit tests including the stress pattern
 - [ ] 10.4 Build the mood check-in and the baseline test-teach-test at course start; verify the dislike option leads to an easy quick win
@@ -104,16 +104,16 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 
 ## 12. Tutor character, phrase bank and calm mode
 
-- [ ] 12.1 Write one original character, Tele, and generate its phrase bank once through the call wrapper, in Spanish at course level with English subtitles and a feeling per line; verify the bank contains every situation key
-- [ ] 12.2 Voice and time every phrase-bank line with the audio pipeline; verify all lines have clips and timelines
-- [ ] 12.3 Implement situation-based line selection avoiding immediate repeats and the subtitle toggle; verify unit tests
+- [x] 12.1 Write one original character, Tele, and generate its phrase bank once through the call wrapper, in Spanish at course level with English subtitles and a feeling per line; verify the bank contains every situation key
+- [x] 12.2 Voice and time every phrase-bank line with the audio pipeline; verify all lines have clips and timelines
+- [x] 12.3 Implement situation-based line selection avoiding immediate repeats and the subtitle toggle; verify unit tests
 - [ ] 12.4 Moved to stretch (17.3): interest-tag flavoured banks
 - [ ] 12.5 Moved to stretch (17.3): own-drawing tutor
 - [x] 12.6 Implement reduced-motion behaviour and the calm switch; verify with the system setting enabled and with the switch on that idle motion, glitches and camcorder effects stop and the caption still follows the voice
 
 ## 13. Engagement and rewards
 
-- [ ] 13.1 Implement the append-only coin ledger and effort-based awards; verify a low-scoring attempt still earns coins
+- [x] 13.1 Implement the append-only coin ledger and effort-based awards; verify a low-scoring attempt still earns coins
 - [ ] 13.2 Implement the response-time rank from rolling averages; verify unit tests at rank boundaries
 - [ ] 13.3 Implement fixed-price desktop unlocks (wallpapers, objects), stickers and streak freezes; verify there is no payment path or random draw in the codebase and that exploring the desktop earns no coins
 - [ ] 13.4 Implement own-history progress and class-total goals with no individual names; verify the class goal shows only totals

@@ -150,3 +150,23 @@
   background: none;
   cursor: pointer;
 }
+
+/* A question's channel clears from static as comprehension mastery rises (task 6.4). */
+.file-pic {
+  position: relative;
+  display: block;
+  width: 28px;
+  height: 32px;
+}
+.file-static {
+  position: absolute;
+  inset: 0;
+  opacity: var(--static, 1);
+  background-color: #6b6b6b;
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.file-state {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}

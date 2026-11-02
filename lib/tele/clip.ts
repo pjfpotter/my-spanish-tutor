@@ -1,9 +1,9 @@
-import { EMOTIONS, type Feelings } from './feelings.ts'; // .ts so scripts/tele-line.mjs can load this file in Node
+import { EMOTIONS, type Feelings } from './feelings.ts'; // .ts so scripts/build-audio.mjs can load this file in Node
 import type { ClipTimeline } from './timeline';
 
 /**
  * The JSON file stored beside each tutor clip (design D7): the timeline plus where it came from.
- * Written by scripts/tele-line.mjs, read by the app.
+ * Written by scripts/build-audio.mjs, read by the app.
  */
 export interface ClipFile extends ClipTimeline {
   id: string;

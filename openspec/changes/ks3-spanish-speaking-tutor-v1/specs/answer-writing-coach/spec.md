@@ -21,14 +21,14 @@ Every draft SHALL use only chunks from the course sentence builder plus a small 
 - **THEN** the word is replaced or the draft is regenerated before the student sees it
 
 ### Requirement: Rubric tiering by rules
-The level of a draft SHALL be determined by counting mark-scheme features in the text, independently of the process that wrote it, and the counted features SHALL be shown to the student.
+The rung of a draft SHALL be determined by counting mark-scheme features in the text and across the student's five answers, independently of the process that wrote it, and the counted features SHALL be shown to the student by name. No grade or mark SHALL be shown.
 
 #### Scenario: Features counted
-- **WHEN** a draft has a justified opinion, a connective and two tenses
-- **THEN** the display lists those features and the level reflects them
+- **WHEN** a draft has a justified opinion, a sequencer and a past tense
+- **THEN** the display lists those features and the rung reflects them
 
 ### Requirement: Aim higher suggestions
-The coach SHALL suggest one concrete upgrade at a time that moves the answer toward the next level, such as adding a justification, a second tense or a known idiom, and the student SHALL be able to accept or decline it.
+The coach SHALL suggest one concrete upgrade at a time that moves the answer toward the next rung, such as adding a justification, a missing basic tense or a fancy phrase, and the student SHALL be able to accept or decline it. Gaps across the whole test come first: for example, if the five answers use only two basic tenses, the coach suggests the answer where a third is easiest to add, and it steers toward roughly five justified opinions across the test without requiring one in every answer.
 
 #### Scenario: Accepting an upgrade
 - **WHEN** a student accepts a suggested upgrade

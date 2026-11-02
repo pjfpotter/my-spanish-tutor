@@ -1,6 +1,9 @@
 import { expect, test } from '@playwright/test';
+import { SEED_COURSE } from '../lib/course/seed';
+import { daysUntil } from '../lib/progress/progress';
+import { signUp } from './helpers';
 
-// Task 18.4: the desktop home. Countdown stub, five question files, four phases in their fixed
+// Task 18.4: the desktop home. Countdown (from the course test date), five question files, four phases in their fixed
 // order, and locked phases that show as static and cannot be opened.
 
 test.beforeEach(async ({ page }) => {
@@ -15,9 +18,9 @@ test('shows Tele, the countdown, the five question files and the four phases in 
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'My Spanish Tutor' })).toBeVisible();
   await expect(page.getByRole('img', { name: /Tele, a cream television/ })).toBeVisible();
-  await expect(page.getByTestId('days-to-test')).toContainText('9 días');
+  await expect(page.getByTestId('days-to-test')).toContainText(`${daysUntil(SEED_COURSE.testDate)} días`);
   await expect(page.getByTestId('question-file')).toHaveCount(5);
-  await expect(page.getByTestId('question-file').first()).toHaveText('Pregunta1.txt');
+  await expect(page.getByTestId('question-file').first()).toContainText('Pregunta1.txt');
 
   const order = await page.locator('[data-phase]').evaluateAll((els) => els.map((e) => e.getAttribute('data-phase')));
   expect(order).toEqual(['write', 'understand', 'memorise', 'automate']);
@@ -52,6 +55,7 @@ test('clicking a locked phase does nothing', async ({ page }) => {
 });
 
 test('typing the address of a locked phase sends you back to the desktop', async ({ page }) => {
+  await signUp(page); // a device with no profile is sent to sign up instead
   await page.goto('/phases/memorise');
   await expect(page).toHaveURL(/\/$/);
   await page.goto('/phases/automate');
@@ -59,7 +63,7 @@ test('typing the address of a locked phase sends you back to the desktop', async
 });
 
 test('an open phase opens, and an unknown phase is not found', async ({ page }) => {
-  await page.goto('/');
+  await signUp(page);
   await page.locator('[data-phase="write"]').click();
   await expect(page).toHaveURL(/\/phases\/write$/);
   await expect(page.getByText('This step is built in a later milestone.')).toBeVisible();

@@ -1,6 +1,7 @@
 import { createCostRouter } from '../../../lib/cost-router/router';
 import { createPgCostStore } from '../../../lib/cost-router/pg-store';
 import { getPool } from '../../../lib/db';
+import { currentProfile } from '../../../lib/server/session';
 import { createOpenAiTranscriber } from '../../../lib/transcription/openai';
 import { createClipTranscriber, TRANSCRIPTION_SERVICE } from '../../../lib/transcription/transcribe';
 
@@ -11,11 +12,9 @@ const LIMITS = {
   [TRANSCRIPTION_SERVICE]: { capGbp: 2, periodMs: 24 * HOUR, rate: { max: 30, windowMs: 10 * 60_000 } },
 };
 const COST_PER_SECOND_GBP = Number(process.env.TRANSCRIBE_COST_PER_SECOND_GBP ?? 0.0001);
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
- * POST an audio clip as the raw body. Headers: `content-type` (audio/*), `x-clip-ms` (length),
- * optional `x-profile-id` (uuid). Returns a transcript. The clip is processed in memory and
+ * POST an audio clip as the raw body. Headers: `content-type` (audio/*), `x-clip-ms` (length). The profile comes from the cookie. Returns a transcript. The clip is processed in memory and
  * discarded; nothing about the audio is stored.
  */
 export async function POST(req: Request) {
@@ -23,7 +22,8 @@ export async function POST(req: Request) {
   if (!apiKey) return Response.json({ status: 'unavailable', reason: 'not_configured' }, { status: 503 });
 
   const clip = new Uint8Array(await req.arrayBuffer());
-  const profileHeader = req.headers.get('x-profile-id');
+  // The profile comes from the cookie, so the per-profile rate limit cannot be dodged by sending another id.
+  const profile = await currentProfile();
 
   const route = createCostRouter(createPgCostStore(getPool()), LIMITS);
   const transcribeClip = createClipTranscriber({
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
     clip,
     mimeType: req.headers.get('content-type') ?? '',
     durationMs: Number(req.headers.get('x-clip-ms')),
-    profileId: profileHeader && UUID.test(profileHeader) ? profileHeader : null,
+    profileId: profile?.id ?? null,
   });
 
   const httpStatus = { ok: 200, rejected: 400, rate_limited: 429, unavailable: 503 }[result.status];

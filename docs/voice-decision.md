@@ -11,7 +11,7 @@
 
 This is a student project. The ElevenLabs voice is the production voice for it. **Before launching to real users, the developer will seek ElevenLabs' written approval** for an app directed at under-18s (finding 1), and will fall back to another vendor (option B) if it is refused. Until then the voice is used for development and testing with the first test user, on the developer's own judgement.
 
-**Parked:** a second voice for question rotation. The speech-audio-assets spec and tasks 4.2 and 6.1 still say "at least two voices" and "voice rotation". Reconcile them when work reaches 4.2, either by adding a second voice or by amending the spec.
+**Decided 2026-11-02:** version one uses one voice, Tele's. The spec, design, PRD, ARD and tasks 4.2, 6.1 and 9.1 were amended to three speeds in one voice; rotating voices is deferred until a second voice is chosen.
 
 ## Findings
 
@@ -41,5 +41,5 @@ Do A now, build M1 against the ElevenLabs voice meanwhile (the build script isol
 
 ## Still to decide
 
-- The second voice for question rotation (parked). The comprehension phase must not repeat the same voice back to back, so each question needs at least two distinct voices unless the spec is amended.
-- Which model sounds best for Tele, `eleven_multilingual_v2` (default) or `eleven_v3`, which is slower and more expressive. Set `ELEVENLABS_MODEL` and run `npm run tele-line -- hola --force` to compare. This is a listening decision.
+- A second voice for rotation: deferred by decision (2026-11-02). Variety in v1 comes from three speeds.
+- Which model sounds best for Tele, `eleven_multilingual_v2` (default) or `eleven_v3`, which is slower and more expressive. Set `ELEVENLABS_MODEL` and run `npm run build-audio -- --yes --force --only=lines` to compare (this spends money again). This is a listening decision.

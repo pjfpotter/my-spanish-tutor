@@ -218,7 +218,7 @@ Each record states the decision, the alternatives considered, and the consequenc
 ### ADR-6. Pre-generated audio with content-hash caching
 
 - **Status:** Accepted
-- **Decision:** At publish time synthesise each question in two or more voices at three speeds (using speaking-rate control, not time-stretching) and store clips keyed by a hash of text, voice and rate. A student's own answers are voiced once on demand and cached.
+- **Decision:** At publish time synthesise each question in the character voice at three speeds (a second voice is deferred) (using speaking-rate control, not time-stretching) and store clips keyed by a hash of text, voice and rate. A student's own answers are voiced once on demand and cached.
 - **Alternatives:** Synthesise on each request (cost and latency); browser-built-in voices (inconsistent quality, no timing data).
 - **Consequences:** Near-zero marginal audio cost per student. Changing a question text requires regeneration. The prototype voice is unofficial and will be replaced after a listening test.
 

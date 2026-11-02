@@ -42,7 +42,7 @@ The student SHALL be able to say a short Spanish phrase such as "¿Puede repetir
 - **THEN** the question plays again and the attempt is marked as a good test technique
 
 ### Requirement: Mixed order
-Questions SHALL be presented in shuffled order with voices and speeds varied, and the recycled question SHALL appear alongside current ones.
+Questions SHALL be presented in shuffled order with speeds varied, and the recycled question SHALL appear alongside current ones.
 
 #### Scenario: Shuffled round
 - **WHEN** a round of five questions starts

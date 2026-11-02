@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Feelings } from '../../lib/tele/feelings';
 import type { ClipFile } from '../../lib/tele/clip';
 import { estimateTimeline, wordsOf, type TutorLine } from '../../lib/tele/lines';
-import { activeWordAt, feelingsAt, loudnessAt, type ClipTimeline } from '../../lib/tele/timeline';
+import { playheadAt } from '../../lib/tele/playhead';
+import type { ClipTimeline } from '../../lib/tele/timeline';
 
 export interface LinePlayback {
   playing: boolean;
@@ -102,10 +103,10 @@ export function useLinePlayback(): LinePlayback {
       const t = clock();
       const overran = (performance.now() - startedAt) / 1000 > timeline.end + OVERRUN_S;
       if (t >= timeline.end || overran || (audio?.ended && source === 'audio')) return finish();
-      const idx = activeWordAt(timeline, t);
+      const head = playheadAt(timeline, t);
       setState({
-        playing: true, line: shown, words, activeIndex: idx, feelings: feelingsAt(timeline, t), source,
-        loudness: clip ? loudnessAt(timeline, t) : idx === null ? 0 : 0.55 + 0.35 * Math.sin(t * 13),
+        playing: true, line: shown, words, activeIndex: head.activeIndex, feelings: head.feelings, source,
+        loudness: clip ? head.loudness : head.activeIndex === null ? 0 : 0.55 + 0.35 * Math.sin(t * 13),
       });
       raf.current = requestAnimationFrame(tick);
     };

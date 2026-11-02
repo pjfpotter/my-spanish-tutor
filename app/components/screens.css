@@ -1,0 +1,191 @@
+.screen {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 3.5rem max(1rem, env(safe-area-inset-left)) 3rem;
+  display: grid;
+  gap: 1rem;
+}
+.screen h1 {
+  margin: 0;
+  font-size: clamp(1.8rem, 6vw, 2.4rem);
+  color: var(--ink-navy);
+}
+.screen .win {
+  max-width: none;
+}
+.stack {
+  display: grid;
+  gap: 0.75rem;
+}
+fieldset.group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+fieldset.group legend {
+  padding: 0;
+  margin-bottom: 0.25rem;
+  font-weight: 700;
+}
+.choice-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+/* A choice is a labelled box: ticked is shown by an inverted fill AND a tick mark, never by colour alone. */
+.choice {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: var(--tap-min);
+  padding: 0.35rem 0.75rem;
+  background: var(--window-chrome);
+  box-shadow: var(--bevel-out);
+  cursor: pointer;
+}
+.choice input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.choice:has(input:checked) {
+  background: var(--title-navy);
+  color: var(--white);
+  box-shadow: var(--bevel-in);
+}
+.choice:has(input:checked)::before {
+  content: '✓';
+}
+.choice:has(input:focus-visible) {
+  outline: 3px solid var(--focus-ink);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px var(--focus-halo);
+}
+.btn {
+  min-height: var(--tap-min);
+  padding: 0.5rem 1rem;
+  color: var(--black);
+  background: var(--window-chrome);
+  border: 0;
+  box-shadow: var(--bevel-out);
+  font-family: var(--font-ui);
+  font-size: 1.1rem;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn:disabled {
+  color: #5a5a5a;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--title-navy);
+  color: var(--white);
+}
+.error {
+  margin: 0;
+  padding: 0.4rem 0.6rem;
+  border: 2px solid var(--black);
+  background: var(--cream);
+  color: var(--black);
+}
+.error::before {
+  content: '! ';
+  font-weight: 700;
+}
+.recovery-code {
+  font-family: var(--font-status);
+  font-size: 2.4rem;
+  letter-spacing: 0.1em;
+  padding: 0.4rem 0.6rem;
+  background: var(--cream);
+  box-shadow: var(--bevel-in);
+  user-select: all;
+}
+.text-input {
+  min-height: var(--tap-min);
+  padding: 0.4rem 0.6rem;
+  font-family: var(--font-status);
+  font-size: 1.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 0;
+  background: var(--white);
+  color: var(--black);
+  box-shadow: var(--bevel-in);
+}
+
+/* Understand phase */
+.options {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+.option {
+  width: 100%;
+  min-height: var(--tap-min);
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  color: var(--black);
+  background: var(--window-chrome);
+  border: 0;
+  box-shadow: var(--bevel-out);
+  cursor: pointer;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.option:disabled {
+  color: #4a4a4a;
+  cursor: not-allowed;
+}
+.option[data-result='right'] {
+  background: var(--white);
+  outline: 3px solid var(--black);
+}
+.option[data-result='wrong'] {
+  background: var(--cream);
+  text-decoration: line-through;
+}
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.dots {
+  display: flex;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.dot {
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 2px solid var(--black);
+  background: var(--white);
+}
+.dot[data-mastered='true'] {
+  background: var(--black);
+}
+.heard-text {
+  margin: 0;
+  font-size: 1.3rem;
+}
+.heard-en {
+  margin: 0.15rem 0 0;
+  color: var(--text-muted);
+}
+.coins {
+  font-family: var(--font-status);
+  font-size: 1.3rem;
+}

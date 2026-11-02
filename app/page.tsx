@@ -1,7 +1,8 @@
+import { loadHome } from '../lib/server/home';
 import { Desktop } from './components/Desktop';
-import { phaseStates } from '../lib/phases/gate';
-import { STUB_DAYS_TO_TEST, STUB_PROGRESS } from '../lib/home/stub';
 
-export default function Home() {
-  return <Desktop states={phaseStates(STUB_PROGRESS)} daysToTest={STUB_DAYS_TO_TEST} />;
+export const dynamic = 'force-dynamic'; // progress changes with every attempt
+
+export default async function Home() {
+  return <Desktop {...await loadHome()} />;
 }

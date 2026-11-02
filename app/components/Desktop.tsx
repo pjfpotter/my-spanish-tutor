@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import { useEffect, useRef } from 'react';
 import type { ClipFile } from '../../lib/tele/clip';
-import { CLIP_IDS, clipUrls, loadClip } from '../../lib/tele/clips';
-import { PLACEHOLDER_LINES, pickLine } from '../../lib/tele/lines';
+import { clipUrls, findClip, loadClip } from '../../lib/tele/clips';
+import { linesFor } from '../../lib/tele/phrase-bank';
+import { selectLine } from '../../lib/tele/select';
 import { Status } from '../../lib/ui/Status';
 import { PHASES, QUESTION_COUNT, type PhaseId, type PhaseState } from '../../lib/phases/gate';
 import { Caption, useSubtitles } from './Caption';
@@ -12,6 +13,7 @@ import { Tele } from './Tele';
 import { useLinePlayback } from './useLinePlayback';
 import { Win } from './Win';
 import './desktop.css';
+import './screens.css';
 
 const PHASE_TEXT: Record<PhaseId, { es: string; en: string }> = {
   write: { es: 'Escribir', en: 'Write your answers' },
@@ -23,14 +25,21 @@ const PHASE_TEXT: Record<PhaseId, { es: string; en: string }> = {
 export interface DesktopProps {
   states: Record<PhaseId, PhaseState>;
   daysToTest: number;
+  /** One number per question, 0 (static) to 1 (clear). Missing means no progress yet. */
+  channels?: number[];
+  signedIn?: boolean;
+  nickname?: string | null;
 }
+
+/** A question's picture in words as well as in the picture, so it is never shown by clarity alone. */
+const clarityWord = (c: number) => (c >= 1 ? 'clear' : c > 0 ? 'clearing' : 'static');
 
 /**
  * The home screen: Tele on a desktop with the countdown, the four phases in their fixed order and
  * the five question files. Locked phases show as static and cannot be opened. The sandbox is the
  * space around the path; it never replaces it.
  */
-export function Desktop({ states, daysToTest }: DesktopProps) {
+export function Desktop({ states, daysToTest, channels = [], signedIn = true, nickname = null }: DesktopProps) {
   const [showEnglish, toggleEnglish] = useSubtitles();
   const playback = useLinePlayback();
   const lastLine = useRef<string | null>(null);
@@ -39,18 +48,20 @@ export function Desktop({ states, daysToTest }: DesktopProps) {
   // Load clip timelines up front so audio can start inside the tap: iPhone blocks audio that
   // starts after an await. A line with no clip, or whose clip fails to load, plays silently.
   useEffect(() => {
-    for (const id of CLIP_IDS) {
-      loadClip(id).then((clip) => clips.current.set(id, clip), () => {});
+    for (const line of linesFor('poke')) {
+      const slot = findClip(line.es);
+      if (slot) loadClip(slot).then((clip) => clips.current.set(line.id, clip), () => {});
     }
   }, []);
 
   // Poking Tele plays a stock line. It earns nothing: no coins, no progress, no request to the API.
   function poke() {
     if (playback.playing) return;
-    const line = pickLine(PLACEHOLDER_LINES, lastLine.current);
+    const line = selectLine('poke', { lastId: lastLine.current });
     lastLine.current = line.id;
     const clip = clips.current.get(line.id);
-    playback.play(line, clip ? { clip, audioUrl: clipUrls(line.id).audio } : undefined);
+    const slot = findClip(line.es);
+    playback.play(line, clip && slot ? { clip, audioUrl: clipUrls(slot).audio } : undefined);
   }
 
   return (
@@ -71,6 +82,24 @@ export function Desktop({ states, daysToTest }: DesktopProps) {
       </div>
 
       <div className="desktop-windows">
+        {!signedIn && (
+          <Win title="empezar.exe" label="Get started">
+            <p>Make a profile to save your progress. No name or email needed.</p>
+            <div className="controls">
+              <Link className="btn btn-primary" href="/welcome">
+                Make my profile
+              </Link>
+              <Link className="btn" href="/restore">
+                I have a code
+              </Link>
+            </div>
+          </Win>
+        )}
+        {signedIn && nickname && (
+          <p className="muted" data-testid="nickname">
+            Hola, {nickname}
+          </p>
+        )}
         <Win title="examen.exe" label="Your speaking test">
           <p className="days" data-testid="days-to-test">
             <strong>{daysToTest}</strong> días
@@ -127,15 +156,22 @@ export function Desktop({ states, daysToTest }: DesktopProps) {
 
         <Win title="preguntas" label="The five test questions">
           <ul className="files">
-            {Array.from({ length: QUESTION_COUNT }, (_, i) => (
-              <li key={i} className="file" data-testid="question-file">
-                <svg viewBox="0 0 20 23" width="28" height="32" aria-hidden="true" shapeRendering="crispEdges">
-                  <path d="M1 1h12l6 6v15H1z" fill="#fff" stroke="#0b2a4a" />
-                  <path d="M13 1v6h6" fill="none" stroke="#0b2a4a" />
-                </svg>
-                <span>Pregunta{i + 1}.txt</span>
-              </li>
-            ))}
+            {Array.from({ length: QUESTION_COUNT }, (_, i) => {
+              const clarity = channels[i] ?? 0;
+              return (
+                <li key={i} className="file" data-testid="question-file" data-clarity={clarityWord(clarity)}>
+                  <span className="file-pic" style={{ ['--static' as string]: 1 - clarity }}>
+                    <svg viewBox="0 0 20 23" width="28" height="32" aria-hidden="true" shapeRendering="crispEdges">
+                      <path d="M1 1h12l6 6v15H1z" fill="#fff" stroke="#0b2a4a" />
+                      <path d="M13 1v6h6" fill="none" stroke="#0b2a4a" />
+                    </svg>
+                    <span className="file-static" aria-hidden="true" />
+                  </span>
+                  <span>Pregunta{i + 1}.txt</span>
+                  <span className="file-state">{clarityWord(clarity)}</span>
+                </li>
+              );
+            })}
           </ul>
         </Win>
       </div>

@@ -21,6 +21,7 @@ Then fill in `.env` (see below) and create the tables:
 
 ```bash
 npm run db:migrate
+npm run seed      # loads the hand-authored course; safe to run again
 npm run dev
 ```
 
@@ -37,6 +38,14 @@ Copy `.env.example` to `.env`. It is gitignored; never commit it.
 
 Get both from the Neon console: open the project, click **Connect**, and toggle connection pooling on and off. Use a Neon branch of the main database for local work so you never touch real data.
 
+For the audio build and speech fallback, put these in `.env.local` (also gitignored):
+
+| Variable | What it is |
+|---|---|
+| `ELEVENLABS_API_KEY`, `ELEVENLABS_VOICE_TELE` | Tele's voice. Needed only to build audio. |
+| `ELEVENLABS_MODEL` | Optional. Defaults to `eleven_multilingual_v2`. |
+| `OPENAI_API_KEY` | Server-side transcription fallback (`/api/transcribe`). |
+
 On Vercel the same variables go in the project's Environment Variables settings.
 
 ## Scripts
@@ -48,6 +57,9 @@ On Vercel the same variables go in the project's Environment Variables settings.
 | `npm run typecheck` | TypeScript check |
 | `npm test` | Unit tests (Vitest) |
 | `npm run db:migrate` | Apply new SQL files from `db/migrations/` |
+| `npm run seed` | Write the seed course (`lib/course/seed.ts`) to the database, updating in place |
+| `npm run build-audio` | **Dry run:** list the audio clips still to build and their estimated cost. Spends nothing. |
+| `npm run build-audio -- --yes` | Build only the missing or stale clips (paid, through the cost router). See [`docs/audio-pipeline.md`](docs/audio-pipeline.md) |
 
 ## Tests
 
@@ -57,8 +69,10 @@ On Vercel the same variables go in the project's Environment Variables settings.
 
 ```bash
 npx playwright install chromium
-npx playwright test --project=chromium
+npx playwright test
 ```
+
+Playwright starts its **own** dev server on port 3100 (so it can run beside `npm run dev`) with `DB_DRIVER=pglite`: a throwaway in-process Postgres seeded with the course. Browser tests therefore never touch Neon. Audio and transcription are stubbed, so they cost nothing.
 
 CI (`.github/workflows/ci.yml`) runs the typecheck, unit tests and build on every push. A failing test turns the check red.
 

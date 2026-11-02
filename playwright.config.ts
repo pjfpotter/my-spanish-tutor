@@ -17,7 +17,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: process.env.CI ? 'html' : 'list',
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://localhost:3100',
     trace: 'on-first-retry',
   },
   projects: [
@@ -25,8 +25,13 @@ export default defineConfig({
     { name: 'chromebook', use: { ...devices['Desktop Chrome'], ...fakeMic } },
   ],
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
+    // Always its own server, never one already running: a dev server pointed at the real database
+    // would receive the tests' profiles. Own port and build folder so it can run beside `npm run dev`.
+    command: 'npm run dev -- --port 3100',
+    url: 'http://localhost:3100',
+    reuseExistingServer: false,
+    // A throwaway in-process Postgres with the seed course, so tests never write to the real database.
+    env: { DB_DRIVER: 'pglite', NEXT_DIST_DIR: '.next-test' },
+    timeout: 120_000,
   },
 });

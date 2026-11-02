@@ -11,17 +11,19 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
+    "seed": "node --env-file-if-exists=.env scripts/seed.mjs",
     "db:migrate": "node --env-file-if-exists=.env scripts/migrate.mjs",
     "audition": "node --env-file-if-exists=.env.local scripts/voice-audition.mjs",
     "test": "vitest run",
     "check:budget": "node scripts/check-budget.mjs",
-    "tele-line": "node --env-file-if-exists=.env --env-file=.env.local scripts/tele-line.mjs"
+    "build-audio": "node --env-file-if-exists=.env --env-file=.env.local scripts/build-audio.mjs"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.14",
     "@playwright/test": "^1.64.1",
     "@types/node": "^26.6.6",
     "@types/pg": "^8.23.1",

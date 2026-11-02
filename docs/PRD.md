@@ -94,7 +94,7 @@ Photo import of a student's own sentence builder; meme and reggaeton-style remix
 2. **Starting point.** A quick mood check-in ("Spanish is not my favourite" is an allowed answer) and a short test-teach-test baseline on the five questions.
 3. **Plan.** The app shows days to the test, a readiness meter, and a short daily plan based on the minutes the student has.
 4. **Write.** The tutor coaches the student to draft an answer to each question using only sentence-builder chunks, pitched at their ability and time, with light personal touches, and encourages aiming one level higher. The student confirms each answer.
-5. **Understand.** The student hears each question in varied voices and speeds and chooses its meaning. A question is mastered only after repeated success across separate sessions.
+5. **Understand.** The student hears each question at varied speeds and chooses its meaning. A question is mastered only after repeated success across separate sessions.
 6. **Memorise.** The student sees the English meaning, says their answer aloud, and gets a quick percentage with highlighted words.
 7. **Automate.** The student hears a question with no text and answers within a shrinking time window. Speed is measured and rewarded. They are marked test-ready when accuracy and speed hold across sessions.
 8. **Celebrate.** Coins, ranks, stickers and collectibles reward effort and improvement throughout.
@@ -108,7 +108,7 @@ Priorities use MoSCoW (Must, Should, Could). Each requirement maps to a capabili
 | ID | Requirement | Priority |
 |---|---|---|
 | FR-1 | A course has one sentence builder (chunks with English gloss, category and feature tags), exactly five questions with English subtitles, a test date and a mark scheme | Must |
-| FR-2 | The mark scheme has three levels, survival, good and showing off, defined by countable features; no numeric grade is shown | Must |
+| FR-2 | The mark scheme has five named rungs, survival, opinion, detail, range and showing off, defined by countable features per answer and across the whole test (three basic tenses, about five justified opinions); no grade or mark is ever shown | Must |
 | FR-3 | Students join with a class code only | Must |
 | FR-4 | Recycled chunks are tagged and offered first when suggesting upgrades | Should |
 | FR-5 | A photo of a sentence builder can be turned into an editable draft of chunks | Could |
@@ -143,7 +143,7 @@ Priorities use MoSCoW (Must, Should, Could). Each requirement maps to a capabili
 |---|---|---|
 | FR-20 | Hear a question and choose its meaning; text hidden by default | Must |
 | FR-21 | Mastery needs repeated success across at least two separate sessions (default 3 correct) | Must |
-| FR-22 | Voices rotate and speed rises with success; replay, slow and reveal are allowed but assisted attempts do not count | Must |
+| FR-22 | Speed varies and rises with success (one voice in v1); replay, slow and reveal are allowed but assisted attempts do not count | Must |
 | FR-23 | Memorisation shows English prompts, the student speaks, and gets an accuracy percentage quickly | Must |
 | FR-24 | Prompt support fades as accuracy rises; stuck sentences can be isolated | Should |
 | FR-25 | Automatisation plays a question with no text and measures time from question end to speech start | Must |
@@ -187,7 +187,7 @@ Priorities use MoSCoW (Must, Should, Could). Each requirement maps to a capabili
 
 | ID | Requirement | Priority |
 |---|---|---|
-| FR-51 | Question audio is pre-generated in two or more voices at three speeds and reused | Must |
+| FR-51 | Question audio is pre-generated in the character voice at three speeds and reused | Must |
 | FR-52 | Each task uses the cheapest adequate tool; practice loops never call a language model | Must |
 | FR-53 | Hard spend caps, per-profile rate limits and graceful fallback | Must |
 | FR-54 | Cost per student per test cycle is reported by tier | Must |

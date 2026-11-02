@@ -2,21 +2,30 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 import { parseClipFile } from './clip';
-import { CLIP_IDS, clipUrls, loadClip } from './clips';
+import { BUILT_CLIPS, clipUrls, findClip, loadClip } from './clips';
+import { slotFor } from '../audio/manifest';
 
-const publicDir = path.join(import.meta.dirname, '../../public');
-const readClip = (id: string) => JSON.parse(readFileSync(path.join(publicDir, 'audio/tele', `${id}.json`), 'utf8'));
+const clipsDir = path.join(import.meta.dirname, '../../public/audio/clips');
+const readClip = (slot: string) => JSON.parse(readFileSync(path.join(clipsDir, `${slot}.json`), 'utf8'));
 
 describe('clip loading', () => {
-  it('builds the audio and timeline urls', () => {
-    expect(clipUrls('hola')).toEqual({ audio: '/audio/tele/hola.mp3', json: '/audio/tele/hola.json' });
+  it('builds the audio and timeline urls from the slot', () => {
+    expect(clipUrls('abc')).toEqual({ audio: '/audio/clips/abc.mp3', json: '/audio/clips/abc.json' });
+  });
+
+  it('finds a built clip by exact text and speed, and nothing else', () => {
+    const clips = [{ slot: 's1', text: 'Hola', speed: 1 }];
+    expect(findClip('Hola', 1, clips)).toBe('s1');
+    expect(findClip('Hola', 0.7, clips)).toBeNull();
+    expect(findClip('Adiós', 1, clips)).toBeNull();
   });
 
   it('loads and checks a clip', async () => {
-    const fetchImpl = vi.fn(async () => Response.json(readClip('hola')));
-    const clip = await loadClip('hola', fetchImpl as unknown as typeof fetch);
-    expect(clip.id).toBe('hola');
-    expect(fetchImpl).toHaveBeenCalledWith('/audio/tele/hola.json');
+    const slot = BUILT_CLIPS[0].slot;
+    const fetchImpl = vi.fn(async () => Response.json(readClip(slot)));
+    const clip = await loadClip(slot, fetchImpl as unknown as typeof fetch);
+    expect(clip.id).toBe(slot);
+    expect(fetchImpl).toHaveBeenCalledWith(`/audio/clips/${slot}.json`);
   });
 
   it('throws plainly when the clip is missing or malformed', async () => {
@@ -28,22 +37,16 @@ describe('clip loading', () => {
 });
 
 describe('built clips', () => {
-  it.each([...CLIP_IDS])('%s has an audio file and a valid timeline with a baked feeling', (id) => {
-    const clip = parseClipFile(readClip(id));
-    expect(clip.id).toBe(id);
+  it.each(BUILT_CLIPS.map((c) => [c.slot, c] as const))('%s has an audio file and a valid timeline with a feeling track', (slot, entry) => {
+    const clip = parseClipFile(readClip(slot));
+    expect(clip.id).toBe(slot);
+    expect(slotFor(clip.text, clip.source.speed)).toBe(slot); // filed under the hash of what it says
+    expect(clip.text).toBe(entry.text);
     expect(clip.feelings.length).toBeGreaterThan(0);
     expect(clip.source.provider).toBe('elevenlabs');
-    const mp3 = readFileSync(path.join(publicDir, 'audio/tele', `${id}.mp3`));
-    expect(mp3.length).toBeGreaterThan(1000);
-    // The audio ends close to the timeline end: an mp3 frame is about 26 ms.
+    expect(clip.text).not.toBe(clip.en); // Spanish speech, English only as the subtitle
+    expect(readFileSync(path.join(clipsDir, `${slot}.mp3`)).length).toBeGreaterThan(1000);
     expect(clip.end).toBeGreaterThan(clip.words.at(-1)!.t0);
     expect(clip.envelope.length * clip.envelopeHop).toBeGreaterThanOrEqual(clip.end - 0.1);
-  });
-
-  it('speaks Spanish with an English subtitle that is different text', () => {
-    for (const id of CLIP_IDS) {
-      const clip = parseClipFile(readClip(id));
-      expect(clip.text).not.toBe(clip.en);
-    }
   });
 });

@@ -7,11 +7,11 @@ Provides natural Spanish audio and clip timelines (word times, loudness and feel
 ## ADDED Requirements
 
 ### Requirement: Question audio variants
-Each test question SHALL have pre-generated audio in at least two distinct voices and at three speeds (slow, normal, fast), generated before any student uses the course.
+Each test question SHALL have pre-generated audio in the tutor's character voice at three speeds (slow, normal, fast), generated before any student uses the course. A second voice MAY be added later; version one uses one voice.
 
 #### Scenario: Variants available
 - **WHEN** a course is published
-- **THEN** every question has audio for each voice and speed
+- **THEN** every question has audio at each of the three speeds
 
 ### Requirement: Character voice
 The tutor's lines SHALL be spoken in the licensed character voice chosen for production. An unofficial or prototype voice MUST NOT ship.
