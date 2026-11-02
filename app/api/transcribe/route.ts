@@ -1,0 +1,44 @@
+import { createCostRouter } from '../../../lib/cost-router/router';
+import { createPgCostStore } from '../../../lib/cost-router/pg-store';
+import { getPool } from '../../../lib/db';
+import { createOpenAiTranscriber } from '../../../lib/transcription/openai';
+import { createClipTranscriber, TRANSCRIPTION_SERVICE } from '../../../lib/transcription/transcribe';
+
+const HOUR = 3_600_000;
+// Spike defaults. Task 14.1 sets the real caps once the vendor and its price are chosen.
+// The price is an unverified estimate, so the cap errs on the safe side.
+const LIMITS = {
+  [TRANSCRIPTION_SERVICE]: { capGbp: 2, periodMs: 24 * HOUR, rate: { max: 30, windowMs: 10 * 60_000 } },
+};
+const COST_PER_SECOND_GBP = Number(process.env.TRANSCRIBE_COST_PER_SECOND_GBP ?? 0.0001);
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * POST an audio clip as the raw body. Headers: `content-type` (audio/*), `x-clip-ms` (length),
+ * optional `x-profile-id` (uuid). Returns a transcript. The clip is processed in memory and
+ * discarded; nothing about the audio is stored.
+ */
+export async function POST(req: Request) {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return Response.json({ status: 'unavailable', reason: 'not_configured' }, { status: 503 });
+
+  const clip = new Uint8Array(await req.arrayBuffer());
+  const profileHeader = req.headers.get('x-profile-id');
+
+  const route = createCostRouter(createPgCostStore(getPool()), LIMITS);
+  const transcribeClip = createClipTranscriber({
+    route,
+    transcriber: createOpenAiTranscriber(apiKey, process.env.OPENAI_TRANSCRIBE_MODEL),
+    costPerSecondGbp: COST_PER_SECOND_GBP,
+  });
+
+  const result = await transcribeClip({
+    clip,
+    mimeType: req.headers.get('content-type') ?? '',
+    durationMs: Number(req.headers.get('x-clip-ms')),
+    profileId: profileHeader && UUID.test(profileHeader) ? profileHeader : null,
+  });
+
+  const httpStatus = { ok: 200, rejected: 400, rate_limited: 429, unavailable: 503 }[result.status];
+  return Response.json(result, { status: httpStatus, headers: { 'Cache-Control': 'no-store' } });
+}

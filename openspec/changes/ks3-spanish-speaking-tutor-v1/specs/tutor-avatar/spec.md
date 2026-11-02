@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Gives each student a lively Spanish-speaking tutor character whose mouth tracks the voice convincingly, that never speaks English, and that students can make their own.
+Gives each student a lively Spanish-speaking tutor character with no mouth, whose feelings show in its eye, antennae, picture and world, that never speaks English, and whose look was designed with the first test user.
 
 ## ADDED Requirements
 
@@ -13,51 +13,62 @@ The tutor SHALL speak only Spanish. English SHALL appear only as subtitles benea
 - **WHEN** the tutor greets a student
 - **THEN** a Spanish line is spoken and its English subtitle is shown
 
-### Requirement: Stock phrase banks
-Tutor lines SHALL come from a stored bank keyed to situations such as correct, wrong, streak, nervous and days-to-test, written at the course's level. Lines SHALL be generated once per persona and reused.
+### Requirement: Stock phrase bank
+Tutor lines SHALL come from a stored bank keyed to situations such as correct, wrong, streak, nervous and days-to-test, written at the course's level. Lines SHALL be generated once for the character and reused, and each line SHALL carry a feeling.
 
 #### Scenario: Correct answer
 - **WHEN** a student answers correctly
 - **THEN** the tutor says a line from the correct bank, avoiding the line used last time
 
-### Requirement: Persona selection
-A student SHALL choose from built-in tutor characters, and the chosen character's phrase bank SHALL reflect the student's interest tags without adding any new vocabulary outside the course level.
+### Requirement: Single original character
+Version one SHALL offer one original character, with no persona picker. The character SHALL NOT be a likeness of a copyrighted character.
 
-#### Scenario: Football tag
-- **WHEN** a student with a football tag selects a persona
-- **THEN** the persona's lines include football-flavoured phrases within the course vocabulary
+#### Scenario: Character shown
+- **WHEN** a student opens the app
+- **THEN** the same original character is shown, and no choice of tutor is offered
 
-### Requirement: Lip-sync quality
-The avatar's jaw SHALL open in proportion to the loudness of the audio, and lip shapes SHALL change only for closed lips, rounded lips and teeth-on-lip sounds. The mouth SHALL lead the audio by about 30 ms and shapes shorter than about 70 ms SHALL be dropped.
+### Requirement: Mouthless feeling-driven character
+The character SHALL have no mouth. Its feelings (joy, sadness, anger, fear, surprise, disgust) SHALL be shown through its eye, antennae, picture and surrounding world, and any two feelings SHALL be able to blend.
 
-#### Scenario: Closed-lip sounds
-- **WHEN** the tutor says a word beginning with m, b or p
-- **THEN** the lips close just before the sound is heard
+#### Scenario: Sad line
+- **WHEN** the tutor says a line whose feeling is sadness
+- **THEN** the eye, antennae, picture and world change to show sadness and no mouth is drawn
 
-### Requirement: Speed independence
-Lip-sync SHALL stay aligned when audio plays at slower speeds.
+#### Scenario: Blended feeling
+- **WHEN** a line carries two feelings
+- **THEN** the character shows a blend of both
+
+### Requirement: Voice-driven response
+While the character speaks, its screen and antenna tips SHALL glow in proportion to the loudness of the audio, and the caption SHALL highlight the word being spoken. Both SHALL stay aligned when the audio plays at slower speeds.
 
 #### Scenario: Half speed
 - **WHEN** a clip plays at half speed
-- **THEN** mouth movement still matches the sounds
+- **THEN** the glow and the highlighted word still match the sounds
 
-### Requirement: Own drawing as tutor
-A student SHALL be able to supply their own drawing, mark where the mouth is, and see it speak using the same mouth system. The drawing SHALL remain on the device.
+### Requirement: Baked feelings
+Each line's feelings SHALL come from a feeling track stored with the clip when it was generated. The app MUST NOT call a language model to choose feelings or to chat with the character at runtime, and MUST NOT send student text to one.
 
-#### Scenario: Drawing speaks
-- **WHEN** a student places the mouth on their drawing and plays a line
-- **THEN** the drawing's mouth moves in time with the audio
+#### Scenario: Line played
+- **WHEN** a stored line is played
+- **THEN** the character's feelings follow the stored track and no language model call is made
 
-### Requirement: Reduced motion
-When the device requests reduced motion, the avatar SHALL limit head movement while keeping the mouth synchronised to audio.
+### Requirement: Poke for a line
+A student SHALL be able to tap the character to hear a stock line from the phrase bank. This SHALL NOT earn coins or progress.
 
-#### Scenario: Reduced motion on
-- **WHEN** reduced motion is requested
-- **THEN** head bobbing is disabled and the mouth still moves with the speech
+#### Scenario: Poke
+- **WHEN** a student taps the character
+- **THEN** a stock Spanish line plays with its subtitle and no coins are awarded
+
+### Requirement: Reduced motion and calm switch
+When the device requests reduced motion, or the student turns on the calm switch, the character SHALL stop idle movement, glitches and camcorder effects while the caption continues to follow the voice.
+
+#### Scenario: Calm on
+- **WHEN** reduced motion is requested or the calm switch is on
+- **THEN** idle motion and effects stop and the caption still follows the speech
 
 ### Requirement: Third-party characters excluded
-The app SHALL NOT ship or generate likenesses of copyrighted characters. Students SHALL be offered original characters and their own drawings only.
+The app SHALL NOT ship or generate likenesses of copyrighted characters. Only original characters SHALL be offered.
 
-#### Scenario: Persona list
-- **WHEN** the persona list is shown
-- **THEN** every entry is an original character
+#### Scenario: Character check
+- **WHEN** the character is shown
+- **THEN** it is an original character

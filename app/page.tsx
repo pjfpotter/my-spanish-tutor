@@ -1,8 +1,7 @@
+import { Desktop } from './components/Desktop';
+import { phaseStates } from '../lib/phases/gate';
+import { STUB_DAYS_TO_TEST, STUB_PROGRESS } from '../lib/home/stub';
+
 export default function Home() {
-  return (
-    <main style={{ padding: '2rem 1rem', maxWidth: '32rem', margin: '0 auto' }}>
-      <h1>¡Hola!</h1>
-      <p>My Spanish Tutor is on its way.</p>
-    </main>
-  );
+  return <Desktop states={phaseStates(STUB_PROGRESS)} daysToTest={STUB_DAYS_TO_TEST} />;
 }

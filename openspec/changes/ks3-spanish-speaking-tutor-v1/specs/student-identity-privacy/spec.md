@@ -18,7 +18,7 @@ A student SHALL be able to restore progress on a new device using a short recove
 
 #### Scenario: Restore on a new phone
 - **WHEN** a student enters their recovery code on another device
-- **THEN** their progress, avatar items and plan are restored
+- **THEN** their progress, desktop unlocks and plan are restored
 
 #### Scenario: Lost code
 - **WHEN** a student has no recovery code
@@ -44,13 +44,6 @@ A student SHALL be able to delete their profile and all associated data in one a
 #### Scenario: Delete all
 - **WHEN** a student confirms deletion
 - **THEN** all server-side data for the profile is removed and the device returns to its first-use state
-
-### Requirement: Custom drawings stay on device
-An image the student supplies for their tutor avatar SHALL be stored only on that device and SHALL NOT be uploaded.
-
-#### Scenario: Drawing used
-- **WHEN** a student sets a custom drawing as their tutor
-- **THEN** no network request carries the image
 
 ### Requirement: Plain-language privacy notice
 The app SHALL show a short privacy notice written for a 13-year-old before joining a course, stating what is stored, what is not, and how to delete it.
