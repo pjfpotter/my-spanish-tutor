@@ -86,6 +86,17 @@ export interface MarkScheme {
   justifiedOpinionsTarget: number;
 }
 
+/**
+ * A ready-made answer, offered when drafting is unavailable or capped so a student is never blocked.
+ * Hand-authored from the sentence builder. `rung` is the author's intent; the rubric engine
+ * (task 7.1) still works out the real rung, and a test checks the two agree.
+ */
+export interface ModelAnswer {
+  questionPosition: number;
+  rung: Level;
+  text: string;
+}
+
 export interface Course {
   title: string;
   classCode: string;
@@ -94,6 +105,7 @@ export interface Course {
   chunks: Chunk[];
   questions: Question[];
   markScheme: MarkScheme;
+  modelAnswers: ModelAnswer[];
 }
 
 export type CourseCheck = { ok: true; course: Course } | { ok: false; problems: string[] };
@@ -167,5 +179,17 @@ export function validateCourse(input: unknown): CourseCheck {
   }
 
   checkMarkScheme(c.markScheme, problems);
+
+  const answers = Array.isArray(c.modelAnswers) ? c.modelAnswers : [];
+  for (const a of answers) {
+    if (!questions.some((q) => q?.position === a?.questionPosition)) problems.push(`a model answer is for question ${a?.questionPosition}, which does not exist`);
+    if (!(LEVELS as readonly string[]).includes(a?.rung)) problems.push(`a model answer has an unknown rung "${a?.rung}"`);
+    if (blank(a?.text)) problems.push('a model answer has no text');
+  }
+  for (const q of questions) {
+    const mine = answers.filter((a) => a?.questionPosition === q?.position);
+    if (mine.length < 2) problems.push(`question ${q?.position} needs at least two model answers, found ${mine.length}`);
+    else if (!mine.some((a) => a.rung === 'survival')) problems.push(`question ${q?.position} needs a survival model answer so a nervous student has somewhere to start`);
+  }
   return problems.length ? { ok: false, problems } : { ok: true, course: c as Course };
 }

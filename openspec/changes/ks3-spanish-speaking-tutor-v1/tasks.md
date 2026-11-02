@@ -66,11 +66,11 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 
 ## 7. Answer writing coach
 
-- [ ] 7.1 Implement the rubric engine counting tagged chunks into the five rungs (survival, opinion, detail, range, showing off), per answer and across all five answers (tenses, justified opinions), with a feature list and no grades; verify unit tests including detail without an opinion, the whole-test tense gate, phrases worth more than single words, and fancy features
-- [ ] 7.2 Implement the word-bank validator with an allowed-word list; verify out-of-bank words are caught
+- [x] 7.1 Implement the rubric engine counting tagged chunks into the five rungs (survival, opinion, detail, range, showing off), per answer and across all five answers (tenses, justified opinions), with a feature list and no grades; verify unit tests including detail without an opinion, the whole-test tense gate, phrases worth more than single words, and fancy features
+- [x] 7.2 Implement the word-bank validator with an allowed-word list; verify out-of-bank words are caught
 - [ ] 7.3 Build the confidence and minutes questions and the draft request through the call wrapper, returning structured output; verify a draft passes the validator and rubric for each level
 - [ ] 7.4 Implement upgrade suggestions (recycled chunks first), interest-tag substitutions and the confirmation gate; verify each by a scripted run
-- [ ] 7.5 Implement the model-answers fallback when drafting is unavailable or capped; verify it by simulating the cap
+- [x] 7.5 Implement the model-answers fallback when drafting is unavailable or capped; verify it by simulating the cap
 - [ ] 7.6 Show each answer as a "file" whose rubric features light up as they are used, saved on confirmation; verify the lit features match the rubric output
 
 ## 8. Answer memorisation phase

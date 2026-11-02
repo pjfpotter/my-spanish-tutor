@@ -23,14 +23,14 @@ export async function seedCourse(db: Db, course: Course): Promise<SeedResult> {
   let ownerToken: string | null = null;
   if (existing.rows[0]) {
     courseId = existing.rows[0].id;
-    await db.query('update courses set title = $2, test_date = $3, mark_scheme = $4 where id = $1', [
-      courseId, course.title, course.testDate, JSON.stringify(course.markScheme),
+    await db.query('update courses set title = $2, test_date = $3, mark_scheme = $4, model_answers = $5 where id = $1', [
+      courseId, course.title, course.testDate, JSON.stringify(course.markScheme), JSON.stringify(course.modelAnswers),
     ]);
   } else {
     ownerToken = randomBytes(24).toString('base64url');
     const { rows } = await db.query<{ id: string }>(
-      `insert into courses (class_code, owner_token_hash, title, test_date, mark_scheme) values ($1, $2, $3, $4, $5) returning id`,
-      [course.classCode, createHash('sha256').update(ownerToken).digest('hex'), course.title, course.testDate, JSON.stringify(course.markScheme)],
+      `insert into courses (class_code, owner_token_hash, title, test_date, mark_scheme, model_answers) values ($1, $2, $3, $4, $5, $6) returning id`,
+      [course.classCode, createHash('sha256').update(ownerToken).digest('hex'), course.title, course.testDate, JSON.stringify(course.markScheme), JSON.stringify(course.modelAnswers)],
     );
     courseId = rows[0].id;
   }

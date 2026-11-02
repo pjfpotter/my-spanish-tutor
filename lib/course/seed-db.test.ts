@@ -30,6 +30,18 @@ describe('seedCourse', () => {
     expect((await db.query<{ id: string }>('select id from questions order by position')).rows.map((r) => r.id)).toEqual(before);
   });
 
+  it('stores the model answers and updates them in place', async () => {
+    const stored = async () => (await db.query<{ model_answers: { questionPosition: number; rung: string; text: string }[] }>('select model_answers from courses')).rows[0].model_answers;
+    expect(await stored()).toEqual(SEED_COURSE.modelAnswers);
+    const edited = structuredClone(SEED_COURSE);
+    edited.modelAnswers[0].text = 'Me gustan las películas de miedo.';
+    await seedCourse(db, edited);
+    const after = await stored();
+    expect(after).toHaveLength(SEED_COURSE.modelAnswers.length);
+    expect(after[0].text).toBe('Me gustan las películas de miedo.');
+    await seedCourse(db, SEED_COURSE); // put it back for the tests below
+  });
+
   it('picks up an edited question in place', async () => {
     const edited = structuredClone(SEED_COURSE);
     edited.questions[0].english = 'What films do you like?';

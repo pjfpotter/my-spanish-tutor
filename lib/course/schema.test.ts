@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BASIC_TENSES, FANCY_TAGS, FEATURE_TAGS, validateCourse, type Course } from './schema';
+import { BASIC_TENSES, FANCY_TAGS, FEATURE_TAGS, validateCourse, type Course, type ModelAnswer } from './schema';
 
 const good = (): Course => ({
   title: 'Free time',
@@ -20,6 +20,10 @@ const good = (): Course => ({
     rangeWeights: { adjective: 1, adjective_phrase: 2, adverb: 1, adverb_phrase: 2 },
     justifiedOpinionsTarget: 5,
   },
+  modelAnswers: [1, 2, 3, 4, 5].flatMap((n): ModelAnswer[] => [
+    { questionPosition: n, rung: 'survival', text: 'Me gusta.' },
+    { questionPosition: n, rung: 'opinion', text: 'Me gusta porque es.' },
+  ]),
 });
 
 const problems = (c: unknown) => {
@@ -69,6 +73,28 @@ describe('validateCourse', () => {
     const c = good();
     c.chunks[0].featureTags = ['past' as never];
     expect(problems(c).join()).toMatch(/unknown feature tag "past"/);
+  });
+});
+
+describe('model answers', () => {
+  it('needs at least two per question, one of them survival', () => {
+    const few = good();
+    few.modelAnswers = few.modelAnswers.filter((a) => !(a.questionPosition === 3 && a.rung === 'opinion'));
+    expect(problems(few).join()).toMatch(/question 3 needs at least two model answers/);
+    const noStart = good();
+    noStart.modelAnswers = noStart.modelAnswers.map((a) => (a.questionPosition === 2 ? { ...a, rung: 'detail' as const } : a));
+    expect(problems(noStart).join()).toMatch(/question 2 needs a survival model answer/);
+  });
+
+  it('rejects an answer for a missing question, an unknown rung, or no text', () => {
+    const c = good();
+    c.modelAnswers.push({ questionPosition: 9, rung: 'survival', text: 'x' });
+    c.modelAnswers.push({ questionPosition: 1, rung: 'grade 3' as never, text: 'x' });
+    c.modelAnswers.push({ questionPosition: 1, rung: 'detail', text: '  ' });
+    const p = problems(c).join();
+    expect(p).toMatch(/question 9, which does not exist/);
+    expect(p).toMatch(/unknown rung "grade 3"/);
+    expect(p).toMatch(/no text/);
   });
 });
 

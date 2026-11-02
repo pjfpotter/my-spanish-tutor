@@ -1,4 +1,4 @@
-import type { Chunk, Course, FeatureTag } from './schema';
+import type { Chunk, Course, FeatureTag, ModelAnswer, Level } from './schema';
 
 /**
  * The one hand-authored course for v1 (task 3.2): Year 8 "Going out", with one question recycled
@@ -31,6 +31,7 @@ const chunks: Chunk[] = [
   c('dibujos animados', 'cartoons', 'film type'),
   c('porque son', 'because they are', 'reason', ['justification', 'verb_phrase', 'present'], true),
   c('porque es', 'because it is', 'reason', ['justification', 'verb_phrase', 'present'], true),
+  c('divertido', 'fun', 'reason adjective', ['adjective'], true),
   c('divertidas', 'fun', 'reason adjective', ['adjective']),
   c('emocionantes', 'exciting', 'reason adjective', ['adjective']),
   c('graciosas', 'funny', 'reason adjective', ['adjective']),
@@ -104,6 +105,40 @@ const chunks: Chunk[] = [
   c('Cuando era pequeño, veía dibujos animados', 'When I was little, I used to watch cartoons', 'fancy', ['verb_phrase', 'other_tense', 'adverb_phrase']),
 ];
 
+const m = (questionPosition: number, rung: Level, text: string): ModelAnswer => ({ questionPosition, rung, text });
+
+/**
+ * Ready-made answers for when drafting is unavailable or capped. Written from the chunks above, with
+ * only a few glue words, so the word validator and rubric (tasks 7.2 and 7.1) can check them. DRAFT
+ * for the developer to read and approve. Across all five, the better answers use present, conditional
+ * and near-future, so a student who takes them can still reach the range rung.
+ */
+const modelAnswers: ModelAnswer[] = [
+  // 1. What type of films do you like, and why?
+  m(1, 'survival', 'Me gustan las películas de acción.'),
+  m(1, 'opinion', 'Me encantan las películas de miedo porque son muy divertidas.'),
+  m(1, 'showing_off', 'Primero, me gustan las películas de acción porque son muy divertidas y emocionantes. Después, a mis padres les encantan las películas de amor. Además, he visto muchas películas este año.'),
+
+  // 2. Would you like to go to the cinema this Saturday?
+  m(2, 'survival', 'Me gustaría ir al cine el sábado.'),
+  m(2, 'survival', 'Lo siento, no puedo porque tengo que hacer los deberes.'),
+  m(2, 'detail', 'Me gustaría ir al cine el sábado a las cuatro y media. Primero, voy a llevar una chaqueta azul. Después, salgo con mis amigos.'),
+  m(2, 'showing_off', 'Lo siento, no puedo porque tengo que ayudar en casa. ¡Qué lástima! Me gustaría ir al parque esta tarde. Después, voy a llevar una sudadera blanca.'),
+
+  // 3. What clothes do you normally wear when you go out with your friends?
+  m(3, 'survival', 'Normalmente llevo unos vaqueros.'),
+  m(3, 'detail', 'Primero, normalmente llevo unos vaqueros negros y una camiseta blanca. Después, cuando salgo con mis amigos, llevo unas zapatillas de moda porque quiero estar guay.'),
+
+  // 4. What are you going to wear to the party?
+  m(4, 'survival', 'Voy a llevar una camiseta blanca para la fiesta.'),
+  m(4, 'detail', 'Primero, voy a llevar unos vaqueros negros y una camiseta blanca para la fiesta. Después, voy a llevar una chaqueta de moda porque quiero estar guay.'),
+
+  // 5. What do you do in your free time?
+  m(5, 'survival', 'Juego a los videojuegos.'),
+  m(5, 'opinion', 'Me gusta montar en bici porque es divertido.'),
+  m(5, 'showing_off', 'Los fines de semana juego a los videojuegos y escucho música. A veces salgo con mis amigos. Después, me gusta montar en bici porque es divertido. Cuando era pequeño, veía dibujos animados.'),
+];
+
 export const SEED_COURSE: Course = {
   title: 'Year 8: Going out',
   classCode: 'TELE8', // placeholder
@@ -146,4 +181,5 @@ export const SEED_COURSE: Course = {
     rangeWeights: { adjective: 1, adjective_phrase: 2, adverb: 1, adverb_phrase: 2 },
     justifiedOpinionsTarget: 5,
   },
+  modelAnswers,
 };
