@@ -1,10 +1,10 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { BASIC_TENSES, FANCY_TAGS, validateCourse } from './schema';
+import { assessAnswer } from '../coach/rubric';
+import { FANCY_TAGS, validateCourse } from './schema';
 import { SEED_COURSE } from './seed';
 
-const tags = new Set(SEED_COURSE.chunks.flatMap((c) => c.featureTags));
 const byCategory = (cats: string[]) => SEED_COURSE.chunks.filter((c) => cats.includes(c.category));
 
 describe('seed course', () => {
@@ -28,15 +28,6 @@ describe('seed course', () => {
     expect(new Set(texts).size, 'duplicate: ' + texts.filter((t, i) => texts.indexOf(t) !== i)).toBe(texts.length);
   });
 
-  it('can reach every rung: the builder offers what each rung counts', () => {
-    const need = (...t: string[]) => t.forEach((x) => expect(tags.has(x as never), `no chunk is tagged ${x}`).toBe(true));
-    need('verb_phrase'); // survival and detail
-    need('opinion', 'justification'); // opinion
-    need('sequencer', 'adjective', 'adjective_phrase', 'adverb', 'adverb_phrase'); // detail
-    need(...BASIC_TENSES); // range
-    need(...FANCY_TAGS); // showing off
-  });
-
   it('lets every question be answered with a real sentence from its own topic', () => {
     for (const q of SEED_COURSE.questions) {
       const verbChunks = byCategory(q.topics).filter((c) => c.featureTags.includes('verb_phrase'));
@@ -44,19 +35,17 @@ describe('seed course', () => {
     }
   });
 
-  it('offers a justified opinion route for the four current-topic questions that suit one, and detail for the rest', () => {
-    // Questions 1 and 5 take opinions (film opinions, free-time opinion). Their topics hold an opinion chunk.
-    for (const pos of [1, 5]) {
-      const q = SEED_COURSE.questions[pos - 1];
-      expect(byCategory(q.topics).some((c) => c.featureTags.includes('opinion')), `question ${pos}`).toBe(true);
+  it('has a Rock solid model answer for every question and uses only Rock solid, Stepping out and Showing off', () => {
+    for (const q of SEED_COURSE.questions) {
+      expect(SEED_COURSE.modelAnswers.some((a) => a.questionPosition === q.position && a.level === 'rock_solid'), `question ${q.position}`).toBe(true);
     }
+    expect(new Set(SEED_COURSE.modelAnswers.map((a) => a.level))).toEqual(new Set(['rock_solid', 'stepping_out', 'showing_off']));
   });
 
-  it('makes the three basic tenses across the test reachable from the five questions together', () => {
-    const used = new Set<string>();
-    for (const q of SEED_COURSE.questions) for (const c of byCategory(q.topics)) c.featureTags.forEach((t) => used.add(t));
-    const basic = BASIC_TENSES.filter((t) => used.has(t));
-    expect(basic.length).toBeGreaterThanOrEqual(SEED_COURSE.markScheme.range.basicTensesAcrossTest);
+  it('makes the tense target reachable from the model answers across the test', () => {
+    const text = SEED_COURSE.modelAnswers.map((a) => a.text).join(' ');
+    const tenses = assessAnswer(SEED_COURSE.calibration, text).tenses;
+    expect(tenses.length).toBeGreaterThanOrEqual(SEED_COURSE.calibration.wholeTest.tenses);
   });
 
   it('keeps each fancy chunk labelled fancy, with a basic-tense or fancy tag that explains why', () => {

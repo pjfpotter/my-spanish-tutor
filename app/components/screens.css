@@ -3,6 +3,7 @@
   margin: 0 auto;
   padding: 3.5rem max(1rem, env(safe-area-inset-left)) 3rem;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
 }
 .screen h1 {
@@ -15,6 +16,7 @@
 }
 .stack {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.75rem;
 }
 fieldset.group {
@@ -188,4 +190,74 @@ fieldset.group legend {
 .coins {
   font-family: var(--font-status);
   font-size: 1.3rem;
+}
+
+/* Write phase: the answer is a "file"; chunks are marked, features are ticks (never colour alone). */
+.file {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.6rem;
+  padding: 0.75rem;
+  background: var(--cream);
+  box-shadow: var(--bevel-in);
+}
+.answer-text {
+  margin: 0;
+  font-size: 1.3rem;
+  line-height: 1.5;
+  max-width: 60ch;
+}
+.answer-text mark {
+  background: var(--white);
+  color: var(--black);
+  padding: 0 0.15em;
+  border-bottom: 2px solid var(--ink-navy);
+}
+.swaps {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.4rem;
+}
+.swap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.15rem;
+}
+.swap select {
+  min-height: var(--tap-min);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  font: inherit;
+  color: var(--black);
+  background: var(--white);
+  border: 0;
+  box-shadow: var(--bevel-in);
+}
+.swap select:focus-visible {
+  outline: 3px solid var(--focus-ink);
+  outline-offset: 2px;
+}
+.features {
+  list-style: none;
+  margin: 0.4rem 0;
+  padding: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+.features li[data-on='true'] {
+  font-weight: 700;
+}
+.dots .btn[aria-current='true'] {
+  background: var(--title-navy);
+  color: var(--white);
+  box-shadow: var(--bevel-in);
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }

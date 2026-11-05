@@ -25,9 +25,10 @@ export interface BankCheck {
   outOfBank: OutOfBank[];
 }
 
-/** Every word the builder's chunks use, plus the allowed common words. */
-export function buildWordBank(chunks: Pick<Chunk, 'spanish'>[]): Set<string> {
+/** Every word the builder's chunks use, plus the course's glue words and the allowed common words. */
+export function buildWordBank(chunks: Pick<Chunk, 'spanish'>[], glueWords: string[] = []): Set<string> {
   const bank = new Set<string>();
+  for (const g of glueWords) for (const w of tokens(g)) bank.add(w);
   for (const c of chunks) for (const w of tokens(c.spanish)) bank.add(w);
   for (const w of ALLOWED_COMMON_WORDS) bank.add(w);
   return bank;

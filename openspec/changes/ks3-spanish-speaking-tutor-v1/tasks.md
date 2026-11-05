@@ -32,7 +32,7 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 
 ## 3. Course content, joining and anonymous identity
 
-- [x] 3.1 Define the course schema with chunk feature tags, five questions with English subtitles and answering topics, test date and the five-rung mark scheme with whole-test rules; verify validation rejects incomplete courses (unit tests)
+- [x] 3.1 Define the course schema with chunk feature tags, five questions with English subtitles and answering topics, test date and the mark scheme; verify validation rejects incomplete courses (unit tests). Rework for three levels and calibration data is task 7.7
 - [x] 3.2 Seed one hand-authored course and a seed script; verify the script creates it and re-running does not duplicate it
 - [ ] 3.3 Implement class codes and the join flow with the privacy notice; verify valid, unknown and repeat codes behave as specified
 - [x] 3.4 Implement the anonymous profile, nickname picker, interest tag picker (fixed list) and recovery code; verify restore on a second browser works and that no free-text field exists
@@ -68,10 +68,12 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 
 - [x] 7.1 Implement the rubric engine counting tagged chunks into the five rungs (survival, opinion, detail, range, showing off), per answer and across all five answers (tenses, justified opinions), with a feature list and no grades; verify unit tests including detail without an opinion, the whole-test tense gate, phrases worth more than single words, and fancy features
 - [x] 7.2 Implement the word-bank validator with an allowed-word list; verify out-of-bank words are caught
-- [ ] 7.3 Build the confidence and minutes questions and the draft request through the call wrapper, returning structured output; verify a draft passes the validator and rubric for each level
-- [ ] 7.4 Implement upgrade suggestions (recycled chunks first), interest-tag substitutions and the confirmation gate; verify each by a scripted run
+- [x] 7.3 Select model answers by target level (easiest route first), with swaps, glue words and spare extras; verify each by unit tests and the teacher examples
+- [x] 7.4 Implement the whole-test checklist, target switching, the one-suggestion rule, the Showing off load note and the confirmation gate; verify by a scripted run
 - [x] 7.5 Implement the model-answers fallback when drafting is unavailable or capped; verify it by simulating the cap
-- [ ] 7.6 Show each answer as a "file" whose rubric features light up as they are used, saved on confirmation; verify the lit features match the rubric output
+- [x] 7.6 Show each answer as a "file" whose rubric features light up as they are used, saved on confirmation; verify the lit features match the rubric output
+- [x] 7.7 Rework the rubric engine and course schema to three levels read from calibration data files (`lib/course/calibration/`), seeded from the teacher's calibration and rubric files, with the teacher examples as regression fixtures; verify all examples classify at their level and a threshold edit changes results with no code change
+- [x] 7.8 Implement the upload-time set-up call through the cost router (flag bad combinations, write and validate model answers by level, regenerate once, mark missing); verify with a mocked model, including a mislevelled answer
 
 ## 8. Answer memorisation phase
 

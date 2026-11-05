@@ -108,7 +108,7 @@ Priorities use MoSCoW (Must, Should, Could). Each requirement maps to a capabili
 | ID | Requirement | Priority |
 |---|---|---|
 | FR-1 | A course has one sentence builder (chunks with English gloss, category and feature tags), exactly five questions with English subtitles, a test date and a mark scheme | Must |
-| FR-2 | The mark scheme has five named rungs, survival, opinion, detail, range and showing off, defined by countable features per answer and across the whole test (three basic tenses, about five justified opinions); no grade or mark is ever shown | Must |
+| FR-2 | The mark scheme has three named levels, Rock solid, Stepping out and Showing off, defined by countable features per answer from editable calibration data; whole-test targets (three tenses, two justified opinions) are shown but gate nothing; no grade or mark is ever shown | Must |
 | FR-3 | Students join with a class code only | Must |
 | FR-4 | Recycled chunks are tagged and offered first when suggesting upgrades | Should |
 | FR-5 | A photo of a sentence builder can be turned into an editable draft of chunks | Could |
@@ -129,7 +129,7 @@ Priorities use MoSCoW (Must, Should, Could). Each requirement maps to a capabili
 
 | ID | Requirement | Priority |
 |---|---|---|
-| FR-13 | The coach asks confidence and available minutes, then targets answer level and length | Must |
+| FR-13 | The coach offers model answers for a level the student picks, with swaps checked by the rubric and no model call | Must |
 | FR-14 | Drafts use only sentence-builder chunks plus a small allowed word list | Must |
 | FR-15 | The level of a draft is computed by rules from tagged features and the features are shown | Must |
 | FR-16 | One concrete upgrade is suggested at a time (justification, second tense, idiom) | Should |

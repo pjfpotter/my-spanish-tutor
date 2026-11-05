@@ -1,0 +1,387 @@
+[
+  {
+    "spanish": "Me gusta",
+    "english": "I like to",
+    "category": "starter",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "Me encanta",
+    "english": "I love to",
+    "category": "starter",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "Me chifla",
+    "english": "I really love to",
+    "category": "starter",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "Prefiero",
+    "english": "I prefer to",
+    "category": "starter",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "Suelo",
+    "english": "I usually",
+    "category": "starter",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "No me gusta",
+    "english": "I don't like to",
+    "category": "starter",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "Odio",
+    "english": "I hate to",
+    "category": "starter",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "Me gustaría",
+    "english": "I would like to",
+    "category": "starter",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "Voy a",
+    "english": "I am going to",
+    "category": "starter",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "jugar al fútbol",
+    "english": "to play football",
+    "category": "activity",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "jugar al baloncesto",
+    "english": "to play basketball",
+    "category": "activity",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "jugar a los videojuegos",
+    "english": "to play video games",
+    "category": "activity",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "tocar la guitarra",
+    "english": "to play the guitar",
+    "category": "activity",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "escuchar música",
+    "english": "to listen to music",
+    "category": "activity",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "chatear con mis amigos",
+    "english": "to chat with my friends",
+    "category": "activity",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "leer libros",
+    "english": "to read books",
+    "category": "activity",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "ver la tele",
+    "english": "to watch TV",
+    "category": "activity",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "salir con mis amigos",
+    "english": "to go out with my friends",
+    "category": "activity",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "ir al cine",
+    "english": "to go to the cinema",
+    "category": "activity",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "ir de compras",
+    "english": "to go shopping",
+    "category": "activity",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "montar en bici",
+    "english": "to ride a bike",
+    "category": "activity",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "hacer deporte",
+    "english": "to do sport",
+    "category": "activity",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "bailar",
+    "english": "to dance",
+    "category": "activity",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "cocinar",
+    "english": "to cook",
+    "category": "activity",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "porque",
+    "english": "because",
+    "category": "connector",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "dado que",
+    "english": "given that",
+    "category": "connector",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "ya que",
+    "english": "since",
+    "category": "connector",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "aunque",
+    "english": "although",
+    "category": "connector",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "sin embargo",
+    "english": "however",
+    "category": "connector",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "es divertido",
+    "english": "it is fun",
+    "category": "reason",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "es relajante",
+    "english": "it is relaxing",
+    "category": "reason",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "es emocionante",
+    "english": "it is exciting",
+    "category": "reason",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "es aburrido",
+    "english": "it is boring",
+    "category": "reason",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "es caro",
+    "english": "it is expensive",
+    "category": "reason",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "es barato",
+    "english": "it is cheap",
+    "category": "reason",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "es bueno para la salud",
+    "english": "it is good for your health",
+    "category": "reason",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "me hace reír",
+    "english": "it makes me laugh",
+    "category": "reason",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "me relaja",
+    "english": "it relaxes me",
+    "category": "reason",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "Lo hago",
+    "english": "I do it",
+    "category": "extension verb",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "Lo hacemos",
+    "english": "we do it",
+    "category": "extension verb",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "todos los días",
+    "english": "every day",
+    "category": "when",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "los fines de semana",
+    "english": "at the weekend",
+    "category": "when",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "los sábados",
+    "english": "on Saturdays",
+    "category": "when",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "por la tarde",
+    "english": "in the afternoon",
+    "category": "when",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "una vez a la semana",
+    "english": "once a week",
+    "category": "when",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "a veces",
+    "english": "sometimes",
+    "category": "when",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "de vez en cuando",
+    "english": "from time to time",
+    "category": "when",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "con",
+    "english": "with",
+    "category": "with",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "mis amigos",
+    "english": "my friends",
+    "category": "who",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "mi mejor amigo/a",
+    "english": "my best friend",
+    "category": "who",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "mi familia",
+    "english": "my family",
+    "category": "who",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "mi hermano/a",
+    "english": "my brother/sister",
+    "category": "who",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "mis primos",
+    "english": "my cousins",
+    "category": "who",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "Tengo mucho tiempo libre. ¡Qué guay!",
+    "english": "I have lots of free time. How cool!",
+    "category": "closing line",
+    "featureTags": [],
+    "recycled": false
+  },
+  {
+    "spanish": "No tengo mucho tiempo libre por los deberes. ¡Qué rollo!",
+    "english": "I don't have much free time because of homework. What a drag!",
+    "category": "closing line",
+    "featureTags": [],
+    "recycled": false
+  }
+]

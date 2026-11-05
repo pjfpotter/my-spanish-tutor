@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { FREE_TIME } from './calibration';
 import { BASIC_TENSES, FANCY_TAGS, FEATURE_TAGS, validateCourse, type Course, type ModelAnswer } from './schema';
 
 const good = (): Course => ({
@@ -11,18 +12,10 @@ const good = (): Course => ({
   questions: [1, 2, 3, 4, 5].map((n) => ({
     position: n, spanish: `Pregunta ${n}`, english: `Question ${n}`, recycled: n === 5, topics: ['opinion'],
   })),
-  markScheme: {
-    survival: { verbPhrases: 1 },
-    opinion: { justifiedOpinions: 1 },
-    detail: { verbPhrases: 3, sequencers: 1, rangePoints: 3 },
-    range: { basicTensesAcrossTest: 3 },
-    showing_off: { fancyFeatures: 1 },
-    rangeWeights: { adjective: 1, adjective_phrase: 2, adverb: 1, adverb_phrase: 2 },
-    justifiedOpinionsTarget: 5,
-  },
+  calibration: structuredClone(FREE_TIME),
   modelAnswers: [1, 2, 3, 4, 5].flatMap((n): ModelAnswer[] => [
-    { questionPosition: n, rung: 'survival', text: 'Me gusta.' },
-    { questionPosition: n, rung: 'opinion', text: 'Me gusta porque es.' },
+    { questionPosition: n, level: 'rock_solid', text: 'Me gusta.' },
+    { questionPosition: n, level: 'stepping_out', text: 'Me gusta porque es.' },
   ]),
 });
 
@@ -77,62 +70,59 @@ describe('validateCourse', () => {
 });
 
 describe('model answers', () => {
-  it('needs at least two per question, one of them survival', () => {
-    const few = good();
-    few.modelAnswers = few.modelAnswers.filter((a) => !(a.questionPosition === 3 && a.rung === 'opinion'));
-    expect(problems(few).join()).toMatch(/question 3 needs at least two model answers/);
+  it('needs a Rock solid answer for every question, and lets other levels be missing', () => {
     const noStart = good();
-    noStart.modelAnswers = noStart.modelAnswers.map((a) => (a.questionPosition === 2 ? { ...a, rung: 'detail' as const } : a));
-    expect(problems(noStart).join()).toMatch(/question 2 needs a survival model answer/);
+    noStart.modelAnswers = noStart.modelAnswers.map((a) => (a.questionPosition === 2 ? { ...a, level: 'showing_off' as const } : a));
+    expect(problems(noStart).join()).toMatch(/question 2 needs a Rock solid model answer/);
+    const onlyRock = good();
+    onlyRock.modelAnswers = onlyRock.modelAnswers.filter((a) => a.level === 'rock_solid');
+    expect(validateCourse(onlyRock).ok).toBe(true);
   });
 
-  it('rejects an answer for a missing question, an unknown rung, or no text', () => {
+  it('rejects an answer for a missing question, an unknown level, or no text', () => {
     const c = good();
-    c.modelAnswers.push({ questionPosition: 9, rung: 'survival', text: 'x' });
-    c.modelAnswers.push({ questionPosition: 1, rung: 'grade 3' as never, text: 'x' });
-    c.modelAnswers.push({ questionPosition: 1, rung: 'detail', text: '  ' });
+    c.modelAnswers.push({ questionPosition: 9, level: 'rock_solid', text: 'x' });
+    c.modelAnswers.push({ questionPosition: 1, level: 'grade 3' as never, text: 'x' });
+    c.modelAnswers.push({ questionPosition: 1, level: 'showing_off', text: '  ' });
     const p = problems(c).join();
     expect(p).toMatch(/question 9, which does not exist/);
-    expect(p).toMatch(/unknown rung "grade 3"/);
+    expect(p).toMatch(/unknown level "grade 3"/);
     expect(p).toMatch(/no text/);
   });
 });
 
-describe('mark scheme rules', () => {
+describe('calibration data', () => {
+  const withCal = (edit: (c: Course['calibration']) => void) => {
+    const c = good();
+    edit(c.calibration);
+    return problems(c).join();
+  };
+
   it('has the four basic tenses, and any other tense is fancy', () => {
     expect([...BASIC_TENSES]).toEqual(['present', 'preterite', 'near_future', 'conditional']);
     expect(FANCY_TAGS).toContain('other_tense');
-    expect(FANCY_TAGS).toContain('tricky_syntax');
     for (const t of [...BASIC_TENSES, ...FANCY_TAGS]) expect(FEATURE_TAGS).toContain(t);
   });
 
-  it('values a phrase above a single word', () => {
-    const adj = good();
-    adj.markScheme.rangeWeights.adjective_phrase = 1;
-    expect(problems(adj).join()).toMatch(/adjective phrase must be worth more/);
-    const adv = good();
-    adv.markScheme.rangeWeights.adverb_phrase = 1;
-    expect(problems(adv).join()).toMatch(/adverb phrase must be worth more/);
+  it('needs showing off to ask for more than stepping out', () => {
+    expect(withCal((c) => (c.thresholds.showingOff.extras = 1))).toMatch(/more extras than stepping out/);
   });
 
-  it('cannot demand more different basic tenses than exist', () => {
-    const c = good();
-    c.markScheme.range.basicTensesAcrossTest = 5;
-    expect(problems(c).join()).toMatch(/basic tenses from 1 to 4/);
+  it('cannot demand more hard features, or more tenses, than exist', () => {
+    expect(withCal((c) => (c.thresholds.showingOff.hard = 9))).toMatch(/fewer hard features/);
+    expect(withCal((c) => (c.wholeTest.tenses = 5))).toMatch(/from 1 to 4/);
   });
 
-  it('rejects an incomplete scheme and a missing one', () => {
-    const c = good() as unknown as { markScheme: Record<string, unknown> };
-    delete c.markScheme.detail;
-    expect(validateCourse(c).ok).toBe(false);
-    expect(problems({ ...good(), markScheme: undefined }).join()).toMatch(/mark scheme is missing/);
+  it('rejects a feature with no phrases, duplicate ids, and a missing calibration', () => {
+    expect(withCal((c) => (c.features[0].phrases = []))).toMatch(/needs an id, a label and phrases/);
+    expect(withCal((c) => (c.features[1].id = c.features[0].id))).toMatch(/ids must be unique/);
+    expect(problems({ ...good(), calibration: undefined }).join()).toMatch(/calibration/);
   });
 
-  it('refuses grades or marks anywhere in a mark scheme', () => {
-    for (const key of ['grade', 'wtg', 'mark', 'score']) {
-      const c = good() as unknown as { markScheme: Record<string, unknown> };
-      c.markScheme[key] = 3;
-      expect(problems(c).join(), key).toMatch(/must not contain grades or marks/);
+  it('names the three levels and refuses grades or marks anywhere', () => {
+    expect(withCal((c) => (c.levels.showing_off.name = ' '))).toMatch(/needs a name and a blurb/);
+    for (const word of ['grade', 'WTG', 'mark', 'score']) {
+      expect(withCal((c) => (c.levels.rock_solid.blurb = `Worth a ${word}`)), word).toMatch(/must not contain grades or marks/);
     }
   });
 

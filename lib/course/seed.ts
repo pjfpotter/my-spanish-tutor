@@ -1,4 +1,5 @@
-import type { Chunk, Course, FeatureTag, ModelAnswer, Level } from './schema';
+import goingOut from './calibration/going-out.json' with { type: 'json' };
+import type { Calibration, Chunk, Course, FeatureTag, ModelAnswer, Level } from './schema';
 
 /**
  * The one hand-authored course for v1 (task 3.2): Year 8 "Going out", with one question recycled
@@ -105,38 +106,36 @@ const chunks: Chunk[] = [
   c('Cuando era pequeño, veía dibujos animados', 'When I was little, I used to watch cartoons', 'fancy', ['verb_phrase', 'other_tense', 'adverb_phrase']),
 ];
 
-const m = (questionPosition: number, rung: Level, text: string): ModelAnswer => ({ questionPosition, rung, text });
+const m = (questionPosition: number, level: Level, text: string): ModelAnswer => ({ questionPosition, level, text });
 
 /**
- * Ready-made answers for when drafting is unavailable or capped. Written from the chunks above, with
- * only a few glue words, so the word validator and rubric (tasks 7.2 and 7.1) can check them. DRAFT
- * for the developer to read and approve. Across all five, the better answers use present, conditional
- * and near-future, so a student who takes them can still reach the range rung.
+ * Model answers for the writing stage, written from the chunks above with only glue and common words,
+ * so the word validator and rubric can check them. DRAFT for the developer to read and approve. Every
+ * question has a Rock solid answer; Showing off exists only where the question gives room for it, and
+ * the rest are marked missing rather than forced. Once the upload-time set-up call exists (task 7.8),
+ * it writes these. Tests check each answer lands on the level it is filed under and survives one swap.
  */
 const modelAnswers: ModelAnswer[] = [
   // 1. What type of films do you like, and why?
-  m(1, 'survival', 'Me gustan las películas de acción.'),
-  m(1, 'opinion', 'Me encantan las películas de miedo porque son muy divertidas.'),
-  m(1, 'showing_off', 'Primero, me gustan las películas de acción porque son muy divertidas y emocionantes. Después, a mis padres les encantan las películas de amor. Además, he visto muchas películas este año.'),
+  m(1, 'rock_solid', 'Me gustan las películas de acción porque son divertidas.'),
+  m(1, 'stepping_out', 'Me encantan las películas de miedo porque son muy divertidas, aunque me dan miedo.'),
+  m(1, 'showing_off', 'Primero, me gustan las películas de acción porque son muy divertidas y emocionantes. Después, a mis padres les encantan las películas de amor, aunque no me gustan las películas de miedo. He visto muchas películas este año. Me gustaría ir al cine.'),
 
   // 2. Would you like to go to the cinema this Saturday?
-  m(2, 'survival', 'Me gustaría ir al cine el sábado.'),
-  m(2, 'survival', 'Lo siento, no puedo porque tengo que hacer los deberes.'),
-  m(2, 'detail', 'Me gustaría ir al cine el sábado a las cuatro y media. Primero, voy a llevar una chaqueta azul. Después, salgo con mis amigos.'),
-  m(2, 'showing_off', 'Lo siento, no puedo porque tengo que ayudar en casa. ¡Qué lástima! Me gustaría ir al parque esta tarde. Después, voy a llevar una sudadera blanca.'),
+  m(2, 'rock_solid', 'Lo siento, no puedo porque tengo que hacer los deberes.'),
+  m(2, 'stepping_out', 'Me gustaría ir al cine el sábado porque es divertido.'),
 
   // 3. What clothes do you normally wear when you go out with your friends?
-  m(3, 'survival', 'Normalmente llevo unos vaqueros.'),
-  m(3, 'detail', 'Primero, normalmente llevo unos vaqueros negros y una camiseta blanca. Después, cuando salgo con mis amigos, llevo unas zapatillas de moda porque quiero estar guay.'),
+  m(3, 'rock_solid', 'Normalmente llevo unos vaqueros porque quiero estar cómodo.'),
+  m(3, 'stepping_out', 'Normalmente llevo unos vaqueros negros y una camiseta blanca porque quiero estar cómodo. A veces llevo unas zapatillas de moda.'),
 
   // 4. What are you going to wear to the party?
-  m(4, 'survival', 'Voy a llevar una camiseta blanca para la fiesta.'),
-  m(4, 'detail', 'Primero, voy a llevar unos vaqueros negros y una camiseta blanca para la fiesta. Después, voy a llevar una chaqueta de moda porque quiero estar guay.'),
+  m(4, 'rock_solid', 'Voy a llevar una camiseta blanca para la fiesta porque quiero estar guay.'),
+  m(4, 'stepping_out', 'Voy a llevar una camiseta blanca y unos vaqueros negros para la fiesta porque quiero estar guay. Después, me gustaría llevar una chaqueta de moda.'),
 
   // 5. What do you do in your free time?
-  m(5, 'survival', 'Juego a los videojuegos.'),
-  m(5, 'opinion', 'Me gusta montar en bici porque es divertido.'),
-  m(5, 'showing_off', 'Los fines de semana juego a los videojuegos y escucho música. A veces salgo con mis amigos. Después, me gusta montar en bici porque es divertido. Cuando era pequeño, veía dibujos animados.'),
+  m(5, 'rock_solid', 'Me gusta montar en bici porque es divertido.'),
+  m(5, 'stepping_out', 'Los fines de semana juego a los videojuegos y escucho música. Me gusta montar en bici porque es divertido, aunque a veces me gusta salir con mis amigos.'),
 ];
 
 export const SEED_COURSE: Course = {
@@ -166,20 +165,7 @@ export const SEED_COURSE: Course = {
       recycled: true, topics: ['free time', 'free time opinion', 'free time activity', 'frequency'],
     },
   ],
-  markScheme: {
-    // Survival: understands the question and says something relevant that counts as a sentence.
-    survival: { verbPhrases: 1 },
-    // Opinion: a justified opinion. Not every question suits one; the exam wants about five across the test.
-    opinion: { justifiedOpinions: 1 },
-    // Detail: range and extra detail with no opinion needed. Three verb phrases with a sequencer, and
-    // detail words worth at least 3 points (a phrase is worth 2, a single word 1).
-    detail: { verbPhrases: 3, sequencers: 1, rangePoints: 3 },
-    // Range: detail, plus three different basic tenses across the whole test.
-    range: { basicTensesAcrossTest: 3 },
-    // Showing off: range, plus a fancy feature: another tense, tricky syntax or an idiom.
-    showing_off: { fancyFeatures: 1 },
-    rangeWeights: { adjective: 1, adjective_phrase: 2, adverb: 1, adverb_phrase: 2 },
-    justifiedOpinionsTarget: 5,
-  },
+  // Draft calibration for this course; edit lib/course/calibration/going-out.json, not this file.
+  calibration: goingOut as Calibration,
   modelAnswers,
 };

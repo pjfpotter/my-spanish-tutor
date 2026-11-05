@@ -149,13 +149,12 @@ sequenceDiagram
 
 If browser recognition is unavailable, the clip is sent to a fallback transcription call through the cost router and discarded after the response.
 
-### 4.3 Drafting an answer (the only model-call path in the learning loop)
+### 4.3 Course set-up and the writing stage (no model call in the learning loop)
 
-1. Student states confidence and minutes per day.
-2. The router checks budget and rate limit.
-3. The model receives the chunk bank, level, length target and interest tags, and returns structured output.
-4. Code validates every word against the allowed set and recomputes the rubric level.
-5. An invalid draft is regenerated once; after that the student receives model answers for the course.
+1. At sentence-builder upload, the router checks budget and rate limit.
+2. One small-model call receives the chunk bank, calibration data and teacher examples, flags bad combinations and returns model answers per question and level as structured output.
+3. Code validates every word against the allowed set and the rubric must place each answer at its intended level; a mismatch is regenerated once, then marked missing.
+4. In the writing stage the student picks a level, starts from a model answer and swaps chunks; the rubric recomputes locally with no model call.
 
 ## 5. Data model (summary)
 
@@ -232,14 +231,14 @@ Each record states the decision, the alternatives considered, and the consequenc
 ### ADR-8. Rubric from tagged chunks
 
 - **Status:** Accepted
-- **Decision:** Each chunk in the sentence builder carries feature tags (opinion, justification, connective, sequencer, adjective, tense, idiom). The level of an answer is computed by counting tagged chunks used.
+- **Decision:** Each chunk carries feature tags and the course's editable calibration data defines the features and thresholds. The level (Rock solid, Stepping out, Showing off) is computed by counting features used.
 - **Alternatives:** A language model judging the Spanish (cost, inconsistency, not explainable).
 - **Consequences:** Deterministic and explainable. Authoring a course requires tagging chunks.
 
 ### ADR-9. Language model only for writing support and content generation
 
 - **Status:** Accepted
-- **Decision:** A small model drafts answers (structured output), generates each persona's phrase bank once, and, if built, converts a sentence-builder photo into chunks. Code validates all output. Student free text is never sent to a model.
+- **Decision:** A small model, at sentence-builder upload only, sets up the course and writes model answers (structured output), generates each persona's phrase bank once, and, if built, converts a sentence-builder photo into chunks. Code validates all output. Student free text is never sent to a model.
 - **Alternatives:** A conversational model in the practice loop (cost per student, safety exposure, unpredictable content).
 - **Consequences:** Language-model cost is bounded and predictable. The tutor cannot improvise; its lines are authored in advance.
 

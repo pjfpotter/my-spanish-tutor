@@ -66,7 +66,7 @@ test('an open phase opens, and an unknown phase is not found', async ({ page }) 
   await signUp(page);
   await page.locator('[data-phase="write"]').click();
   await expect(page).toHaveURL(/\/phases\/write$/);
-  await expect(page.getByText('This step is built in a later milestone.')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Write' })).toBeVisible();
 
   const res = await page.goto('/phases/cheat');
   expect(res?.status()).toBe(404);
