@@ -14,8 +14,8 @@ const specs = planClips(SEED_COURSE.questions, PHRASE_BANK);
 const timeline = (slot: string) => parseClipFile(JSON.parse(readFileSync(path.join(dir, `${slot}.json`), 'utf8')));
 
 describe('every planned clip is built', () => {
-  it('plans five questions at three speeds and every phrase-bank line', () => {
-    expect(specs.filter((s) => s.kind === 'question')).toHaveLength(15);
+  it('plans five questions at three speeds, their key words at two, and every phrase-bank line', () => {
+    expect(specs.filter((s) => s.kind === 'question')).toHaveLength(25);
     expect(specs.filter((s) => s.kind === 'line')).toHaveLength(PHRASE_BANK.length);
   });
 

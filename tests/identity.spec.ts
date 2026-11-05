@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { signUp } from './helpers';
+import { signUpThroughForm as signUp } from './helpers';
 
 // Task 3.4: anonymous profile, nickname picker, fixed interest tags, recovery code.
 

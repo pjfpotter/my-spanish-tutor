@@ -52,16 +52,11 @@ test('highlights each word in order as the timeline plays, then clears', async (
 test('the spoken word is marked by more than colour: inverted and underlined', async ({ page }) => {
   await page.goto('/lab/tele');
   await page.getByRole('button', { name: 'Play stub line' }).click();
-  const word = page.locator('.cw[data-active="true"]');
-  await expect(word.first()).toBeVisible();
-  const style = await word.first().evaluate((el) => {
-    const s = getComputedStyle(el);
-    return { underline: s.textDecorationLine, bg: s.backgroundColor, fg: s.color };
-  });
-  expect(style.underline).toContain('underline');
-  expect(style.bg).not.toBe(style.fg);
-  expect(style.bg).toBe('rgb(0, 0, 128)');
-  expect(style.fg).toBe('rgb(255, 255, 255)');
+  // The spoken word moves on quickly, so each check retries until it catches a word that is being spoken.
+  const word = page.locator('.cw[data-active="true"]').first();
+  await expect(word).toHaveCSS('text-decoration-line', /underline/);
+  await expect(word).toHaveCSS('background-color', 'rgb(0, 0, 128)');
+  await expect(word).toHaveCSS('color', 'rgb(255, 255, 255)');
 });
 
 test('the English subtitle can be hidden, stays hidden after a reload, and can be shown again', async ({ page }) => {

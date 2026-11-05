@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SPEEDS, type SpeedName } from '../../../lib/audio/speeds';
+import type { Support } from '../../../lib/diagnostics/plan';
 import { afterAttempt, newQueue, nextInQueue, type SessionQueue } from '../../../lib/mastery/mastery';
 import { currentSessionId } from '../../../lib/session/session-id';
 import type { ClipFile } from '../../../lib/tele/clip';
@@ -16,6 +17,7 @@ import { Caption, useSubtitles } from '../../components/Caption';
 import { Tele } from '../../components/Tele';
 import { useLinePlayback } from '../../components/useLinePlayback';
 import { Win } from '../../components/Win';
+import { canPlayWord, Probe } from './Probe';
 import '../../components/screens.css';
 
 export interface QuestionItem {
@@ -26,6 +28,7 @@ export interface QuestionItem {
   mastered: boolean;
   laterSession: boolean;
   successes: number;
+  keyWord: { spanish: string; english: string } | null;
 }
 
 type Stage = 'ready' | 'choosing' | 'answered';
@@ -51,7 +54,7 @@ const slotFor = (index: readonly BuiltClip[], text: string, speed: number) => in
  * words; revealing marks the attempt as assisted so it never counts toward mastery. A miss brings
  * the question back soon, a success pushes it further away, and speed rises as they succeed.
  */
-export function Understand({ questions }: { questions: QuestionItem[] }) {
+export function Understand({ questions, quickId = null, plans = {} }: { questions: QuestionItem[]; quickId?: string | null; plans?: Record<string, Support> }) {
   const byId = useMemo(() => new Map(questions.map((q) => [q.id, q])), [questions]);
   const [showEnglish, toggleEnglish] = useSubtitles();
   const playback = useLinePlayback();
@@ -61,7 +64,7 @@ export function Understand({ questions }: { questions: QuestionItem[] }) {
   const last = useRef(new Map<string, LastPresentation>());
   const lastLine = useRef<string | null>(null);
 
-  const [queue, setQueue] = useState<SessionQueue>(() => newQueue(questions.filter((q) => !q.mastered && !q.laterSession).map((q) => q.id)));
+  const [queue, setQueue] = useState<SessionQueue>(() => newQueue(quickId ? [quickId] : questions.filter((q) => !q.mastered && !q.laterSession).map((q) => q.id)));
   const [cur, setCur] = useState<Presentation | null>(null);
   const [stage, setStage] = useState<Stage>('ready');
   const [picked, setPicked] = useState<string | null>(null);
@@ -69,6 +72,8 @@ export function Understand({ questions }: { questions: QuestionItem[] }) {
   const [masteredIds, setMasteredIds] = useState(() => new Set(questions.filter((q) => q.mastered).map((q) => q.id)));
   const [message, setMessage] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
+  /** After a miss, the id of the question being probed; null when no check is running. */
+  const [probing, setProbing] = useState<string | null>(null);
 
   const tele = (situation: Parameters<typeof selectLine>[0]): TutorLine => {
     const line = selectLine(situation, { lastId: lastLine.current });
@@ -96,20 +101,21 @@ export function Understand({ questions }: { questions: QuestionItem[] }) {
         return;
       }
       const item = byId.get(id)!;
-      const speed = nextSpeed(last.current.get(id) ?? null);
+      const speed = nextSpeed(last.current.get(id) ?? null, plans[id]?.startSpeed ?? 'slow');
       setCur({
         id, speed, options: buildOptions(questions, id), replays: 0, usedSlow: false, revealed: false, textFallback: false, played: false, choosingSince: null,
       });
       setStage('ready');
       setPicked(null);
       setMessage(null);
+      setProbing(null);
       // Load this question's three clips ahead of the tap, so audio can start inside it (iPhone blocks audio that starts later).
       for (const s of Object.values(SPEEDS)) {
         const slot = slotFor(index.current, item.spanish, s);
         if (slot && !clips.current.has(slot)) loadClip(slot).then((c) => clips.current.set(slot, c), () => {});
       }
     },
-    [byId, questions],
+    [byId, questions, plans],
   );
 
   useEffect(() => {
@@ -180,7 +186,10 @@ export function Understand({ questions }: { questions: QuestionItem[] }) {
       const doneForToday = result.mastered || (result.mastery.qualifyingSuccesses >= 3 && result.mastery.distinctSessions < 2);
       if (result.mastered) setMasteredIds((s) => new Set(s).add(cur.id));
       last.current.set(cur.id, { speed: cur.speed, outcome });
-      setQueue((q) => afterAttempt(q, cur.id, outcome, doneForToday));
+      // A quick win is one question, whatever the result: the effort counts and it ends on a good note.
+      setQueue((q) => afterAttempt(q, cur.id, outcome, doneForToday || !!quickId));
+      const kw = byId.get(cur.id)?.keyWord;
+      if (!correct && !cur.revealed && kw && canPlayWord(kw.spanish, index.current)) setProbing(cur.id);
       playback.play(tele(result.mastered ? 'mastered' : correct && !cur.revealed ? 'correct' : cur.revealed ? 'hint' : 'wrong'));
     } catch {
       setMessage('That did not save. Check your connection and try again.');
@@ -190,6 +199,7 @@ export function Understand({ questions }: { questions: QuestionItem[] }) {
   }
 
   const item = cur ? byId.get(cur.id) : null;
+  const probeWords = useMemo(() => questions.filter((q) => q.keyWord).map((q) => ({ id: q.id, ...q.keyWord! })), [questions]);
   const finished = ready && !cur;
   const allMastered = masteredIds.size >= questions.length;
   const showText = !!cur && (cur.revealed || stage === 'answered');
@@ -214,9 +224,11 @@ export function Understand({ questions }: { questions: QuestionItem[] }) {
 
           {finished && (
             <div className="stack" data-testid="finished">
-              <Status kind="done" label={allMastered ? 'All five mastered' : 'Done for today'} />
+              <Status kind="done" label={quickId ? 'One done' : allMastered ? 'All five mastered' : 'Done for today'} />
               <p>
-                {allMastered
+                {quickId
+                  ? 'That is one done, and it counts. Come back whenever you want more.'
+                  : allMastered
                   ? 'You can understand all five questions. The next step is open.'
                   : 'That is enough for today. Questions are only mastered once you get them right on more than one day, so come back tomorrow.'}
               </p>
@@ -272,11 +284,29 @@ export function Understand({ questions }: { questions: QuestionItem[] }) {
                   );
                 })}
               </ul>
+              {stage === 'ready' && plans[cur.id]?.preview && item.keyWord && (
+                <p data-testid="key-word-preview">
+                  A word to look out for: <strong lang="es">{item.keyWord.spanish}</strong> means <strong>{item.keyWord.english}</strong>.
+                </p>
+              )}
               {stage === 'ready' && <p className="muted">Press Listen first. Then pick what it means.</p>}
               {message && (
                 <p className="error" role="alert">
                   {message}
                 </p>
+              )}
+
+              {stage === 'answered' && probing === cur.id && item.keyWord && (
+                <Probe
+                  word={{ id: cur.id, ...item.keyWord }}
+                  words={probeWords}
+                  index={index.current}
+                  onSkip={() => setProbing(null)}
+                  onFinish={(r) => {
+                    void fetch('/api/probe', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ itemId: cur.id, sessionId: sessionId.current, ...r }) }).catch(() => {});
+                    setProbing(null);
+                  }}
+                />
               )}
 
               {stage === 'answered' && (

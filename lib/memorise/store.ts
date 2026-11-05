@@ -1,4 +1,5 @@
 import type { Db } from '../db/types';
+import { causeTagsForRecallFailure, recordChunkEvents } from '../diagnostics/recall-store';
 import { logAttempt, type AttemptResult } from '../events/attempts';
 import { DEFAULT_MASTERY, isMastered, needsLaterSession, NO_MASTERY } from '../mastery/mastery';
 import { loadMastery } from '../progress/progress';
@@ -58,6 +59,7 @@ export async function loadMemoriseItems(db: Db, profileId: string, courseId: str
 
 export interface RecallInput {
   profileId: string;
+  courseId: string;
   itemId: string;
   sessionId: string;
   /** Whole percent from the word-by-word score. */
@@ -65,6 +67,8 @@ export interface RecallInput {
   /** Support level the prompt had when the student said it. */
   level: number;
   responseTimeMs?: number | null;
+  /** Positions of script words the recogniser did not match. Positions only: no transcript is sent or kept. */
+  missedWords?: number[];
 }
 
 export type RecallResult =
@@ -78,17 +82,25 @@ export type RecallResult =
 export async function recordRecall(db: Db, i: RecallInput, cfg: MemoriseConfig = DEFAULT_MEMORISE): Promise<RecallResult> {
   if (!Number.isFinite(i.accuracy) || i.accuracy < 0 || i.accuracy > 100) return { ok: false, error: 'Bad accuracy.' };
   if (!Number.isInteger(i.level) || i.level < 0 || i.level > MAX_LEVEL) return { ok: false, error: 'Bad level.' };
-  const owned = await db.query('select 1 from answers where profile_id = $1 and question_id = $2 and confirmed_at is not null', [i.profileId, i.itemId]);
+  const owned = await db.query<{ text: string }>('select text from answers where profile_id = $1 and question_id = $2 and confirmed_at is not null', [i.profileId, i.itemId]);
   if (!owned.rows.length) return { ok: false, error: 'Confirm this answer first.' };
+  const missedWords = (i.missedWords ?? []).filter((n) => Number.isInteger(n) && n >= 0 && n < 1000);
 
   const previous = await loadAccuracies(db, i.profileId, i.itemId);
   const good = i.accuracy >= cfg.threshold;
   const assisted = !countsTowardMastery(i.level);
   try {
+    // Which chunks were missed feeds the hotspot rule; a failed attempt then gets a cause tag by rule.
+    const { missedChunkIds } = await recordChunkEvents(db, {
+      profileId: i.profileId, courseId: i.courseId, answer: owned.rows[0].text, missedWords, sessionId: i.sessionId, readingAloud: assisted,
+    });
+    const causeTags = good || assisted
+      ? []
+      : await causeTagsForRecallFailure(db, { profileId: i.profileId, courseId: i.courseId, itemId: i.itemId, answer: owned.rows[0].text, timed: false, missedChunkIds });
     const result = await logAttempt(db, {
       profileId: i.profileId, itemKind: 'question', itemId: i.itemId, phase: 'memorise', sessionId: i.sessionId,
       outcome: good ? (assisted ? 'assisted' : 'correct') : 'wrong',
-      accuracy: Math.round(i.accuracy), responseTimeMs: i.responseTimeMs ?? null, assisted,
+      accuracy: Math.round(i.accuracy), responseTimeMs: i.responseTimeMs ?? null, assisted, causeTags,
     });
     const fade: FadeState = foldFade([...previous, Math.round(i.accuracy)], cfg);
     return { ok: true, ...result, level: fade.level, best: Math.max(Math.round(i.accuracy), ...previous), previousBest: previous.length ? Math.max(...previous) : null };

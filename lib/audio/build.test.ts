@@ -41,8 +41,8 @@ function fakes(capGbp = 5) {
 describe('planClips', () => {
   const specs = planClips(SEED_COURSE.questions, PHRASE_BANK);
 
-  it('plans every question at slow, normal and fast, and every phrase-bank line once', () => {
-    expect(specs.filter((s) => s.kind === 'question')).toHaveLength(5 * 3);
+  it('plans every question at slow, normal and fast, each key word at slow and normal, and every phrase-bank line once', () => {
+    expect(specs.filter((s) => s.kind === 'question')).toHaveLength(5 * 3 + 5 * 2);
     expect(specs.filter((s) => s.kind === 'line')).toHaveLength(PHRASE_BANK.length);
     const speeds = new Set(specs.filter((s) => s.kind === 'question').map((s) => s.speed));
     expect(speeds).toEqual(new Set(Object.values(SPEEDS)));

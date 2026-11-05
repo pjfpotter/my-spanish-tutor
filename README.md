@@ -55,7 +55,9 @@ On Vercel the same variables go in the project's Environment Variables settings.
 | `npm run dev` | Start the dev server |
 | `npm run build` / `npm start` | Production build and server |
 | `npm run typecheck` | TypeScript check |
-| `npm test` | Unit tests (Vitest) |
+| `npm test` | Unit tests (Vitest), about 30 seconds |
+| `npm run test:e2e` | Browser tests (Playwright): every test on the phone profile, the Chromebook profile only where the device matters, about 4 minutes |
+| `npm run test:full` | Unit tests, then every browser test on both profiles. Run before a release or a big change |
 | `npm run db:migrate` | Apply new SQL files from `db/migrations/` |
 | `npm run seed` | Write the seed course (`lib/course/seed.ts`) to the database, updating in place |
 | `npm run build-audio` | **Dry run:** list the audio clips still to build and their estimated cost. Spends nothing. |
@@ -69,10 +71,10 @@ On Vercel the same variables go in the project's Environment Variables settings.
 
 ```bash
 npx playwright install chromium
-npx playwright test
+npm run test:e2e
 ```
 
-Playwright starts its **own** dev server on port 3100 (so it can run beside `npm run dev`) with `DB_DRIVER=pglite`: a throwaway in-process Postgres seeded with the course. Browser tests therefore never touch Neon. Audio and transcription are stubbed, so they cost nothing.
+Playwright builds the app and starts its **own** server on port 3100 (so it can run beside `npm run dev`) with `DB_DRIVER=pglite`: a throwaway in-process Postgres seeded with the course. Browser tests therefore never touch Neon. Set `E2E_DEV=1` to use the dev server while editing a page, or `E2E_FULL=1` to run every test on both profiles. Audio and transcription are stubbed, so they cost nothing.
 
 CI (`.github/workflows/ci.yml`) runs the typecheck, unit tests and build on every push. A failing test turns the check red.
 

@@ -9,14 +9,17 @@ export interface QuestionRow {
   spanish: string;
   english: string;
   recycled: boolean;
+  keyWord: { spanish: string; english: string } | null;
 }
 
 export async function loadQuestions(db: Db, courseId: string): Promise<QuestionRow[]> {
-  const { rows } = await db.query<{ id: string; position: number; spanish: string; english_subtitle: string; recycled: boolean }>(
-    'select id, position, spanish, english_subtitle, recycled from questions where course_id = $1 order by position',
+  const { rows } = await db.query<{ id: string; position: number; spanish: string; english_subtitle: string; recycled: boolean; key_word: string | null; key_word_english: string | null }>(
+    'select id, position, spanish, english_subtitle, recycled, key_word, key_word_english from questions where course_id = $1 order by position',
     [courseId],
   );
-  return rows.map((r) => ({ id: r.id, position: r.position, spanish: r.spanish, english: r.english_subtitle, recycled: r.recycled }));
+  return rows.map((r) => ({ id: r.id, position: r.position, spanish: r.spanish, english: r.english_subtitle, recycled: r.recycled,
+    keyWord: r.key_word && r.key_word_english ? { spanish: r.key_word, english: r.key_word_english } : null,
+  }));
 }
 
 /** Mastery of each item in a phase, keyed by item id. Items never attempted are absent. */

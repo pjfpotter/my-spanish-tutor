@@ -51,6 +51,8 @@ export interface Question {
   recycled: boolean;
   /** Chunk categories that answer this question. An answer is relevant if it uses at least one. */
   topics: string[];
+  /** The word the comprehension probe plays alone after a missed question, with its English meaning. */
+  keyWord?: { spanish: string; english: string };
 }
 
 /**

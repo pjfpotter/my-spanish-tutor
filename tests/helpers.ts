@@ -1,7 +1,7 @@
 import { expect, type Page } from '@playwright/test';
 
-/** Creates an anonymous profile through the real sign-up screen and returns its recovery code. */
-export async function signUp(page: Page): Promise<string> {
+/** Creates an anonymous profile through the real sign-up screen and returns its recovery code. Only the sign-up tests need this. */
+export async function signUpThroughForm(page: Page): Promise<string> {
   await page.goto('/welcome');
   await page.getByRole('radio').first().check();
   await page.getByRole('checkbox', { name: 'football' }).check();
@@ -10,6 +10,19 @@ export async function signUp(page: Page): Promise<string> {
   await page.getByRole('button', { name: /Let's go/ }).click();
   await expect(page).toHaveURL('/');
   return code;
+}
+
+/**
+ * Creates an anonymous profile through the app's own sign-up route (the cookie lands in the browser, as it does
+ * from the form) and opens the desktop. Much faster than the form, which `signUpThroughForm` covers.
+ */
+export async function signUp(page: Page): Promise<string> {
+  const { nicknameOptions } = await import('../lib/profile/profile');
+  const res = await page.request.post('/api/profile', { data: { nickname: nicknameOptions(1)[0], interests: ['football'] } });
+  expect(res.ok()).toBe(true);
+  const { recoveryCode } = (await res.json()) as { recoveryCode: string };
+  await page.goto('/');
+  return recoveryCode;
 }
 
 /**

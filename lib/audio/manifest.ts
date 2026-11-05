@@ -32,9 +32,11 @@ export interface QuestionLike {
   position: number;
   spanish: string;
   english: string;
+  /** Played alone by the comprehension probe, at slow and normal speed only. */
+  keyWord?: { spanish: string; english: string };
 }
 
-/** Every clip the app needs: each question at three speeds, each phrase-bank line at normal speed. */
+/** Every clip the app needs: each question at three speeds, each key word at two, each phrase-bank line at normal speed. */
 export function planClips(questions: QuestionLike[], bank: PhraseLine[]): ClipSpec[] {
   const specs: ClipSpec[] = [];
   for (const q of questions) {
@@ -42,6 +44,15 @@ export function planClips(questions: QuestionLike[], bank: PhraseLine[]): ClipSp
       specs.push({
         slot: slotFor(q.spanish, speed), text: q.spanish, en: q.english, speed, feelings: null,
         kind: 'question', label: `question ${q.position} (${name})`,
+      });
+    }
+  }
+  for (const q of questions) {
+    if (!q.keyWord) continue;
+    for (const name of ['slow', 'normal'] as const) {
+      specs.push({
+        slot: slotFor(q.keyWord.spanish, SPEEDS[name]), text: q.keyWord.spanish, en: q.keyWord.english, speed: SPEEDS[name], feelings: null,
+        kind: 'question', label: `key word of question ${q.position} (${name})`,
       });
     }
   }

@@ -6,6 +6,11 @@ export default [
     "speed": 1
   },
   {
+    "slot": "012abccee32d",
+    "text": "fiesta",
+    "speed": 0.7
+  },
+  {
     "slot": "07f46858c963",
     "text": "Has llegado. Aquí estás a salvo.",
     "speed": 1
@@ -161,6 +166,11 @@ export default [
     "speed": 1
   },
   {
+    "slot": "6394a164486b",
+    "text": "películas",
+    "speed": 0.7
+  },
+  {
     "slot": "659dbf743155",
     "text": "¿Qué vas a llevar para la fiesta?",
     "speed": 1
@@ -174,6 +184,21 @@ export default [
     "slot": "6aceb535295d",
     "text": "¿Qué tipo de películas te gustan y por qué?",
     "speed": 1.2
+  },
+  {
+    "slot": "7970bac13c77",
+    "text": "ropa",
+    "speed": 0.7
+  },
+  {
+    "slot": "7bf728277c04",
+    "text": "películas",
+    "speed": 1
+  },
+  {
+    "slot": "803c69454505",
+    "text": "cine",
+    "speed": 0.7
   },
   {
     "slot": "8191e8f601a5",
@@ -231,6 +256,16 @@ export default [
     "speed": 1
   },
   {
+    "slot": "a24b1de1ed4f",
+    "text": "tiempo libre",
+    "speed": 0.7
+  },
+  {
+    "slot": "a6449a9ca7b5",
+    "text": "tiempo libre",
+    "speed": 1
+  },
+  {
     "slot": "a7a60e9c889f",
     "text": "¿Qué ropa llevas normalmente cuando sales con tus amigos?",
     "speed": 1
@@ -238,6 +273,11 @@ export default [
   {
     "slot": "a9da98c85bec",
     "text": "Está bien. Empezamos con algo pequeño.",
+    "speed": 1
+  },
+  {
+    "slot": "af260d81c610",
+    "text": "fiesta",
     "speed": 1
   },
   {
@@ -296,6 +336,11 @@ export default [
     "speed": 1.2
   },
   {
+    "slot": "d553c0b9ce12",
+    "text": "cine",
+    "speed": 1
+  },
+  {
     "slot": "d5b1dd229b62",
     "text": "Esta habitación es tranquila. Puedes quedarte.",
     "speed": 1
@@ -303,6 +348,11 @@ export default [
   {
     "slot": "d9b590fe7b2d",
     "text": "Cada día, la imagen está más clara.",
+    "speed": 1
+  },
+  {
+    "slot": "e46e7b99e381",
+    "text": "ropa",
     "speed": 1
   },
   {

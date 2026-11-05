@@ -224,3 +224,40 @@ test("a question's channel on the desktop clears from static after a correct ans
   const other = page.getByTestId('question-file').nth((q + 1) % 5);
   await expect(other).toHaveAttribute('data-clarity', 'static');
 });
+
+// Task 10.2: after a miss, a short optional check plays the key word alone and the server stores a cause tag by rule.
+test('a missed question offers a quick check, and the result is tagged on the attempt', async ({ page }) => {
+  const rec = recordAttempts(page);
+  const probes: Record<string, unknown>[] = [];
+  page.on('request', (r) => r.url().endsWith('/api/probe') && probes.push(r.postDataJSON()));
+  // Key-word clips as well as the question clips, so the check can play without the device voice.
+  const keyWords = SEED_COURSE.questions.flatMap((q, qi) => (q.keyWord ? [0.7, 1].map((speed, si) => ({ slot: String(100 + qi * 2 + si).padStart(12, '0'), text: q.keyWord!.spanish, speed })) : []));
+  INDEX.push(...(keyWords as typeof INDEX));
+  await open(page);
+  const { q } = await answer(page, rec, false);
+  const probe = page.getByTestId('probe');
+  await expect(probe).toBeVisible();
+  await expect(page.getByTestId('coins')).toBeVisible(); // Next and coins stay available beside the check
+
+  const keyEnglish = SEED_COURSE.questions[q].keyWord!.english;
+  // Slow step: listen, then get it right. Normal step: listen, then get it wrong, so the tag is "too fast".
+  await probe.getByRole('button', { name: /Listen/ }).click();
+  await probe.locator('.option', { hasText: keyEnglish }).click();
+  await probe.getByRole('button', { name: /Listen/ }).click();
+  await probe.locator('.option').filter({ hasNotText: keyEnglish }).first().click();
+
+  await expect.poll(() => probes.length).toBe(1);
+  expect(probes[0]).toMatchObject({ heardSlow: true, heardNormal: false, written: null });
+  await expect(probe).toHaveCount(0);
+});
+
+test('the quick check can be skipped and sends nothing', async ({ page }) => {
+  const rec = recordAttempts(page);
+  const probes: unknown[] = [];
+  page.on('request', (r) => r.url().endsWith('/api/probe') && probes.push(1));
+  await open(page);
+  await answer(page, rec, false);
+  await page.getByTestId('probe').getByRole('button', { name: 'Skip the check' }).click();
+  await expect(page.getByTestId('probe')).toHaveCount(0);
+  expect(probes).toHaveLength(0);
+});

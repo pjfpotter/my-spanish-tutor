@@ -147,22 +147,27 @@ export const SEED_COURSE: Course = {
     {
       position: 1, spanish: '¿Qué tipo de películas te gustan y por qué?', english: 'What type of films do you like, and why?',
       recycled: false, topics: ['film opinion', 'film type', 'reason'],
+      keyWord: { spanish: 'películas', english: 'films' },
     },
     {
       position: 2, spanish: '¿Te gustaría ir al cine este sábado?', english: 'Would you like to go to the cinema this Saturday?',
       recycled: false, topics: ['invitation', 'place', 'when', 'reply', 'excuse'],
+      keyWord: { spanish: 'cine', english: 'cinema' },
     },
     {
       position: 3, spanish: '¿Qué ropa llevas normalmente cuando sales con tus amigos?', english: 'What clothes do you normally wear when you go out with your friends?',
       recycled: false, topics: ['clothes', 'clothing', 'colour'],
+      keyWord: { spanish: 'ropa', english: 'clothes' },
     },
     {
       position: 4, spanish: '¿Qué vas a llevar para la fiesta?', english: 'What are you going to wear to the party?',
       recycled: false, topics: ['clothes future', 'clothing', 'event'],
+      keyWord: { spanish: 'fiesta', english: 'party' },
     },
     {
       position: 5, spanish: '¿Qué haces en tu tiempo libre?', english: 'What do you do in your free time?',
       recycled: true, topics: ['free time', 'free time opinion', 'free time activity', 'frequency'],
+      keyWord: { spanish: 'tiempo libre', english: 'free time' },
     },
   ],
   // Draft calibration for this course; edit lib/course/calibration/going-out.json, not this file.

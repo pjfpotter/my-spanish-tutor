@@ -37,9 +37,10 @@ export async function seedCourse(db: Db, course: Course): Promise<SeedResult> {
 
   for (const q of course.questions) {
     await db.query(
-      `insert into questions (course_id, position, spanish, english_subtitle, recycled) values ($1,$2,$3,$4,$5)
-       on conflict (course_id, position) do update set spanish = excluded.spanish, english_subtitle = excluded.english_subtitle, recycled = excluded.recycled`,
-      [courseId, q.position, q.spanish, q.english, q.recycled],
+      `insert into questions (course_id, position, spanish, english_subtitle, recycled, key_word, key_word_english) values ($1,$2,$3,$4,$5,$6,$7)
+       on conflict (course_id, position) do update set spanish = excluded.spanish, english_subtitle = excluded.english_subtitle, recycled = excluded.recycled,
+         key_word = excluded.key_word, key_word_english = excluded.key_word_english`,
+      [courseId, q.position, q.spanish, q.english, q.recycled, q.keyWord?.spanish ?? null, q.keyWord?.english ?? null],
     );
   }
   for (const ch of course.chunks) {

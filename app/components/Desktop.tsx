@@ -1,7 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { moodPlan, MOODS, type Mood } from '../../lib/diagnostics/mood';
+import { currentSessionId } from '../../lib/session/session-id';
 import type { ClipFile } from '../../lib/tele/clip';
 import { clipUrls, findClip, loadClip } from '../../lib/tele/clips';
 import { linesFor } from '../../lib/tele/phrase-bank';
@@ -34,7 +36,18 @@ export interface DesktopProps {
   freezes?: number;
   wallpaper?: string | null;
   objects?: { id: string; es: string; en: string }[];
+  /** The starting-point check has been done (or does not apply), so it is not offered. */
+  baselineDone?: boolean;
 }
+
+const MOOD_TEXT: Record<Mood, { es: string; en: string }> = {
+  good: { es: 'Bien', en: 'Good' },
+  ok: { es: 'Normal', en: 'Okay' },
+  nervous: { es: 'Nervioso', en: 'Nervous' },
+  tired: { es: 'Cansado', en: 'Tired' },
+  not_a_fan: { es: 'No me gusta', en: 'Spanish is not my favourite' },
+};
+const moodKey = (sessionId: string) => `mood:${sessionId}`;
 
 /** A question's picture in words as well as in the picture, so it is never shown by clarity alone. */
 const clarityWord = (c: number) => (c >= 1 ? 'clear' : c > 0 ? 'clearing' : 'static');
@@ -44,20 +57,58 @@ const clarityWord = (c: number) => (c >= 1 ? 'clear' : c > 0 ? 'clearing' : 'sta
  * the five question files. Locked phases show as static and cannot be opened. The sandbox is the
  * space around the path; it never replaces it.
  */
-export function Desktop({ states, daysToTest, channels = [], signedIn = true, nickname = null, coins = 0, streak = 0, freezes = 0, wallpaper = null, objects = [] }: DesktopProps) {
+export function Desktop({ states, daysToTest, channels = [], signedIn = true, nickname = null, coins = 0, streak = 0, freezes = 0, wallpaper = null, objects = [], baselineDone = true }: DesktopProps) {
   const [showEnglish, toggleEnglish] = useSubtitles();
   const playback = useLinePlayback();
   const lastLine = useRef<string | null>(null);
   const clips = useRef(new Map<string, ClipFile>());
+  /** Null until we know whether this session has been asked; then the answer, or false if not yet answered. */
+  const [mood, setMood] = useState<Mood | false | 'skipped' | null>(null);
+  const [moodError, setMoodError] = useState(false);
 
   // Load clip timelines up front so audio can start inside the tap: iPhone blocks audio that
   // starts after an await. A line with no clip, or whose clip fails to load, plays silently.
   useEffect(() => {
-    for (const line of linesFor('poke')) {
+    for (const line of [...linesFor('poke'), ...linesFor('nervous'), ...linesFor('dislike'), ...linesFor('quick_win')]) {
       const slot = findClip(line.es);
       if (slot) loadClip(slot).then((clip) => clips.current.set(line.id, clip), () => {});
     }
+    // One question per visit: a mood already given in this session is not asked for again.
+    try {
+      const saved = localStorage.getItem(moodKey(currentSessionId()));
+      setMood(saved === 'skipped' ? 'skipped' : (MOODS as readonly string[]).includes(saved ?? '') ? (saved as Mood) : false);
+    } catch {
+      setMood(false);
+    }
   }, []);
+
+  function skipMood() {
+    try { localStorage.setItem(moodKey(currentSessionId()), 'skipped'); } catch { /* asked again next page load, which is fine */ }
+    setMood('skipped');
+  }
+
+  async function answerMood(m: Mood) {
+    setMoodError(false);
+    const sessionId = currentSessionId();
+    try {
+      const res = await fetch('/api/mood', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mood: m, sessionId }) });
+      if (!res.ok) throw new Error('save failed');
+    } catch {
+      setMoodError(true);
+      return;
+    }
+    try { localStorage.setItem(moodKey(sessionId), m); } catch { /* the answer is still saved on the server */ }
+    setMood(m);
+    // Tele answers in Spanish, lightly. Nothing here earns coins.
+    const [situation] = moodPlan(m).situations;
+    if (situation && !playback.playing) {
+      const line = selectLine(situation, { lastId: lastLine.current });
+      lastLine.current = line.id;
+      const clip = clips.current.get(line.id);
+      const slot = findClip(line.es);
+      playback.play(line, clip && slot ? { clip, audioUrl: clipUrls(slot).audio } : undefined);
+    }
+  }
 
   // Poking Tele plays a stock line. It earns nothing: no coins, no progress, no request to the API.
   function poke() {
@@ -104,6 +155,43 @@ export function Desktop({ states, daysToTest, channels = [], signedIn = true, ni
           <p className="muted" data-testid="nickname">
             Hola, {nickname}
           </p>
+        )}
+        {signedIn && mood !== null && mood !== 'skipped' && (
+          <Win title="animo.exe" label="How are you feeling">
+            {mood === false ? (
+              <>
+                <p>
+                  <strong>¿Cómo estás hoy?</strong> <span className="muted">How are you today? You can skip this.</span>
+                </p>
+                <ul className="options" aria-label="Pick how you feel">
+                  {MOODS.map((m) => (
+                    <li key={m}>
+                      <button type="button" className="option" data-mood={m} onClick={() => answerMood(m)}>
+                        <span lang="es">{MOOD_TEXT[m].es}</span> <span className="muted">{MOOD_TEXT[m].en}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                {moodError && <p className="error" role="alert">That did not save. You can carry on and try again later.</p>}
+                <button type="button" className="btn" onClick={skipMood}>Skip</button>
+              </>
+            ) : (
+              <>
+                <p className="muted" data-testid="mood-done">Thanks. Mood today: {MOOD_TEXT[mood].en}.</p>
+                {moodPlan(mood).quickWin && (
+                  <Link className="btn btn-primary" href="/phases/understand?quick=1" data-testid="quick-win">
+                    One easy one first
+                  </Link>
+                )}
+              </>
+            )}
+          </Win>
+        )}
+        {signedIn && !baselineDone && (
+          <Win title="inicio.exe" label="Starting point">
+            <p>Want to see what you already know? Five quick questions, with the answers shown after each.</p>
+            <Link className="btn" href="/baseline" data-testid="baseline-link">Find my starting point</Link>
+          </Win>
         )}
         <Win title="examen.exe" label="Your speaking test">
           <p className="days" data-testid="days-to-test">

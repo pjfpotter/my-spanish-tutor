@@ -6,6 +6,7 @@ import { DEFAULT_MEMORISE, LEVEL_NAMES, promptWords } from '../../../lib/memoris
 import { feedbackFor } from '../../../lib/memorise/feedback';
 import { drillStep, sentenceResults, splitSentences, stuckSentence, type DrillState } from '../../../lib/memorise/sentences';
 import type { MemoriseItem } from '../../../lib/memorise/store';
+import { prioritise } from '../../../lib/diagnostics/plan';
 import { afterAttempt, newQueue, nextInQueue, type SessionQueue } from '../../../lib/mastery/mastery';
 import { currentSessionId } from '../../../lib/session/session-id';
 import { judgeCapture, UNCLEAR_MESSAGE } from '../../../lib/speech/capture-judgement';
@@ -41,11 +42,11 @@ interface Attempt {
  * improve. The score is a percentage from the words the recogniser understood, shown against their own best.
  * Unclear audio is never scored. Nothing here calls a language model.
  */
-export function Memorise({ items: initial }: { items: MemoriseItem[] }) {
+export function Memorise({ items: initial, focusIds = [] }: { items: MemoriseItem[]; focusIds?: string[] }) {
   const [items, setItems] = useState(initial);
   const byId = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
-  const [queue, setQueue] = useState<SessionQueue>(() => newQueue(initial.filter((i) => !i.mastered && !i.laterSession).map((i) => i.id)));
-  const [curId, setCurId] = useState<string | null>(() => nextInQueue(newQueue(initial.filter((i) => !i.mastered && !i.laterSession).map((i) => i.id))));
+  const [queue, setQueue] = useState<SessionQueue>(() => newQueue(prioritise(initial.filter((i) => !i.mastered && !i.laterSession).map((i) => i.id), (id) => focusIds.includes(id))));
+  const [curId, setCurId] = useState<string | null>(() => nextInQueue(newQueue(prioritise(initial.filter((i) => !i.mastered && !i.laterSession).map((i) => i.id), (id) => focusIds.includes(id)))));
   const [attempt, setAttempt] = useState<Attempt | null>(null);
   const [unclear, setUnclear] = useState(false);
   const [drill, setDrill] = useState<DrillState | null>(null);
@@ -118,7 +119,7 @@ export function Memorise({ items: initial }: { items: MemoriseItem[] }) {
       const res = await fetch('/api/recall', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ itemId: it.id, sessionId: sessionId.current, accuracy: score.accuracy, level: it.level }),
+        body: JSON.stringify({ itemId: it.id, sessionId: sessionId.current, accuracy: score.accuracy, level: it.level, missedWords: score.words.flatMap((w, n) => (w.status === 'matched' ? [] : [n])) }),
       });
       if (!res.ok) throw new Error('save failed');
       const out = (await res.json()) as { mastered: boolean; mastery: { qualifyingSuccesses: number; distinctSessions: number }; coinsAwarded: number; level: number; best: number; previousBest: number | null };

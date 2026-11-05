@@ -93,10 +93,10 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 ## 10. Diagnostics and mood
 
 - [x] 10.1 Implement attempt event logging and the closed cause-tag list; verify events carry all specified fields
-- [ ] 10.2 Implement comprehension probes and tag rules (too fast, word not known, sound-spelling gap, thrown by context); verify unit tests for each pattern
-- [ ] 10.3 Implement recall cause tags and chunk hotspot detection; verify unit tests including the stress pattern
-- [ ] 10.4 Build the mood check-in and the baseline test-teach-test at course start; verify the dislike option leads to an easy quick win
-- [ ] 10.5 Feed tags into session planning so tagged items get adjusted support; verify the too-fast case starts slower
+- [x] 10.2 Implement comprehension probes and tag rules (too fast, word not known, sound-spelling gap, thrown by context); verify unit tests for each pattern
+- [x] 10.3 Implement recall cause tags and chunk hotspot detection; verify unit tests including the stress pattern
+- [x] 10.4 Build the mood check-in and the baseline test-teach-test at course start; verify the dislike option leads to an easy quick win
+- [x] 10.5 Feed tags into session planning so tagged items get adjusted support; verify the too-fast case starts slower
 
 ## 11. Revision planner
 

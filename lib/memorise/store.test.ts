@@ -23,7 +23,7 @@ afterAll(() => db.close());
 
 const s1 = randomUUID();
 const s2 = randomUUID();
-const say = (itemId: string, accuracy: number, level: number, sessionId = s1) => recordRecall(db, { profileId, itemId, sessionId, accuracy, level });
+const say = (itemId: string, accuracy: number, level: number, sessionId = s1) => recordRecall(db, { profileId, courseId, itemId, sessionId, accuracy, level });
 
 describe('memorise store (tasks 8.1 to 8.4)', () => {
   it('offers only confirmed answers, starting with the whole script and no best', async () => {

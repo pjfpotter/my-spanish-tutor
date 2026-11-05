@@ -1,4 +1,5 @@
 import { getDb } from '../db';
+import { baselineDone, loadBaseline } from '../diagnostics/baseline';
 import { CATALOGUE, itemById } from '../rewards/catalogue';
 import { loadShop, settleStreak } from '../rewards/store';
 import { NO_PROGRESS, phaseStates, type PhaseId, type PhaseState, type Progress } from '../phases/gate';
@@ -19,6 +20,8 @@ export interface HomeData {
   wallpaper: string | null;
   /** Desktop things the student owns. */
   objects: { id: string; es: string; en: string }[];
+  /** The starting-point check is finished, so it is not offered again. */
+  baselineDone: boolean;
 }
 
 /** Everything the desktop shows, from the database. A device with no profile sees the course with no progress. */
@@ -38,6 +41,7 @@ export async function loadHome(): Promise<HomeData> {
     freezes: shop?.freezesAvailable ?? 0,
     wallpaper: (shop?.wallpaper && itemById(shop.wallpaper)?.css) || null,
     objects: (shop?.owned ?? []).map((id) => CATALOGUE.find((i) => i.id === id)!).filter((i) => i?.kind === 'object').map(({ id, es, en }) => ({ id, es, en })),
+    baselineDone: profile ? baselineDone(await loadBaseline(db, profile.id), questions.length) : true,
     signedIn: !!profile,
     nickname: profile?.nickname ?? null,
     states: phaseStates(progress),

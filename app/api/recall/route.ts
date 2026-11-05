@@ -14,8 +14,9 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Bad attempt.' }, { status: 400 });
   }
   const result = await recordRecall(await getDb(), {
-    profileId: profile.id, itemId: b.itemId, sessionId: b.sessionId, accuracy: b.accuracy, level: b.level,
+    profileId: profile.id, courseId: profile.courseId, itemId: b.itemId, sessionId: b.sessionId, accuracy: b.accuracy, level: b.level,
     responseTimeMs: typeof b.responseTimeMs === 'number' ? b.responseTimeMs : null,
+    missedWords: Array.isArray(b.missedWords) ? b.missedWords.filter((n): n is number => typeof n === 'number').slice(0, 500) : [],
   });
   return result.ok ? Response.json(result, { headers: { 'Cache-Control': 'no-store' } }) : Response.json({ error: result.error }, { status: 400 });
 }
