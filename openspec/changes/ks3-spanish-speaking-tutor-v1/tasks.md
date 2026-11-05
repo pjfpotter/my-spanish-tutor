@@ -117,8 +117,8 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 
 - [x] 13.1 Implement the append-only coin ledger and effort-based awards; verify a low-scoring attempt still earns coins
 - [x] 13.2 Implement the response-time rank from rolling averages; verify unit tests at rank boundaries
-- [ ] 13.3 Implement fixed-price desktop unlocks (wallpapers, objects), stickers and streak freezes; verify there is no payment path or random draw in the codebase and that exploring the desktop earns no coins
-- [ ] 13.4 Implement own-history progress and class-total goals with no individual names; verify the class goal shows only totals
+- [x] 13.3 Implement fixed-price desktop unlocks (wallpapers, objects), stickers and streak freezes; verify there is no payment path or random draw in the codebase and that exploring the desktop earns no coins
+- [x] 13.4 Implement own-history progress and class-total goals with no individual names; verify the class goal shows only totals
 - [ ] 13.5 Add the curated cheeky pool with a course-level switch; verify it disappears when switched off
 
 ## 14. Cost control and reporting

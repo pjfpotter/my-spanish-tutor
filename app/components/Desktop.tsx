@@ -29,6 +29,11 @@ export interface DesktopProps {
   channels?: number[];
   signedIn?: boolean;
   nickname?: string | null;
+  coins?: number;
+  streak?: number;
+  freezes?: number;
+  wallpaper?: string | null;
+  objects?: { id: string; es: string; en: string }[];
 }
 
 /** A question's picture in words as well as in the picture, so it is never shown by clarity alone. */
@@ -39,7 +44,7 @@ const clarityWord = (c: number) => (c >= 1 ? 'clear' : c > 0 ? 'clearing' : 'sta
  * the five question files. Locked phases show as static and cannot be opened. The sandbox is the
  * space around the path; it never replaces it.
  */
-export function Desktop({ states, daysToTest, channels = [], signedIn = true, nickname = null }: DesktopProps) {
+export function Desktop({ states, daysToTest, channels = [], signedIn = true, nickname = null, coins = 0, streak = 0, freezes = 0, wallpaper = null, objects = [] }: DesktopProps) {
   const [showEnglish, toggleEnglish] = useSubtitles();
   const playback = useLinePlayback();
   const lastLine = useRef<string | null>(null);
@@ -65,7 +70,7 @@ export function Desktop({ states, daysToTest, channels = [], signedIn = true, ni
   }
 
   return (
-    <main className="desktop">
+    <main className="desktop" data-wallpaper={wallpaper ? 'custom' : 'none'} style={wallpaper ? { background: wallpaper } : undefined}>
       <h1 className="desktop-title">My Spanish Tutor</h1>
 
       <div className="desktop-tele">
@@ -154,6 +159,30 @@ export function Desktop({ states, daysToTest, channels = [], signedIn = true, ni
           </ol>
         </Win>
 
+        {signedIn && (
+          <Win title="escritorio.exe" label="Your desktop">
+            <p data-testid="streak">
+              Streak: <strong>{streak}</strong> {streak === 1 ? 'day' : 'days'}
+              {freezes > 0 && <span className="muted"> ({freezes} {freezes === 1 ? 'freeze' : 'freezes'} ready)</span>}
+            </p>
+            <p className="coins" data-testid="desktop-coins">{coins} coins</p>
+            {objects.length > 0 && (
+              <ul className="desk-things" aria-label="Things on your desktop">
+                {objects.map((o) => (
+                  <li key={o.id} data-testid={`thing-${o.id}`}>
+                    <ObjectIcon id={o.id} />
+                    <span lang="es">{o.es}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <div className="controls">
+              <Link className="btn" href="/shop">Tienda</Link>
+              <Link className="btn" href="/progress">My progress</Link>
+            </div>
+          </Win>
+        )}
+
         <Win title="preguntas" label="The five test questions">
           <ul className="files">
             {Array.from({ length: QUESTION_COUNT }, (_, i) => {
@@ -176,5 +205,31 @@ export function Desktop({ states, daysToTest, channels = [], signedIn = true, ni
         </Win>
       </div>
     </main>
+  );
+}
+
+/** Small drawings for the things a student can buy. Decorative: the name is always written beside them. */
+function ObjectIcon({ id }: { id: string }) {
+  return (
+    <svg viewBox="0 0 24 24" width="32" height="32" aria-hidden="true" shapeRendering="crispEdges">
+      {id === 'obj-lampara' && (
+        <>
+          <path d="M12 2a6 6 0 0 0-3 11v3h6v-3a6 6 0 0 0-3-11z" fill="#ffeb00" stroke="#0b2a4a" strokeWidth="1.5" />
+          <path d="M9 19h6v3H9z" fill="#c0c0c0" stroke="#0b2a4a" strokeWidth="1.5" />
+        </>
+      )}
+      {id === 'obj-reloj' && (
+        <>
+          <circle cx="12" cy="12" r="9" fill="#fff" stroke="#0b2a4a" strokeWidth="1.5" />
+          <path d="M12 6v6l4 3" fill="none" stroke="#0b2a4a" strokeWidth="1.5" />
+        </>
+      )}
+      {id === 'obj-planta' && (
+        <>
+          <path d="M12 20V9M12 12c-5 0-6-4-6-6 5 0 6 3 6 6zm0 2c5 0 6-3 6-5-5 0-6 2-6 5z" fill="#5bbb2e" stroke="#0b2a4a" strokeWidth="1.2" />
+          <path d="M8 20h8l-1 3H9z" fill="#ff5fa8" stroke="#0b2a4a" strokeWidth="1.2" />
+        </>
+      )}
+    </svg>
   );
 }
