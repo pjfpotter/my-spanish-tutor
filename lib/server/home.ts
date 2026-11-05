@@ -4,6 +4,9 @@ import { CATALOGUE, itemById } from '../rewards/catalogue';
 import { loadShop, settleStreak } from '../rewards/store';
 import { NO_PROGRESS, phaseStates, type PhaseId, type PhaseState, type Progress } from '../phases/gate';
 import { channelClarity, daysUntil, loadMastery, loadProgress, loadQuestions } from '../progress/progress';
+import { loadAutomateState } from '../automate/store';
+import { DEFAULT_AUTOMATE } from '../automate/window';
+import type { ReadinessInput } from '../planner/readiness';
 import { currentProfile, defaultCourse } from './session';
 
 export interface HomeData {
@@ -13,6 +16,7 @@ export interface HomeData {
   daysToTest: number;
   /** One number per question, 0 (static) to 1 (clear), in question order. */
   channels: number[];
+  progress: ReadinessInput;
   coins: number;
   streak: number;
   freezes: number;
@@ -35,7 +39,10 @@ export async function loadHome(): Promise<HomeData> {
   // Settling the streak is the only write here: it uses a freeze on a missed day if the student has one. It earns nothing.
   if (profile) await settleStreak(db, profile.id);
   const shop = profile ? await loadShop(db, profile.id) : null;
+  // Automatised questions only exist once answers are memorised, so skip the extra query before then.
+  const automated = profile && progress.answersMemorised >= 5 ? Object.values((await loadAutomateState(db, profile.id, questions.map((q) => q.id))).sessionsMet).filter((n) => n >= DEFAULT_AUTOMATE.readySessions).length : 0;
   return {
+    progress: { ...progress, questionsAutomated: automated },
     coins: shop?.coins ?? 0,
     streak: shop?.streak ?? 0,
     freezes: shop?.freezesAvailable ?? 0,

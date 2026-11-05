@@ -13,6 +13,8 @@ import { PHASES, QUESTION_COUNT, type PhaseId, type PhaseState } from '../../lib
 import { Caption, useSubtitles } from './Caption';
 import { Tele } from './Tele';
 import { useLinePlayback } from './useLinePlayback';
+import { ExamWindow, PlanWindow } from './Planner';
+import type { ReadinessInput } from '../../lib/planner/readiness';
 import { Win } from './Win';
 import './desktop.css';
 import './screens.css';
@@ -29,6 +31,8 @@ export interface DesktopProps {
   daysToTest: number;
   /** One number per question, 0 (static) to 1 (clear). Missing means no progress yet. */
   channels?: number[];
+  /** What the readiness meter and plan are computed from. */
+  progress?: ReadinessInput;
   signedIn?: boolean;
   nickname?: string | null;
   coins?: number;
@@ -39,6 +43,8 @@ export interface DesktopProps {
   /** The starting-point check has been done (or does not apply), so it is not offered. */
   baselineDone?: boolean;
 }
+
+const NO_READINESS: ReadinessInput = { answersConfirmed: 0, questionsMastered: 0, answersMemorised: 0, questionsAutomated: 0 };
 
 const MOOD_TEXT: Record<Mood, { es: string; en: string }> = {
   good: { es: 'Bien', en: 'Good' },
@@ -57,7 +63,7 @@ const clarityWord = (c: number) => (c >= 1 ? 'clear' : c > 0 ? 'clearing' : 'sta
  * the five question files. Locked phases show as static and cannot be opened. The sandbox is the
  * space around the path; it never replaces it.
  */
-export function Desktop({ states, daysToTest, channels = [], signedIn = true, nickname = null, coins = 0, streak = 0, freezes = 0, wallpaper = null, objects = [], baselineDone = true }: DesktopProps) {
+export function Desktop({ states, daysToTest, channels = [], progress = NO_READINESS, signedIn = true, nickname = null, coins = 0, streak = 0, freezes = 0, wallpaper = null, objects = [], baselineDone = true }: DesktopProps) {
   const [showEnglish, toggleEnglish] = useSubtitles();
   const playback = useLinePlayback();
   const lastLine = useRef<string | null>(null);
@@ -193,15 +199,8 @@ export function Desktop({ states, daysToTest, channels = [], signedIn = true, ni
             <Link className="btn" href="/baseline" data-testid="baseline-link">Find my starting point</Link>
           </Win>
         )}
-        <Win title="examen.exe" label="Your speaking test">
-          <p className="days" data-testid="days-to-test">
-            <strong>{daysToTest}</strong> días
-          </p>
-          <p className="days-en">days until your speaking test</p>
-          <p className="muted" data-testid="readiness">
-            Readiness: not measured yet
-          </p>
-        </Win>
+        <ExamWindow daysToTest={daysToTest} progress={progress} />
+        <PlanWindow daysToTest={daysToTest} progress={progress} />
 
         <Win title="fases.exe" label="Your four steps">
           <ol className="phases">

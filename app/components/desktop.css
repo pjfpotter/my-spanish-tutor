@@ -170,3 +170,12 @@
   font-weight: 400;
   color: var(--text-muted);
 }
+
+/* Readiness meter: the number and the next action are written out, so the bar is never the only signal. */
+.meter { height: 14px; border: 2px solid var(--ink-navy, #0b2a4a); background: #fff; margin: 6px 0; }
+.meter > span { display: block; height: 100%; background: var(--title-navy, #0a5cc0); }
+.plan-days { margin: 8px 0; padding-left: 1.2em; }
+.plan-days li { margin-bottom: 4px; }
+.options.minutes { display: flex; flex-wrap: wrap; gap: 6px; padding: 0; list-style: none; }
+.option[aria-pressed='true'] { outline: 2px solid var(--ink-navy, #0b2a4a); font-weight: 700; }
+.reminder { margin-top: 10px; }

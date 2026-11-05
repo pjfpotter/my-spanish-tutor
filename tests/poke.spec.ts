@@ -76,7 +76,7 @@ test('earns nothing: no requests to the server and nothing saved beyond display 
 
   expect(requests).toEqual([]);
   expect(await page.evaluate(() => JSON.stringify({ ...localStorage }))).toBe(before);
-  await expect(page.getByTestId('readiness')).toHaveText('Readiness: not measured yet');
+  await expect(page.getByTestId('readiness')).toHaveText('Readiness: 0%');
 });
 
 test('can be poked from the keyboard', async ({ page }) => {

@@ -100,9 +100,9 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 
 ## 11. Revision planner
 
-- [ ] 11.1 Build the countdown, phase display and readiness meter that names its next action; verify unit tests for the readiness calculation
-- [ ] 11.2 Build the session plan from minutes and days left, with redistribution on missed days and late-starter mode; verify unit tests for each case
-- [ ] 11.3 Add opt-in reminders and the after-test-date state; verify no notification is sent without opt-in
+- [x] 11.1 Build the countdown, phase display and readiness meter that names its next action; verify unit tests for the readiness calculation
+- [x] 11.2 Build the session plan from minutes and days left, with redistribution on missed days and late-starter mode; verify unit tests for each case
+- [x] 11.3 Add opt-in reminders and the after-test-date state; verify no notification is sent without opt-in
 
 ## 12. Tutor character, phrase bank and calm mode
 
