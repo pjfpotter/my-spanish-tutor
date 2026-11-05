@@ -52,7 +52,8 @@ describe('anonymous profile', () => {
     const { rows } = await db.query<{ column_name: string }>(
       `select column_name from information_schema.columns where table_name = 'profiles' order by 1`,
     );
-    expect(rows.map((r) => r.column_name)).toEqual(['course_id', 'created_at', 'id', 'interest_tags', 'nickname', 'recovery_code_hash']);
+    // `wallpaper` holds only an id from the shop catalogue: equipWallpaper rejects anything else (lib/rewards tests).
+    expect(rows.map((r) => r.column_name)).toEqual(['course_id', 'created_at', 'id', 'interest_tags', 'nickname', 'recovery_code_hash', 'wallpaper']);
   });
 
   it('gives different recovery codes and a list of distinct nicknames', () => {
