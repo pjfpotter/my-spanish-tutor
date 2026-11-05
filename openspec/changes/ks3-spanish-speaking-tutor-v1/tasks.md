@@ -53,9 +53,9 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 
 - [x] 5.1 Implement speech capture with permission handling and the chosen recognition path per device; verify the permission-denied and unsupported-browser paths with Playwright. Optional manual check: the same paths on real devices
 - [x] 5.2 Implement word-level diff scoring with accuracy percentage; verify unit tests for missing, extra, swapped and accent-tolerant words
-- [ ] 5.3 Implement the confusion table (me/mi, final o, silent h, j, ll, v/b, z/c) and tip display; verify unit tests map each entry and an unmatched mismatch shows no tip
-- [ ] 5.4 Implement syllable breakdown with slow word audio for missed words; verify on five sample words
-- [ ] 5.5 Implement low-confidence handling (no penalty, retry offer); verify with a noisy recording
+- [x] 5.3 Implement the confusion table (me/mi, final o, silent h, j, ll, v/b, z/c) and tip display; verify unit tests map each entry and an unmatched mismatch shows no tip
+- [x] 5.4 Implement syllable breakdown with slow word audio for missed words; verify on five sample words
+- [x] 5.5 Implement low-confidence handling (no penalty, retry offer); verify with a noisy recording
 
 ## 6. Question comprehension phase
 
@@ -77,10 +77,10 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 
 ## 8. Answer memorisation phase
 
-- [ ] 8.1 Build English-prompt recall with spoken attempts and accuracy percentage; verify result time under two seconds with Playwright on the phone profile
-- [ ] 8.2 Implement scaffold fading and chunk isolation; verify unit tests for threshold changes
-- [ ] 8.3 Implement memorisation mastery across sessions and encouraging single-next-step feedback; verify unit tests and copy review
-- [ ] 8.4 Dim words out of the prompt as scaffold fades and show the student's own personal best; verify the dimming follows the fading thresholds
+- [x] 8.1 Build English-prompt recall with spoken attempts and accuracy percentage; verify result time under two seconds with Playwright on the phone profile
+- [x] 8.2 Implement scaffold fading and chunk isolation; verify unit tests for threshold changes
+- [x] 8.3 Implement memorisation mastery across sessions and encouraging single-next-step feedback; verify unit tests and copy review. Decision: an attempt made while the whole script is showing is reading aloud, so it earns coins and helps the prompt fade but does not count toward mastery
+- [x] 8.4 Dim words out of the prompt as scaffold fades and show the student's own personal best; verify the dimming follows the fading thresholds
 
 ## 9. Response automatisation phase
 
