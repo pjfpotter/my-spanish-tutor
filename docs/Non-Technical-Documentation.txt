@@ -1,0 +1,67 @@
+My Spanish Tutor: Overview & Guide
+My Spanish Tutor is a friendly, phone-first web application designed to help UK Year 8 students (ages 12 to 13) master their KS3 Spanish speaking tests. It is built to run smoothly on any smartphone or older school Chromebook, requiring nothing more than a web browser and a headset.
+
+At the heart of the app is Tele—an original character shaped like an old-fashioned television with one big eye. Tele has a playful, encouraging personality, speaks exclusively in Spanish, and helps students build genuine confidence rather than just memorising lines for an exam.
+
+1. Meet Tele and the Learning Journey
+Students work through structured topics ("courses") at their own pace. Each course focuses on a specific set of Spanish phrases, five key test questions, and a clear marking guide.
+
+Instead of endless flashcards, learning is broken down into four natural steps:
+
+Write it: Students choose and confirm a Spanish response they feel comfortable and confident saying out loud for each test question. The app helps guide them so their sentences match the exact level they are aiming for.
+
+Hear it: Students train their ears by listening to questions spoken aloud at varying speeds and matching them to their meanings, clearing away static on Tele’s screen as they master each one.
+
+Say it: Looking at an English prompt, students speak their Spanish answer aloud. As they get better, helpful hints on the screen gradually fade away until they are recalling it entirely from memory.
+
+Own it: The final step! Students hear the question with zero text prompts and answer from memory under a relaxed, shrinking time window to build true fluency.
+
+2. Core Principles: Designed for Wellbeing
+My Spanish Tutor was built with student wellbeing and classroom safety at its absolute core. You will never find anxiety-inducing mechanics here:
+
+No Personal Data Collected: The app doesn’t ask for student names, emails, phone numbers, or school IDs. Voice audio is processed instantly to check pronunciation and is never stored or recorded.
+
+No Grades on Display: Students never see scary letter grades or league tables. Instead, progress is measured using encouraging milestones (Rock solid, Stepping out, and Showing off).
+
+Zero Gimmicks or Real-World Money: There are no "lives" or "hearts" to lose, no public leaderboards, and no microtransactions. Earning virtual coins happens simply by trying and practicing, which unlocks fun desktop stickers and customisation options.
+
+Zero Stress: A missed answer is never penalised; it simply means the app brings the question back up a little sooner so the student can master it.
+
+Encouraging Feedback: Tele always keeps things positive, highlighting what the student did well and offering at most one gentle, actionable tip per attempt.
+
+3. Handy Features for Teachers and Parents
+The Revision Planner: Helps students pace out their practice so they don't have to cram the night before a test.
+
+Readiness Meter: Gives students a clear visual indicator of when they are truly ready for their speaking test.
+
+Teacher Overview: Teachers can access a clean, read-only dashboard via a secure link to see overall class progress, common trouble spots, and engagement without digging through confusing spreadsheets.
+
+Accessibility First: Fully supports custom adjustments, making it easy for students with different learning needs or sensory preferences to stay focused.
+
+Data Security
+
+My Spanish Tutor is designed from the ground up with a "privacy by design" philosophy, specifically tailored for school environments where data protection (such as UK GDPR) is paramount.
+
+Instead of traditional accounts that require personal details, the system keeps students completely anonymous while still allowing them to track their progress securely. Here is how it works under the hood:
+
+1. Zero Personal Data Collection
+No Names, Emails, or IDs: The app does not ask for or store student names, email addresses, phone numbers, or school registration IDs.
+
+Anonymous Profiles: When a student joins, the app generates a random, anonymous profile ID and assigns a fun, random nickname.
+
+Fixed Interest Tags: If students choose personal preferences or interests to customize their experience, they are selected from a strictly controlled, pre-set list of tags. Free-text typing for personal info is completely disabled.
+
+2. Live-Only Voice Processing (No Audio Storage)
+Instant Validation: When a student speaks into their microphone to practice, their device processes the audio or translates it locally/securely to check pronunciation against the expected script.
+
+Never Recorded or Saved: Voice recordings are never stored on servers or saved in a database. Once the app evaluates whether the words match the target phrase, the audio data vanishes.
+
+3. Secure, Passwordless Access via Recovery Codes
+The Recovery Code: Because there are no email addresses or passwords to reset, students are given a unique recovery code when they start.
+
+Encrypted at Rest: If a student switches devices or clears their browser data, they can restore their progress using their recovery code. The system only stores a secure, cryptographic hash of this code, meaning nobody—not even a system administrator—can reverse-engineer it to find out who the student is.
+
+4. Safe Teacher Overviews Without Surveillance
+Owner Links: Teachers or educational supervisors access class progress through a secure, hashed owner-link rather than individual student login profiles.
+
+High-Level Insights Only: The teacher dashboard displays aggregate mastery, practice completion, and common linguistic stumbling blocks so educators can support the class without tracking or exposing individual private data.
