@@ -291,6 +291,9 @@ export function Desktop({ states, daysToTest, channels = [], progress = NO_READI
           </ul>
         </Win>
       </div>
+      <p className="muted desktop-footer">
+        <Link href="/privacy" data-testid="privacy-link">Privacy and your data</Link>
+      </p>
     </main>
   );
 }

@@ -34,10 +34,10 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 
 - [x] 3.1 Define the course schema with chunk feature tags, five questions with English subtitles and answering topics, test date and the mark scheme; verify validation rejects incomplete courses (unit tests). Rework for three levels and calibration data is task 7.7
 - [x] 3.2 Seed one hand-authored course and a seed script; verify the script creates it and re-running does not duplicate it
-- [ ] 3.3 Implement class codes and the join flow with the privacy notice; verify valid, unknown and repeat codes behave as specified
+- [x] 3.3 Implement class codes and the join flow with the privacy notice; verify valid, unknown and repeat codes behave as specified
 - [x] 3.4 Implement the anonymous profile, nickname picker, interest tag picker (fixed list) and recovery code; verify restore on a second browser works and that no free-text field exists
-- [ ] 3.5 Implement delete-everything; verify all server rows for the profile are gone and the device returns to first-use
-- [ ] 3.6 Write the student-facing privacy notice and the one-page data-protection impact assessment; verify both are linked from the app and review the notice for reading age
+- [x] 3.5 Implement delete-everything; verify all server rows for the profile are gone and the device returns to first-use
+- [x] 3.6 Write the student-facing privacy notice and the one-page data-protection impact assessment; verify both are linked from the app and review the notice for reading age
 
 ## 4. Speech audio assets and clip timelines
 

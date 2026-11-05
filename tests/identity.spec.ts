@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { signUpThroughForm as signUp } from './helpers';
+import { SEED_CLASS_CODE, signUpThroughForm as signUp } from './helpers';
 
 // Task 3.4: anonymous profile, nickname picker, fixed interest tags, recovery code.
 
@@ -7,9 +7,15 @@ test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => localStorage.getItem('calm') ?? localStorage.setItem('calm', 'on'));
 });
 
-test('signing up needs no typing: a nickname from a list and interests from a fixed list', async ({ page }) => {
+test('signing up types only a code: the nickname and interest step has no text field', async ({ page }) => {
   await page.goto('/welcome');
-  // No text field of any kind on the sign-up screen: no name, no email, no free-text interests.
+  // The first step takes the class code, one short code and nothing else.
+  await expect(page.locator('input[type="text"], input[type="email"], input[type="tel"], input:not([type]), textarea')).toHaveCount(1);
+  await page.getByRole('textbox').fill(SEED_CLASS_CODE);
+  await page.getByRole('button', { name: 'Find my class' }).click();
+  await page.getByRole('checkbox', { name: 'I have read this' }).check();
+  await page.getByRole('button', { name: 'Carry on' }).click();
+  // No text field of any kind where the nickname and interests are chosen: no name, no email, no free-text interests.
   await expect(page.locator('input[type="text"], input[type="email"], input[type="tel"], input:not([type]), textarea')).toHaveCount(0);
   await expect(page.getByRole('radio')).toHaveCount(6);
   await expect(page.getByRole('checkbox').first()).toBeVisible();
@@ -20,6 +26,10 @@ test('signing up needs no typing: a nickname from a list and interests from a fi
 
 test('at most five interests can be picked', async ({ page }) => {
   await page.goto('/welcome');
+  await page.getByRole('textbox').fill(SEED_CLASS_CODE);
+  await page.getByRole('button', { name: 'Find my class' }).click();
+  await page.getByRole('checkbox', { name: 'I have read this' }).check();
+  await page.getByRole('button', { name: 'Carry on' }).click();
   const boxes = page.getByRole('checkbox');
   for (let i = 0; i < 7; i++) await boxes.nth(i).check({ force: true }).catch(() => {});
   expect(await page.locator('input[type="checkbox"]:checked').count()).toBe(5);

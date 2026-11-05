@@ -1,8 +1,15 @@
 import { expect, type Page } from '@playwright/test';
 
+/** The class code of the seeded course the tests join. */
+export const SEED_CLASS_CODE = 'TELE8';
+
 /** Creates an anonymous profile through the real sign-up screen and returns its recovery code. Only the sign-up tests need this. */
 export async function signUpThroughForm(page: Page): Promise<string> {
   await page.goto('/welcome');
+  await page.getByRole('textbox').fill(SEED_CLASS_CODE);
+  await page.getByRole('button', { name: 'Find my class' }).click();
+  await page.getByRole('checkbox', { name: 'I have read this' }).check();
+  await page.getByRole('button', { name: 'Carry on' }).click();
   await page.getByRole('radio').first().check();
   await page.getByRole('checkbox', { name: 'football' }).check();
   await page.getByRole('button', { name: 'Create my profile' }).click();
@@ -18,7 +25,7 @@ export async function signUpThroughForm(page: Page): Promise<string> {
  */
 export async function signUp(page: Page): Promise<string> {
   const { nicknameOptions } = await import('../lib/profile/profile');
-  const res = await page.request.post('/api/profile', { data: { nickname: nicknameOptions(1)[0], interests: ['football'] } });
+  const res = await page.request.post('/api/profile', { data: { classCode: SEED_CLASS_CODE, privacyAcknowledged: true, nickname: nicknameOptions(1)[0], interests: ['football'] } });
   expect(res.ok()).toBe(true);
   const { recoveryCode } = (await res.json()) as { recoveryCode: string };
   await page.goto('/');
