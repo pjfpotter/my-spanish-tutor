@@ -18,6 +18,7 @@ import { planClips } from '../lib/audio/manifest.ts';
 import { SEED_COURSE } from '../lib/course/seed.ts';
 import { PHRASE_BANK } from '../lib/tele/phrase-bank.ts';
 import { createCostRouter } from '../lib/cost-router/router.ts';
+import { SERVICE_LIMITS } from '../lib/cost-router/limits.ts';
 import { createPgCostStore } from '../lib/cost-router/pg-store.ts';
 
 const args = process.argv.slice(2);
@@ -94,7 +95,7 @@ if (process.env.DATABASE_URL) {
   const rows = [];
   costStore = { spentSince: async () => rows.reduce((s, r) => s + r.estimatedCostGbp, 0), callsSince: async () => 0, log: async (e) => void rows.push(e) };
 }
-const route = createCostRouter(costStore, { [TTS_SERVICE]: { capGbp: 3, periodMs: 30 * 24 * 3_600_000, rate: { max: 1000, windowMs: 60_000 } } });
+const route = createCostRouter(costStore, SERVICE_LIMITS);
 
 const report = await buildClips(plan.toBuild, voice, { synth, decoder, store, route }).finally(() => pool?.end());
 mpg.free();

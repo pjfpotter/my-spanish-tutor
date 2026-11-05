@@ -4,6 +4,7 @@ import { LEVELS, type Course, type Level, type ModelAnswer } from '../course/sch
 import { assessAnswer, survivesOneSwap } from './rubric';
 import { buildWordBank, validateDraft } from './validator';
 
+import { COURSE_SETUP, SERVICE_LIMITS } from '../cost-router/limits';
 type Router = ReturnType<typeof createCostRouter>;
 
 /**
@@ -16,11 +17,8 @@ type Router = ReturnType<typeof createCostRouter>;
  */
 export const SETUP_SERVICE = 'course-setup';
 
-const DAY = 24 * 3_600_000;
-/** SPIKE DEFAULTS: task 14.1 sets the real numbers once the model and its price are chosen. */
-export const SETUP_LIMITS: Record<string, ServiceLimits> = {
-  [SETUP_SERVICE]: { capGbp: 2, periodMs: 30 * DAY, rate: { max: 5, windowMs: 60 * 60_000 } },
-};
+/** Caps live in one registry (task 14.1). */
+export const SETUP_LIMITS: Record<string, ServiceLimits> = { [SETUP_SERVICE]: SERVICE_LIMITS[COURSE_SETUP] };
 
 export interface SetupRequest {
   questions: { position: number; spanish: string; english: string }[];

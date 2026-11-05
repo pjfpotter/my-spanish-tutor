@@ -123,14 +123,14 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 
 ## 14. Cost control and reporting
 
-- [ ] 14.1 Configure caps and fallbacks for every paid service and verify each degrades as specified when the cap is simulated
-- [ ] 14.2 Build the cost-per-student report broken down by tier; verify it matches the cost log for a seeded run
-- [ ] 14.3 Add a test asserting practice rounds make no language-model calls; verify it fails if one is added
+- [x] 14.1 Configure caps and fallbacks for every paid service and verify each degrades as specified when the cap is simulated
+- [x] 14.2 Build the cost-per-student report broken down by tier; verify it matches the cost log for a seeded run
+- [x] 14.3 Add a test asserting practice rounds make no language-model calls; verify it fails if one is added
 
 ## 15. Teacher overview
 
-- [ ] 15.1 Build the read-only overview behind an unguessable owner link with phase counts, average readiness and class hotspots; verify the student class code cannot open it
-- [ ] 15.2 Add labelled demonstration data kept apart from real students; verify every figure is marked sample in demo mode
+- [x] 15.1 Build the read-only overview behind an unguessable owner link with phase counts, average readiness and class hotspots; verify the student class code cannot open it
+- [x] 15.2 Add labelled demonstration data kept apart from real students; verify every figure is marked sample in demo mode
 
 ## 16. Integration, user testing and demo
 

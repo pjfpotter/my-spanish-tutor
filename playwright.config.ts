@@ -38,7 +38,7 @@ export default defineConfig({
     url: 'http://localhost:3100',
     reuseExistingServer: false,
     // A throwaway in-process Postgres with the seed course, so tests never write to the real database.
-    env: { DB_DRIVER: 'pglite', NEXT_DIST_DIR: '.next-test' },
+    env: { DB_DRIVER: 'pglite', NEXT_DIST_DIR: '.next-test', DEV_OWNER_TOKEN: 'e2e-owner-token-0123456789' },
     timeout: 240_000, // a production build happens first
   },
 });

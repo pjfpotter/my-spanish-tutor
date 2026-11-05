@@ -3,9 +3,8 @@ import { baselineDone, loadBaseline } from '../diagnostics/baseline';
 import { CATALOGUE, itemById } from '../rewards/catalogue';
 import { loadShop, settleStreak } from '../rewards/store';
 import { NO_PROGRESS, phaseStates, type PhaseId, type PhaseState, type Progress } from '../phases/gate';
-import { channelClarity, daysUntil, loadMastery, loadProgress, loadQuestions } from '../progress/progress';
-import { loadAutomateState } from '../automate/store';
-import { DEFAULT_AUTOMATE } from '../automate/window';
+import { channelClarity, daysUntil, loadMastery, loadQuestions } from '../progress/progress';
+import { loadReadinessInput } from '../planner/load';
 import type { ReadinessInput } from '../planner/readiness';
 import { currentProfile, defaultCourse } from './session';
 
@@ -34,15 +33,15 @@ export async function loadHome(): Promise<HomeData> {
   const course = await defaultCourse();
   const db = await getDb();
   const questions = course ? await loadQuestions(db, profile?.courseId ?? course.id) : [];
-  const progress: Progress = profile ? await loadProgress(db, profile.id, profile.courseId) : NO_PROGRESS;
+  // One load serves the phase gates and the readiness meter.
+  const readinessInput: ReadinessInput = profile ? await loadReadinessInput(db, profile.id, profile.courseId, questions.map((q) => q.id)) : { ...NO_PROGRESS, questionsAutomated: 0 };
+  const progress: Progress = readinessInput;
   const mastery = profile ? await loadMastery(db, profile.id, 'understand') : new Map();
   // Settling the streak is the only write here: it uses a freeze on a missed day if the student has one. It earns nothing.
   if (profile) await settleStreak(db, profile.id);
   const shop = profile ? await loadShop(db, profile.id) : null;
-  // Automatised questions only exist once answers are memorised, so skip the extra query before then.
-  const automated = profile && progress.answersMemorised >= 5 ? Object.values((await loadAutomateState(db, profile.id, questions.map((q) => q.id))).sessionsMet).filter((n) => n >= DEFAULT_AUTOMATE.readySessions).length : 0;
   return {
-    progress: { ...progress, questionsAutomated: automated },
+    progress: readinessInput,
     coins: shop?.coins ?? 0,
     streak: shop?.streak ?? 0,
     freezes: shop?.freezesAvailable ?? 0,

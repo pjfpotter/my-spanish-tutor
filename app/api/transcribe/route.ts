@@ -1,16 +1,12 @@
+import { SERVICE_LIMITS } from '../../../lib/cost-router/limits';
 import { createCostRouter } from '../../../lib/cost-router/router';
 import { createPgCostStore } from '../../../lib/cost-router/pg-store';
 import { getPool } from '../../../lib/db';
 import { currentProfile } from '../../../lib/server/session';
 import { createOpenAiTranscriber } from '../../../lib/transcription/openai';
-import { createClipTranscriber, TRANSCRIPTION_SERVICE } from '../../../lib/transcription/transcribe';
+import { createClipTranscriber } from '../../../lib/transcription/transcribe';
 
-const HOUR = 3_600_000;
-// Spike defaults. Task 14.1 sets the real caps once the vendor and its price are chosen.
-// The price is an unverified estimate, so the cap errs on the safe side.
-const LIMITS = {
-  [TRANSCRIPTION_SERVICE]: { capGbp: 2, periodMs: 24 * HOUR, rate: { max: 30, windowMs: 10 * 60_000 } },
-};
+const LIMITS = SERVICE_LIMITS;
 const COST_PER_SECOND_GBP = Number(process.env.TRANSCRIBE_COST_PER_SECOND_GBP ?? 0.0001);
 
 /**
@@ -37,6 +33,7 @@ export async function POST(req: Request) {
     mimeType: req.headers.get('content-type') ?? '',
     durationMs: Number(req.headers.get('x-clip-ms')),
     profileId: profile?.id ?? null,
+    courseId: profile?.courseId ?? null,
   });
 
   const httpStatus = { ok: 200, rejected: 400, rate_limited: 429, unavailable: 503 }[result.status];
