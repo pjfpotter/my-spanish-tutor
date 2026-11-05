@@ -17,7 +17,8 @@ export interface LinePlayback {
   loudness: number;
   /** 'audio' when the audio clock drives the caption, 'clock' when it runs silently on a timer. */
   source: 'audio' | 'clock' | null;
-  play: (line: TutorLine, opts?: { clip?: ClipFile; audioUrl?: string }) => void;
+  /** `onEnd` is called once, with performance.now() at the moment the line finished: the start of the response clock in a timed round. */
+  play: (line: TutorLine, opts?: { clip?: ClipFile; audioUrl?: string; onEnd?: (endedAt: number) => void }) => void;
 }
 
 /** How long to wait for audio to start before falling back to a silent timer. */
@@ -40,7 +41,7 @@ export function useLinePlayback(): LinePlayback {
   const busy = useRef(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const play = useCallback((line: TutorLine, opts?: { clip?: ClipFile; audioUrl?: string }) => {
+  const play = useCallback((line: TutorLine, opts?: { clip?: ClipFile; audioUrl?: string; onEnd?: (endedAt: number) => void }) => {
     if (busy.current) return;
     busy.current = true;
     const clip = opts?.clip;
@@ -94,6 +95,7 @@ export function useLinePlayback(): LinePlayback {
       audio?.pause();
       audioRef.current = null;
       setState(IDLE);
+      opts?.onEnd?.(performance.now());
     };
     // Independent of animation frames, which pause in a hidden tab or on a starved device.
     hardStop = setTimeout(finish, (timeline.end + OVERRUN_S) * 1000 + 500);

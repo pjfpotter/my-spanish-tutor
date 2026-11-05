@@ -84,11 +84,11 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 
 ## 9. Response automatisation phase
 
-- [ ] 9.1 Build hear-and-answer rounds with shuffled order and varied speeds; verify the order differs between rounds
-- [ ] 9.2 Measure response time from question end to speech start and store it per attempt; verify against a stopwatch test within a tolerance of a few hundred milliseconds
-- [ ] 9.3 Implement adaptive window, blank handling with first-words hint, and the repeat-question phrase; verify each by scripted attempts
-- [ ] 9.4 Implement the test-ready threshold and message; verify unit tests
-- [ ] 9.5 Show the response-time rank as a ladder of named steps with the student's own history; verify at rank boundaries
+- [x] 9.1 Build hear-and-answer rounds with shuffled order and varied speeds; verify the order differs between rounds
+- [x] 9.2 Measure response time from question end to speech start and store it per attempt; verify against a stopwatch test within a tolerance of a few hundred milliseconds
+- [x] 9.3 Implement adaptive window, blank handling with first-words hint, and the repeat-question phrase; verify each by scripted attempts
+- [x] 9.4 Implement the test-ready threshold and message; verify unit tests
+- [x] 9.5 Show the response-time rank as a ladder of named steps with the student's own history; verify at rank boundaries
 
 ## 10. Diagnostics and mood
 
@@ -116,7 +116,7 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 ## 13. Engagement and rewards
 
 - [x] 13.1 Implement the append-only coin ledger and effort-based awards; verify a low-scoring attempt still earns coins
-- [ ] 13.2 Implement the response-time rank from rolling averages; verify unit tests at rank boundaries
+- [x] 13.2 Implement the response-time rank from rolling averages; verify unit tests at rank boundaries
 - [ ] 13.3 Implement fixed-price desktop unlocks (wallpapers, objects), stickers and streak freezes; verify there is no payment path or random draw in the codebase and that exploring the desktop earns no coins
 - [ ] 13.4 Implement own-history progress and class-total goals with no individual names; verify the class goal shows only totals
 - [ ] 13.5 Add the curated cheeky pool with a course-level switch; verify it disappears when switched off

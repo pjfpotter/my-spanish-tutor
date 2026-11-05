@@ -18,7 +18,7 @@ export async function loadHome(): Promise<HomeData> {
   const course = await defaultCourse();
   const db = await getDb();
   const questions = course ? await loadQuestions(db, profile?.courseId ?? course.id) : [];
-  const progress: Progress = profile ? await loadProgress(db, profile.id) : NO_PROGRESS;
+  const progress: Progress = profile ? await loadProgress(db, profile.id, profile.courseId) : NO_PROGRESS;
   const mastery = profile ? await loadMastery(db, profile.id, 'understand') : new Map();
   return {
     signedIn: !!profile,

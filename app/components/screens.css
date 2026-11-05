@@ -319,3 +319,36 @@ fieldset.group legend {
   background: var(--title-navy);
   color: var(--white);
 }
+
+/* Automate phase: the response window and the rank ladder. The window is also written in words, so the bar is optional. */
+.window-bar {
+  display: block;
+  margin-top: 0.4rem;
+  height: 0.6rem;
+  background: var(--ink-navy);
+  transform-origin: left;
+  animation-name: window-shrink;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+@keyframes window-shrink {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .window-bar { display: none; }
+}
+:root[data-calm='on'] .window-bar { display: none; }
+.ladder {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ladder li[data-here='true'] {
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}

@@ -12,7 +12,8 @@ export const CAUSE_TAGS = [
 export type CauseTag = (typeof CAUSE_TAGS)[number];
 
 export const PHASE_IDS = ['write', 'understand', 'memorise', 'automate'] as const;
-export const OUTCOMES = ['correct', 'wrong', 'assisted', 'skipped'] as const;
+/** 'blank' is a timed answer where the student said nothing in the window. It is never a wrong answer (task 9.3). */
+export const OUTCOMES = ['correct', 'wrong', 'assisted', 'skipped', 'blank'] as const;
 export type Outcome = (typeof OUTCOMES)[number];
 
 /** Everything the spec says an attempt carries (learning-diagnostics: Attempt events). */

@@ -1,5 +1,6 @@
 import type { Db } from '../db/types';
 import { DEFAULT_MASTERY, isMastered, masteryFraction, NO_MASTERY, type MasteryState } from '../mastery/mastery';
+import { loadAutomateState } from '../automate/store';
 import type { Progress } from '../phases/gate';
 
 export interface QuestionRow {
@@ -30,12 +31,19 @@ export async function loadMastery(db: Db, profileId: string, phase: string): Pro
 }
 
 /** Where the student stands, from the database. Drives which phases are open. */
-export async function loadProgress(db: Db, profileId: string): Promise<Progress> {
+export async function loadProgress(db: Db, profileId: string, courseId?: string): Promise<Progress> {
   const confirmed = await db.query<{ n: string }>('select count(*) as n from answers where profile_id = $1 and confirmed_at is not null', [profileId]);
   const understood = await loadMastery(db, profileId, 'understand');
   const memorised = await loadMastery(db, profileId, 'memorise');
   const count = (m: Map<string, MasteryState>) => [...m.values()].filter((s) => isMastered(s, DEFAULT_MASTERY)).length;
-  return { answersConfirmed: Number(confirmed.rows[0].n), questionsMastered: count(understood), answersMemorised: count(memorised) };
+  const memorisedCount = count(memorised);
+  // Test-ready only matters once the answers are memorised, so skip the extra query before then.
+  let testReady = false;
+  if (memorisedCount >= 5 && courseId) {
+    const ids = (await db.query<{ id: string }>('select id from questions where course_id = $1', [courseId])).rows.map((r) => r.id);
+    testReady = (await loadAutomateState(db, profileId, ids)).ready;
+  }
+  return { answersConfirmed: Number(confirmed.rows[0].n), questionsMastered: count(understood), answersMemorised: memorisedCount, testReady };
 }
 
 /** How clear each question's channel is, 0 (static) to 1 (clear and locked in). In question order. */

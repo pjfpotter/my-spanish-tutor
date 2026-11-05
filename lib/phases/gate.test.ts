@@ -41,3 +41,14 @@ describe('phase gate', () => {
     expect(isPhaseId('cheat')).toBe(false);
   });
 });
+
+describe('automate phase completion', () => {
+  const memorised = { answersConfirmed: 5, questionsMastered: 5, answersMemorised: 5 };
+  it('is open but not done until the student is test-ready, then done', () => {
+    expect(phaseStates(memorised).automate).toEqual({ status: 'open', done: false });
+    expect(phaseStates({ ...memorised, testReady: true }).automate).toEqual({ status: 'open', done: true });
+  });
+  it('stays locked until all five answers are memorised, even if marked test-ready', () => {
+    expect(phaseStates({ ...memorised, answersMemorised: 4, testReady: true }).automate.status).toBe('locked');
+  });
+});

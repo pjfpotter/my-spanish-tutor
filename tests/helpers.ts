@@ -36,3 +36,87 @@ export async function unlockMemorise(page: Page, answers: Record<number, string>
   }
   return ordered.map(([, id]) => id);
 }
+
+/** Memorise-phase mastery for every question, seeded through the app's own route: three good recalls with some of the script hidden, across two sessions. */
+export async function unlockAutomate(page: Page, answers: Record<number, string> = {}): Promise<string[]> {
+  const ids = await unlockMemorise(page, answers);
+  const [a, b] = [crypto.randomUUID(), crypto.randomUUID()];
+  for (const itemId of ids) {
+    for (const sessionId of [a, a, b]) {
+      const r = await page.request.post('/api/recall', { data: { itemId, sessionId, accuracy: 90, level: 1 } });
+      expect(r.ok()).toBe(true);
+    }
+  }
+  return ids;
+}
+
+/** Stub clips for the five seed questions at three speeds. `onAsk` is told which question starts playing. */
+export async function stubQuestionAudio(page: Page, onAsk?: (spanish: string, speed: number) => void) {
+  const { SEED_COURSE } = await import('../lib/course/seed');
+  const { SPEEDS } = await import('../lib/audio/manifest');
+  const speeds = Object.values(SPEEDS);
+  const slotOf = (q: number, s: number) => String(q * 3 + s + 1).padStart(12, '0');
+  const index = SEED_COURSE.questions.flatMap((q, qi) => speeds.map((speed, si) => ({ slot: slotOf(qi, si), text: q.spanish, speed })));
+  const wav = () => {
+    const rate = 8000, n = rate; // one second of silence
+    const buf = Buffer.alloc(44 + n * 2);
+    buf.write('RIFF', 0); buf.writeUInt32LE(36 + n * 2, 4); buf.write('WAVEfmt ', 8);
+    buf.writeUInt32LE(16, 16); buf.writeUInt16LE(1, 20); buf.writeUInt16LE(1, 22);
+    buf.writeUInt32LE(rate, 24); buf.writeUInt32LE(rate * 2, 28); buf.writeUInt16LE(2, 32); buf.writeUInt16LE(16, 34);
+    buf.write('data', 36); buf.writeUInt32LE(n * 2, 40);
+    return buf;
+  };
+  await page.route('**/api/clips', (r) => r.fulfill({ json: index }));
+  await page.route('**/audio/clips/*.json', (r) => {
+    const entry = index.find((e) => e.slot === r.request().url().split('/').pop()!.replace('.json', ''));
+    if (!entry) return r.fallback();
+    return r.fulfill({
+      json: {
+        id: 'x', text: entry.text, en: 'stub', end: 1.2,
+        words: entry.text.split(' ').map((t, i) => ({ text: t, t0: 0.1 + i * 0.1 })),
+        envelope: Array.from({ length: 40 }, (_, i) => (i % 4 < 2 ? 0.8 : 0.2)), envelopeHop: 0.03,
+        feelings: [{ t0: 0, feelings: {} }], source: { provider: 'test', voiceId: 'stub', model: 'stub', speed: 1, hash: 'stub' },
+      },
+    });
+  });
+  await page.route('**/audio/clips/*.mp3', (r) => {
+    const entry = index.find((e) => e.slot === r.request().url().split('/').pop()!.replace('.mp3', ''));
+    if (!entry) return r.fallback();
+    onAsk?.(entry.text, entry.speed);
+    return r.fulfill({ contentType: 'audio/wav', body: wav() });
+  });
+}
+
+/**
+ * A microphone that speaks on cue. Silence until `window.__speakIn` milliseconds after a question's audio ends,
+ * then a burst of sound. A stopwatch for response time: the test knows exactly when speech starts.
+ * Leave `__speakIn` unset for a student who says nothing.
+ */
+export async function installCuedMic(page: Page) {
+  await page.addInitScript(() => {
+    const w = window as unknown as Record<string, any>;
+    const ctx = new AudioContext();
+    const dest = ctx.createMediaStreamDestination();
+    const gain = ctx.createGain();
+    gain.gain.value = 0;
+    const osc = ctx.createOscillator();
+    osc.frequency.value = 220;
+    osc.connect(gain).connect(dest);
+    osc.start();
+    addEventListener('pointerdown', () => void ctx.resume(), { capture: true });
+    // A fresh stream each time, as a real microphone gives, so releasing one does not end the next.
+    navigator.mediaDevices.getUserMedia = async () => new MediaStream(dest.stream.getAudioTracks().map((t) => t.clone()));
+    w.__questionEnds = [] as number[];
+    const play = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function (this: HTMLMediaElement) {
+      this.addEventListener('ended', () => {
+        w.__questionEnds.push(performance.now());
+        if (typeof w.__speakIn === 'number') {
+          setTimeout(() => gain.gain.setValueAtTime(0.5, ctx.currentTime), w.__speakIn);
+          setTimeout(() => gain.gain.setValueAtTime(0, ctx.currentTime), w.__speakIn + (w.__speakFor ?? 600));
+        }
+      }, { once: true });
+      return play.call(this);
+    };
+  });
+}
