@@ -7,7 +7,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Caption, useSubtitles } from '../../components/Caption';
 import { Tele } from '../../components/Tele';
 import { useLinePlayback } from '../../components/useLinePlayback';
-import { clipUrls, loadClip } from '../../../lib/tele/clips';
+import { clipUrls, findClip, loadClip } from '../../../lib/tele/clips';
 import { PLACEHOLDER_LINES } from '../../../lib/tele/lines';
 import { EMOTIONS, type Emotion, type Feelings } from '../../../lib/tele/feelings';
 import { activeWordAt, feelingsAt, type ClipTimeline } from '../../../lib/tele/timeline';
@@ -69,8 +69,10 @@ export default function TeleLab() {
     setClipError(null);
     const line = PLACEHOLDER_LINES.find((l) => l.id === id)!;
     try {
-      const clip = await loadClip(id);
-      clipPlay.play(line, { clip, audioUrl: clipUrls(id).audio });
+      const slot = findClip(line.es);
+      if (!slot) throw new Error(`no clip built for "${id}" yet`);
+      const clip = await loadClip(slot);
+      clipPlay.play(line, { clip, audioUrl: clipUrls(slot).audio });
     } catch (e) {
       setClipError((e as Error).message);
       clipPlay.play(line); // the line still shows, silently

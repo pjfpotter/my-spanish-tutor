@@ -1,0 +1,63 @@
+{
+ "id": "7bf728277c04",
+ "text": "películas",
+ "en": "films",
+ "end": 1.045,
+ "words": [
+  {
+   "text": "películas",
+   "t0": 0
+  }
+ ],
+ "envelope": [
+  0,
+  0.01,
+  0.01,
+  0.22,
+  0.67,
+  0.9,
+  0.8,
+  0.65,
+  0.66,
+  0.83,
+  0.97,
+  0.82,
+  0.44,
+  0.2,
+  0.15,
+  0.13,
+  0.23,
+  0.44,
+  0.54,
+  0.59,
+  0.66,
+  0.66,
+  0.55,
+  0.39,
+  0.21,
+  0.12,
+  0.1,
+  0.1,
+  0.08,
+  0.07,
+  0.05,
+  0.05,
+  0.05,
+  0.03,
+  0.01
+ ],
+ "envelopeHop": 0.03,
+ "feelings": [
+  {
+   "t0": 0,
+   "feelings": {}
+  }
+ ],
+ "source": {
+  "provider": "elevenlabs",
+  "voiceId": "UwUfvuU7dZdSX47WuYCC",
+  "model": "eleven_multilingual_v2",
+  "speed": 1,
+  "hash": "f90a816ea5eb"
+ }
+}

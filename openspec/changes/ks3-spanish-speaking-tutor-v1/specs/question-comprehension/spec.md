@@ -20,12 +20,12 @@ A question SHALL count as mastered only after it is answered correctly at least 
 - **WHEN** a student answers a question correctly three times in one session
 - **THEN** it is not yet mastered and is scheduled for a later session
 
-### Requirement: Varied voices and speeds
-Practice SHALL rotate voices and increase speed as the student succeeds, never repeating the same clip back to back.
+### Requirement: Varied speeds
+Practice SHALL vary the speed of a question and increase it as the student succeeds, never playing the same clip of the same question back to back unless the student asks to replay it. Version one has one voice; rotating voices is deferred until a second voice is chosen.
 
 #### Scenario: Progressive speed
 - **WHEN** a student answers a question correctly at normal speed
-- **THEN** the next presentation of that question uses a different voice or a faster speed
+- **THEN** the next presentation of that question uses a faster speed
 
 ### Requirement: Replay and reveal
 A student SHALL be able to replay a clip, slow it down, and reveal the Spanish text and English subtitle, and each use SHALL be recorded.

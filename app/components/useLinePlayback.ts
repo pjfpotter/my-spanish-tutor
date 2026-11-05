@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Feelings } from '../../lib/tele/feelings';
 import type { ClipFile } from '../../lib/tele/clip';
 import { estimateTimeline, wordsOf, type TutorLine } from '../../lib/tele/lines';
-import { activeWordAt, feelingsAt, loudnessAt, type ClipTimeline } from '../../lib/tele/timeline';
+import { playheadAt } from '../../lib/tele/playhead';
+import type { ClipTimeline } from '../../lib/tele/timeline';
 
 export interface LinePlayback {
   playing: boolean;
@@ -16,7 +17,8 @@ export interface LinePlayback {
   loudness: number;
   /** 'audio' when the audio clock drives the caption, 'clock' when it runs silently on a timer. */
   source: 'audio' | 'clock' | null;
-  play: (line: TutorLine, opts?: { clip?: ClipFile; audioUrl?: string }) => void;
+  /** `onEnd` is called once, with performance.now() at the moment the line finished: the start of the response clock in a timed round. */
+  play: (line: TutorLine, opts?: { clip?: ClipFile; audioUrl?: string; onEnd?: (endedAt: number) => void }) => void;
 }
 
 /** How long to wait for audio to start before falling back to a silent timer. */
@@ -39,7 +41,7 @@ export function useLinePlayback(): LinePlayback {
   const busy = useRef(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const play = useCallback((line: TutorLine, opts?: { clip?: ClipFile; audioUrl?: string }) => {
+  const play = useCallback((line: TutorLine, opts?: { clip?: ClipFile; audioUrl?: string; onEnd?: (endedAt: number) => void }) => {
     if (busy.current) return;
     busy.current = true;
     const clip = opts?.clip;
@@ -93,6 +95,7 @@ export function useLinePlayback(): LinePlayback {
       audio?.pause();
       audioRef.current = null;
       setState(IDLE);
+      opts?.onEnd?.(performance.now());
     };
     // Independent of animation frames, which pause in a hidden tab or on a starved device.
     hardStop = setTimeout(finish, (timeline.end + OVERRUN_S) * 1000 + 500);
@@ -102,10 +105,10 @@ export function useLinePlayback(): LinePlayback {
       const t = clock();
       const overran = (performance.now() - startedAt) / 1000 > timeline.end + OVERRUN_S;
       if (t >= timeline.end || overran || (audio?.ended && source === 'audio')) return finish();
-      const idx = activeWordAt(timeline, t);
+      const head = playheadAt(timeline, t);
       setState({
-        playing: true, line: shown, words, activeIndex: idx, feelings: feelingsAt(timeline, t), source,
-        loudness: clip ? loudnessAt(timeline, t) : idx === null ? 0 : 0.55 + 0.35 * Math.sin(t * 13),
+        playing: true, line: shown, words, activeIndex: head.activeIndex, feelings: head.feelings, source,
+        loudness: clip ? head.loudness : head.activeIndex === null ? 0 : 0.55 + 0.35 * Math.sin(t * 13),
       });
       raf.current = requestAnimationFrame(tick);
     };

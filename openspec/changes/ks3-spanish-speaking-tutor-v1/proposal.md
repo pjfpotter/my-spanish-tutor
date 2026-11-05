@@ -28,7 +28,7 @@ Out of scope for v1: student or teacher accounts, payments, native apps, real gr
 - `course-content`: Sentence builders, test questions, simplified mark scheme, class codes and the course lifecycle, including optional photo import.
 - `student-identity-privacy`: Anonymous device profile, class join, minimal data, interests as fixed tags, no stored audio, delete-everything.
 - `speech-audio-assets`: Cached multi-voice, multi-speed Spanish audio and clip timelines (word times, loudness, feelings) for questions and tutor lines.
-- `answer-writing-coach`: Level- and time-aware drafting of answers constrained to the sentence builder, rubric-tiered as survival, good or showing off.
+- `answer-writing-coach`: Model answers written once at sentence-builder upload, chosen by target level and adjusted by swaps, rubric-tiered into three named levels (Rock solid, Stepping out, Showing off) by rules from editable calibration data, with no model call in the writing stage and no grades shown.
 - `question-comprehension`: Listening-to-understand practice with mastery across separate sessions.
 - `answer-memorisation`: Recall of the student's own answer from an English prompt, spoken aloud, with accuracy feedback.
 - `response-automatisation`: Timed question-to-answer practice with response-time measurement.

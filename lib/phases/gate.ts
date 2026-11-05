@@ -23,6 +23,8 @@ export interface Progress {
   questionsMastered: number;
   /** Answers memorised (threshold met across two sessions), 0 to 5. */
   answersMemorised: number;
+  /** Every question answered accurately and quickly on separate sessions (response-automatisation). */
+  testReady?: boolean;
 }
 
 export type PhaseState =
@@ -48,7 +50,7 @@ export function phaseStates(p: Progress): Record<PhaseId, PhaseState> {
         ? { status: 'open', done: memorised }
         : { status: 'locked', done: false, reason: `First ${memoriseMissing.join(' and ')}.` },
     automate: memorised
-      ? { status: 'open', done: false }
+      ? { status: 'open', done: p.testReady === true }
       : { status: 'locked', done: false, reason: 'First memorise all five answers.' },
   };
 }

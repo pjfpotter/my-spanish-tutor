@@ -1,4 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
+import { findClip } from '../lib/tele/clips';
+import { linesFor } from '../lib/tele/phrase-bank';
 
 // Task 18.8: a tutor clip plays through Tele with its caption and a baked feeling.
 // A stub clip stands in for the real ElevenLabs voice, so these tests do not depend on it and cost
@@ -27,10 +29,10 @@ function wav(seconds = 1.6, rate = 8000) {
 
 async function stubClip(page: Page, opts: { audio?: 'ok' | 'fail'; json?: 'ok' | 'missing' } = {}) {
   const { audio = 'ok', json = 'ok' } = opts;
-  await page.route('**/audio/tele/hola.json', (r) =>
+  await page.route('**/audio/clips/*.json', (r) =>
     json === 'ok' ? r.fulfill({ json: CLIP }) : r.fulfill({ status: 404, body: 'no' }),
   );
-  await page.route('**/audio/tele/hola.mp3', (r) =>
+  await page.route('**/audio/clips/*.mp3', (r) =>
     audio === 'ok' ? r.fulfill({ contentType: 'audio/wav', body: wav() }) : r.abort(),
   );
 }
@@ -70,7 +72,7 @@ test('plays the clip: audio drives the caption, the baked feelings and the Engli
 test('the audio is really requested and played, and stops when the line ends', async ({ page }) => {
   let audioRequests = 0;
   await stubClip(page);
-  await page.route('**/audio/tele/hola.mp3', (r) => {
+  await page.route('**/audio/clips/*.mp3', (r) => {
     audioRequests++;
     return r.fulfill({ contentType: 'audio/wav', body: wav() });
   });
@@ -97,7 +99,7 @@ test('if the audio cannot load, the line still shows on a timer with its subtitl
 test('if the audio never starts (a stalled request), the line falls back to the timer instead of freezing', async ({ page }) => {
   await stubClip(page);
   // The audio request hangs and is never answered.
-  await page.route('**/audio/tele/hola.mp3', () => new Promise(() => {}));
+  await page.route('**/audio/clips/*.mp3', () => new Promise(() => {}));
   await page.goto('/lab/tele');
   await recordHighlights(page);
 
@@ -119,24 +121,31 @@ test('if the clip file is missing, the line still shows silently and says why', 
   await expect(page.getByTestId('caption-es')).toContainText('señal débil', { timeout: 10_000 });
 });
 
+// Needs a built clip for a poke line, which exists once the audio build (task 12.2) has run.
+// Until then poking is silent on the desktop and the lab page covers the playback path above.
+const firstPoke = linesFor('poke')[0];
 test('poking Tele on the desktop plays the clip with its audio when the line has one', async ({ page }) => {
+  test.skip(!findClip(firstPoke.es), 'no poke clip is built yet (task 12.2)');
   let audioRequests = 0;
-  await stubClip(page);
-  await page.route('**/audio/tele/hola.mp3', (r) => {
+  const words = firstPoke.es.split(' ');
+  await page.route('**/audio/clips/*.json', (r) =>
+    r.fulfill({ json: { ...CLIP, text: firstPoke.es, en: firstPoke.en, words: words.map((text, i) => ({ text, t0: i * 0.3 })), end: words.length * 0.3 + 0.5 } }),
+  );
+  await page.route('**/audio/clips/*.mp3', (r) => {
     audioRequests++;
     return r.fulfill({ contentType: 'audio/wav', body: wav() });
   });
   await page.goto('/');
   await page.waitForLoadState('networkidle'); // the timeline is preloaded so audio can start in the tap
 
-  // Make the pick deterministic: random() of 0 takes the first line, which has the clip. Pinned only
-  // now, because pinning it for the whole page load stops the page hydrating properly.
+  // Make the pick deterministic: random() of 0 takes the first poke line. Pinned only now, because
+  // pinning it for the whole page load stops the page hydrating properly.
   await page.evaluate(() => {
     Math.random = () => 0;
   });
   await page.getByRole('button', { name: 'Poke Tele to hear a line' }).click();
-  await expect(page.getByTestId('caption-es')).toContainText('Soy Tele');
-  await expect(page.getByTestId('caption-en')).toHaveText("Hi! I'm Tele.");
+  await expect(page.getByTestId('caption-es')).toContainText(words[0]);
+  await expect(page.getByTestId('caption-en')).toHaveText(firstPoke.en);
   await expect(page.getByTestId('caption-es')).toContainText('señal débil', { timeout: 10_000 });
   expect(audioRequests).toBeGreaterThan(0);
 });

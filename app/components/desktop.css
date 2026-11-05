@@ -150,3 +150,36 @@
   background: none;
   cursor: pointer;
 }
+
+/* A question's channel clears from static as comprehension mastery rises (task 6.4). */
+.file-pic {
+  position: relative;
+  display: block;
+  width: 28px;
+  height: 32px;
+}
+.file-static {
+  position: absolute;
+  inset: 0;
+  opacity: var(--static, 1);
+  background-color: #6b6b6b;
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.file-state {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+/* Readiness meter: the number and the next action are written out, so the bar is never the only signal. */
+.meter { height: 14px; border: 2px solid var(--ink-navy, #0b2a4a); background: #fff; margin: 6px 0; }
+.meter > span { display: block; height: 100%; background: var(--title-navy, #0a5cc0); }
+.plan-days { margin: 8px 0; padding-left: 1.2em; }
+.plan-days li { margin-bottom: 4px; }
+.options.minutes { display: flex; flex-wrap: wrap; gap: 6px; padding: 0; list-style: none; }
+.option[aria-pressed='true'] { outline: 2px solid var(--ink-navy, #0b2a4a); font-weight: 700; }
+.reminder { margin-top: 10px; }
+
+.desktop-footer {
+  margin: 0;
+}

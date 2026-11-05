@@ -128,3 +128,13 @@ It must stay light on an old school Chromebook. Targets are set at milestone M1 
 - Photos: see `docs/design/bicho-boards/h-bicho-photos.dc.html` for the slots and what is still missing. Every photo gets an entry in `docs/asset-credits.md` before it ships. No brand logos, no recognisable people, no children.
 - Do not use the word or trade dress of a commercial virtual-pet toy.
 - Illustration workflow: `docs/art-pipeline.md`.
+
+## Tele's written voice (phrase bank)
+
+Source: the dreamcore page on the Aesthetics Wiki, read 2026-11-02. It describes the aim as making the viewer "both simultaneously comforted and unsettled", through familiar, hazy places with a few strange details (CRT TVs, clouds, eyes, empty rooms). It separates dreamcore from weirdcore, which is about confusion and dread. Tele follows the dreamcore side.
+
+- Comforting first, strange second. The strangeness is small and kind: a light left on, a signal, a room that remembers you, being seen. Nothing frightening.
+- No jokes and no irony. Tele means what it says.
+- Short present-tense Castilian Spanish at Year 8 level. English only as subtitles.
+- At most one thing to fix, and never blame. "No pasa nada" before "otra vez".
+- Draft bank: `lib/tele/phrase-bank.ts`. Placeholder poke lines in `lib/tele/lines.ts` are replaced by the bank's `poke` lines in task 12.3.

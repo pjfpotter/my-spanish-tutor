@@ -1,0 +1,164 @@
+{
+  "version": 1,
+  "levels": {
+    "rock_solid": {
+      "name": "Rock solid",
+      "blurb": "A complete answer you can say with confidence."
+    },
+    "stepping_out": {
+      "name": "Stepping out",
+      "blurb": "Rock solid, plus a few extra touches."
+    },
+    "showing_off": {
+      "name": "Showing off",
+      "blurb": "The full performance. It takes more memorising."
+    }
+  },
+  "thresholds": {
+    "steppingOut": {
+      "extras": 1
+    },
+    "showingOff": {
+      "extras": 4,
+      "hard": 2
+    }
+  },
+  "frame": {
+    "starters": [
+      "me gustan las peliculas de",
+      "me encantan las peliculas de",
+      "no me gustan las peliculas de",
+      "prefiero las peliculas de",
+      "a mis padres les encantan las peliculas de",
+      "me gustaria ir",
+      "normalmente llevo",
+      "voy a llevar",
+      "lo siento no puedo",
+      "me gusta"
+    ],
+    "justifiers": [
+      "porque",
+      "ya que",
+      "dado que"
+    ]
+  },
+  "features": [
+    {
+      "id": "G1",
+      "label": "a contrast",
+      "hard": false,
+      "phrases": [
+        "aunque"
+      ]
+    },
+    {
+      "id": "G2",
+      "label": "a time phrase",
+      "hard": false,
+      "phrases": [
+        "el sabado",
+        "esta tarde",
+        "a las cuatro y media",
+        "los fines de semana",
+        "a veces",
+        "siempre"
+      ]
+    },
+    {
+      "id": "G3",
+      "label": "a sequencer",
+      "hard": false,
+      "phrases": [
+        "primero",
+        "despues",
+        "ademas"
+      ]
+    },
+    {
+      "id": "G4",
+      "label": "a describing phrase",
+      "hard": false,
+      "phrases": [
+        "muy divertidas",
+        "bastante graciosas",
+        "de moda"
+      ]
+    },
+    {
+      "id": "G5",
+      "label": "another time frame",
+      "hard": true,
+      "phrases": [
+        "me gustaria",
+        "el año pasado fui"
+      ]
+    },
+    {
+      "id": "G6",
+      "label": "tricky grammar",
+      "hard": true,
+      "phrases": [
+        "a mis padres les encantan",
+        "me hacen reir",
+        "me dan miedo"
+      ]
+    },
+    {
+      "id": "G7",
+      "label": "a fancy phrase",
+      "hard": true,
+      "phrases": [
+        "cuando era pequeño",
+        "he visto",
+        "que lastima"
+      ]
+    }
+  ],
+  "tenses": {
+    "present": [
+      "me gusta",
+      "me gustan",
+      "me encantan",
+      "prefiero",
+      "normalmente llevo",
+      "juego",
+      "escucho",
+      "salgo",
+      "monto",
+      "no puedo"
+    ],
+    "preterite": [
+      "el año pasado fui"
+    ],
+    "near_future": [
+      "voy a"
+    ],
+    "conditional": [
+      "me gustaria"
+    ]
+  },
+  "glueWords": [
+    "y",
+    "pero",
+    "tambien",
+    "e",
+    "o"
+  ],
+  "cognates": [
+    "accion",
+    "musica",
+    "ciencia",
+    "ficcion",
+    "importante",
+    "emocionantes",
+    "divertidas",
+    "fiesta",
+    "parque",
+    "cine"
+  ],
+  "wholeTest": {
+    "tenses": 3,
+    "justifiedOpinions": 2
+  },
+  "examples": []
+}

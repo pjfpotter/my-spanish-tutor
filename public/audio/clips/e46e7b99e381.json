@@ -1,0 +1,58 @@
+{
+ "id": "e46e7b99e381",
+ "text": "ropa",
+ "en": "clothes",
+ "end": 0.888,
+ "words": [
+  {
+   "text": "ropa",
+   "t0": 0
+  }
+ ],
+ "envelope": [
+  0.13,
+  0.52,
+  0.88,
+  0.98,
+  0.89,
+  0.62,
+  0.32,
+  0.33,
+  0.61,
+  0.73,
+  0.5,
+  0.24,
+  0.2,
+  0.38,
+  0.64,
+  0.76,
+  0.7,
+  0.51,
+  0.3,
+  0.16,
+  0.1,
+  0.09,
+  0.08,
+  0.07,
+  0.06,
+  0.05,
+  0.05,
+  0.05,
+  0.03,
+  0.01
+ ],
+ "envelopeHop": 0.03,
+ "feelings": [
+  {
+   "t0": 0,
+   "feelings": {}
+  }
+ ],
+ "source": {
+  "provider": "elevenlabs",
+  "voiceId": "UwUfvuU7dZdSX47WuYCC",
+  "model": "eleven_multilingual_v2",
+  "speed": 1,
+  "hash": "790d67e5040c"
+ }
+}
