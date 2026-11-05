@@ -15,6 +15,7 @@ import path from 'node:path';
 import { MPEGDecoder } from 'mpg123-decoder';
 import { buildClips, planBuild, TTS_SERVICE } from '../lib/audio/build.ts';
 import { planClips } from '../lib/audio/manifest.ts';
+import { CHEEKY_POOL } from '../lib/tele/cheeky.ts';
 import { SEED_COURSE } from '../lib/course/seed.ts';
 import { PHRASE_BANK } from '../lib/tele/phrase-bank.ts';
 import { createCostRouter } from '../lib/cost-router/router.ts';
@@ -48,7 +49,7 @@ const store = {
   },
 };
 
-let specs = planClips(SEED_COURSE.questions, PHRASE_BANK);
+let specs = planClips(SEED_COURSE.questions, [...PHRASE_BANK, ...CHEEKY_POOL]);
 if (only === 'lines') specs = specs.filter((s) => s.kind === 'line');
 if (only === 'questions') specs = specs.filter((s) => s.kind === 'question');
 

@@ -119,7 +119,7 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 - [x] 13.2 Implement the response-time rank from rolling averages; verify unit tests at rank boundaries
 - [x] 13.3 Implement fixed-price desktop unlocks (wallpapers, objects), stickers and streak freezes; verify there is no payment path or random draw in the codebase and that exploring the desktop earns no coins
 - [x] 13.4 Implement own-history progress and class-total goals with no individual names; verify the class goal shows only totals
-- [ ] 13.5 Add the curated cheeky pool with a course-level switch; verify it disappears when switched off
+- [x] 13.5 Add the curated cheeky pool with a course-level switch; verify it disappears when switched off
 
 ## 14. Cost control and reporting
 
@@ -134,7 +134,7 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 
 ## 16. Integration, user testing and demo
 
-- [ ] 16.1 Run one scripted end-to-end pass of all four phases on the seeded course; verify it completes with Playwright on the phone and Chromebook profiles. Optional manual check: the same run on a real phone and Chromebook
+- [x] 16.1 Run one scripted end-to-end pass of all four phases on the seeded course; verify it completes with Playwright on the phone and Chromebook profiles. Optional manual check: the same run on a real phone and Chromebook
 - [ ] 16.2 Optional manual check, skipped if there is no time: run user testing with Dolores and two or three other 13-year-olds with parental consent, collect feedback on enjoyment, fairness of scores, whether the look and Tele land, and whether play pulls them away from practice; verify notes are saved and the top three issues are fixed
 - [ ] 16.3 Capture measured cost per student from real usage and add it to the demo; verify the figure comes from the cost log
 - [ ] 16.4 Prepare the demo script and short write-up covering education, creativity and technical choices; verify a dry run fits the allotted time

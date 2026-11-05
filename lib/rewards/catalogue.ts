@@ -2,7 +2,7 @@
  * What coins buy (task 13.3). Every item has one fixed price and the student gets exactly the item they pay
  * for. There are no packs, no chances and no real-money path anywhere: this file is the whole shop.
  */
-export type ItemKind = 'wallpaper' | 'object' | 'sticker' | 'freeze';
+export type ItemKind = 'wallpaper' | 'object' | 'sticker' | 'freeze' | 'phrases';
 
 export interface ShopItem {
   id: string;
@@ -15,6 +15,8 @@ export interface ShopItem {
 }
 
 export const FREEZE_ID = 'freeze';
+/** Only for sale, and only usable, in a course whose owner has switched the cheeky pool on. */
+export const CHEEKY_ITEM_ID = 'phrases-traviesas';
 /** Unused freezes a student can hold at once, so they cannot be hoarded to make a streak unbreakable. */
 export const MAX_FREEZES = 2;
 
@@ -31,6 +33,8 @@ export const CATALOGUE: readonly ShopItem[] = [
   { id: 'stk-antena', kind: 'sticker', es: 'Antena', en: 'Antenna', price: 20 },
   { id: 'stk-nube', kind: 'sticker', es: 'Nube', en: 'Cloud', price: 20 },
   { id: 'stk-sol', kind: 'sticker', es: 'Sol con ojos', en: 'Sun with eyes', price: 30 },
+
+  { id: CHEEKY_ITEM_ID, kind: 'phrases', es: 'Frases traviesas', en: 'Cheeky phrases', price: 40 },
 
   { id: FREEZE_ID, kind: 'freeze', es: 'Congelador de racha', en: 'Streak freeze', price: 30 },
 ];

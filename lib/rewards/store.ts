@@ -67,6 +67,10 @@ export type BuyResult = { ok: true; item: ShopItem; coins: number } | { ok: fals
 export async function buyItem(db: Db, profileId: string, itemId: string): Promise<BuyResult> {
   const item = itemById(itemId);
   if (!item) return { ok: false, error: 'That is not in the shop.' };
+  if (item.kind === 'phrases') {
+    const { rows } = await db.query<{ on: boolean }>('select c.cheeky_pool as on from profiles p join courses c on c.id = p.course_id where p.id = $1', [profileId]);
+    if (!rows[0]?.on) return { ok: false, error: 'That is not in the shop.' };
+  }
   const coins = await balance(db, profileId);
   if (item.kind === 'freeze') {
     if ((await freezesAvailable(db, profileId)) >= MAX_FREEZES) return { ok: false, error: `You can hold ${MAX_FREEZES} freezes at once.` };

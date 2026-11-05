@@ -3,6 +3,7 @@ import { TIER_LABEL, type CostReport } from '../../../lib/cost/report';
 import type { OverviewData, Stage } from '../../../lib/overview/overview';
 import { STAGES } from '../../../lib/overview/overview';
 import { Win } from '../../components/Win';
+import { CheekySwitch } from './CheekySwitch';
 
 const STAGE_LABEL: Record<Stage, string> = { write: 'Writing answers', understand: 'Understanding questions', memorise: 'Saying from memory', automate: 'Answering fast', ready: 'Test ready' };
 const TAG_LABEL: Record<string, string> = {
@@ -22,7 +23,7 @@ function Figure({ sample, children }: { sample: boolean; children: ReactNode }) 
 }
 
 /** The read-only class overview. Nicknames and progress only; counts, never anything that could identify a child. */
-export function OverviewView({ data, cost, sample }: { data: OverviewData; cost: CostReport; sample: boolean }) {
+export function OverviewView({ data, cost, sample, cheeky }: { data: OverviewData; cost: CostReport; sample: boolean; cheeky?: { token: string; enabled: boolean } }) {
   const F = ({ children }: { children: ReactNode }) => <Figure sample={sample}>{children}</Figure>;
   return (
     <main className="screen">
@@ -57,6 +58,11 @@ export function OverviewView({ data, cost, sample }: { data: OverviewData; cost:
         <h2>Most common causes</h2>
         {data.causes.length ? <ol data-testid="causes">{data.causes.map((c) => <li key={c.tag}>{TAG_LABEL[c.tag] ?? c.tag}: <F>{c.count}</F></li>)}</ol> : <p>None yet.</p>}
       </Win>
+      {cheeky && (
+        <Win title="ajustes.exe" label="Course settings">
+          <CheekySwitch token={cheeky.token} initial={cheeky.enabled} />
+        </Win>
+      )}
       <Win title="coste.exe" label="Cost per student">
         <p data-testid="cost-per-student">
           Estimated cost per student: <strong>{cost.perStudentGbp === null ? 'no students yet' : <F>{gbp(cost.perStudentGbp)}</F>}</strong>

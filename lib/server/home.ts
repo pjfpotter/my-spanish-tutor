@@ -1,5 +1,7 @@
 import { getDb } from '../db';
 import { baselineDone, loadBaseline } from '../diagnostics/baseline';
+import { cheekyLinesFor } from '../rewards/cheeky';
+import type { PhraseLine } from '../tele/phrase-bank';
 import { CATALOGUE, itemById } from '../rewards/catalogue';
 import { loadShop, settleStreak } from '../rewards/store';
 import { NO_PROGRESS, phaseStates, type PhaseId, type PhaseState, type Progress } from '../phases/gate';
@@ -25,6 +27,8 @@ export interface HomeData {
   objects: { id: string; es: string; en: string }[];
   /** The starting-point check is finished, so it is not offered again. */
   baselineDone: boolean;
+  /** Cheeky lines this student may see: empty unless the course owner switched the pool on and the student bought it. */
+  cheekyLines: PhraseLine[];
 }
 
 /** Everything the desktop shows, from the database. A device with no profile sees the course with no progress. */
@@ -48,6 +52,7 @@ export async function loadHome(): Promise<HomeData> {
     wallpaper: (shop?.wallpaper && itemById(shop.wallpaper)?.css) || null,
     objects: (shop?.owned ?? []).map((id) => CATALOGUE.find((i) => i.id === id)!).filter((i) => i?.kind === 'object').map(({ id, es, en }) => ({ id, es, en })),
     baselineDone: profile ? baselineDone(await loadBaseline(db, profile.id), questions.length) : true,
+    cheekyLines: profile ? await cheekyLinesFor(db, profile.id, profile.courseId) : [],
     signedIn: !!profile,
     nickname: profile?.nickname ?? null,
     states: phaseStates(progress),

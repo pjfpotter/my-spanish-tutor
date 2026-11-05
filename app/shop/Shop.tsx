@@ -12,6 +12,7 @@ const GROUPS: { kind: ShopItem['kind']; title: string }[] = [
   { kind: 'wallpaper', title: 'Wallpapers' },
   { kind: 'object', title: 'Things for your desktop' },
   { kind: 'sticker', title: 'Stickers' },
+  { kind: 'phrases', title: 'Cheeky phrases' },
   { kind: 'freeze', title: 'Streak freeze' },
 ];
 
@@ -19,7 +20,7 @@ const GROUPS: { kind: ShopItem['kind']; title: string }[] = [
  * The shop. Coins come from practice and buy fixed-price things for the desktop. Each item costs one price and the student
  * gets exactly that item: no packs, no chances, no real money. Having nothing yet is fine and loses nothing.
  */
-export function Shop({ initial }: { initial: ShopState }) {
+export function Shop({ initial, cheekyOn = false }: { initial: ShopState; cheekyOn?: boolean }) {
   const [state, setState] = useState(initial);
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -45,7 +46,7 @@ export function Shop({ initial }: { initial: ShopState }) {
           <p className="muted">Coins come from practising. Looking around earns none, and nothing here costs real money.</p>
           {message && <p role="status" data-testid="message">{message}</p>}
 
-          {GROUPS.map((g) => (
+          {GROUPS.filter((g) => g.kind !== 'phrases' || cheekyOn).map((g) => (
             <section key={g.kind} aria-label={g.title} className="stack">
               <h2 className="shop-h">{g.title}</h2>
               <ul className="shop-list">

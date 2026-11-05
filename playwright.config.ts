@@ -12,7 +12,7 @@ const fakeMic = {
 // The phone project runs every test. The Chromebook project (a wide screen, a headset microphone) runs only the
 // files where the device matters, so a normal run is about half the browser work. E2E_FULL=1 runs everything on both.
 const FULL = !!process.env.E2E_FULL || !!process.env.CI;
-const CHROMEBOOK_FILES = /(speech-spike|speech-capture|clip-playback|desktop|tele-lab)\.spec\.ts$/;
+const CHROMEBOOK_FILES = /(speech-spike|speech-capture|clip-playback|desktop|tele-lab|journey)\.spec\.ts$/;
 
 export default defineConfig({
   testDir: './tests',

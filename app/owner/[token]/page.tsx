@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { loadCostReport } from '../../../lib/cost/report';
 import { getDb } from '../../../lib/db';
 import { findCourseByOwnerToken, loadOverview } from '../../../lib/overview/overview';
+import { cheekyPoolEnabled } from '../../../lib/rewards/cheeky';
 import { sampleCost, sampleOverview } from '../../../lib/overview/sample';
 import '../../components/screens.css';
 import { OverviewView } from './OverviewView';
@@ -21,5 +22,5 @@ export default async function Overview({ params, searchParams }: { params: Promi
   const course = await findCourseByOwnerToken(db, token);
   if (!course) notFound();
   if (demo === '1') return <OverviewView data={sampleOverview()} cost={sampleCost()} sample />;
-  return <OverviewView data={await loadOverview(db, course.id)} cost={await loadCostReport(db, course.id)} sample={false} />;
+  return <OverviewView data={await loadOverview(db, course.id)} cost={await loadCostReport(db, course.id)} sample={false} cheeky={{ token, enabled: await cheekyPoolEnabled(db, course.id) }} />;
 }

@@ -6,7 +6,7 @@ import { moodPlan, MOODS, type Mood } from '../../lib/diagnostics/mood';
 import { currentSessionId } from '../../lib/session/session-id';
 import type { ClipFile } from '../../lib/tele/clip';
 import { clipUrls, findClip, loadClip } from '../../lib/tele/clips';
-import { linesFor } from '../../lib/tele/phrase-bank';
+import { linesFor, type PhraseLine } from '../../lib/tele/phrase-bank';
 import { selectLine } from '../../lib/tele/select';
 import { Status } from '../../lib/ui/Status';
 import { PHASES, QUESTION_COUNT, type PhaseId, type PhaseState } from '../../lib/phases/gate';
@@ -42,8 +42,12 @@ export interface DesktopProps {
   objects?: { id: string; es: string; en: string }[];
   /** The starting-point check has been done (or does not apply), so it is not offered. */
   baselineDone?: boolean;
+  /** Extra lines for poking Tele. Empty unless the course has the cheeky pool on and the student bought it. */
+  cheekyLines?: PhraseLine[];
 }
 
+/** A stable empty list, so a missing prop does not re-run the effect that depends on it. */
+const NO_LINES: PhraseLine[] = [];
 const NO_READINESS: ReadinessInput = { answersConfirmed: 0, questionsMastered: 0, answersMemorised: 0, questionsAutomated: 0 };
 
 const MOOD_TEXT: Record<Mood, { es: string; en: string }> = {
@@ -63,7 +67,7 @@ const clarityWord = (c: number) => (c >= 1 ? 'clear' : c > 0 ? 'clearing' : 'sta
  * the five question files. Locked phases show as static and cannot be opened. The sandbox is the
  * space around the path; it never replaces it.
  */
-export function Desktop({ states, daysToTest, channels = [], progress = NO_READINESS, signedIn = true, nickname = null, coins = 0, streak = 0, freezes = 0, wallpaper = null, objects = [], baselineDone = true }: DesktopProps) {
+export function Desktop({ states, daysToTest, channels = [], progress = NO_READINESS, signedIn = true, nickname = null, coins = 0, streak = 0, freezes = 0, wallpaper = null, objects = [], baselineDone = true, cheekyLines = NO_LINES }: DesktopProps) {
   const [showEnglish, toggleEnglish] = useSubtitles();
   const playback = useLinePlayback();
   const lastLine = useRef<string | null>(null);
@@ -75,7 +79,7 @@ export function Desktop({ states, daysToTest, channels = [], progress = NO_READI
   // Load clip timelines up front so audio can start inside the tap: iPhone blocks audio that
   // starts after an await. A line with no clip, or whose clip fails to load, plays silently.
   useEffect(() => {
-    for (const line of [...linesFor('poke'), ...linesFor('nervous'), ...linesFor('dislike'), ...linesFor('quick_win')]) {
+    for (const line of [...linesFor('poke'), ...cheekyLines, ...linesFor('nervous'), ...linesFor('dislike'), ...linesFor('quick_win')]) {
       const slot = findClip(line.es);
       if (slot) loadClip(slot).then((clip) => clips.current.set(line.id, clip), () => {});
     }
@@ -86,7 +90,7 @@ export function Desktop({ states, daysToTest, channels = [], progress = NO_READI
     } catch {
       setMood(false);
     }
-  }, []);
+  }, [cheekyLines]);
 
   function skipMood() {
     try { localStorage.setItem(moodKey(currentSessionId()), 'skipped'); } catch { /* asked again next page load, which is fine */ }
@@ -119,7 +123,7 @@ export function Desktop({ states, daysToTest, channels = [], progress = NO_READI
   // Poking Tele plays a stock line. It earns nothing: no coins, no progress, no request to the API.
   function poke() {
     if (playback.playing) return;
-    const line = selectLine('poke', { lastId: lastLine.current });
+    const line = selectLine('poke', { lastId: lastLine.current, ...(cheekyLines.length ? { bank: [...linesFor('poke'), ...cheekyLines] } : {}) });
     lastLine.current = line.id;
     const clip = clips.current.get(line.id);
     const slot = findClip(line.es);
