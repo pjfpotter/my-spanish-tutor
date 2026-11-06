@@ -5,6 +5,11 @@ import path from 'node:path';
 import pg from 'pg';
 
 const url = process.env.DATABASE_URL_UNPOOLED ?? process.env.DATABASE_URL;
+if (!url && process.argv.includes('--if-configured') && !process.env.VERCEL) {
+  // Local and CI builds have no database; only Vercel deployments must migrate.
+  console.log('No database configured and not on Vercel: skipping migrations.');
+  process.exit(0);
+}
 if (!url) {
   console.error('Set DATABASE_URL_UNPOOLED (or DATABASE_URL) first. See README.');
   process.exit(1);
