@@ -24,6 +24,7 @@ export function contrast(a: string, b: string) {
 const READING_PAIRS: [text: string, surface: string][] = [
   ['black', 'white'], // window body, captions
   ['black', 'win-grey'], // window chrome and buttons
+  ['black', 'cream'], // error and testing-course notes
   ['text-muted', 'white'],
   ['text-muted', 'win-grey'],
   ['ink-navy', 'white'],

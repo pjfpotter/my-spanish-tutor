@@ -5,17 +5,30 @@ Optional manual check. Skip it if there is no time; nothing else depends on it.
 ## Before
 
 - Parental consent for each child, in writing. Explain what is recorded (your notes only: no audio, no video, no names).
-- Use the live preview on the child's own phone. Create a fresh profile for each child with the class code.
+- Use the live preview on the child's own phone. Create a fresh profile for each child with a class code (see the next section).
 - Sessions of 15 to 20 minutes. Dolores first, then two or three other 13-year-olds.
 - Sit beside them, say little, and do not rescue them. Write down what they do, not what they say they do.
 
+## Which class code to use
+
+| Code | What it is | Use it for |
+|---|---|---|
+| `TELE8` | The real class. The learning path is gated, exactly as for students. | Tasks 1 and 2: joining, the notice and Tele. |
+| `PRBA7K3M` | The testing course: the same questions and sentence builder, with every step open. A "Testing course" label shows on the desktop. | Tasks 3 to 5: hearing a question, the timed round and the shop. |
+
+A profile belongs to one course. After tasks 1 and 2, open **Privacy** and use **Delete everything**, then join again with `PRBA7K3M`. If time is short, use `PRBA7K3M` from the start (joining works the same way).
+
+- In the testing course the child has not written any answers, so the memorise and timed-round steps use the model answers. Their own answers are never needed. Read findings about "saying my answer" with that in mind.
+- Attempts in the testing course are real attempts: they earn coins and count towards that profile's mastery. Treat every tester profile as throwaway and delete it afterwards.
+- Do not give `PRBA7K3M` to students. It opens every step early. Nothing is lost, but the class would skip the gated order.
+
 ## Tasks to watch
 
-1. Join from the class code, read the notice, pick a nickname. Do they read the notice? Do they understand the recovery code?
+1. Join from the class code (`TELE8`), read the notice, pick a nickname. Do they read the notice? Do they understand the recovery code?
 2. Poke Tele. What do they say or do?
-3. Write one answer, then hear one question. Do they know what to do next without being told?
-4. One timed round. Do they notice the clock? Does it feel fair?
-5. Open the shop. Do they come back to practice, or stay on the desktop?
+3. (`PRBA7K3M`) Write one answer, then hear one question. Do they know what to do next without being told?
+4. (`PRBA7K3M`) One timed round. Do they notice the clock? Does it feel fair?
+5. (`PRBA7K3M`) Open the shop. Do they come back to practice, or stay on the desktop?
 
 ## Questions afterwards (ask, then be quiet)
 

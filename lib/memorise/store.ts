@@ -1,4 +1,7 @@
 import type { Db } from '../db/types';
+import { courseUnlockAll } from '../course/unlock';
+import type { ModelAnswer } from '../course/schema';
+import { practiceAnswerText } from './practice-text';
 import { causeTagsForRecallFailure, recordChunkEvents } from '../diagnostics/recall-store';
 import { logAttempt, type AttemptResult } from '../events/attempts';
 import { DEFAULT_MASTERY, isMastered, needsLaterSession, NO_MASTERY } from '../mastery/mastery';
@@ -32,14 +35,35 @@ async function loadAccuracies(db: Db, profileId: string, itemId: string): Promis
   return rows.map((r) => Number(r.accuracy));
 }
 
-/** The confirmed answers the student can practise, in question order. */
+/**
+ * The confirmed answers the student can practise, in question order. In a testing course
+ * (course-unlock-testing) a question with no confirmed answer is practised with the course's Rock solid model
+ * answer instead, so a tester can reach this phase and the timed round without writing anything first. The model
+ * answer is read here only; it is never stored as the student's answer. Attempts and mastery still record against
+ * the question id, exactly as for a student's own answer.
+ */
 export async function loadMemoriseItems(db: Db, profileId: string, courseId: string, cfg: MemoriseConfig = DEFAULT_MEMORISE): Promise<MemoriseItem[]> {
-  const { rows } = await db.query<{ id: string; position: number; spanish: string; english_subtitle: string; text: string }>(
+  const own = await db.query<{ id: string; position: number; spanish: string; english_subtitle: string; text: string }>(
     `select q.id, q.position, q.spanish, q.english_subtitle, a.text
        from questions q join answers a on a.question_id = q.id and a.profile_id = $1 and a.confirmed_at is not null
       where q.course_id = $2 order by q.position`,
     [profileId, courseId],
   );
+  let rows = own.rows;
+  if (await courseUnlockAll(db, courseId)) {
+    const course = await db.query<{ model_answers: ModelAnswer[] }>('select model_answers from courses where id = $1', [courseId]);
+    const models = course.rows[0]?.model_answers ?? [];
+    const have = new Set(rows.map((r) => r.id));
+    const all = await db.query<{ id: string; position: number; spanish: string; english_subtitle: string }>(
+      'select id, position, spanish, english_subtitle from questions where course_id = $1 order by position',
+      [courseId],
+    );
+    const stand = all.rows.flatMap((q) => {
+      const model = models.find((m) => m.questionPosition === q.position && m.level === 'rock_solid');
+      return have.has(q.id) || !model ? [] : [{ ...q, text: model.text }];
+    });
+    rows = [...rows, ...stand].sort((a, b) => a.position - b.position);
+  }
   const mastery = await loadMastery(db, profileId, 'memorise');
   const items: MemoriseItem[] = [];
   for (const r of rows) {
@@ -82,8 +106,8 @@ export type RecallResult =
 export async function recordRecall(db: Db, i: RecallInput, cfg: MemoriseConfig = DEFAULT_MEMORISE): Promise<RecallResult> {
   if (!Number.isFinite(i.accuracy) || i.accuracy < 0 || i.accuracy > 100) return { ok: false, error: 'Bad accuracy.' };
   if (!Number.isInteger(i.level) || i.level < 0 || i.level > MAX_LEVEL) return { ok: false, error: 'Bad level.' };
-  const owned = await db.query<{ text: string }>('select text from answers where profile_id = $1 and question_id = $2 and confirmed_at is not null', [i.profileId, i.itemId]);
-  if (!owned.rows.length) return { ok: false, error: 'Confirm this answer first.' };
+  const answerText = await practiceAnswerText(db, i.profileId, i.courseId, i.itemId);
+  if (answerText === null) return { ok: false, error: 'Confirm this answer first.' };
   const missedWords = (i.missedWords ?? []).filter((n) => Number.isInteger(n) && n >= 0 && n < 1000);
 
   const previous = await loadAccuracies(db, i.profileId, i.itemId);
@@ -92,11 +116,11 @@ export async function recordRecall(db: Db, i: RecallInput, cfg: MemoriseConfig =
   try {
     // Which chunks were missed feeds the hotspot rule; a failed attempt then gets a cause tag by rule.
     const { missedChunkIds } = await recordChunkEvents(db, {
-      profileId: i.profileId, courseId: i.courseId, answer: owned.rows[0].text, missedWords, sessionId: i.sessionId, readingAloud: assisted,
+      profileId: i.profileId, courseId: i.courseId, answer: answerText, missedWords, sessionId: i.sessionId, readingAloud: assisted,
     });
     const causeTags = good || assisted
       ? []
-      : await causeTagsForRecallFailure(db, { profileId: i.profileId, courseId: i.courseId, itemId: i.itemId, answer: owned.rows[0].text, timed: false, missedChunkIds });
+      : await causeTagsForRecallFailure(db, { profileId: i.profileId, courseId: i.courseId, itemId: i.itemId, answer: answerText, timed: false, missedChunkIds });
     const result = await logAttempt(db, {
       profileId: i.profileId, itemKind: 'question', itemId: i.itemId, phase: 'memorise', sessionId: i.sessionId,
       outcome: good ? (assisted ? 'assisted' : 'correct') : 'wrong',

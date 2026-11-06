@@ -23,9 +23,9 @@ export async function signUpThroughForm(page: Page): Promise<string> {
  * Creates an anonymous profile through the app's own sign-up route (the cookie lands in the browser, as it does
  * from the form) and opens the desktop. Much faster than the form, which `signUpThroughForm` covers.
  */
-export async function signUp(page: Page): Promise<string> {
+export async function signUp(page: Page, classCode: string = SEED_CLASS_CODE): Promise<string> {
   const { nicknameOptions } = await import('../lib/profile/profile');
-  const res = await page.request.post('/api/profile', { data: { classCode: SEED_CLASS_CODE, privacyAcknowledged: true, nickname: nicknameOptions(1)[0], interests: ['football'] } });
+  const res = await page.request.post('/api/profile', { data: { classCode, privacyAcknowledged: true, nickname: nicknameOptions(1)[0], interests: ['football'] } });
   expect(res.ok()).toBe(true);
   const { recoveryCode } = (await res.json()) as { recoveryCode: string };
   await page.goto('/');

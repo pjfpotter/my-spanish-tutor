@@ -4,6 +4,7 @@ import { cheekyLinesFor } from '../rewards/cheeky';
 import type { PhraseLine } from '../tele/phrase-bank';
 import { CATALOGUE, itemById } from '../rewards/catalogue';
 import { loadShop, settleStreak } from '../rewards/store';
+import { courseUnlockAll } from '../course/unlock';
 import { NO_PROGRESS, phaseStates, type PhaseId, type PhaseState, type Progress } from '../phases/gate';
 import { channelClarity, daysUntil, loadMastery, loadQuestions } from '../progress/progress';
 import { loadReadinessInput } from '../planner/load';
@@ -14,6 +15,8 @@ export interface HomeData {
   signedIn: boolean;
   nickname: string | null;
   states: Record<PhaseId, PhaseState>;
+  /** The student's course is a testing course with every phase open, so the desktop says so. */
+  unlockAll: boolean;
   daysToTest: number;
   /** One number per question, 0 (static) to 1 (clear), in question order. */
   channels: number[];
@@ -40,6 +43,8 @@ export async function loadHome(): Promise<HomeData> {
   // One load serves the phase gates and the readiness meter.
   const readinessInput: ReadinessInput = profile ? await loadReadinessInput(db, profile.id, profile.courseId, questions.map((q) => q.id)) : { ...NO_PROGRESS, questionsAutomated: 0 };
   const progress: Progress = readinessInput;
+  // The only place the flag is read for the desktop; a device with no profile sees the gated course.
+  const unlockAll = profile ? await courseUnlockAll(db, profile.courseId) : false;
   const mastery = profile ? await loadMastery(db, profile.id, 'understand') : new Map();
   // Settling the streak is the only write here: it uses a freeze on a missed day if the student has one. It earns nothing.
   if (profile) await settleStreak(db, profile.id);
@@ -55,7 +60,8 @@ export async function loadHome(): Promise<HomeData> {
     cheekyLines: profile ? await cheekyLinesFor(db, profile.id, profile.courseId) : [],
     signedIn: !!profile,
     nickname: profile?.nickname ?? null,
-    states: phaseStates(progress),
+    states: phaseStates(progress, { unlockAll }),
+    unlockAll,
     daysToTest: course ? daysUntil(course.testDate) : 0,
     channels: channelClarity(questions, mastery),
   };
