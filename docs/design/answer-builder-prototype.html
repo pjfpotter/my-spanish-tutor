@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>
+<title>Respuesta.exe Jigsaw</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Fredoka:wght@500;600&family=Pixelify+Sans:wght@500;700&family=VT323&display=swap">
+<style>
+/* Layout: phone-first single column (question, answer, swap sheet, level). From 880px the answer sits left and the level panel sticks on the right.
+   Design source: docs/design-direction.md (Win98 desktop over a candy sky, bevelled grey windows, navy title bars).
+   Pink, lemon and cyan are decoration only. They never carry meaning alone and never sit behind reading text. */
+:root {
+  --sky-a: #DDF3FF; --sky-b: #9AD6FF; --sky-c: #4FA9F0;
+  --face: #C0C0C0; --face-2: #DADADA; --tray: #E4ECF3; --well: #FFFFFF;
+  --bev-hi: #FFFFFF; --bev-lo: #808080; --bev-dk: #0B2A4A;
+  --ink: #0B2A4A; --ink-2: #2A4560; --cream: #F4F4D0;
+  --title-a: #000080; --title-b: #0A5CC0;
+  --hyper-pink: #FF1FA9; --soft-pink: #FF5FA8; --lemon: #FFEB00; --cyan: #00E5E5;
+  --focus: #000080; --on: #000080; --on-ink: #F4F4D0; --bad: #8A1020;
+  --font-read: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-shout: 'Fredoka', 'Trebuchet MS', system-ui, sans-serif;
+  --font-ui: 'Pixelify Sans', 'Courier New', monospace;
+  --font-mono: 'VT323', 'Courier New', monospace;
+  --bevel-out: inset -1px -1px var(--bev-dk), inset 1px 1px var(--bev-hi), inset -2px -2px var(--bev-lo), inset 2px 2px var(--face-2);
+  --bevel-in: inset 1px 1px var(--bev-lo), inset -1px -1px var(--bev-hi), inset 2px 2px var(--bev-dk);
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --sky-a: #1F2D7A; --sky-b: #131B4D; --sky-c: #0A1030;
+  --face: #2C2F4A; --face-2: #3A3E60; --tray: #1B1E36; --well: #12142A;
+  --bev-hi: #6A70A0; --bev-lo: #15172B; --bev-dk: #05060F;
+  --ink: #F4F4D0; --ink-2: #CFCFAE; --focus: #FFEB00; --on: #0A5CC0; --on-ink: #FFFFFF; --bad: #FF9AA8;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --sky-a: #1F2D7A; --sky-b: #131B4D; --sky-c: #0A1030;
+  --face: #2C2F4A; --face-2: #3A3E60; --tray: #1B1E36; --well: #12142A;
+  --bev-hi: #6A70A0; --bev-lo: #15172B; --bev-dk: #05060F;
+  --ink: #F4F4D0; --ink-2: #CFCFAE; --focus: #FFEB00; --on: #0A5CC0; --on-ink: #FFFFFF; --bad: #FF9AA8;
+  color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: linear-gradient(180deg, var(--sky-c) 0%, var(--sky-b) 45%, var(--sky-a) 100%) fixed var(--sky-b);
+  color: var(--ink); font: 400 17px/1.45 var(--font-read); font-variant-ligatures: none;
+  padding-block: 14px 28px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+button, input { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+[hidden] { display: none !important; }
+.app { max-width: 1040px; margin: 0 auto; display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "q" "ans" "sheet" "panel"; }
+@media (min-width: 880px) { .app.build { grid-template-columns: minmax(0, 1fr) 340px; grid-template-rows: auto auto auto 1fr; grid-template-areas: "head head" "q panel" "ans panel" "sheet panel"; align-items: start; } }
+
+.win { background: var(--face); box-shadow: var(--bevel-out), 4px 4px 0 rgba(5,6,15,.28); padding: 3px; min-width: 0; }
+.win-title { display: flex; align-items: center; gap: 8px; padding: 4px 8px; min-height: 30px; background: linear-gradient(90deg, var(--title-a), var(--title-b)); color: var(--cream);
+  font: 500 15px/1.2 var(--font-ui); text-shadow: 1px 0 rgba(255,31,169,.75), -1px 0 rgba(0,229,229,.75); }
+.win-title .grow { flex: 1; min-width: 0; }
+.win-title .chrome { display: inline-flex; gap: 3px; }
+.win-title .chrome i { width: 14px; height: 14px; background: var(--face); box-shadow: var(--bevel-out); display: block; }
+.win-body { padding: 12px; min-width: 0; }
+.head { grid-area: head; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.logo { font: 600 30px/1 var(--font-shout); color: #fff; text-shadow: 2px 2px 0 var(--title-a), 3px 3px 0 var(--soft-pink); margin: 0; }
+.logo small { font-size: .6em; color: var(--soft-pink); text-shadow: 1px 1px 0 var(--title-a); }
+.head .tools { margin-left: auto; font-size: 15px; }
+h2 { font: 700 20px/1.25 var(--font-read); margin: 0 0 4px; }
+
+.btn { background: var(--face); box-shadow: var(--bevel-out); border: 0; min-height: 44px; padding: 8px 14px; cursor: pointer; font-weight: 700; color: var(--ink); }
+.btn:active, .btn[aria-pressed="true"] { box-shadow: var(--bevel-in); }
+.btn[disabled] { opacity: .55; cursor: not-allowed; }
+.btn.primary { background: var(--title-b); color: #fff; }
+.btn.small { min-height: 36px; padding: 4px 10px; font-size: 15px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chk { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; cursor: pointer; }
+.chk input { width: 20px; height: 20px; }
+.note { font-size: 15px; color: var(--ink-2); margin: 6px 0 0; }
+
+.q-es { font: 700 clamp(22px, 5vw, 28px)/1.25 var(--font-read); margin: 0 0 8px; text-wrap: balance; }
+.caption { display: inline-block; background: var(--title-a); color: var(--cream); font: 400 19px/1.3 var(--font-mono); padding: 4px 10px; letter-spacing: .02em; max-width: 100%; }
+
+.cards { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); grid-column: 1 / -1; }
+@media (min-width: 760px) { .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.cards .win { display: flex; flex-direction: column; }
+.card-l { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.card-l .cue { margin: 0; font-size: 16px; }
+.card-l .eg { background: var(--well); box-shadow: var(--bevel-in); padding: 8px 10px; font-size: 16px; margin: 0; flex: 1; }
+.card-l .eg-en { color: var(--ink-2); font-size: 14px; display: block; margin-top: 4px; }
+
+.seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-bottom: 10px; }
+.seg .btn { display: flex; flex-direction: column; align-items: center; gap: 0; line-height: 1.2; text-align: center; }
+.seg .btn small { font: 400 13px var(--font-read); color: var(--ink-2); }
+.sent { display: flex; flex-wrap: wrap; row-gap: 8px; margin: 0 0 10px; align-items: center; }
+.well { background: var(--well); box-shadow: var(--bevel-in); padding: 12px 12px 4px; --cut: var(--well); }
+
+.tile { --hue: #808080; position: relative; display: inline-flex; flex-direction: column; align-items: flex-start; gap: 1px; text-align: left; min-height: 44px;
+  padding: 6px 16px 6px 18px; background: var(--face); color: var(--ink); border: 0; border-top: 5px solid var(--hue); box-shadow: var(--bevel-out); cursor: pointer; font-weight: 700; font-size: 18px; line-height: 1.2; margin-right: 6px; }
+.tile::before, .tile::after { content: ""; position: absolute; top: 50%; width: 12px; height: 12px; margin-top: -6px; border-radius: 50%; }
+.tile::before { left: -6px; background: var(--cut); z-index: 1; box-shadow: inset -1px -1px var(--bev-hi), inset 1px 1px var(--bev-lo); }
+.tile::after { right: -6px; background: var(--face); z-index: 2; box-shadow: var(--bevel-out); }
+.tile .es { overflow-wrap: anywhere; }
+.tile .en { font-weight: 400; font-size: 14px; color: var(--ink-2); }
+.tile .tag { font: 500 12px/1.2 var(--font-ui); color: var(--ink-2); }
+.tile.sel { box-shadow: var(--bevel-in); outline: 3px solid var(--focus); outline-offset: 1px; }
+.tile.glue { cursor: default; background: transparent; box-shadow: none; border-top-style: dashed; font-weight: 400; color: var(--ink-2); }
+.tile.glue::before, .tile.glue::after { display: none; }
+.tile.dot { min-width: 30px; justify-content: center; align-items: center; padding: 6px 10px; cursor: default; margin-right: 0; }
+.tile.dot::before, .tile.dot::after { display: none; }
+.tile.line { white-space: normal; }
+.tile.pop { animation: snap .22s ease-out; }
+.nw { display: inline-flex; white-space: nowrap; }
+@keyframes snap { from { transform: translateY(-7px) scale(1.06); } to { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .tile.pop, .rung.pop { animation: none !important; } }
+:root[data-calm="1"] .tile.pop, :root[data-calm="1"] .rung.pop { animation: none !important; }
+:root[data-calm="1"] .win-title, :root[data-calm="1"] .logo { text-shadow: none; }
+
+.sheet { grid-area: sheet; --cut: var(--tray); }
+.alts { background: var(--tray); box-shadow: var(--bevel-in); padding: 10px; min-width: 0; }
+.alts .tiles { display: flex; flex-wrap: wrap; gap: 12px 14px; padding: 6px 8px 10px; }
+.notice { background: var(--well); box-shadow: var(--bevel-in); padding: 6px 10px; margin: 0 0 8px; font-size: 15px; }
+
+.panel { grid-area: panel; align-self: start; }
+@media (min-width: 880px) { .panel { position: sticky; top: 14px; } }
+.ladder { list-style: none; margin: 0; padding: 0 14px; position: relative; display: flex; flex-direction: column; gap: 8px; }
+.ladder::before, .ladder::after { content: ""; position: absolute; top: 0; bottom: 0; width: 6px; background: var(--bev-lo); box-shadow: var(--bevel-out); }
+.ladder::before { left: 0; } .ladder::after { right: 0; }
+.rung { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; padding: 6px 12px; background: var(--well); box-shadow: var(--bevel-in); font-weight: 700; }
+.rung .st { font: 500 14px var(--font-ui); color: var(--ink-2); text-align: right; }
+.rung.on { background: var(--on); color: var(--on-ink); box-shadow: var(--bevel-out); }
+.rung.on .st { color: var(--on-ink); }
+.rung.target { outline: 2px dashed var(--ink); outline-offset: 1px; }
+.rung.pop { animation: snap .35s ease-out; }
+.sec { margin: 14px 0 0; }
+.sec h3 { font: 500 16px var(--font-ui); margin: 0 0 6px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 0; margin: 0; list-style: none; }
+.chip { background: var(--well); box-shadow: var(--bevel-in); padding: 3px 9px; font-size: 15px; min-height: 28px; display: inline-flex; align-items: center; gap: 6px; }
+.chip.on { background: var(--on); color: var(--on-ink); box-shadow: var(--bevel-out); }
+.chip small { font: 500 12px var(--font-ui); opacity: .9; }
+details.more > summary { cursor: pointer; font: 500 15px var(--font-ui); min-height: 40px; display: flex; align-items: center; }
+details.more { margin-top: 8px; }
+.checks { list-style: none; margin: 6px 0; padding: 0; display: grid; gap: 4px; font-size: 15px; }
+.checks li { display: flex; justify-content: space-between; gap: 8px; background: var(--well); box-shadow: var(--bevel-in); padding: 4px 8px; }
+.checks .ok { font-weight: 700; } .checks .no { color: var(--bad); font-weight: 700; }
+.tune { display: grid; gap: 6px; margin: 6px 0; }
+.tune label { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 15px; }
+.tune input[type=number] { width: 64px; min-height: 36px; padding: 2px 6px; background: var(--well); color: var(--ink); border: 0; box-shadow: var(--bevel-in); }
+.cal { width: 100%; border-collapse: collapse; font-size: 14px; margin: 6px 0; }
+.cal th, .cal td { text-align: left; padding: 3px 4px; border-bottom: 1px solid var(--bev-lo); vertical-align: top; }
+.cal .no { color: var(--bad); font-weight: 700; } .cal .ok { font-weight: 700; }
+.scroll-x { overflow-x: auto; }
+.status { font: 400 19px var(--font-mono); background: var(--face); box-shadow: var(--bevel-in); padding: 2px 10px; margin-top: 8px; }
+</style>
+
+<div class="app" id="app">
+  <header class="head">
+    <h1 class="logo">Respuesta<small>.exe</small></h1>
+    <div class="tools"><label class="chk"><input type="checkbox" id="calm"> Calm mode</label></div>
+  </header>
+  <section class="win" style="grid-area:q" aria-labelledby="q-title">
+    <div class="win-title"><span class="grow" id="q-title">Tu pregunta</span><span class="chrome" aria-hidden="true"><i></i><i></i><i></i></span></div>
+    <div class="win-body">
+      <p class="q-es" lang="es">¿Qué haces en tu tiempo libre?</p>
+      <span class="caption">What do you do in your free time?</span>
+    </div>
+  </section>
+  <div id="main" style="display:contents"></div>
+  <div class="status" id="status" role="status" aria-live="polite" style="grid-column:1/-1">señal fuerte</div>
+</div>
+
+<script id="engine">
+window.ENG = (function () {
+'use strict';
+const upFirst = s => { const m = /^([¡¿]*)([\s\S]?)([\s\S]*)$/.exec(s); return m[1] + m[2].toUpperCase() + m[3]; };
+const clone = o => JSON.parse(JSON.stringify(o));
+const sameVal = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+/* Level rules, from rubric.md. The tester panel can change them. */
+const FIRST_DRAFT = { rg: 1, am: 5, hard: 2, needJ: true };
+const CURRENT = { rg: 1, am: 4, hard: 2, needJ: false };
+const CFG = Object.assign({}, CURRENT);
+
+/* ---------- the sentence builder: every chunk comes from here ---------- */
+const ST = {
+  megusta: { es: 'me gusta', en: 'I like to', pol: 'pos' }, meencanta: { es: 'me encanta', en: 'I love to', pol: 'pos' }, mechifla: { es: 'me chifla', en: 'I really love to', pol: 'pos' },
+  prefiero: { es: 'prefiero', en: 'I prefer to', pol: 'pos' }, suelo: { es: 'suelo', en: 'I usually', pol: 'neu' }, nomegusta: { es: 'no me gusta', en: "I don't like to", pol: 'neg' },
+  odio: { es: 'odio', en: 'I hate to', pol: 'neg' }, megustaria: { es: 'me gustaría', en: 'I would like to', pol: 'pos', future: 1 }, voya: { es: 'voy a', en: 'I am going to', pol: 'neu', future: 1 }
+};
+const STSETS = { opinion: ['megusta', 'meencanta', 'mechifla', 'prefiero', 'suelo'], neg: ['nomegusta', 'odio'], future: ['megustaria', 'voya'] };
+const ACT = [['futbol', 'jugar al fútbol', 'play football'], ['baloncesto', 'jugar al baloncesto', 'play basketball'], ['videojuegos', 'jugar a los videojuegos', 'play video games'],
+  ['guitarra', 'tocar la guitarra', 'play the guitar'], ['musica', 'escuchar música', 'listen to music'], ['chatear', 'chatear con mis amigos', 'chat with my friends'], ['libros', 'leer libros', 'read books'],
+  ['tele', 'ver la tele', 'watch TV'], ['salir', 'salir con mis amigos', 'go out with my friends'], ['cine', 'ir al cine', 'go to the cinema'], ['compras', 'ir de compras', 'go shopping'],
+  ['bici', 'montar en bici', 'ride a bike'], ['deporte', 'hacer deporte', 'do sport'], ['bailar', 'bailar', 'dance'], ['cocinar', 'cocinar', 'cook']].map(([id, es, en]) => ({ id, es, en }));
+const JUST = [{ id: 'porque', es: 'porque', en: 'because' }, { id: 'yaque', es: 'ya que', en: 'since' }, { id: 'dado', es: 'dado que', en: 'given that' }];
+const RSN = [
+  { id: 'divertido', es: 'es divertido', en: 'it is fun', pol: 'pos' }, { id: 'relajante', es: 'es relajante', en: 'it is relaxing', pol: 'pos' }, { id: 'emocionante', es: 'es emocionante', en: 'it is exciting', pol: 'pos' },
+  { id: 'aburrido', es: 'es aburrido', en: 'it is boring', pol: 'neg' }, { id: 'caro', es: 'es caro', en: 'it is expensive', pol: 'neg' }, { id: 'barato', es: 'es barato', en: 'it is cheap', pol: 'pos' },
+  { id: 'salud', es: 'es bueno para la salud', en: 'it is good for your health', pol: 'pos', e6: 1 }, { id: 'reir', es: 'me hace reír', en: 'it makes me laugh', pol: 'pos', e6: 1 },
+  { id: 'relaja', es: 'me relaja', en: 'it relaxes me', pol: 'pos', e6: 1 }
+];
+const FREQ = [['dias', 'todos los días', 'every day'], ['finde', 'los fines de semana', 'at the weekend'], ['sabados', 'los sábados', 'on Saturdays'], ['tarde', 'por la tarde', 'in the afternoon'],
+  ['semana', 'una vez a la semana', 'once a week'], ['aveces', 'a veces', 'sometimes'], ['vez', 'de vez en cuando', 'from time to time']].map(([id, es, en]) => ({ id, es, en }));
+const LH = [{ id: 'hago', es: 'lo hago', en: 'I do it' }, { id: 'hacemos', es: 'lo hacemos', en: 'we do it' }];
+const PPL = [['amigos', 'con mis amigos', 'with my friends'], ['mejoramigo', 'con mi mejor amigo', 'with my best friend'], ['mejoramiga', 'con mi mejor amiga', 'with my best friend'], ['familia', 'con mi familia', 'with my family'],
+  ['hermano', 'con mi hermano', 'with my brother'], ['hermana', 'con mi hermana', 'with my sister'], ['primos', 'con mis primos', 'with my cousins']].map(([id, es, en]) => ({ id, es, en }));
+const CL = [{ id: 'cl1', es: 'Tengo mucho tiempo libre. ¡Qué guay!', en: 'I have lots of free time. How cool!' },
+  { id: 'cl2', es: 'No tengo mucho tiempo libre por los deberes. ¡Qué rollo!', en: "I don't have much free time because of homework. What a drag!" }];
+const CON = [{ id: 'sinembargo', es: 'sin embargo', en: 'however' }, { id: 'aunque', es: 'aunque', en: 'although' }];
+const LISTS = { act: ACT, just: JUST, rsn: RSN, freq: FREQ, lh: LH, ppl: PPL, cl: CL, con: CON };
+const item = (k, id) => LISTS[k].find(x => x.id === id);
+const ROLE = { st: 'starter', act: 'activity', just: 'because word', rsn: 'reason', freq: 'when', lh: 'lo hago', ppl: 'who with', cl: 'closing line', con: 'contrast' };
+const HUE = { st: '#FF1FA9', act: '#5BBB2E', just: '#8A4DFF', rsn: '#E6C700', freq: '#FF9F1C', lh: '#0B63FF', ppl: '#E85D2A', cl: '#00B8B8', con: '#00A3A3' };
+
+/* ---------- the nine models: your teacher's calibration answers, as templates ---------- */
+const S_ = (k, key, set) => ({ k, key, set });
+const ST_ = (key, set) => S_('st', key, set), A_ = key => S_('act', key), J_ = key => S_('just', key), R_ = (key, of, flip) => ({ k: 'rsn', key, of, flip });
+const F_ = key => S_('freq', key), P_ = key => S_('ppl', key), L_ = key => S_('lh', key), C_ = key => S_('cl', key), K_ = (key, set) => S_('con', key, set);
+const G_ = (es, en, nospace) => ({ k: 'glue', es, en, nospace });
+const TEMPLATES = {
+  ge: [
+    { id: 'ge1', s: [[ST_('o1', 'opinion'), A_('a1'), J_('j1'), R_('r1', 'o1')]], d: { o1: 'megusta', a1: 'futbol', j1: 'porque', r1: 'divertido' } },
+    { id: 'ge2', s: [[ST_('o1', 'opinion'), A_('a1'), J_('j1'), R_('r1', 'o1')]], d: { o1: 'meencanta', a1: 'videojuegos', j1: 'porque', r1: 'emocionante' } },
+    { id: 'ge3', s: [[ST_('o1', 'opinion'), A_('a1'), J_('j1'), R_('r1', 'o1')]], d: { o1: 'megusta', a1: 'tele', j1: 'porque', r1: 'relajante' } }
+  ],
+  rg: [
+    { id: 'rg1', s: [[ST_('o1', 'opinion'), A_('a1'), J_('j1'), R_('r1', 'o1'), G_('pero', 'but'), ST_('o2', 'neg'), A_('a2'), J_('j2'), R_('r2', 'o2')]],
+      d: { o1: 'megusta', a1: 'baloncesto', j1: 'porque', r1: 'salud', o2: 'nomegusta', a2: 'libros', j2: 'porque', r2: 'aburrido' } },
+    { id: 'rg2', s: [[ST_('o1', 'opinion'), A_('a1'), F_('f1'), J_('j1'), R_('r1', 'o1')], [K_('c1', 'sinembargo'), G_(',', ',', 1), ST_('o2', 'neg'), A_('a2')]],
+      d: { o1: 'suelo', a1: 'chatear', f1: 'dias', j1: 'porque', r1: 'reir', c1: 'sinembargo', o2: 'nomegusta', a2: 'cine' } },
+    { id: 'rg3', s: [[F_('f1'), ST_('o1', 'opinion'), A_('a1'), G_(',', ',', 1), L_('l1'), P_('p1'), K_('c1', 'aunque'), F_('f2'), R_('r2', 'o1', 1)]],
+      d: { f1: 'finde', o1: 'prefiero', a1: 'musica', l1: 'hago', p1: 'hermana', c1: 'aunque', f2: 'aveces', r2: 'aburrido' } }
+  ],
+  am: [
+    { id: 'am1', s: [[C_('q1')], [ST_('o1', 'opinion'), A_('a1'), F_('f1'), G_('y', 'and'), F_('f2'), ST_('o2', 'opinion'), A_('a2'), J_('j1'), R_('r1', 'o2')], [ST_('o3', 'future'), A_('a3')], [F_('f3'), ST_('o4', 'future'), A_('a4'), P_('p1')]],
+      d: { q1: 'cl1', o1: 'suelo', a1: 'bici', f1: 'tarde', f2: 'aveces', o2: 'megusta', a2: 'libros', j1: 'yaque', r1: 'relaja', o3: 'megustaria', a3: 'guitarra', f3: 'sabados', o4: 'voya', a4: 'bailar', p1: 'amigos' } },
+    { id: 'am2', s: [[C_('q1')], [ST_('o1', 'neg'), A_('a1'), K_('c1', 'aunque'), R_('r1', 'o1', 1)], [ST_('o2', 'future'), A_('a2'), J_('j1'), R_('r2', 'o2')], [L_('l1'), F_('f1')]],
+      d: { q1: 'cl2', o1: 'nomegusta', a1: 'deporte', c1: 'aunque', r1: 'salud', o2: 'megustaria', a2: 'salir', j1: 'porque', r2: 'reir', l1: 'hacemos', f1: 'sabados' } },
+    { id: 'am3', s: [[ST_('o1', 'opinion'), A_('a1'), K_('c1', 'aunque'), ST_('o2', 'future'), A_('a2')], [ST_('o3', 'neg'), A_('a3'), J_('j1'), R_('r1', 'o3')], [ST_('o4', 'opinion'), A_('a4'), G_(',', ',', 1), L_('l1'), P_('p1'), F_('f1')]],
+      d: { o1: 'suelo', a1: 'futbol', c1: 'aunque', o2: 'megustaria', a2: 'baloncesto', o3: 'odio', a3: 'videojuegos', j1: 'porque', r1: 'aburrido', o4: 'megusta', a4: 'tele', l1: 'hago', p1: 'familia', f1: 'vez' } }
+  ]
+};
+const LEVELS = ['ge', 'rg', 'am'];
+const LEVEL_NAME = { ge: 'Good enough', rg: 'Really good', am: 'Amazing' };
+const RANK = { ge: 1, rg: 2, am: 3 };
+const segsOf = tpl => tpl.s.reduce((a, b) => a.concat(b), []);
+
+/* ---------- rendering ---------- */
+function renderSeg(seg, V) {
+  const val = V[seg.key], base = { key: seg.key, k: seg.k };
+  if (seg.k === 'glue') return Object.assign(base, { es: seg.es, en: seg.en, glue: 1, nospace: seg.nospace, props: {} });
+  if (seg.k === 'st') { const s = ST[val]; return Object.assign(base, { es: s.es, en: s.en, tag: s.future ? 'tricky' : '', props: { st: 1, pol: s.pol, feat: s.future ? 'E4' : null } }); }
+  const it = item(seg.k, val);
+  if (seg.k === 'act') return Object.assign(base, { es: it.es, en: it.en, props: { act: 1 } });
+  if (seg.k === 'just') return Object.assign(base, { es: it.es, en: it.en, props: { just: it.id } });
+  if (seg.k === 'rsn') return Object.assign(base, { es: it.es, en: it.en, props: { rsn: 1, e6: it.e6 } });
+  const feat = { freq: 'E2', lh: 'E3', cl: 'E5', con: 'E1' }[seg.k] || null;
+  return Object.assign(base, { es: it.es, en: it.en, tag: seg.k === 'lh' || seg.k === 'cl' ? 'tricky' : '', props: { feat } });
+}
+function render(tpl, V) { return tpl.s.map(sent => sent.map(seg => renderSeg(seg, V))); }
+function sentenceStrings(parts) {
+  const ps = []; parts.forEach(p => { if (p.glue && p.nospace && ps.length) { ps[ps.length - 1] = Object.assign({}, ps[ps.length - 1], { es: ps[ps.length - 1].es + p.es, en: ps[ps.length - 1].en + p.en }); } else ps.push(p); });
+  if (ps.length === 1 && ps[0].k === 'cl') return { ps, es: ps[0].es, en: ps[0].en };
+  return { ps, es: upFirst(ps.map(p => p.es).join(' ')) + '.', en: upFirst(ps.map(p => p.en).join(' ')) + '.' };
+}
+function texts(tpl, V) { const ss = render(tpl, V).map(sentenceStrings); return { es: ss.map(s => s.es).join(' '), en: ss.map(s => s.en).join(' '), sents: ss }; }
+
+/* ---------- which level is this answer? (rubric.md) ---------- */
+const EXTRA_NAME = { E1: 'a contrast (aunque or sin embargo)', E2: 'when or how often', E3: 'lo hago or lo hacemos', E4: 'a plan or wish (me gustaría or voy a)', E5: 'a closing line', E6: 'a reason beyond es + adjective', E7: 'a second “because” word (ya que or dado que)' };
+const HARD = ['E3', 'E4', 'E5'];
+function analyse(tpl, V) {
+  const sents = render(tpl, V), feats = new Set(), justs = new Set(); let framed = false;
+  sents.forEach(parts => {
+    let iSt = -1, iAct = -1, iJ = -1;
+    parts.forEach((p, i) => {
+      const pr = p.props;
+      if (pr.feat) feats.add(pr.feat);
+      if (pr.just) justs.add(pr.just);
+      if (pr.rsn && pr.e6) feats.add('E6');
+      if (iSt < 0 && pr.st) iSt = i; else if (iSt >= 0 && iAct < 0 && pr.act) iAct = i; else if (iAct >= 0 && iJ < 0 && pr.just) iJ = i; else if (iJ >= 0 && pr.rsn) framed = true;
+    });
+  });
+  if (justs.has('porque') && (justs.has('yaque') || justs.has('dado'))) feats.add('E7');
+  const extras = ['E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7'].filter(e => feats.has(e)), hard = HARD.filter(e => feats.has(e));
+  const okJ = !CFG.needJ || framed;
+  const am = okJ && extras.length >= CFG.am && hard.length >= CFG.hard, rg = okJ && extras.length >= CFG.rg;
+  const level = am ? 'am' : rg ? 'rg' : 'ge';
+  const missing = ['E3', 'E4', 'E5', 'E2', 'E1', 'E6', 'E7'].filter(e => !feats.has(e));
+  return { framed, feats, extras, hard, level, ge: true, rg: rg || am, am, missing, nExtras: extras.length };
+}
+
+/* ---------- swaps: only chunks from the sentence builder, only ones that fit ---------- */
+const polNeed = (stId, flip) => { const p = ST[stId].pol; if (p === 'neu') return null; return flip ? (p === 'pos' ? 'neg' : 'pos') : p; };
+function fixV(tpl, V) {
+  const notes = [];
+  segsOf(tpl).forEach(seg => {
+    if (seg.k !== 'rsn') return;
+    const need = polNeed(V[seg.of], seg.flip), r = item('rsn', V[seg.key]);
+    if (need && r.pol !== need) { const alt = RSN.find(x => x.pol === need); V[seg.key] = alt.id; notes.push('Changed the reason so it matches your opinion.'); }
+  });
+  return notes;
+}
+function swap(tpl, V, key, val) { const V2 = clone(V); V2[key] = val; const notes = fixV(tpl, V2); return { V: V2, notes }; }
+function candidates(tpl, V, key) {
+  const segs = segsOf(tpl), seg = segs.find(s => s.key === key), cur = analyse(tpl, V).level;
+  const used = k => segs.filter(s => s.k === k && s.key !== key).map(s => V[s.key]);
+  let vals;
+  if (seg.k === 'st') vals = STSETS[seg.set].slice();
+  else if (seg.k === 'con') vals = [seg.set];
+  else if (seg.k === 'rsn') { const need = polNeed(V[seg.of], seg.flip); vals = RSN.filter(r => !need || r.pol === need).map(r => r.id); }
+  else { vals = LISTS[seg.k].map(x => x.id); if (['act', 'freq', 'ppl'].includes(seg.k)) vals = vals.filter(v => !used(seg.k).includes(v)); }
+  return vals.map(val => {
+    const { V: V2 } = swap(tpl, V, key, val), p = render(tpl, V2).reduce((a, b) => a.concat(b), []).find(x => x.key === key);
+    const lv = analyse(tpl, V2).level;
+    return { val, es: p.es, en: p.en, tag: RANK[lv] < RANK[cur] ? 'lowers level' : p.tag, lowers: RANK[lv] < RANK[cur], sel: sameVal(val, V[key]), kind: seg.k };
+  });
+}
+const defaults = tpl => clone(tpl.d);
+function carry(oldTpl, oldV, newTpl) {
+  const V = defaults(newTpl);
+  if (oldTpl && oldV) segsOf(newTpl).forEach(seg => {
+    if (seg.k === 'glue' || !(seg.key in oldV)) return;
+    const old = segsOf(oldTpl).find(s => s.key === seg.key); if (!old || old.k !== seg.k) return;
+    if (candidates(newTpl, V, seg.key).some(c => sameVal(c.val, oldV[seg.key]))) V[seg.key] = oldV[seg.key];
+  });
+  fixV(newTpl, V); return V;
+}
+/* the teacher's nine, scored with the current rules */
+function calibration() {
+  const rows = []; LEVELS.forEach(L => TEMPLATES[L].forEach((t, i) => { const a = analyse(t, defaults(t)); rows.push({ id: t.id, group: L, n: +t.id.slice(-1), level: a.level, extras: a.extras, hard: a.hard, framed: a.framed, ok: a.level === L }); }));
+  return rows;
+}
+
+return { CFG, FIRST_DRAFT, CURRENT, TEMPLATES, LEVELS, LEVEL_NAME, RANK, ROLE, HUE, EXTRA_NAME, HARD, ST, render, texts, analyse, candidates, swap, carry, defaults, calibration, segsOf, sentenceStrings };
+})();
+</script>
+
+<script>
+(function () {
+'use strict';
+const E = window.ENG, $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const say = t => { $('status').textContent = t; };
+const CUES = {
+  ge: { feel: 'Feeling nervous or short on time', time: 'About 5 minutes a day', what: 'A proper answer you can say with confidence: an opinion and a reason.' },
+  rg: { feel: 'Fairly confident', time: 'About 10 minutes a day', what: 'A reason, plus extras like when you do it or a contrast.' },
+  am: { feel: 'Confident and keen', time: '15 minutes or more a day', what: 'Packed with extras. It is a lot to learn, and you only need one or two Amazing answers in the whole test.' }
+};
+const TIME_SHORT = { ge: '~5 min a day', rg: '~10 min a day', am: '15+ min a day' };
+const EXTRAS = ['E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7'];
+
+const S = { screen: 'pick', level: null, ti: 0, V: null, sel: null, notes: [], lastRg: null, pop: null };
+const tpl = () => E.TEMPLATES[S.level][S.ti];
+const clone = o => JSON.parse(JSON.stringify(o));
+
+function start(level) { S.level = level; S.ti = 0; S.V = E.carry(null, null, tpl()); S.sel = null; S.notes = []; S.screen = 'build'; S.lastRg = null; render(); say('modelo listo'); const t = $('a-title'); if (t) t.focus(); }
+function setLevel(level) { if (level === S.level) return; const old = tpl(), oldV = S.V; S.level = level; S.ti = 0; S.V = E.carry(old, oldV, tpl()); S.sel = null; S.notes = []; render(); say('target: ' + E.LEVEL_NAME[level]); }
+function nextModel() { const list = E.TEMPLATES[S.level], old = tpl(), oldV = S.V; S.ti = (S.ti + 1) % list.length; S.V = E.carry(old, oldV, tpl()); S.sel = null; S.notes = []; render(); say('model ' + (S.ti + 1)); }
+function render() { $('app').classList.toggle('build', S.screen === 'build'); $('main').innerHTML = S.screen === 'pick' ? pickHTML() : buildHTML(); }
+
+function pickHTML() {
+  return `<section class="win" style="grid-column:1/-1" aria-labelledby="pick-t"><div class="win-title"><span class="grow" id="pick-t">Elige tu objetivo</span><span class="chrome" aria-hidden="true"><i></i><i></i><i></i></span></div>
+    <div class="win-body"><h2>How far do you want to take it?</h2><p class="note" style="margin:0">Pick the one that fits how you feel and how much time you have. You can change it any time.</p></div></section>
+    <div class="cards">${E.LEVELS.map(L => {
+      const t = E.TEMPLATES[L][0], tx = E.texts(t, E.carry(null, null, t)), c = CUES[L];
+      return `<section class="win"><div class="win-title"><span class="grow">${E.LEVEL_NAME[L]}</span><span class="chrome" aria-hidden="true"><i></i><i></i><i></i></span></div><div class="win-body card-l">
+        <p class="cue"><b>${c.feel}.</b><br>${c.time}.</p><p class="cue">${c.what}</p>
+        <p class="eg" lang="es">${esc(tx.es)}<span class="eg-en">${esc(tx.en)}</span></p>
+        <button class="btn primary" data-a="start" data-l="${L}">Aim for ${E.LEVEL_NAME[L]}</button></div></section>`;
+    }).join('')}</div>`;
+}
+
+function buildHTML() {
+  const T = tpl(), V = S.V, tx = E.texts(T, V), an = E.analyse(T, V), list = E.TEMPLATES[S.level];
+  const sents = tx.sents.map(s => {
+    const tiles = s.ps.map((p, i) => {
+      const last = i === s.ps.length - 1, isCl = p.k === 'cl';
+      const text = i === 0 ? p.es.charAt(0).toUpperCase() + p.es.slice(1) : p.es;
+      const dot = last && !isCl ? '<span class="tile dot" role="img" aria-label="full stop"><span class="es">.</span></span>' : '';
+      let tile;
+      if (p.glue) tile = `<span class="tile glue" style="--hue:#808080"><span class="es" lang="es">${esc(text)}</span></span>`;
+      else tile = `<button class="tile${isCl ? ' line' : ''}${S.sel === p.key ? ' sel' : ''}${S.pop === p.key ? ' pop' : ''}" style="--hue:${E.HUE[p.k]}" data-a="sel" data-k="${p.key}" aria-pressed="${S.sel === p.key}" aria-label="${esc(text)}, ${E.ROLE[p.k]}. Tap to swap."><span class="es" lang="es">${esc(text)}</span>${p.tag ? `<span class="tag">${esc(p.tag)}</span>` : ''}</button>`;
+      return last && dot ? `<span class="nw">${tile}${dot}</span>` : tile;
+    }).join('');
+    return `<div class="sent">${tiles}</div>`;
+  }).join('');
+  const seg = E.LEVELS.map(L => `<button class="btn" data-a="level" data-l="${L}" aria-pressed="${S.level === L}">${E.LEVEL_NAME[L]}<small>${TIME_SHORT[L]}</small></button>`).join('');
+  const html = `<section class="win" style="grid-area:ans" aria-labelledby="a-title"><div class="win-title"><span class="grow" id="a-title" tabindex="-1">Tu respuesta</span><span class="chrome" aria-hidden="true"><i></i><i></i><i></i></span></div>
+    <div class="win-body"><div class="seg" role="group" aria-label="Target level">${seg}</div>
+      <div class="well" id="well" aria-label="Your answer. Tap any tile to swap it.">${sents}</div>
+      <p class="note">Tap any tile to see what else fits.</p>
+      <p style="margin:8px 0 0"><span class="caption" lang="en">${esc(tx.en)}</span></p>
+      <div class="row" style="margin-top:12px">${list.length > 1 ? `<button class="btn" data-a="model">Try another model <small>(${S.ti + 1} of ${list.length})</small></button>` : ''}
+        <button class="btn" data-a="copy">Copy</button><button class="btn" data-a="reset">Reset this model</button><button class="btn" data-a="home">Change target</button></div></div></section>
+    ${S.sel ? sheetHTML() : '<div style="grid-area:sheet"></div>'}${panelHTML(an)}`;
+  S.pop = null; return html;
+}
+
+function sheetHTML() {
+  const T = tpl(), V = S.V, seg = E.segsOf(T).find(s => s.key === S.sel), cands = E.candidates(T, V, S.sel);
+  const tile = (c, i) => `<button class="tile" style="--hue:${E.HUE[seg.k]}" data-a="swap" data-i="${i}" aria-pressed="${c.sel}" aria-label="${esc(c.es)}${c.sel ? ', current' : ''}${c.lowers ? ', lowers your level' : ''}"><span class="es" lang="es">${esc(c.es)}</span><span class="en">${esc(c.en)}</span>${c.sel ? '<span class="tag">now</span>' : c.tag ? `<span class="tag">${esc(c.tag)}</span>` : ''}</button>`;
+  const body = cands.length > 1 ? `<div class="tiles">${cands.map((c, i) => tile(c, i)).join('')}</div>` : `<p class="note" style="margin:6px 8px 10px">Nothing else in the sentence builder fits here, so this piece stays.</p><div class="tiles">${cands.map((c, i) => tile(c, i)).join('')}</div>`;
+  return `<section class="win sheet" aria-labelledby="sh-t"><div class="win-title"><span class="grow" id="sh-t" tabindex="-1">Swap: ${E.ROLE[seg.k]}</span><span class="chrome" aria-hidden="true"><i></i><i></i><i></i></span></div>
+    <div class="win-body">${S.notes.length ? `<p class="notice" role="status">${esc(S.notes.join(' '))}</p>` : ''}<div class="alts">${body}</div>
+    <div class="row" style="margin-top:10px"><button class="btn primary" data-a="done">Done</button></div></div></section>`;
+}
+
+function panelHTML(an) {
+  const order = E.LEVELS;
+  const rows = order.slice().reverse().map(L => {
+    const on = an[L], target = S.level === L;
+    return `<li class="rung${on ? ' on' : ''}${target ? ' target' : ''}${on && S.lastRg && !S.lastRg[L] ? ' pop' : ''}"><span>${on ? '✓ ' : ''}${E.LEVEL_NAME[L]}</span><span class="st">${target ? 'your target' + (on ? ' · reached' : '') : on ? 'reached' : 'not yet'}</span></li>`;
+  }).join('');
+  S.lastRg = { ge: an.ge, rg: an.rg, am: an.am };
+  const chip = (on, label, tag) => `<li class="chip${on ? ' on' : ''}">${on ? '✓ ' : ''}${label}${tag ? `<small>${tag}</small>` : ''}</li>`;
+  const msg = an.level === S.level ? 'Your answer is ' + E.LEVEL_NAME[an.level] + '. That’s your target.' :
+    E.RANK[an.level] > E.RANK[S.level] ? 'Your answer is ' + E.LEVEL_NAME[an.level] + ', above your target.' : 'Your answer is ' + E.LEVEL_NAME[an.level] + ', not yet ' + E.LEVEL_NAME[S.level] + '. It is missing ' + E.EXTRA_NAME[an.missing[0]] + '.';
+  const C = E.CFG, preset = C.am === 5 && C.hard === 2 && C.needJ && C.rg === 1 ? 'first' : C.am === 4 && C.hard === 2 && !C.needJ && C.rg === 1 ? 'current' : '';
+  const cal = E.calibration(), good = cal.filter(r => r.ok).length;
+  const calRows = cal.map(r => `<tr><td>${E.LEVEL_NAME[r.group]} ${r.n}</td><td>${r.extras.join(', ') || 'none'}${r.framed ? '' : ' · no porque'}</td><td>${r.hard.length}</td><td class="${r.ok ? 'ok' : 'no'}">${r.ok ? '✓' : '✗'} ${E.LEVEL_NAME[r.level]}</td></tr>`).join('');
+  const keepOpen = id => { const d = document.getElementById(id); return d && d.open ? ' open' : ''; };
+  return `<aside class="win panel" aria-labelledby="p-title"><div class="win-title"><span class="grow" id="p-title">Tu nivel</span><span class="chrome" aria-hidden="true"><i></i><i></i><i></i></span></div>
+    <div class="win-body"><ol class="ladder" aria-label="Levels, highest first">${rows}</ol><p class="note" role="status">${msg}</p>
+    <div class="sec"><h3>What your answer has</h3><ul class="chips">${chip(an.framed, 'a justified opinion (porque…)', 'somewhere in the test')}${EXTRAS.map(e => chip(an.feats.has(e), E.EXTRA_NAME[e], E.HARD.includes(e) ? 'tricky' : '')).join('')}</ul></div>
+    <details class="more" id="d-tune"${keepOpen('d-tune')}><summary>Tester: check the rubric</summary>
+      <p class="note">Students never see this. Your teacher’s nine models are the starting answers. Each one is a separate answer. This shows how the rules score them.</p>
+      <div class="row"><button class="btn small" data-a="preset" data-p="current" aria-pressed="${preset === 'current'}">Current rules</button><button class="btn small" data-a="preset" data-p="first" aria-pressed="${preset === 'first'}">First draft of the rubric</button></div>
+      <div class="tune"><label>Extras for Really good<input type="number" min="0" max="7" id="cfg-rg" value="${C.rg}" data-cfg="rg"></label><label>Extras for Amazing<input type="number" min="0" max="7" id="cfg-am" value="${C.am}" data-cfg="am"></label>
+        <label>Tricky extras for Amazing<input type="number" min="0" max="3" id="cfg-hard" value="${C.hard}" data-cfg="hard"></label><label>Justified opinion needed in every answer<input type="checkbox" id="cfg-needJ" ${C.needJ ? 'checked' : ''} data-cfg="needJ"></label></div>
+      <p class="note"><b>${good} of 9</b> models land on the level the teacher gave them.</p>
+      <div class="scroll-x"><table class="cal"><thead><tr><th>Model</th><th>Extras found</th><th>Tricky</th><th>Rubric says</th></tr></thead><tbody>${calRows}</tbody></table></div>
+      <p class="note">This answer: ${an.nExtras} extras, ${an.hard.length} tricky, ${an.framed ? 'has a' : 'no'} justified opinion.</p></details></div></aside>`;
+}
+
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('[data-a]'); if (!b) return;
+  const a = b.dataset.a, kb = ev.detail === 0;
+  if (a === 'start') start(b.dataset.l);
+  else if (a === 'home') { S.screen = 'pick'; S.sel = null; render(); }
+  else if (a === 'level') setLevel(b.dataset.l);
+  else if (a === 'model') nextModel();
+  else if (a === 'reset') { S.V = E.defaults(tpl()); S.sel = null; S.notes = []; render(); say('modelo restablecido'); }
+  else if (a === 'sel') { S.sel = S.sel === b.dataset.k ? null : b.dataset.k; S.notes = []; render(); if (S.sel) { const h = $('sh-t'); if (h) { h.focus({ preventScroll: true }); h.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } } }
+  else if (a === 'swap') {
+    const c = E.candidates(tpl(), S.V, S.sel)[+b.dataset.i]; if (!c) return;
+    const r = E.swap(tpl(), S.V, S.sel, c.val); S.V = r.V; S.notes = r.notes; S.pop = S.sel; render(); say('cambiado: ' + c.es);
+    if (kb) { const h = $('sh-t'); if (h) h.focus({ preventScroll: true }); }
+  }
+  else if (a === 'done') { const k = S.sel; S.sel = null; S.notes = []; render(); const t = document.querySelector('[data-k="' + k + '"]'); if (t) t.focus(); }
+  else if (a === 'copy') {
+    const t = E.texts(tpl(), S.V).es, sel = () => { const r = document.createRange(); r.selectNodeContents($('well')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); };
+    try { navigator.clipboard.writeText(t).then(() => say('copied'), () => { sel(); say('select the text and copy it'); }); } catch (e) { sel(); say('select the text and copy it'); }
+  }
+  else if (a === 'preset') { Object.assign(E.CFG, b.dataset.p === 'first' ? E.FIRST_DRAFT : E.CURRENT); render(); say('rules: ' + (b.dataset.p === 'first' ? 'first draft' : 'current')); }
+});
+document.addEventListener('input', ev => {
+  const t = ev.target;
+  if (t.id === 'calm') document.documentElement.dataset.calm = t.checked ? '1' : '0';
+  else if (t.dataset && t.dataset.cfg) {
+    if (t.type === 'checkbox') E.CFG[t.dataset.cfg] = t.checked;
+    else { const v = parseInt(t.value, 10); if (isNaN(v)) return; E.CFG[t.dataset.cfg] = Math.max(0, Math.min(7, v)); }
+    const id = t.id; render(); const el = $(id); if (el) el.focus();
+  }
+});
+try { if (matchMedia('(prefers-reduced-motion: reduce)').matches) { document.documentElement.dataset.calm = '1'; $('calm').checked = true; } } catch (e) {}
+render();
+})();
+</script>
+</body></html>
