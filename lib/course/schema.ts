@@ -76,6 +76,11 @@ export interface Course {
   /** Editable calibration data: features, thresholds, level names, glue words and the teacher's examples. */
   calibration: Calibration;
   modelAnswers: ModelAnswer[];
+  /**
+   * A testing course: every phase is open from the first visit (course-unlock-testing). Off unless the
+   * seed says so, so a real class keeps the gated order.
+   */
+  unlockAll?: boolean;
 }
 
 export type CourseCheck = { ok: true; course: Course } | { ok: false; problems: string[] };
@@ -88,6 +93,7 @@ export function validateCourse(input: unknown): CourseCheck {
   const problems: string[] = [];
 
   if (blank(c.title)) problems.push('title is missing');
+  if (c.unlockAll !== undefined && typeof c.unlockAll !== 'boolean') problems.push('unlockAll must be true or false');
   if (blank(c.classCode)) problems.push('class code is missing');
   else if (!/^[A-Z0-9]{4,8}$/.test(c.classCode!)) problems.push('class code must be 4 to 8 capital letters or digits');
   if (blank(c.testDate) || !/^\d{4}-\d{2}-\d{2}$/.test(c.testDate!) || Number.isNaN(Date.parse(c.testDate!))) {

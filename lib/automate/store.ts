@@ -2,6 +2,7 @@ import type { Db } from '../db/types';
 import { awardCoins } from '../coins/ledger';
 import { causeTagsForRecallFailure } from '../diagnostics/recall-store';
 import { logAttempt, type AttemptResult } from '../events/attempts';
+import { practiceAnswerText } from '../memorise/practice-text';
 import { DEFAULT_RANK, rankFor, type RankInfo } from './rank';
 import { DEFAULT_AUTOMATE, foldWindow, isTestReady, meetsTarget, type AutomateConfig, type Timed } from './window';
 
@@ -101,8 +102,8 @@ export async function recordResponse(db: Db, i: ResponseInput, cfg: AutomateConf
     // A timed miss or blank gets a cause tag by rule (never a mark against the student); practice with the text shown does not.
     let causeTags: Awaited<ReturnType<typeof causeTagsForRecallFailure>> = [];
     if ((outcome === 'wrong' || outcome === 'blank') && !i.assisted) {
-      const a = await db.query<{ text: string }>('select text from answers where profile_id = $1 and question_id = $2 and confirmed_at is not null', [i.profileId, i.itemId]);
-      causeTags = await causeTagsForRecallFailure(db, { profileId: i.profileId, courseId: i.courseId, itemId: i.itemId, answer: a.rows[0]?.text ?? '', timed: true });
+      const answer = await practiceAnswerText(db, i.profileId, i.courseId, i.itemId);
+      causeTags = await causeTagsForRecallFailure(db, { profileId: i.profileId, courseId: i.courseId, itemId: i.itemId, answer: answer ?? '', timed: true });
     }
     const result = await logAttempt(db, {
       profileId: i.profileId, itemKind: 'question', itemId: i.itemId, phase: 'automate', sessionId: i.sessionId, outcome, causeTags,

@@ -102,6 +102,13 @@ fieldset.group legend {
   content: '! ';
   font-weight: 700;
 }
+.testing-note {
+  margin: 0 0 0.6rem;
+  padding: 0.4rem 0.6rem;
+  border: 2px dashed var(--black);
+  background: var(--cream);
+  color: var(--black);
+}
 .recovery-code {
   font-family: var(--font-status);
   font-size: 2.4rem;

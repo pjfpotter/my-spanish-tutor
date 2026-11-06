@@ -28,6 +28,8 @@ const PHASE_TEXT: Record<PhaseId, { es: string; en: string }> = {
 
 export interface DesktopProps {
   states: Record<PhaseId, PhaseState>;
+  /** A testing course (course-unlock-testing): every phase is open, and the desktop says so in words. */
+  unlockAll?: boolean;
   daysToTest: number;
   /** One number per question, 0 (static) to 1 (clear). Missing means no progress yet. */
   channels?: number[];
@@ -67,7 +69,7 @@ const clarityWord = (c: number) => (c >= 1 ? 'clear' : c > 0 ? 'clearing' : 'sta
  * the five question files. Locked phases show as static and cannot be opened. The sandbox is the
  * space around the path; it never replaces it.
  */
-export function Desktop({ states, daysToTest, channels = [], progress = NO_READINESS, signedIn = true, nickname = null, coins = 0, streak = 0, freezes = 0, wallpaper = null, objects = [], baselineDone = true, cheekyLines = NO_LINES }: DesktopProps) {
+export function Desktop({ states, unlockAll = false, daysToTest, channels = [], progress = NO_READINESS, signedIn = true, nickname = null, coins = 0, streak = 0, freezes = 0, wallpaper = null, objects = [], baselineDone = true, cheekyLines = NO_LINES }: DesktopProps) {
   const [showEnglish, toggleEnglish] = useSubtitles();
   const playback = useLinePlayback();
   const lastLine = useRef<string | null>(null);
@@ -207,6 +209,11 @@ export function Desktop({ states, daysToTest, channels = [], progress = NO_READI
         <PlanWindow daysToTest={daysToTest} progress={progress} />
 
         <Win title="fases.exe" label="Your four steps">
+          {unlockAll && (
+            <p className="testing-note" data-testid="testing-label">
+              <strong>Testing course:</strong> every step is open so you can try them all.
+            </p>
+          )}
           <ol className="phases">
             {PHASES.map((id) => {
               const state = states[id];

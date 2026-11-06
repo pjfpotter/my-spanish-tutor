@@ -356,7 +356,7 @@ erDiagram
 
 | Table | Purpose | Key points |
 |---|---|---|
-| `courses` | One sentence builder and its settings | `class_code` unique; `owner_token_hash` (the owner link is hashed at rest); `calibration` jsonb; `model_answers` jsonb `[{questionPosition, rung, text}]`; `cheeky_pool` flag |
+| `courses` | One sentence builder and its settings | `class_code` unique; `owner_token_hash` (the owner link is hashed at rest); `calibration` jsonb; `model_answers` jsonb `[{questionPosition, rung, text}]`; `cheeky_pool` flag; `unlock_all` flag (testing course, default false) |
 | `chunks` | Sentence-builder chunks | `spanish`, `english_gloss`, `category`, `feature_tags text[]`, `recycled` |
 | `questions` | Exactly five per course | `position` unique within course; `english_subtitle`; `recycled` |
 | `profiles` | Anonymous student | Random UUID, generated `nickname`, `interest_tags` (fixed list), `recovery_code_hash` unique. **No name, email or school ID** |
@@ -401,6 +401,15 @@ flowchart LR
 | `automate` | Five answers memorised | `testReady` is true |
 
 A locked phase appears in Tele's world as static and cannot be opened. The `phaseStates()` function returns, for each phase, `open` or `locked` with a human reason (for example "First confirm all five answers.").
+
+#### Testing course (`unlock_all`)
+
+For user testing, a course can be flagged `courses.unlock_all` (migration `0011`). `phaseStates(progress, { unlockAll })` then returns every phase open from the first visit, with `done` still worked out from progress. Everything else is unchanged: scores, mastery, coins, streaks and privacy rules.
+
+- **One read.** `courseUnlockAll(db, courseId)` in `lib/course/unlock.ts` is the only place the flag is read. The four call sites pass it: `lib/server/home.ts`, `app/phases/[phase]/page.tsx`, `app/phases/memorise/page.tsx` and `app/phases/automate/page.tsx`. `lib/phases/gate-callers.test.ts` fails if a new call forgets to pass it.
+- **Set only by the seed.** The default is `false`, and nothing in the app, an address or a header can turn it on. `TESTING_COURSE` in `lib/course/seed.ts` is the real course's content under its own class code with `unlockAll: true`; `npm run seed` writes both courses. The desktop shows a "Testing course" label when it is on.
+- **No written answers needed.** In a testing course, `practiceAnswerText()` (`lib/memorise/practice-text.ts`) gives a question's Rock solid model answer when the student has not confirmed one, for the memorise list, `recordRecall` and the automate recorder. It is read, never stored in `answers`, so `answersConfirmed` stays truthful.
+- **Another testing course.** Add a `Course` with a new class code and `unlockAll: true` to `scripts/seed.mjs`. A gated course needs nothing.
 
 ### 9.2 Write it
 

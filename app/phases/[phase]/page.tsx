@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
+import { courseUnlockAll } from '../../../lib/course/unlock';
 import { getDb } from '../../../lib/db';
 import { isPhaseId, phaseStates } from '../../../lib/phases/gate';
 import { loadProgress } from '../../../lib/progress/progress';
@@ -15,8 +16,10 @@ export default async function PhasePage({ params }: { params: Promise<{ phase: s
   if (!isPhaseId(phase)) notFound();
   const profile = await currentProfile();
   if (!profile) redirect('/welcome');
-  const progress = await loadProgress(await getDb(), profile.id);
-  if (phaseStates(progress)[phase].status === 'locked') redirect('/');
+  const db = await getDb();
+  const progress = await loadProgress(db, profile.id);
+  const unlockAll = await courseUnlockAll(db, profile.courseId);
+  if (phaseStates(progress, { unlockAll })[phase].status === 'locked') redirect('/');
 
   return (
     <main style={{ maxWidth: '36rem', margin: '0 auto', padding: '3.5rem 1rem' }}>

@@ -174,3 +174,15 @@ export const SEED_COURSE: Course = {
   calibration: goingOut as Calibration,
   modelAnswers,
 };
+
+/**
+ * The testing course (course-unlock-testing): the same content under its own class code, with every
+ * phase open so a tester can reach the timed round in one short session. Share the code only with testers.
+ * The code is deliberately not a word a student would try; it is named in docs/user-testing.md.
+ */
+export const TESTING_COURSE: Course = {
+  ...SEED_COURSE,
+  title: `${SEED_COURSE.title} (testing)`,
+  classCode: 'PRBA7K3M',
+  unlockAll: true,
+};
