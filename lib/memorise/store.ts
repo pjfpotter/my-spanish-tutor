@@ -1,6 +1,6 @@
 import type { Db } from '../db/types';
 import { courseUnlockAll } from '../course/unlock';
-import type { ModelAnswer } from '../course/schema';
+import type { Chunk, FeatureTag, ModelAnswer } from '../course/schema';
 import { practiceAnswerText } from './practice-text';
 import { causeTagsForRecallFailure, recordChunkEvents } from '../diagnostics/recall-store';
 import { logAttempt, type AttemptResult } from '../events/attempts';
@@ -131,4 +131,13 @@ export async function recordRecall(db: Db, i: RecallInput, cfg: MemoriseConfig =
   } catch (e) {
     return { ok: false, error: (e as Error).message };
   }
+}
+
+/** The course's chunks, for the warm-up tasks that split an answer into its pieces (tasks 21.1 to 21.3). */
+export async function loadCourseChunks(db: Db, courseId: string): Promise<Chunk[]> {
+  const { rows } = await db.query<{ spanish: string; english_gloss: string; category: string; feature_tags: FeatureTag[]; recycled: boolean }>(
+    'select spanish, english_gloss, category, feature_tags, recycled from chunks where course_id = $1 order by spanish',
+    [courseId],
+  );
+  return rows.map((r) => ({ spanish: r.spanish, english: r.english_gloss, category: r.category, featureTags: r.feature_tags ?? [], recycled: r.recycled }));
 }
