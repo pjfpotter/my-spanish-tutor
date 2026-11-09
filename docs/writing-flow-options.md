@@ -1,87 +1,84 @@
-# Writing flow: problem, research, options and questions
+# Writing flow: problem, research, decisions and what is still open
 
-Status: **open**. Nothing here is decided. It feeds the "Writing flow" open decision in `openspec/changes/ks3-spanish-speaking-tutor-v1/design.md` (D20) and the `answer-writing-coach` spec. Written 9 Nov 2026 from the user-testing notes.
+Status: **direction decided (9 Nov 2026), details open**. The owner answered the 13 questions and added notes to the principles and options. The decisions are in section 7; the specs now follow them (`answer-writing-coach`, `course-content`, `engagement-rewards`, D20 in `design.md`). Written 9 Nov 2026 from the user-testing notes.
 
 ## 1. The problem, in the owner's words
 
 - The writing flow "is not like anything else", so it needs explaining, and the explaining is itself a burden.
 - There is "too much information on one page": a cognitive overload problem.
-- Many small decisions about the flow are unmade.
+- Many small decisions about the flow were unmade.
 - Ideas floated: an onboarding video; an explicit link to the sentence builders students already know; a Flippity-style manipulative; a card sort with coloured cards; building blocks; **bigger coin values for answers instead of the current rubric definitions**.
 
-## 2. What the current flow asks of a student (from the spec and prototype handoff)
+## 2. What the old flow asked of a student (from the spec and prototype handoff)
 
-On one screen a student is asked to: pick a target level, read a model answer, tap a chunk, read a list of fitting swaps, notice a "lowers level" warning, read a feature checklist, read a whole-test checklist, read one suggestion, read a load note, then confirm. That is about ten separate things to read and decide. It is also a different interaction from every other phase.
+On one screen a student was asked to: pick a target level, read a model answer, tap a chunk, read a list of fitting swaps, notice a "lowers level" warning, read a feature checklist, read a whole-test checklist, read one suggestion, read a load note, then confirm. That is about ten separate things to read and decide, and a different interaction from every other phase.
 
 ## 3. Research (short, with honest limits)
 
-- **Cognitive load theory** says learners novice at a task do better with worked examples and completion problems (a half-finished answer to finish) than with open problem solving, then fade support as they improve. The writing flow currently starts with a model answer (a worked example), which fits, but then shows every control at once. [Worked-example effect](https://en.wikipedia.com/wiki/Worked-example_effect); [overview of split attention, modality and completion effects in language education](https://sc01.tci-thaijo.org/index.php/tureview/article/download/40755/33769). Caveat: these are secondary sources and a Wikipedia article. I found nothing applying the theory to language-app interfaces.
-- **Split attention**: information needed together should sit together. A feature checklist in one place and the chunks in another forces the student to look back and forth.
-- **Duolingo's sentence exercise** is a word bank of tiles holding the target words plus a few distractors drawn from recently taught words, tapped into order; a tapped tile can be tapped again to return it. [Duolingo blog](https://blog.duolingo.com/how-duolingo-experts-work-with-ai). Most learner-built tools offer tap-to-add on phones and drag on desktop, with tiered hints such as revealing the first word. [Example guide](https://sublearn.com/help/guides/sentence-builder). I found no independent research comparing tap with drag for retention, so treat that choice as a usability decision, not an evidence-based one.
-- **Flippity**: the link you sent loads as a **spinning-wheel randomiser**, and its entries are not in the page text, so I could not see what you meant. Flippity's templates are built on a Google Sheet, and the closest ones to what you describe are *Manipulatives* (draggable cards on a board) and *Word Scramble*. Please tell me which template you meant. See question Q1.
-- **Teaching practice**: sentence cards laid out in a row and ordered by students is a standard classroom activity ([example](https://learn.k20center.ou.edu/strategy/4073)). Students already know sentence builders, so a card or block metaphor can borrow that familiarity instead of needing a video.
+- **Cognitive load theory** says learners novice at a task do better with worked examples and completion problems (a half-finished answer to finish) than with open problem solving, then fade support as they improve. [Worked-example effect](https://en.wikipedia.com/wiki/Worked-example_effect); [overview of split attention, modality and completion effects in language education](https://sc01.tci-thaijo.org/index.php/tureview/article/download/40755/33769). Caveat: secondary sources and a Wikipedia article. I found nothing applying the theory to language-app interfaces.
+- **Split attention**: information needed together should sit together.
+- **Duolingo's sentence exercise** is a word bank of tiles holding the target words plus a few distractors, tapped into order; a tapped tile can be tapped again to return it. [Duolingo blog](https://blog.duolingo.com/how-duolingo-experts-work-with-ai). Most learner-built tools offer tap-to-add on phones and drag on desktop, with tiered hints such as revealing the first word. [Example guide](https://sublearn.com/help/guides/sentence-builder). No independent research compares tap with drag for retention, so that choice is a usability decision.
+- **Flippity** (resolved): the link is a four-wheel slot-machine randomiser (Who, What, When, Where), one column per wheel, driven by a Google Sheet, with per-wheel spin, step and remove controls. Notes are in `docs/knowledge/flippity-randomizer.md`. Its relevance is the columns-of-choices structure, which is the same shape as a sentence builder (starter, activity, reason, time phrase).
+- **Teaching practice**: sentence cards laid out in a row and ordered by students is a standard classroom activity ([example](https://learn.k20center.ou.edu/strategy/4073)). Students already know sentence builders, so a card or block metaphor borrows that familiarity.
+- **Aesthetic reference (owner's idea, not researched)**: the 1967 TV programme *Look and Read*, with a "build yourself a word" feel, fits the nostalgic look and the block-building metaphor.
 
-## 4. Design principles I suggest for the writing flow
+## 4. Design principles, with the owner's notes applied
 
-1. **One decision per screen.** Pick a target, pick an answer, finish it, confirm. Never show the checklist and the swap list and the target picker together.
-2. **Start from a worked example, finish it.** The student sees a complete answer first, then changes parts of it (a completion problem), never a blank page.
-3. **The sentence builder is the interface.** Show the answer as cards or blocks laid out like the sentence builder the student already uses, with colour by chunk kind (starter, activity, reason, and so on). Use the same colours as the automatise phase chunks so the colours carry over.
-4. **Show only what the next tap needs.** Swaps appear only on tapping a card.
-5. **Reward, not grade.** Show progress as filling blocks and a coin value, not a checklist of rules (see option C).
-6. **Do not hold back strong students.** A confident student can skip straight to a target and confirm in a few taps.
-7. **No unexplained Spanish and no English in the tutor's voice.** All instructions are plain English; the Spanish is the content.
+1. **One decision per screen. No target picking.** Everybody starts at ground zero. Students build an answer that works, then are nudged to extend it until they reach the challenge zone that feels right: just outside comfortable (zone of proximal development). If students get stuck in practice (repeatedly failing to recall a longer answer or specific words and phrases) they can opt to **prune** their answers.
+2. **Start from blank spaces, with an optional starter.** *Changed from the first draft.* Opening the writing mode on a ready-made answer is not intuitive, so everyone starts with empty slots. A student can opt to generate a semi-random model answer as a starting point, and may keep using those if they are rushing or less engaged. It is still not a blank page, because they fill the spaces with ready-made chunks.
+3. **The sentence builder is the interface.** Show the answer as cards or blocks laid out like the sentence builder the student already uses, with colour by chunk kind (starter, activity, reason and so on), using the same colours as the automatise phase chunks. The more it looks like a sentence builder, the more it uses the schema students already have for decoding it.
+4. **Show only what the next tap needs.** Swaps appear only on tapping a card. (Confirmed.)
+5. **Reward, not grade.** Progress is filling blocks and a value, not a checklist of rules. If a student wants to know why an answer is stronger or weaker, an **analysis** option lists the features that score points. It is animated: coloured highlighting picks out bits of text with a reward sound, for example highlight *sin embargo* and flash "connective!" with a coin animation, so analysis feels like a quick praise session. It must be quick and cancellable.
+6. **Do not hold back strong students.** A confident student builds and confirms in a few taps.
+7. **Plain English instructions; Spanish is the content.** This matches the current exam specification, where the rubric is now entirely in English at GCSE.
 
-## 5. Options
+## 5. Options, with the owner's notes applied
 
-### A. Card row (tap-to-swap), the smallest change
-The answer is a row of coloured cards, one per chunk, with the English gloss under each. Tap a card and a small tray of fitting swaps opens in place. Everything else (checklist, load note) moves behind one "How is this scoring?" link.
-- Strengths: smallest change from the prototype; keeps the tested rules; fits one screen.
-- Weaknesses: still a new interaction; the "level" idea still has to be explained.
+### A. Card row (tap-to-swap)
+A row of coloured cards, one per chunk, with the English gloss under each. Tap a card and a tray of fitting swaps opens in place. *Owner:* the "level idea has to be explained" weakness no longer applies, because there are no levels any more: added detail is rewarded with more value.
 
-### B. Card sort (build from scratch, scaffolded)
-The student starts with the sentence builder as columns of coloured cards (opinion starters, activities, reasons...). They drag or tap cards into a row to build the answer; the model answer is shown as a ghost outline they can copy. Support fades: a full model answer, then a model with gaps, then an empty row.
-- Strengths: closest to the classroom sentence builder; the fading ladder matches the worked-example evidence and the automatise chunk ladder.
-- Weaknesses: more build effort; needs fit rules strong enough that every row is valid Spanish; risk of bad combinations (the existing fit rules cover this).
+### B. Card sort (build from scratch, scaffolded) — chosen as the base
+The student starts with the sentence builder as columns of coloured cards and builds the answer in a row. A model answer can be shown as a ghost outline to copy. *Owner:* bad combinations must not be offered, but a sentence builder cannot be made fully deterministic, so the app needs guidance about which phrases work together. That guidance (the fit rules) currently works well and stays.
 
-### C. Blocks that grow, coins as the score
-The answer is a tower of blocks, one per chunk kind. Adding a block that makes the answer richer (a reason, a time phrase, a plan, and so on) grows the tower and raises the coin value of that answer, shown as a number and a growing pile of coins. The three named levels disappear from the student's view. Rock solid, Stepping out and Showing off stay in the data as thresholds, but the student only sees "worth 5 coins, add a time phrase to reach 7". Coins are paid when the answer is later memorised and automatised, not on writing it, so a rich answer must also be learnable.
-- Strengths: matches your idea of coin values replacing the rubric definitions; no vocabulary to explain; the choice becomes "worth more, more to learn".
-- Weaknesses: removes the named levels the teacher chose; risks players picking the biggest answer and then being overwhelmed (the load note must stay); needs a rule that coins for a big answer are earned during memorising so it cannot be gamed; touches `engagement-rewards`.
+### C. Blocks that grow, value as the score — chosen for the reward
+Adding a richer block grows the answer and raises its value, shown as a number and a pile of the currency. *Owner:* building with a sentence builder is the most coherent metaphor; consider **starting with the main verb phrase and building outwards**; the nostalgic *Look and Read* style could suit the visuals.
 
-### D. Hybrid (my recommendation)
-B's fading structure with C's coin value, in A's compact layout. Concretely: step 1 pick how big (3 cards with a coin value and a one-line feel); step 2 see the model answer as a card row; step 3 tap any card to swap; step 4 confirm. The level is shown only as a coin value. The rule list lives behind a link.
-- Why: it keeps the screen to one decision at a time, reuses the sentence-builder look, and removes the biggest explanation burden (the level names and the checklist).
+### D. Hybrid — chosen
+B's build-from-blank structure with C's value, in A's compact layout, refined by the notes: start blank, optional generated starter, tap a slot to fill or swap, value grows as detail is added, no named levels, and analysis on request.
 
 ## 6. Onboarding
 
-- A **video** costs production time and goes stale when the interface changes. I suggest a 20-second **inline demonstration** instead: the first time, Tele "types" one swap into the card row by itself, and the student repeats it. Skippable, and never shown again.
-- If the owner prefers a video, it should be under 30 seconds, captioned and skippable.
+Skipped for now. *Owner:* "I would rather the flow was so intuitive it did not need a demo at all." The flow is judged on whether a first-time student can use it without explanation.
 
-## 7. Questions to answer (in order of leverage)
+## 7. Decisions (answers to the 13 questions)
 
-**Direction**
-- Q1. Which Flippity template did you mean (the link I could open is a spinning wheel)? What about it should the writing flow copy: dragging cards, a board, or randomness?
-- Q2. Should the student *build* (B), *edit a given answer* (A), or *pick and finish* (D)? Which one feels like what students already do with a sentence builder in class?
-- Q3. Do you want the named levels to disappear from the student's view (C and D) or stay (A and B)?
+| # | Decision |
+|---|---|
+| Q1 | Flippity resolved as a four-wheel randomiser; see `docs/knowledge/flippity-randomizer.md` |
+| Q2 | **Build** (option B base) |
+| Q3 | **Remove the named levels** from the student's view and from the spec. No Rock solid / Stepping out / Showing off. Extra detail earns more value |
+| Q4 | Value is **a blend** of the number of extras and how hard each is to learn |
+| Q5 | Paid when **memorising and automatising**, not on writing |
+| Q6 | **No** teacher cap on value |
+| Q7 | **Incentivise writing all five** with a bonus (a "coin dump") |
+| Q8 | **Yes**, a student may start memorising one answer while still writing the others |
+| Q9 | **Yes**, a confirmed answer can be changed, which **resets its progress**. The app also suggests changing it when progress stalls and helps simplify, preferring cognates and high-frequency chunks |
+| Q10 | **The model call** writes model answers. The teacher scans a sentence builder, can review the course details and can edit them. Editing opens a content-safety risk (a bad actor adding inappropriate material), so edits are screened (see `teacher-course-setup`) |
+| Q11 | Glue words (*y*, *pero*, *también*) sit in a "cement" tray of joining pieces between blocks (owner's "cement mixer" idea) |
+| Q12 | Only the sentence builder **explicitly linked to that question** |
+| Q13 | No demo and no video; the flow must be intuitive on its own |
 
-**Coin values**
-- Q4. What should an answer's coin value be based on: the number of extras, or the extras weighted by how hard they are to learn (so *lo hago* is worth more than a time phrase)?
-- Q5. When are the coins paid: on writing, on memorising it, or both? (I suggest on memorising and automatising, so a big answer only pays if it is learned.)
-- Q6. Should the teacher be able to cap the maximum value so a class stays on realistic answers?
+Other: the currency is renamed **euros** (confirmed; see `engagement-rewards`). Photo scan and the teacher-facing flow stay **stretch**, not core (confirmed).
 
-**Pacing and choice**
-- Q7. How many answers must a student write before moving on: all five, or one at a time so memorise can start sooner?
-- Q8. Should a student be allowed to jump into memorising one answer while still writing the others? (I suggest yes, in line with "do not hold me back".)
-- Q9. Is changing a confirmed answer after memorising allowed? What happens to progress on it?
+## 8. Smaller questions: proposed answers (for the owner's review)
 
-**Content**
-- Q10. Who authors model answers when the sentence builder changes: you, the teacher at course setup, or the setup call with a rubric check?
-- Q11. Where do glue words like *y* and *pero* sit in the card row? (They are not in the sentence builder.)
-- Q12. For a course with more than one sentence builder, are cards from both builders available in one row or only the one matching the question? (I suggest only the question's own builder.)
+These were answered by the assistant on 9 Nov 2026 and are **proposals, not decisions**. Change any that feel wrong.
 
-**Onboarding**
-- Q13. Is a first-time inline demonstration acceptable, or do you want a video?
-
-## 8. What the spec records meanwhile
-
-The `answer-writing-coach` spec keeps the tested behaviour (three named levels, rules from data, model answers first, swaps, confirmation) and adds only these binding rules until the questions are answered: one decision per screen, nothing below the fold, an always-available exit, and plain English instructions. D20 in `design.md` lists the open questions.
+- **Euros.** Confirmed as the display name for the existing currency everywhere, shown with the "€" sign in the interface. It never appears with a purchase flow, a price in real money, or wording like "pay". Code keeps the ledger table name; only the display text changes.
+- **When to nudge.** Only after an answer is complete, valid and has been practised once. Then one optional extra is offered at a time, chosen from features the student has not used yet and sized to sit just beyond their current answer (the next-cheapest feature by difficulty weight, recycled chunks first). A dismissed nudge is not repeated for that answer in the same session.
+- **Pruning.** A student chooses what to remove. The app suggests the most recently added or hardest-weighted feature first. Pruning keeps progress on the chunks that remain; only the changed joins are reset. A wholesale change of a confirmed answer resets all progress (Q9).
+- **Value formula.** Value per feature = 1 + difficulty weight, where weight is 0 for easy features (time phrase, contrast, reason beyond "es"), 1 for medium (second justifier, another time frame) and 2 for hard (lo hago, plan or wish, closing line). The justified-opinion frame is worth 3. The weights live in the calibration data and are tuned against the teacher's nine example answers, so their order from simplest to richest is preserved.
+- **All-five bonus.** Equal to the total value of the lowest-valued answer, paid once when the last answer is confirmed. It is paid at confirmation, not memorising, because it rewards finishing the writing; the value of each answer is still paid later through learning.
+- **Main verb phrase first.** Slots appear in the sentence builder's left-to-right order, but the first slot a student fills is the activity (the main verb phrase), then the starter and reason fill around it. This is a testable default: if testers find it confusing, revert to left to right.
+- **Analysis animation.** Highlights up to five features in order of value, about a second each, with a reward sound per feature and a running total. A "skip" ends it at once, and it can be replayed from the answer.
+- **Photo scan and edit screening.** Stretch. If built: the vision call goes through the cost router, edits are screened by length limit, a blocklist, a word check against the Spanish and English word lists, and visibility only to those with the class code, and the developer can disable a course.

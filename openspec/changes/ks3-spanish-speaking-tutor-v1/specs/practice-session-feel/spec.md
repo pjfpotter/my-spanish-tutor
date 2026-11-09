@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Makes repetition feel good. The teaching method (extensive processing instruction) depends on a large number of repetitions of the same narrow chunks, so the app must make those repetitions enjoyable through immediate feedback, sound, animation and a mix of task types. Patterns come from a recorded Duolingo session (`~/Downloads/duolingo-ux-research-notes.md`, 9 Nov 2026), keeping the positive feedback mechanics and leaving out its loss framing.
+Makes repetition feel good. The teaching method (extensive processing instruction) depends on a large number of repetitions of the same narrow chunks, so the app must make those repetitions enjoyable through immediate feedback, sound, animation and a mix of task types. Patterns come from a recorded Duolingo session (`docs/knowledge/duolingo-ux-research-notes.md`, 9 Nov 2026), keeping the positive feedback mechanics and leaving out its loss framing.
 
 ## ADDED Requirements
 

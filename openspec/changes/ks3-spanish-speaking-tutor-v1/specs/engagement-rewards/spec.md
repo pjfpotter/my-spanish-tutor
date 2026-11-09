@@ -86,3 +86,21 @@ The app SHALL NOT use hearts, lives, league demotion, accuracy shaming or streak
 #### Scenario: Streak message
 - **WHEN** a student has a streak
 - **THEN** the message celebrates it and does not warn that it will be reset
+
+### Requirement: Currency is euros
+The in-app currency previously called coins SHALL be shown to students as euros, with the euro sign. It is a fictional in-app currency: it SHALL never be bought or exchanged for real money, and wording SHALL never suggest real money. Where other specs say coins, they mean this currency. (Confirmed by the owner, 9 Nov 2026.)
+
+#### Scenario: Display
+- **WHEN** an amount is shown to a student
+- **THEN** it uses the euro name and sign and no payment path exists
+
+### Requirement: Answer value is paid through learning
+An answer's value (see answer-writing-coach) SHALL be paid in stages as the answer is memorised and automatised, and SHALL be paid for effort as well as success. Writing an answer SHALL pay nothing by itself. Confirming every answer SHALL pay a one-off bonus.
+
+#### Scenario: Memorised
+- **WHEN** an answer reaches memorised
+- **THEN** the first stage of its value is paid
+
+#### Scenario: Bonus for all five
+- **WHEN** a student confirms all of a course's answers
+- **THEN** a bonus is paid once

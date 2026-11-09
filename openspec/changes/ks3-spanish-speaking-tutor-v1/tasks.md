@@ -18,7 +18,9 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 - **M9, make it feel good:** 20.1, 20.2, 20.3, 20.4, 20.5, 21.1, 21.2, 21.3, 21.4, 21.5, 21.6, 21.7, 22.1, 22.2, 22.3, 22.4
 - **M10, teacher flow and demo:** 23.1, 23.2, 23.3, 24.1, 24.2, 24.3
 - **Alongside, documents for the presentation:** 25.1 to 25.6
-- **On hold until the owner answers the questions:** 23.4, 26.1, 26.2
+- **On hold:** 23.4 and 26.2 (needs the owner's design decision)
+- **Writing flow rebuild:** 26.1a to 26.1e (decided)
+- **Stretch teacher flow:** 23.4, 23.6
 - **Stretch, only if time:** 17.1, 17.2, 17.3
 
 ## 1. Project setup and shared foundations
@@ -163,7 +165,7 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 
 ## 19. Fix what user testing found (M8)
 
-Note: tasks 10.4 (mood check-in) and 11.2 (session plan) are done in code but superseded by the revised specs; 19.4 removes them.
+Note: task 7.x level work (names, thresholds) is superseded by 26.1a. Tasks 10.4 (mood check-in) and 11.2 (session plan) are done in code but superseded by the revised specs; 19.4 removes them.
 
 - [ ] 19.1 Fix listening: find why the browser recogniser path is not used or fails and why `/api/transcribe` returns 503 (the key `OPENAI_API_KEY` is unset when it returns `not_configured`); configure the fallback; show a plain-English message with retry and a continue-without-speaking option when both paths fail. Verify with Playwright (mocked 503) and a release-checklist step. Optional manual check: a real phone and a laptop browser
 - [ ] 19.2 Rework the starting-point check into the single-pass placement check: English title, positive feedback on every outcome, results screen, disabled controls after a correct answer, skip the comprehension stage when all are correct first time, only the missed questions otherwise; verify by Playwright for all-correct, some-wrong and all-wrong runs and that the page always has navigation
@@ -203,6 +205,7 @@ Note: tasks 10.4 (mood check-in) and 11.2 (session plan) are done in code but su
 - [ ] 23.1 Document the teacher flow end to end (steps, where each runs, calls made, what is cached) in docs/teacher-flow.md, including the question of local versus server; verify it matches the scripts
 - [ ] 23.2 Extend the course schema for one or more sentence builders, four or five questions and core or extension questions; update readiness and the overview; verify with a two-builder, four-question seed course
 - [ ] 23.3 Record the draft, set-up, review, publish and share status per course; make publish block on missing items; verify re-publishing unchanged text makes no new calls
+- [ ] 23.6 Stretch: add scan-to-start (photo of a sentence builder to an editable draft) with a manual fallback, and edit screening (length, blocklist, valid words, class-code visibility, disable course); verify a blocklisted edit blocks publishing.  Stays with 17.1 as stretch
 - [ ] 23.4 On hold: a teacher-facing setup page that calls the same server functions as the scripts, with regenerate-owner-link; do not start until the owner decides
 - [ ] 23.5 Parked for later: coursework submission dashboard
 
@@ -221,9 +224,14 @@ Note: tasks 10.4 (mood check-in) and 11.2 (session plan) are done in code but su
 - [ ] 25.5 Write game-mode proposals for memorise and automatise for the owner to approve; build nothing until approved
 - [ ] 25.6 Update docs/PRD.md and docs/ARD.md where they still describe the mood check-in, the session plan, exactly five questions or one sentence builder; verify with a search
 
-## 26. On hold: needs the owner's answers
+## 26. Writing flow rebuild and challenge mode
 
-- [ ] 26.1 Writing flow redesign from docs/writing-flow-options.md, including whether answers get coin values instead of the named levels
+- [ ] 26.1 Writing flow rebuild (decided in docs/writing-flow-options.md), in these steps; verify each by unit tests or Playwright on the phone profile:
+  - [ ] 26.1a Replace named levels with feature values in the calibration data and rubric engine (value is a blend of count and difficulty, each feature once); update the regression fixtures to assert feature sets and values
+  - [ ] 26.1b Build the empty-slot sentence-builder interface with colours shared with automatise, tap-a-slot to see fitting chunks only, the cement tray and the optional starter answer
+  - [ ] 26.1c Add per-answer confirmation that unlocks memorising for that answer, the all-five bonus, change-resets-progress, the stalled-answer suggestion to simplify (cognates and high-frequency first) and pruning
+  - [ ] 26.1d Add the one-optional-extra nudge, the memorising load note and the animated, cancellable analysis
+  - [ ] 26.1e Pay answer value through memorising and automatising (engagement-rewards) and rename the currency to euros once confirmed
 - [ ] 26.2 Challenge mode flow design (multi-screen), possibly through the design tool
 
 ## Workflow follow-up

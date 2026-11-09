@@ -2,6 +2,8 @@
 
 ## Purpose
 
+Scope note (9 Nov 2026): the developer-run flow and the course shape are version one. Photo scan, teacher edits and the teacher-facing page are stretch.
+
 Defines how a teacher plans a speaking test and gets it into the app as a course with a class code, where each step runs, and which calls it makes. In version one the setup is done by the developer on the teacher's behalf; the teacher-run page is specified as the target so the flow is understood end to end. A teacher dashboard for coursework submission is out of scope and left for later.
 
 ## ADDED Requirements
@@ -68,3 +70,24 @@ The overview SHALL stay read-only and SHALL NOT collect or grade coursework subm
 #### Scenario: Request for submissions
 - **WHEN** a teacher asks to see student answers
 - **THEN** only aggregate progress is available
+
+### Requirement: Scan to start (stretch)
+In a later increment, a teacher SHALL start a course by scanning or photographing a sentence builder, which produces an editable draft of chunks, and the set-up call SHALL then write the model answers. The teacher SHALL be able to review the course details easily and edit them. Nothing SHALL be used by students until the teacher confirms.
+
+#### Scenario: Scan and review
+- **WHEN** a teacher scans a sentence builder
+- **THEN** an editable draft is shown for review and confirmation
+
+### Requirement: Safe edits (stretch, with the teacher-facing flow)
+Once teachers can edit course content, edited text SHALL be screened before publishing: length limits, a blocklist for inappropriate language, only text from the draft's chunk and question fields, and a check that every word is a valid Spanish or English word for the course. Flagged edits SHALL block publishing until corrected. A course SHALL only be visible to those with its class code, and the developer SHALL be able to disable a course.
+
+#### Scenario: Inappropriate edit
+- **WHEN** a teacher edit contains a blocklisted word
+- **THEN** publishing is blocked and the field is highlighted
+
+### Requirement: Photo scan is a stretch
+Photo scan of a sentence builder and the teacher-facing flow are stretch work and SHALL NOT block version one, in which the developer sets courses up. When built, scan SHALL fall back to typing chunks by hand when a scan fails.
+
+#### Scenario: Unreadable scan
+- **WHEN** the scan yields no chunks
+- **THEN** the teacher can retake it or type the chunks

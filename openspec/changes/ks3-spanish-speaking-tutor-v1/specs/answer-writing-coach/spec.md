@@ -2,96 +2,137 @@
 
 ## Purpose
 
-Helps a student choose, for each question, a Spanish answer they can realistically memorise and say, starting from model answers written for the course and adjusting them with chunks from the sentence builder. The writing stage makes no language-model call.
+Helps a student build, for each question, a Spanish answer they can realistically memorise and say, by filling a sentence-builder-style row of blocks with chunks from the question's own sentence builder. Everyone starts from empty spaces, the app rewards added detail with more value instead of showing levels or grades, and nudges students to extend until the answer is challenging but achievable. The writing stage makes no language-model call. Design record: `docs/writing-flow-options.md`.
 
 ## ADDED Requirements
 
-### Requirement: Pick a target level
-The coach SHALL let the student choose a target level (Rock solid, Stepping out or Showing off) for the whole test and SHALL let them switch at any time. Switching SHALL be presented as picking a style, never as an upgrade or a demotion. Reaching the level the student chose SHALL be celebrated in full, whichever level that is.
+### Requirement: Build from empty spaces
+Writing a question's answer SHALL start with empty slots laid out like the sentence builder the student knows, coloured by chunk kind, with the same colours used for chunks in the automatise phase. The student SHALL fill slots by choosing chunks from that question's sentence builder. The app SHALL NOT ask the student to choose a target or level.
 
-#### Scenario: Rock solid is a full win
-- **WHEN** a student targets Rock solid and their answers reach it
-- **THEN** the app celebrates completion without suggesting the answer is a lesser one
+#### Scenario: Opening a question
+- **WHEN** a student opens a question to write
+- **THEN** empty coloured slots are shown, nothing is pre-filled, and no target is asked for
 
-#### Scenario: Switching target
-- **WHEN** a student switches from Rock solid to Stepping out
-- **THEN** each answer is offered the matching model answer and their confirmed answers are kept until they replace them
+### Requirement: Optional starter answer
+A student SHALL be able to generate a semi-random model answer to fill the slots as a starting point, and SHALL be able to keep and use it unchanged. Generating one SHALL be optional and SHALL never be the default.
 
-### Requirement: Model answers are the main path
-For each question and level the coach SHALL offer the course's model answers as the starting point. The default offered is the Rock solid model answer with the most cognates, shortest words and most recycled chunks, because many students want the easiest route and that is a legitimate choice.
+#### Scenario: Rushed student
+- **WHEN** a student taps to generate a starter answer
+- **THEN** the slots fill from a model answer for that question, and the student may confirm it as it is
 
-#### Scenario: Easiest route first
-- **WHEN** a student opens a question with Rock solid as the target
-- **THEN** the first model answer shown is the one scoring highest on cognates, short words and recycled chunks
+### Requirement: Show only what the next tap needs
+Tapping a slot SHALL open only the chunks that fit that slot. Swap choices, analysis and rules SHALL NOT be shown until asked for. The writing screens SHALL show one decision at a time, fit one screen with no scrolling, offer an always-available exit and back, and use plain English instructions.
 
-### Requirement: Swaps and the glue-word bank
-The student SHALL be able to swap chunks in a model answer for other chunks from the sentence builder that fit. Every word in an answer SHALL come from the sentence builder, the course's glue-word bank (for example "y", "pero", "también") or the allowed common-word list. Glue words SHALL never count as features. Any word outside those sets SHALL be flagged and the answer SHALL NOT be confirmed until it is removed or replaced.
+#### Scenario: Tapping a slot
+- **WHEN** a student taps a slot
+- **THEN** only fitting chunks are offered, in place, with nothing else added to the screen
 
-#### Scenario: Glue word accepted
-- **WHEN** a student joins two chunks with "pero"
-- **THEN** the swap is accepted and no feature is added or lost
+### Requirement: Guidance about what fits
+The coach SHALL only offer chunks that combine sensibly, using fit rules from the course's data (polarity of starters and reasons, slot kinds, no repeats within an answer). When a swap would break a dependent chunk, the app SHALL repair it and say so in one line.
+
+#### Scenario: Mismatched reason
+- **WHEN** a student swaps a positive starter for a negative one
+- **THEN** a dependent positive reason is replaced with a fitting one and a one-line note says so
+
+### Requirement: Only words from the allowed sets
+Every word in an answer SHALL come from the question's sentence builder, the course's glue-word bank or the allowed common-word list. Any other word SHALL be flagged and the answer SHALL NOT be confirmed until it is removed or replaced.
 
 #### Scenario: Out-of-bank word
 - **WHEN** an answer contains a word in none of the allowed sets
-- **THEN** the word is flagged and the answer cannot be confirmed until it is fixed
+- **THEN** the word is flagged and the answer cannot be confirmed
 
-### Requirement: Rubric tiering by rules
-The level of an answer SHALL be determined by counting features from the course's calibration data in the text, independently of how the answer was produced, and the counted features SHALL be shown by name as a checklist. No grade or mark SHALL be shown. Accents, small spelling slips and recognition failures never lower the level.
+### Requirement: Cement for joining words
+Glue words such as "y", "pero" and "también" SHALL be offered in a joining tray ("cement") between blocks. Glue words SHALL be accepted anywhere they fit and SHALL carry no value.
 
-#### Scenario: Swap re-evaluates
-- **WHEN** a student swaps a chunk
-- **THEN** the checklist and level are recomputed immediately with no model call
+#### Scenario: Joining two chunks
+- **WHEN** a student places "pero" between two chunks
+- **THEN** it is accepted and adds no value
 
-#### Scenario: Words outside the sentence builder
-- **WHEN** an answer contains a word outside the sentence builder
-- **THEN** the word is flagged and does not count as a feature, and the level is not lowered by it
+### Requirement: Question's own sentence builder
+For a course with more than one sentence builder, a question's slots SHALL offer only chunks from the sentence builder explicitly linked to that question.
 
-### Requirement: One suggestion at a time
-The coach SHALL offer at most one suggestion per answer, phrased as an optional extra ("add one more touch if you like"), and SHALL name at most one thing to fix. Recycled chunks are offered first. Across the test it SHALL show a checklist with three different tenses and two justified opinions as targets, none of which is a gate on any level.
+#### Scenario: Two builders
+- **WHEN** a student writes a question linked to the house sentence builder
+- **THEN** no bedroom chunks are offered
 
-#### Scenario: Whole-test checklist
-- **WHEN** a student's five answers use only two tenses
-- **THEN** the checklist shows the tense target as not yet met and suggests the answer where a third tense is easiest to add, without withholding any level
+### Requirement: Value grows with detail
+Each answer SHALL have a value shown as an amount of the in-app currency that grows as the student adds features from the course's calibration data. Each feature's value SHALL blend one unit per extra with a weight for how hard the feature is to learn. Repeating a feature SHALL add nothing. No level names, grades, marks or ladders SHALL be shown. Accents, small spelling slips and recognition failures SHALL never lower the value.
 
-### Requirement: Spare extras
-Model answers sitting exactly on a level threshold SHALL carry one spare extra, so a single swap does not drop them a level.
+#### Scenario: Adding a feature
+- **WHEN** a student fills a slot with a time phrase
+- **THEN** the answer's value rises by that feature's value
 
-#### Scenario: One swap at the threshold
-- **WHEN** a student swaps one chunk in a Showing off model answer
-- **THEN** the answer is still at Showing off
+#### Scenario: Repeating a feature
+- **WHEN** a student adds a second time phrase
+- **THEN** the value does not rise again
 
-### Requirement: Memorising load note
-At the Showing off level the coach SHALL tell the student, once per question, that this version takes more memorising and that switching back is fine at any time.
+### Requirement: Value is earned by learning
+The currency for an answer SHALL be paid when it is memorised and automatised, not when it is written, so a bigger answer pays only if it is learned.
 
-#### Scenario: Honest note
-- **WHEN** a student selects a Showing off model answer
-- **THEN** the load note appears once and does not block confirmation
+#### Scenario: Written but not learned
+- **WHEN** a student confirms a valuable answer and does not practise it
+- **THEN** no currency is paid for that value yet
 
-### Requirement: Confirmation gate
-A student SHALL explicitly confirm each answer before memorisation begins, and SHALL be able to change a confirmed answer later.
+### Requirement: Nudge into the challenge zone
+After an answer works (it is complete and valid), the coach SHALL offer at most one optional extra at a time, phrased as an optional extra, chosen to sit just outside the student's comfort zone. Recycled chunks are offered first. It SHALL not nudge before the first working answer exists.
 
-#### Scenario: Confirm all five
-- **WHEN** a student confirms all five answers
-- **THEN** the memorisation phase unlocks for those answers
+#### Scenario: One suggestion
+- **WHEN** a student has a complete working answer
+- **THEN** a single optional extra is offered and can be dismissed
+
+### Requirement: Analysis on request
+A student SHALL be able to open an analysis that shows why an answer is worth what it is. It SHALL animate by highlighting the parts of the text that earn value, naming each feature in English (for example "connective!") with a reward sound and a currency animation. It SHALL be short, SHALL be cancellable at any time and SHALL respect reduced motion and the sound setting.
+
+#### Scenario: Cancel analysis
+- **WHEN** a student taps cancel during the analysis
+- **THEN** it stops at once and the writing screen returns
+
+### Requirement: Whole-test checklist
+Across the test the coach SHALL show a checklist of three different tenses and two justified opinions as targets. They SHALL NOT gate any answer or be a grade.
+
+#### Scenario: Targets are not gates
+- **WHEN** a student's answers together use two tenses
+- **THEN** the checklist shows the tense target as unmet and nothing is withheld
+
+### Requirement: Confirm each answer
+A student SHALL confirm each answer, and a confirmed answer SHALL unlock memorising for that answer alone. A student MAY start memorising a confirmed answer while still writing the others.
+
+#### Scenario: One confirmed
+- **WHEN** a student confirms the first of five answers
+- **THEN** memorising that answer is available at once
+
+### Requirement: Bonus for finishing all five
+Confirming every answer in the course SHALL pay a bonus of the in-app currency, to encourage writing all of them without blocking any student who moves on earlier.
+
+#### Scenario: All confirmed
+- **WHEN** a student confirms the last of their answers
+- **THEN** a bonus is paid and celebrated
+
+### Requirement: Changing a confirmed answer
+A student SHALL be able to change a confirmed answer at any time, and doing so SHALL reset the progress on that answer. When progress on an answer stalls (repeated failures to recall it or particular words), the app SHALL suggest changing it and SHALL help simplify it, preferring cognates and high-frequency chunks. A student SHALL be able to prune an answer by removing chunks.
+
+#### Scenario: Stalled answer
+- **WHEN** a student repeatedly fails to recall a long answer
+- **THEN** the app suggests a simpler version using cognates and high-frequency chunks, which the student may accept
+
+#### Scenario: Reset on change
+- **WHEN** a student changes a confirmed answer
+- **THEN** its progress is reset
 
 ### Requirement: No model answers available
-If a course has no model answers for a question and level, the coach SHALL say so plainly, offer the levels that do have model answers, and let the student build an answer from sentence-builder chunks so they are never blocked.
+If a course has no model answer for a question, the optional starter SHALL say so plainly and the student SHALL still be able to build an answer from the sentence builder, so they are never blocked.
 
-#### Scenario: Missing level
-- **WHEN** a course has no Showing off model answer for a question
-- **THEN** the student is offered the other levels and the missing one is marked for the teacher
+#### Scenario: Missing starter
+- **WHEN** a course has no model answer for a question
+- **THEN** the starter option explains this and building from the slots remains available
 
-### Requirement: Writing flow rules while the design is open
-Until the writing flow is redesigned (see docs/writing-flow-options.md), the writing screens SHALL show one decision at a time, fit one screen with no scrolling, offer an always-available exit and back, use plain English instructions, and let a confident student reach confirmation in a few taps. The flow's interaction (card row, card sort or blocks) and any change from named levels to answer coin values are undecided.
+### Requirement: Memorising load
+Because bigger answers take more memorising, the coach SHALL tell the student once per question, in plain words, that a longer answer takes more learning and that removing chunks is fine at any time.
 
-#### Scenario: One decision per screen
-- **WHEN** a student is choosing a swap
-- **THEN** the checklist and level picker are not on the same screen
+#### Scenario: Honest note
+- **WHEN** an answer's value passes the course's load-note value
+- **THEN** the note appears once and does not block confirmation
 
 ## Open questions
 
-- Writing flow redesign, including the 13 questions in docs/writing-flow-options.md (direction, whether named levels give way to answer coin values, onboarding style). Not decided.
-
-- Should a teacher review and approve generated model answers (and any proposed feature phrases) before a course is published, or is the rubric agreeing with the intended level enough? Not decided; v1 builds without a review step.
-- Should the upload-time model call also propose extra feature phrases for language that the base calibration does not mention? Not decided; the calibration files are editable so they can be adjusted by hand if live testing shows mislabelled answers.
-- Parked: a student-facing mode that fakes a relevant sentence builder from the 2022 specification vocabulary lists, for Year 8 tests that span several builders. It depends on whether the end user is a teacher or a student.
+- Euro naming and display, value formula weights, bonus size, how pruning treats earned progress, building outwards from the main verb phrase, and the analysis animation (see docs/writing-flow-options.md, section 8). Photo scan for teachers (teacher-course-setup).
