@@ -54,3 +54,10 @@ If a clip cannot be loaded, the app SHALL show the Spanish text with its English
 #### Scenario: Missing clip
 - **WHEN** the audio for a question fails to load
 - **THEN** the question is shown as text and the failure is recorded
+
+### Requirement: Voice clarity and pace
+The production voice SHALL be chosen by an audition on clarity and pace with a Year 8 student, comparing at least three candidate voices. The default question pace SHALL be slower than a fluent adult, with the faster speeds reserved for later practice. The result SHALL be recorded in docs/voice-decision.md.
+
+#### Scenario: Audition
+- **WHEN** candidate voices are auditioned
+- **THEN** the chosen voice and default pace are recorded with the reason

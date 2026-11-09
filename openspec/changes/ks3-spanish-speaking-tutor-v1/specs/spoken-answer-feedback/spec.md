@@ -54,3 +54,17 @@ If the primary recogniser is unavailable on a device, the app SHALL use a server
 #### Scenario: Unsupported browser
 - **WHEN** the browser lacks built-in recognition
 - **THEN** speech is processed by the fallback and feedback appears as usual
+
+### Requirement: Listening never dead-ends
+If speech recognition fails on both the browser path and the server fallback (for example the fallback is not configured and returns an error), the app SHALL say in plain English that it cannot listen right now, offer a retry, offer to continue the session with non-spoken task types, and record the failure for diagnosis. It SHALL NOT show a raw error and SHALL NOT penalise the attempt.
+
+#### Scenario: Fallback unavailable
+- **WHEN** the server recogniser returns an unavailable status
+- **THEN** the student sees a plain message with retry and continue options
+
+### Requirement: Fallback is configured before release
+The server fallback SHALL be configured and verified on a phone and a laptop browser before any student test.
+
+#### Scenario: Pre-release check
+- **WHEN** the release checklist runs
+- **THEN** a real transcription request succeeds on both device types

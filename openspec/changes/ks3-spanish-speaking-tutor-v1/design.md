@@ -59,7 +59,7 @@ When a sentence builder is uploaded, one call to a small model through the cost 
 Each item has a mastery record counting qualifying successes and the distinct sessions they occurred in. Thresholds (default three successes across two sessions) are configuration. Scheduling uses short intervals inside a session and a next-session queue, in Leitner style, with items tagged by cause so support can adapt.
 
 ### D11. Diagnostics from small event data
-Every attempt is an event. Cause tags come from rules over probe variations (slow word alone, normal word alone, in sentence), timed versus untimed outcomes, and the latest mood check-in. The tag set is a closed list so analytics and the teacher overview stay simple.
+Every attempt is an event. Cause tags come from rules over probe variations (slow word alone, normal word alone, in sentence), and timed versus untimed outcomes. The mood check-in is removed (parked in learning-diagnostics). The tag set is a closed list so analytics and the teacher overview stay simple.
 
 ### D12. Engagement as a coin ledger
 Coins are append-only ledger entries earned for effort and improvement, and only from practice: exploring the desktop and poking the character earn nothing. Rank derives from rolling average response time and is shown as a ladder of named steps. Coins buy fixed-price desktop items (wallpapers, objects) and stickers; there are no random draws. No real-money flow exists in the codebase. Streak freezes are earned items. Phase progress is shown in the character's world (channels that clear from static, locked phases as static) without changing the gated order.
@@ -72,6 +72,30 @@ Pure logic (syllabification, timeline generation, rubric counting, mastery, diag
 
 ### D15. One dreamcore theme with a separate accessibility layer
 Visuals are defined as design tokens (colours, fonts, backgrounds, motion intensity) in one dreamcore set, structured so a second set is cheap later, but no theme switching ships in v1 and there is a single level of weirdness. Accessibility settings (calm switch, reduced motion) sit in a separate learner-controlled layer, and the accessibility floor is never a theme: WCAG AA contrast for text (4.5:1), no meaning carried by colour or blur alone, a legible body face with stylised faces for titles only, visible keyboard focus and generous tap targets. Atmosphere (camcorder effects, grain, collage) sits around the task, on the home desktop and in empty states and transitions, and never over question, caption or feedback surfaces. Light and dark themes are replaced by this one theme. Alternatives: light and dark themes (rejected, the Windows-style chrome is fixed-colour), a weirdness dial (parked).
+
+### D16. Student-flow principles apply to every screen
+Never hold a capable student back (skip by proof), always a way out, no dead ends, one screen without scrolling in practice, English-only interface, disabled controls after use (see `student-flow-principles`). They are testable: a Playwright check at 360 by 640 for each practice screen, and an exit control on every screen inside a section. Evidence: first user-testing round, 9 Nov 2026.
+
+### D17. Starting point is a skip, not a lesson
+The placement check is one pass: hear each question once, choose its meaning, get a results screen. All right first time skips the comprehension memorise stage. Anything wrong sends only those questions into the stage. It replaces the previous test-teach-test, which looped. The mood check-in and the session plan with timings are removed because they changed nothing a student could see and timings could not be measured. Students are told once that short, repeated sessions work better.
+
+### D18. Feedback rhythm modelled on a recorded Duolingo session
+Cast-like feedback (instant panel, sound, varied praise) is separate from the tutor. The tutor, like the mascot in that session, speaks only at meaningful moments (start, combo of five, mistake review, personal best, end) and otherwise gives wordless reactions. Loss framing (hearts, league demotion, streak-loss threats) is deliberately not copied. Source: `~/Downloads/duolingo-ux-research-notes.md`. A tutor line never blocks the feedback panel; the earlier 1.5 second enforced pause is removed.
+
+### D19. Task types are components; games are proposals
+Memorise and comprehension sessions are built from small task-type components (match pairs, sentence scramble, fill the gap, tap what you hear, say it, hear and choose) chosen by a session mixer using a difficulty curve. A Blooket-style game (for example tower defence) is not a task type and is built only after the owner approves a written proposal. Time-to-answer play for automatisation (Times Tables Rock Stars style) rides on response-time rank and personal bests.
+
+### D20. Writing flow is an open design problem
+The writing flow overloads one page and behaves unlike the rest of the app. Options (card row, card sort, growing blocks with coin values, or a hybrid), research and 13 questions are in `docs/writing-flow-options.md`. No change to the rules engine is made until those are answered. The binding rules meanwhile: one decision per screen, one screen, exit, plain English.
+
+### D21. Course shape and the teacher flow
+A course has one or more sentence builders, four or five questions, and core or extension questions. In version one the developer runs the setup steps through scripts on the teacher's behalf; the teacher-facing page is a later increment calling the same server functions. No teacher accounts; the owner link is the credential. Coursework submission dashboards are parked.
+
+### D22. Demo mode is a separate, isolated path
+Demo mode runs on a built-in sample course with no profile, no database writes to real tables and no paid calls beyond cached assets, with a "pretend" button for every spoken step.
+
+### D23. Where the API sits
+There is no separate API service. The "API" is the set of Next.js route handlers under `app/api/*` (join, profile, attempts, respond, recall, probe, baseline, transcribe, clips, clip-failure, shop, mood, answers, owner/cheeky), deployed as Vercel functions beside the pages. The browser calls them with fetch; they call the database, the cost router and, for transcription and set-up, outside services. Each is listed with its trigger, caller, target and the cases where it is not called in `docs/api-map.md` (to be written, task 25.1). Practice rounds make no language-model call. The mood route becomes unused once mood is removed.
 
 ## Risks / Trade-offs
 
@@ -95,3 +119,11 @@ Greenfield. Deploy preview builds on each branch, one production deployment for 
 - ElevenLabs: which plan, whether its licence covers school and under-18 use, whether word timestamps and a speed setting are available, (task 4.1). A second voice for rotation is deferred, by decision (see docs/voice-decision.md).
 - Which fallback speech recogniser vendor to use (decided by the device spike).
 - Exact response-time thresholds for each rank (tuned from user testing data).
+- Writing flow: which interaction, whether named levels give way to answer coin values, onboarding style (docs/writing-flow-options.md, D20).
+- Challenge mode: what the multi-screen flow is. Needs a design pass (go back to the design tool).
+- Spoken translation into English as the comprehension check: data-protection and recogniser accuracy (question-comprehension spec).
+- Game modes for memorise (Blooket-style) and automatise (time-shrinking): proposals first, nothing built.
+- Teacher review of generated model answers before publish; teacher-facing course setup page timing.
+- How extension questions are surfaced to higher-ability students without accounts (optional stretch for all, as specified).
+- Parked: mood check-in, student interests that shape suggested model answers via tagged verb phrases, whether phases merge (memorise with automatise), the visual look (dreamcore is not yet right; deferred until the flow is settled), the production voice (audition needed).
+

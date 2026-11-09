@@ -40,3 +40,10 @@ For demonstrations, the overview SHALL be able to load clearly labelled sample d
 #### Scenario: Demo mode
 - **WHEN** demo data is loaded
 - **THEN** the overview marks every figure as sample data
+
+### Requirement: Reflects course shape
+The overview SHALL scale to a course of four or five questions, count only core questions in readiness and show extension questions separately. Coursework submissions and per-student grading are out of scope for this version.
+
+#### Scenario: Extension questions
+- **WHEN** a course has an extension question
+- **THEN** it appears in hotspots but does not lower class readiness

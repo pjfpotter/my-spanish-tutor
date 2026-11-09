@@ -20,12 +20,12 @@ The app SHALL show a readiness measure from zero to one hundred percent computed
 - **WHEN** a student views the meter
 - **THEN** it names the next action that will raise it
 
-### Requirement: Personal session plan
-Given the student's available minutes and days left, the app SHALL propose a short plan of sessions, each under a stated duration, and SHALL adjust it when sessions are missed.
+### Requirement: No session plan or timings
+The app SHALL NOT build a personal session plan, assign session lengths, or show per-section durations. After a session it SHALL show a short plain-English message that several short sessions work better than one long one (see student-flow-principles, Little and often).
 
 #### Scenario: Missed day
-- **WHEN** a planned session is skipped
-- **THEN** the plan is redistributed across the remaining days without alarming language
+- **WHEN** a student misses a day
+- **THEN** no plan changes and no alarming message is shown; the home screen still states the days left and the next action
 
 ### Requirement: Reminders
 Where the device allows notifications, the app SHALL offer one optional daily reminder at a time the student chooses, and SHALL send nothing without explicit opt-in.
@@ -35,11 +35,11 @@ Where the device allows notifications, the app SHALL offer one optional daily re
 - **THEN** no notification is sent
 
 ### Requirement: Late starters
-If few days remain, the plan SHALL shorten phases and prioritise automatisation of the answers already written.
+If few days remain, the app SHALL recommend, on the readiness meter's next action, the fastest route: choosing short answers and rapid recall of the answers already written.
 
 #### Scenario: Two days left
 - **WHEN** a student starts with two days to go
-- **THEN** the plan focuses on writing short answers and rapid recall
+- **THEN** the next action points to writing short answers and rapid recall
 
 ### Requirement: After the test date
 After the test date the app SHALL stop countdown messaging, show a short reflection prompt, and offer the course for light review.

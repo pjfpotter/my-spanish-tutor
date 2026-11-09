@@ -72,3 +72,17 @@ Using the repeat-the-question phrase and asking for help SHALL earn coins like a
 #### Scenario: Help earns coins
 - **WHEN** a student asks for a hint
 - **THEN** it does not reduce their coins or rank
+
+### Requirement: Sound and animation rewards
+Correct answers, combos, personal bests and completed sections SHALL be celebrated with a short sound and an animation as defined in practice-session-feel. These SHALL respect reduced motion, the sound setting and the calm switch.
+
+#### Scenario: Personal best
+- **WHEN** a student sets a personal best
+- **THEN** a larger celebration plays than for an ordinary correct answer
+
+### Requirement: No loss framing
+The app SHALL NOT use hearts, lives, league demotion, accuracy shaming or streak-loss warnings that threaten loss. Streak messages SHALL describe what the student has, not what they could lose.
+
+#### Scenario: Streak message
+- **WHEN** a student has a streak
+- **THEN** the message celebrates it and does not warn that it will be reset

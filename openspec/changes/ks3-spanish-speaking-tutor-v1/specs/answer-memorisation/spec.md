@@ -40,3 +40,38 @@ Feedback SHALL focus on what the student got right, name at most one thing to fi
 #### Scenario: Low score
 - **WHEN** an attempt scores low
 - **THEN** the tutor highlights the strongest part and names a single next step
+
+### Requirement: Scaffolding beyond fading words
+Support SHALL come from several kinds, not only from words fading out: the English meaning, a picture or icon per chunk (dual coding), chunk-by-chunk reveal, the first word of each chunk, a gapped script, and listening to the answer then repeating it. The kind of support SHALL be chosen from the student's recent results and cause tags, and the support SHALL step down one kind at a time.
+
+#### Scenario: Picture support
+- **WHEN** an answer has a picture for a chunk
+- **THEN** the picture is shown beside the English meaning at the start of practice and removed as accuracy rises
+
+### Requirement: Chunked memorising
+Answers SHALL be learned in chunks: each chunk is practised alone, then in pairs, then as the full answer, with chunk colours matching those used in automatisation and writing.
+
+#### Scenario: Building up
+- **WHEN** a student has mastered the first two chunks
+- **THEN** the next task combines them before adding the third
+
+### Requirement: Mixed task types in memorising
+A memorise session SHALL mix task types from the practice-session-feel list (match pairs, sentence scramble, fill the gap, tap what you hear, say it aloud) with rising cognitive load, ending with spoken recall. The spoken task SHALL remain required for mastery.
+
+#### Scenario: Session mix
+- **WHEN** a memorise session runs
+- **THEN** it uses at least three task types and includes at least one spoken recall
+
+### Requirement: Skipping known answers
+A student SHALL be able to try an answer's final spoken recall first and, if they reach the accuracy threshold without help, move that answer forward without completing the earlier tasks. Mastery rules still apply.
+
+#### Scenario: Already knows it
+- **WHEN** a student recalls an answer accurately without support on first try
+- **THEN** the earlier tasks for that answer are skipped
+
+### Requirement: One screen
+A memorise task SHALL fit one screen with no scrolling (see student-flow-principles).
+
+#### Scenario: Phone viewport
+- **WHEN** a memorise task is shown on a small phone
+- **THEN** all of it is visible without scrolling

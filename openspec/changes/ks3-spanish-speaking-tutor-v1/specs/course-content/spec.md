@@ -7,14 +7,14 @@ Defines the course: a sentence builder, its test questions and a simplified mark
 ## ADDED Requirements
 
 ### Requirement: Course structure
-A course SHALL contain one sentence builder made of chunks (Spanish text with an English gloss, a category and feature tags), exactly five test questions (four on the current topic, one recycled from an earlier topic), a test date, and a mark scheme. Every question SHALL have a Spanish text, an English subtitle and the chunk categories that answer it.
+A course SHALL contain one or more sentence builders made of chunks (Spanish text with an English gloss, a category and feature tags), four or five test questions (usually the current topic plus one recycled from an earlier topic), a test date, and a mark scheme. Every question SHALL have a Spanish text, an English subtitle, the sentence builder that answers it, the chunk categories that answer it, and a core or extension marking (see teacher-course-setup).
 
 #### Scenario: Valid course is accepted
-- **WHEN** a course is saved with a sentence builder, five questions with Spanish text and English subtitles, and a test date
+- **WHEN** a course is saved with one or more sentence builders, four or five questions with Spanish text and English subtitles, and a test date
 - **THEN** the course becomes available to join
 
 #### Scenario: Incomplete course is rejected
-- **WHEN** a course is saved with fewer or more than five questions or a question missing its English subtitle
+- **WHEN** a course is saved with fewer than four or more than five questions or a question missing its English subtitle
 - **THEN** the course is not published and the missing items are listed
 
 ### Requirement: Three levels

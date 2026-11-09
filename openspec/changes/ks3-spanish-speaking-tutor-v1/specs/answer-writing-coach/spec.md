@@ -81,7 +81,16 @@ If a course has no model answers for a question and level, the coach SHALL say s
 - **WHEN** a course has no Showing off model answer for a question
 - **THEN** the student is offered the other levels and the missing one is marked for the teacher
 
+### Requirement: Writing flow rules while the design is open
+Until the writing flow is redesigned (see docs/writing-flow-options.md), the writing screens SHALL show one decision at a time, fit one screen with no scrolling, offer an always-available exit and back, use plain English instructions, and let a confident student reach confirmation in a few taps. The flow's interaction (card row, card sort or blocks) and any change from named levels to answer coin values are undecided.
+
+#### Scenario: One decision per screen
+- **WHEN** a student is choosing a swap
+- **THEN** the checklist and level picker are not on the same screen
+
 ## Open questions
+
+- Writing flow redesign, including the 13 questions in docs/writing-flow-options.md (direction, whether named levels give way to answer coin values, onboarding style). Not decided.
 
 - Should a teacher review and approve generated model answers (and any proposed feature phrases) before a course is published, or is the rubric agreeing with the intended level enough? Not decided; v1 builds without a review step.
 - Should the upload-time model call also propose extra feature phrases for language that the base calibration does not mention? Not decided; the calibration files are editable so they can be adjusted by hand if live testing shows mislabelled answers.

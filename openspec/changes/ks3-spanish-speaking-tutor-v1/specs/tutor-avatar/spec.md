@@ -17,8 +17,8 @@ The tutor SHALL speak only Spanish. English SHALL appear only as subtitles benea
 Tutor lines SHALL come from a stored bank keyed to situations such as correct, wrong, streak, nervous and days-to-test, written at the course's level. Lines SHALL be generated once for the character and reused, and each line SHALL carry a feeling.
 
 #### Scenario: Correct answer
-- **WHEN** a student answers correctly
-- **THEN** the tutor says a line from the correct bank, avoiding the line used last time
+- **WHEN** the tutor speaks after a correct answer (see Tutor rhythm)
+- **THEN** it says a line from the correct bank, avoiding the line used last time
 
 ### Requirement: Single original character
 Version one SHALL offer one original character, with no persona picker. The character SHALL NOT be a likeness of a copyrighted character.
@@ -72,3 +72,42 @@ The app SHALL NOT ship or generate likenesses of copyrighted characters. Only or
 #### Scenario: Character check
 - **WHEN** the character is shown
 - **THEN** it is an original character
+
+### Requirement: Tutor rhythm
+The tutor SHALL NOT comment after every answer. It SHALL speak at meaningful moments only: the start of a section, a combo (default every five correct answers), a mistake review, a new personal best and the end of a section, plus when the student pokes it. Between those moments it SHALL react with a wordless reaction state only (idle, correct, wrong, skipped).
+
+#### Scenario: Ordinary correct answers
+- **WHEN** a student answers three items correctly in a row
+- **THEN** the tutor reacts with a wordless reaction and does not speak
+
+#### Scenario: Combo
+- **WHEN** a student reaches five correct in a row
+- **THEN** the tutor speaks a line
+
+### Requirement: Never blocks progress
+A tutor line SHALL never delay the feedback panel or the Continue control. The student SHALL be able to continue while a line plays, and continuing SHALL cut the line off. The English subtitle SHALL be visible on the practice screen without scrolling while a line plays.
+
+#### Scenario: Continue during a line
+- **WHEN** a student taps Continue while the tutor is speaking
+- **THEN** the next item starts and the line stops
+
+### Requirement: Fast response
+The tutor's reaction to an answer SHALL start within 300 ms of the answer, and a spoken line SHALL start within 600 ms.
+
+#### Scenario: Quick reaction
+- **WHEN** an answer is checked
+- **THEN** the reaction starts within 300 ms
+
+### Requirement: Compact placement
+In practice screens the tutor SHALL be compact, placed so that it never pushes the prompt, the answer or the feedback below the fold. It MAY be full size on the desktop and celebration screens.
+
+#### Scenario: Practice screen
+- **WHEN** a practice screen is shown on a small phone
+- **THEN** the tutor takes no more than a small fixed area
+
+### Requirement: Reaction library
+The tutor SHALL have several variants of each reaction state and of each reaction's wordless sound or motion, so that repeated use does not feel the same, because a single character repeats faster than a cast.
+
+#### Scenario: Repeated reaction
+- **WHEN** the same reaction state occurs twice in a row
+- **THEN** a different variant plays
