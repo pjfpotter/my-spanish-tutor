@@ -77,3 +77,46 @@ test('nothing clear heard: no transcript, an invitation to try again', async ({ 
   await expect(page.getByTestId('unclear')).toContainText('could not hear');
   await expect(page.getByTestId('transcript')).toHaveCount(0);
 });
+
+// Task 19.1: when listening fails the student is told in plain English and is never trapped.
+
+test('a 503 from the transcription route gives a plain message with a retry (19.1)', async ({ page }) => {
+  await stubTranscribe(page, { status: 'unavailable', reason: 'not_configured' }, 503);
+  await page.goto('/lab/speech');
+  await speak(page);
+  await expect(page.getByTestId('unavailable')).toContainText('Tele could not listen just now');
+  await expect(page.getByTestId('unavailable')).not.toContainText('503');
+  await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
+  await expect(page.getByTestId('transcript')).toHaveCount(0);
+});
+
+test('when the server recogniser is down, the next try uses the browser recogniser (19.1)', async ({ page }) => {
+  await page.addInitScript(() => {
+    class FakeRecognition {
+      lang = ''; continuous = false; interimResults = false; maxAlternatives = 1;
+      onresult: ((e: unknown) => void) | null = null; onerror: ((e: unknown) => void) | null = null;
+      onend: (() => void) | null = null; onspeechstart: (() => void) | null = null;
+      start() {
+        setTimeout(() => {
+          const alt = Object.assign([{ transcript: 'me llamo ana', confidence: 0.9 }], { isFinal: true });
+          this.onresult?.({ results: [alt] });
+          this.onend?.();
+        }, 100);
+      }
+      stop() {}
+      abort() {}
+    }
+    for (const name of ['SpeechRecognition', 'webkitSpeechRecognition']) {
+      Object.defineProperty(window, name, { value: FakeRecognition, configurable: true, writable: true });
+    }
+  });
+  await stubTranscribe(page, { status: 'unavailable', reason: 'not_configured' }, 503);
+  await page.goto('/lab/speech');
+  await expect(page.getByTestId('path')).toContainText('server');
+  await speak(page);
+  await expect(page.getByTestId('unavailable')).toBeVisible();
+  await expect(page.getByTestId('path')).toContainText('browser');
+  await page.getByRole('button', { name: 'Try again' }).click();
+  await page.getByRole('button', { name: 'Start speaking' }).click();
+  await expect(page.getByTestId('transcript')).toHaveText('me llamo ana');
+});

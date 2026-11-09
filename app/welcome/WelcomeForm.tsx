@@ -4,27 +4,21 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { PrivacyNotice } from '../components/PrivacyNotice';
 
-const MAX_INTERESTS = 5;
-
 /**
  * Joining in three steps: the class code, the privacy notice (which must be acknowledged), then a nickname
- * from a list and interests from a fixed list. The class code and the recovery code are the only things
+ * from a list. Interests are not asked for (student-flow-principles). The class code and the recovery code are the only things
  * typed, and both are codes, not words. No name, no email (student-identity-privacy).
  */
-export function WelcomeForm({ nicknames, interests }: { nicknames: string[]; interests: string[] }) {
+export function WelcomeForm({ nicknames }: { nicknames: string[] }) {
   const router = useRouter();
   const [step, setStep] = useState<'code' | 'notice' | 'pick'>('code');
   const [classCode, setClassCode] = useState('');
   const [course, setCourse] = useState<{ title: string; testDate: string } | null>(null);
   const [acknowledged, setAcknowledged] = useState(false);
   const [nickname, setNickname] = useState('');
-  const [picked, setPicked] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [code, setCode] = useState<string | null>(null);
-
-  const toggle = (tag: string) =>
-    setPicked((cur) => (cur.includes(tag) ? cur.filter((t) => t !== tag) : cur.length < MAX_INTERESTS ? [...cur, tag] : cur));
 
   async function checkCode(e: React.FormEvent) {
     e.preventDefault();
@@ -51,7 +45,7 @@ export function WelcomeForm({ nicknames, interests }: { nicknames: string[]; int
     try {
       const res = await fetch('/api/profile', {
         method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ classCode, privacyAcknowledged: acknowledged, nickname, interests: picked }),
+        body: JSON.stringify({ classCode, privacyAcknowledged: acknowledged, nickname }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Something went wrong.');
@@ -148,17 +142,6 @@ export function WelcomeForm({ nicknames, interests }: { nicknames: string[]; int
             <label key={n} className="choice">
               <input type="radio" name="nickname" value={n} checked={nickname === n} onChange={() => setNickname(n)} />
               {n}
-            </label>
-          ))}
-        </div>
-      </fieldset>
-      <fieldset className="group">
-        <legend>What are you into? Pick up to {MAX_INTERESTS}</legend>
-        <div className="choice-list">
-          {interests.map((t) => (
-            <label key={t} className="choice">
-              <input type="checkbox" name="interest" value={t} checked={picked.includes(t)} onChange={() => toggle(t)} />
-              {t}
             </label>
           ))}
         </div>

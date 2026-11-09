@@ -3,15 +3,12 @@ import { isHotspot, locateChunks, missedChunks } from './chunks';
 import { tagRecall } from './recall';
 
 describe('tagRecall', () => {
-  const base = { timed: false, untimedPassed: false, mood: null, hotspot: false } as const;
-  it('stress pattern: passed untimed, failed timed, nervous', () => {
-    expect(tagRecall({ ...base, timed: true, untimedPassed: true, mood: 'nervous' })).toBe('stress_related');
+  const base = { timed: false, untimedPassed: false, hotspot: false } as const;
+  it('a timed failure after an untimed pass has no cause tag: nothing in the closed list fits, so none is guessed', () => {
+    expect(tagRecall({ ...base, timed: true, untimedPassed: true })).toBeNull();
   });
-  it('is not stress when the student was not nervous', () => {
-    expect(tagRecall({ ...base, timed: true, untimedPassed: true, mood: 'good' })).toBeNull();
-  });
-  it('is not stress when they never passed untimed: they do not know it well enough yet', () => {
-    expect(tagRecall({ ...base, timed: true, mood: 'nervous' })).toBe('not_known_well_enough');
+  it('a timed failure before ever passing untimed is not known well enough yet', () => {
+    expect(tagRecall({ ...base, timed: true })).toBe('not_known_well_enough');
   });
   it('an untimed failure is not known well enough', () => {
     expect(tagRecall(base)).toBe('not_known_well_enough');

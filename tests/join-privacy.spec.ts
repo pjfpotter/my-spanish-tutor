@@ -67,7 +67,7 @@ test('delete everything removes the profile, its recovery code and the device st
   await expect(page).toHaveURL('/welcome');
   expect(await page.evaluate(() => localStorage.getItem('planner:minutes'))).toBeNull();
   await page.goto('/');
-  await expect(page.getByRole('link', { name: 'Make my profile' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Sign up for a new account' })).toBeVisible();
 
   // The recovery code no longer works anywhere.
   const other = await browser.newContext();

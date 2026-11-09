@@ -82,7 +82,7 @@
 .phase-open:hover {
   background: #d2d2d2;
 }
-.phase-es {
+.phase-title {
   font-family: var(--font-ui);
   font-size: 1.15rem;
 }

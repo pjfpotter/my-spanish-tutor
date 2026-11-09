@@ -5,8 +5,8 @@ import { RestoreForm } from './RestoreForm';
 export default function Restore() {
   return (
     <main className="screen">
-      <h1>Recuperar</h1>
-      <Win title="recuperar.exe" label="Get your progress back">
+      <h1>Get your progress back</h1>
+      <Win title="restore.exe" label="Get your progress back">
         <RestoreForm />
       </Win>
     </main>

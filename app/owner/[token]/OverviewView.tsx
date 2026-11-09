@@ -33,7 +33,7 @@ export function OverviewView({ data, cost, sample, cheeky }: { data: OverviewDat
           <strong>Sample data.</strong> These students and figures are made up for a demonstration. No real student is shown.
         </p>
       )}
-      <Win title="clase.exe" label="Class summary">
+      <Win title="class.exe" label="Class summary">
         <p>Joined: <strong><F>{data.joined}</F></strong>. Started practising: <strong><F>{data.started}</F></strong>.</p>
         <p>Average readiness: <strong>{data.averageReadiness === null ? 'no students yet' : <F>{data.averageReadiness}%</F>}</strong></p>
         <table>
@@ -42,7 +42,7 @@ export function OverviewView({ data, cost, sample, cheeky }: { data: OverviewDat
           <tbody>{STAGES.map((s) => <tr key={s}><th scope="row">{STAGE_LABEL[s]}</th><td><F>{data.stages[s]}</F></td></tr>)}</tbody>
         </table>
       </Win>
-      <Win title="alumnos.exe" label="Students">
+      <Win title="students.exe" label="Students">
         <table>
           <caption>Nickname and progress only</caption>
           <thead><tr><th scope="col">Nickname</th><th scope="col">Step</th><th scope="col">Readiness</th></tr></thead>
@@ -52,18 +52,18 @@ export function OverviewView({ data, cost, sample, cheeky }: { data: OverviewDat
         </table>
         {data.students.length === 0 && <p>No one has joined yet.</p>}
       </Win>
-      <Win title="problemas.exe" label="Class hotspots">
+      <Win title="hotspots.exe" label="Class hotspots">
         <HotList title="Questions most often missed" rows={data.questionHotspots} F={F} />
         <HotList title="Chunks most often missed" rows={data.chunkHotspots} F={F} />
         <h2>Most common causes</h2>
         {data.causes.length ? <ol data-testid="causes">{data.causes.map((c) => <li key={c.tag}>{TAG_LABEL[c.tag] ?? c.tag}: <F>{c.count}</F></li>)}</ol> : <p>None yet.</p>}
       </Win>
       {cheeky && (
-        <Win title="ajustes.exe" label="Course settings">
+        <Win title="settings.exe" label="Course settings">
           <CheekySwitch token={cheeky.token} initial={cheeky.enabled} />
         </Win>
       )}
-      <Win title="coste.exe" label="Cost per student">
+      <Win title="cost.exe" label="Cost per student">
         <p data-testid="cost-per-student">
           Estimated cost per student: <strong>{cost.perStudentGbp === null ? 'no students yet' : <F>{gbp(cost.perStudentGbp)}</F>}</strong>
           {' '}(total <F>{gbp(cost.totalGbp)}</F> across <F>{cost.students}</F> students)

@@ -5,7 +5,6 @@ import { logAttempt } from '../events/attempts';
 import { recordRecall } from '../memorise/store';
 import { createProfile, nicknameOptions } from '../profile/profile';
 import { saveBaseline } from './baseline';
-import { recordMood } from './mood';
 import { planUnderstand } from './plan';
 import { focusedAnswerIds } from './recall-store';
 import { tagLatestAttempt } from './store';
@@ -36,14 +35,14 @@ const hear = (profileId: string, itemId: string, outcome: 'correct' | 'wrong', s
 describe('diagnostics drive practice (10.5)', () => {
   it('a new student starts every question slowly', async () => {
     const id = await student();
-    const plan = await planUnderstand(db, id, q, null);
+    const plan = await planUnderstand(db, id, q);
     expect([...plan.values()].map((s) => s.startSpeed)).toEqual(['slow', 'slow', 'slow', 'slow', 'slow']);
   });
 
   it('the starting-point check lets a question already understood start at normal speed', async () => {
     const id = await student();
     await saveBaseline(db, { profileId: id, courseId, questionId: q[0], stage: 'pre', correct: true });
-    const plan = await planUnderstand(db, id, q, null);
+    const plan = await planUnderstand(db, id, q);
     expect(plan.get(q[0])?.startSpeed).toBe('normal');
     expect(plan.get(q[1])?.startSpeed).toBe('slow');
   });
@@ -56,8 +55,8 @@ describe('diagnostics drive practice (10.5)', () => {
     await hear(tagged, q[1], 'wrong', 1.2, session);
     await hear(untagged, q[1], 'wrong', 1.2, session);
     await tagLatestAttempt(db, tagged, q[1], session, 'too_fast');
-    const a = (await planUnderstand(db, tagged, q, null)).get(q[1])!;
-    const b = (await planUnderstand(db, untagged, q, null)).get(q[1])!;
+    const a = (await planUnderstand(db, tagged, q)).get(q[1])!;
+    const b = (await planUnderstand(db, untagged, q)).get(q[1])!;
     expect(b.startSpeed).toBe('normal');
     expect(a.startSpeed).toBe('slow');
     expect(a.needsFocus).toBe(true);
@@ -70,15 +69,7 @@ describe('diagnostics drive practice (10.5)', () => {
     await hear(id, q[2], 'wrong', 1, s);
     await tagLatestAttempt(db, id, q[2], s, 'too_fast');
     await hear(id, q[2], 'correct', 0.7);
-    expect((await planUnderstand(db, id, q, null)).get(q[2])?.needsFocus).toBe(false);
-  });
-
-  it('a nervous student is not started on fast', async () => {
-    const id = await student();
-    await hear(id, q[3], 'correct', 1);
-    expect((await planUnderstand(db, id, q, null)).get(q[3])?.startSpeed).toBe('fast');
-    await recordMood(db, id, randomUUID(), 'nervous');
-    expect((await planUnderstand(db, id, q, 'nervous')).get(q[3])?.startSpeed).toBe('normal');
+    expect((await planUnderstand(db, id, q)).get(q[2])?.needsFocus).toBe(false);
   });
 
   it('memorise practises first the answer with a hotspot chunk', async () => {

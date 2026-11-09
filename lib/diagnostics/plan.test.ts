@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { activeTags, prioritise, supportFor, type PastAttempt } from './plan';
 
 const a = (outcome: PastAttempt['outcome'], speed: number, causeTags: PastAttempt['causeTags'] = [], assisted = false): PastAttempt => ({ outcome, speed, assisted, causeTags });
-const none = { history: [], knownAtStart: false, mood: null } as const;
+const none = { history: [], knownAtStart: false } as const;
 
 describe('activeTags', () => {
   it('uses the tags on the latest failed attempt', () => {
@@ -41,13 +41,6 @@ describe('supportFor (10.5)', () => {
     expect(supportFor({ ...none, history: [a('wrong', 1, ['word_not_known'])] })).toMatchObject({ preview: true, startSpeed: 'slow', needsFocus: true });
     expect(supportFor({ ...none, history: [a('wrong', 1, ['sound_spelling_gap'])] }).preview).toBe(true);
     expect(supportFor({ ...none, history: [a('wrong', 1, ['thrown_by_context'])] }).preview).toBe(false);
-  });
-
-  it('a nervous or tired student does not start on fast', () => {
-    const history = [a('correct', 1)];
-    expect(supportFor({ ...none, history }).startSpeed).toBe('fast');
-    expect(supportFor({ ...none, history, mood: 'nervous' }).startSpeed).toBe('normal');
-    expect(supportFor({ ...none, history, mood: 'tired' }).startSpeed).toBe('normal');
   });
 });
 

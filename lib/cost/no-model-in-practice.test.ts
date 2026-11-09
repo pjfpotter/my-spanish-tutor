@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest';
 const ROOT = process.cwd();
 const ENTRIES = [
   'app/api/respond/route.ts', 'app/api/attempts/route.ts', 'app/api/recall/route.ts', 'app/api/probe/route.ts',
-  'app/api/transcribe/route.ts', 'app/api/answers/route.ts', 'app/api/baseline/route.ts', 'app/api/mood/route.ts',
+  'app/api/transcribe/route.ts', 'app/api/answers/route.ts', 'app/api/baseline/route.ts',
   'app/phases/understand/Understand.tsx', 'app/phases/memorise/Memorise.tsx', 'app/phases/automate/Automate.tsx', 'app/phases/write/Write.tsx',
   'lib/automate/store.ts', 'lib/memorise/store.ts', 'lib/diagnostics/store.ts', 'lib/progress/writing-store.ts',
 ];

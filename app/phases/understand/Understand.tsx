@@ -13,9 +13,11 @@ import type { TutorLine } from '../../../lib/tele/lines';
 import { selectLine } from '../../../lib/tele/select';
 import { buildOptions, nextSpeed, type LastPresentation, type Option } from '../../../lib/understand/speed';
 import { Status } from '../../../lib/ui/Status';
+import { LittleAndOften } from '../../components/LittleAndOften';
 import { Caption, useSubtitles } from '../../components/Caption';
 import { Tele } from '../../components/Tele';
 import { useLinePlayback } from '../../components/useLinePlayback';
+import { SectionNav } from '../../components/SectionNav';
 import { Win } from '../../components/Win';
 import { canPlayWord, Probe } from './Probe';
 import '../../components/screens.css';
@@ -54,7 +56,7 @@ const slotFor = (index: readonly BuiltClip[], text: string, speed: number) => in
  * words; revealing marks the attempt as assisted so it never counts toward mastery. A miss brings
  * the question back soon, a success pushes it further away, and speed rises as they succeed.
  */
-export function Understand({ questions, quickId = null, plans = {} }: { questions: QuestionItem[]; quickId?: string | null; plans?: Record<string, Support> }) {
+export function Understand({ questions, plans = {} }: { questions: QuestionItem[]; plans?: Record<string, Support> }) {
   const byId = useMemo(() => new Map(questions.map((q) => [q.id, q])), [questions]);
   const [showEnglish, toggleEnglish] = useSubtitles();
   const playback = useLinePlayback();
@@ -64,7 +66,7 @@ export function Understand({ questions, quickId = null, plans = {} }: { question
   const last = useRef(new Map<string, LastPresentation>());
   const lastLine = useRef<string | null>(null);
 
-  const [queue, setQueue] = useState<SessionQueue>(() => newQueue(quickId ? [quickId] : questions.filter((q) => !q.mastered && !q.laterSession).map((q) => q.id)));
+  const [queue, setQueue] = useState<SessionQueue>(() => newQueue(questions.filter((q) => !q.mastered && !q.laterSession).map((q) => q.id)));
   const [cur, setCur] = useState<Presentation | null>(null);
   const [stage, setStage] = useState<Stage>('ready');
   const [picked, setPicked] = useState<string | null>(null);
@@ -187,7 +189,7 @@ export function Understand({ questions, quickId = null, plans = {} }: { question
       if (result.mastered) setMasteredIds((s) => new Set(s).add(cur.id));
       last.current.set(cur.id, { speed: cur.speed, outcome });
       // A quick win is one question, whatever the result: the effort counts and it ends on a good note.
-      setQueue((q) => afterAttempt(q, cur.id, outcome, doneForToday || !!quickId));
+      setQueue((q) => afterAttempt(q, cur.id, outcome, doneForToday));
       const kw = byId.get(cur.id)?.keyWord;
       if (!correct && !cur.revealed && kw && canPlayWord(kw.spanish, index.current)) setProbing(cur.id);
       playback.play(tele(result.mastered ? 'mastered' : correct && !cur.revealed ? 'correct' : cur.revealed ? 'hint' : 'wrong'));
@@ -203,15 +205,18 @@ export function Understand({ questions, quickId = null, plans = {} }: { question
   const finished = ready && !cur;
   const allMastered = masteredIds.size >= questions.length;
   const showText = !!cur && (cur.revealed || stage === 'answered');
+  /** Once the right answer is chosen there is nothing left to listen for, so replay and slower no longer apply. */
+  const rightAnswer = !!cur && stage === 'answered' && picked === cur.id;
   // The question's words stay hidden in the caption while it plays, unless the student asked to see them.
   const hideWords = !!cur && !cur.revealed && !!playback.line?.id.startsWith('q-');
 
   return (
     <main className="screen">
-      <h1>Entender</h1>
+      <SectionNav />
+      <h1>Understand the questions</h1>
       <Tele feelings={playback.feelings ?? undefined} loudness={playback.loudness} speaking={playback.playing} question={stage === 'choosing'} />
 
-      <Win title="entender.exe" label="Understand the questions">
+      <Win title="understand.exe" label="Understand the questions">
         <div className="stack">
           <ul className="dots" aria-label={`${masteredIds.size} of ${questions.length} questions mastered`}>
             {questions.map((q) => (
@@ -224,14 +229,13 @@ export function Understand({ questions, quickId = null, plans = {} }: { question
 
           {finished && (
             <div className="stack" data-testid="finished">
-              <Status kind="done" label={quickId ? 'One done' : allMastered ? 'All five mastered' : 'Done for today'} />
+              <Status kind="done" label={allMastered ? 'All five mastered' : 'Done for today'} />
               <p>
-                {quickId
-                  ? 'That is one done, and it counts. Come back whenever you want more.'
-                  : allMastered
+                {allMastered
                   ? 'You can understand all five questions. The next step is open.'
                   : 'That is enough for today. Questions are only mastered once you get them right on more than one day, so come back tomorrow.'}
               </p>
+              <LittleAndOften />
               <Link className="btn btn-primary" href="/">
                 Back to the desktop
               </Link>
@@ -244,10 +248,10 @@ export function Understand({ questions, quickId = null, plans = {} }: { question
                 <strong>What does the question mean?</strong>
               </p>
               <div className="controls">
-                <button type="button" className="btn btn-primary" onClick={() => listen(cur.speed, cur.played ? 'replay' : 'first')} disabled={playback.playing}>
+                <button type="button" className="btn btn-primary" onClick={() => listen(cur.speed, cur.played ? 'replay' : 'first')} disabled={playback.playing || rightAnswer}>
                   {cur.played ? 'Play again' : 'Listen'}
                 </button>
-                <button type="button" className="btn" onClick={() => listen('slow', 'slow')} disabled={playback.playing || !cur.played}>
+                <button type="button" className="btn" onClick={() => listen('slow', 'slow')} disabled={playback.playing || !cur.played || rightAnswer}>
                   Slower
                 </button>
                 <button type="button" className="btn" onClick={reveal} disabled={cur.revealed || stage === 'answered'}>

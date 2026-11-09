@@ -17,10 +17,13 @@ import type { TutorLine } from '../../../lib/tele/lines';
 import { selectLine } from '../../../lib/tele/select';
 import { Status } from '../../../lib/ui/Status';
 import { Caption, useSubtitles } from '../../components/Caption';
+import { LittleAndOften } from '../../components/LittleAndOften';
+import { ListeningProblem } from '../../components/ListeningProblem';
 import { Tele } from '../../components/Tele';
 import { useLinePlayback } from '../../components/useLinePlayback';
 import { useSpeechCapture, type CaptureResult } from '../../components/useSpeechCapture';
 import { useWordAudio } from '../../components/useWordAudio';
+import { SectionNav } from '../../components/SectionNav';
 import { Win } from '../../components/Win';
 import '../../components/screens.css';
 
@@ -180,10 +183,11 @@ export function Memorise({ items: initial, focusIds = [] }: { items: MemoriseIte
 
   return (
     <main className="screen">
-      <h1>Memorizar</h1>
+      <SectionNav />
+      <h1>Say it from memory</h1>
       <Tele feelings={playback.feelings ?? undefined} loudness={playback.loudness} speaking={playback.playing} question={listening} />
 
-      <Win title="memorizar.exe" label="Say your answers from memory">
+      <Win title="memorise.exe" label="Say your answers from memory">
         <div className="stack">
           <ul className="dots" aria-label={`${memorised} of ${items.length} answers memorised`}>
             {items.map((i) => (
@@ -202,6 +206,7 @@ export function Memorise({ items: initial, focusIds = [] }: { items: MemoriseIte
                   ? 'You can say all your answers from memory. The next step is open.'
                   : 'That is enough for today. An answer counts as memorised once you have said it well on more than one day, so come back tomorrow.'}
               </p>
+              <LittleAndOften />
               <Link className="btn btn-primary" href="/">Back to the desktop</Link>
             </div>
           )}
@@ -239,21 +244,7 @@ export function Memorise({ items: initial, focusIds = [] }: { items: MemoriseIte
                   Tele needs to hear you to check what you said. Your voice is only used for that, and it is not saved. Your device will ask to use the microphone the first time.
                 </p>
               )}
-              {capture.state === 'denied' && (
-                <p className="error" role="status" data-testid="denied">
-                  The microphone is blocked. Tele cannot hear you without it. Allow the microphone for this site in your browser, then try again.
-                </p>
-              )}
-              {capture.state === 'unsupported' && (
-                <p className="error" role="status" data-testid="unsupported">
-                  This browser cannot use a microphone here. Try Chrome on a phone or a Chromebook, or a different device.
-                </p>
-              )}
-              {capture.state === 'unavailable' && (
-                <p className="error" role="status" data-testid="unavailable">
-                  Tele could not listen just now. That is not your fault and it does not count against you. Try again in a moment.
-                </p>
-              )}
+              <ListeningProblem state={capture.state} onRetry={capture.retry} onSkip={attempt ? undefined : () => { capture.retry(); next(); }} />
               {listening && <p data-testid="listening">Listening… say your answer, then press Done.</p>}
               {capture.state === 'processing' && <p data-testid="processing">Checking what you said…</p>}
               {unclear && (
@@ -270,9 +261,6 @@ export function Memorise({ items: initial, focusIds = [] }: { items: MemoriseIte
                   </button>
                 )}
                 {listening && <button type="button" className="btn btn-primary" onClick={capture.stop}>Done</button>}
-                {(capture.state === 'denied' || capture.state === 'unavailable') && (
-                  <button type="button" className="btn btn-primary" onClick={capture.retry}>Try again</button>
-                )}
               </div>
 
               {attempt && (

@@ -3,7 +3,6 @@ import type { Db } from '../db/types';
 import type { CauseTag } from '../events/attempts';
 import { nextSpeed, SPEED_ORDER } from '../understand/speed';
 import { knownAtStart, loadBaseline } from './baseline';
-import type { Mood } from './mood';
 
 /** What the planner needs to know about one past attempt at an item. Oldest first when in a list. */
 export interface PastAttempt {
@@ -43,10 +42,9 @@ const nameForSpeed = (speed: number | null): SpeedName | null =>
  *  - No history: slow, or normal if the student already understood it cold at the starting-point check.
  *  - Otherwise carry on from the last attempt: a step faster after a success, a step slower after a miss.
  *  - "Too fast" starts a step slower than that, and never above normal.
- *  - A nervous or tired student does not start on fast.
  *  - "Word not known" and "sound-spelling gap" preview the key word first.
  */
-export function supportFor(i: { history: readonly PastAttempt[]; knownAtStart: boolean; mood: Mood | null }): Support {
+export function supportFor(i: { history: readonly PastAttempt[]; knownAtStart: boolean }): Support {
   const tags = activeTags(i.history);
   const last = i.history.at(-1);
   const lastSpeed = last ? nameForSpeed(last.speed) : null;
@@ -55,7 +53,6 @@ export function supportFor(i: { history: readonly PastAttempt[]; knownAtStart: b
     : i.knownAtStart ? 'normal' : 'slow';
   if (tags.includes('too_fast')) start = SPEED_ORDER[Math.max(0, Math.min(SPEED_ORDER.indexOf(start), SPEED_ORDER.indexOf('normal')) - 1)];
   if (tags.includes('word_not_known') || tags.includes('sound_spelling_gap')) start = 'slow';
-  if ((i.mood === 'nervous' || i.mood === 'tired') && start === 'fast') start = 'normal';
   return { startSpeed: start, preview: tags.includes('word_not_known') || tags.includes('sound_spelling_gap'), needsFocus: tags.length > 0 };
 }
 
@@ -79,9 +76,9 @@ export async function loadHistory(db: Db, profileId: string, phase: string, perI
   return map;
 }
 
-/** Support for every question of a student, from their history, starting-point check and latest mood. */
-export async function planUnderstand(db: Db, profileId: string, questionIds: string[], mood: Mood | null): Promise<Map<string, Support>> {
+/** Support for every question of a student, from their history, starting-point check. */
+export async function planUnderstand(db: Db, profileId: string, questionIds: string[]): Promise<Map<string, Support>> {
   const history = await loadHistory(db, profileId, 'understand');
   const known = knownAtStart(await loadBaseline(db, profileId));
-  return new Map(questionIds.map((id) => [id, supportFor({ history: history.get(id) ?? [], knownAtStart: known.has(id), mood })]));
+  return new Map(questionIds.map((id) => [id, supportFor({ history: history.get(id) ?? [], knownAtStart: known.has(id) })]));
 }

@@ -19,7 +19,7 @@ export default async function MemorisePage() {
   const unlockAll = await courseUnlockAll(db, profile.courseId);
   if (phaseStates(await loadProgress(db, profile.id), { unlockAll }).memorise.status === 'locked') redirect('/');
   const items = await loadMemoriseItems(db, profile.id, profile.courseId);
-  if (!items.length) return <NothingToPractise heading="Memorizar" windowTitle="memorizar.exe" />;
+  if (!items.length) return <NothingToPractise heading="Say it from memory" windowTitle="memorise.exe" />;
   // Answers with a hotspot chunk or a live recall tag are practised first.
   return <Memorise items={items} focusIds={await focusedAnswerIds(db, profile.id, profile.courseId, items)} />;
 }

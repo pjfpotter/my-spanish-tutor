@@ -7,9 +7,9 @@ export async function POST(req: Request) {
   const profile = await currentProfile();
   if (!profile) return Response.json({ error: 'Not signed in.' }, { status: 401 });
   const b = (await req.json().catch(() => null)) as Record<string, unknown> | null;
-  if (!b || typeof b.questionId !== 'string' || (b.stage !== 'pre' && b.stage !== 'post') || typeof b.correct !== 'boolean') {
+  if (!b || typeof b.questionId !== 'string' || b.stage !== 'pre' || typeof b.correct !== 'boolean') {
     return Response.json({ error: 'Bad answer.' }, { status: 400 });
   }
-  const ok = await saveBaseline(await getDb(), { profileId: profile.id, courseId: profile.courseId, questionId: b.questionId, stage: b.stage, correct: b.correct });
+  const ok = await saveBaseline(await getDb(), { profileId: profile.id, courseId: profile.courseId, questionId: b.questionId, stage: 'pre', correct: b.correct });
   return ok ? Response.json({ ok: true }, { headers: { 'Cache-Control': 'no-store' } }) : Response.json({ error: 'Unknown question.' }, { status: 404 });
 }

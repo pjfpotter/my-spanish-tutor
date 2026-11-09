@@ -54,6 +54,7 @@ export function useSpeechCapture(onResult: (r: CaptureResult) => void, options: 
   onOnset.current = options.onOnset;
   const [state, setState] = useState<CaptureState>('checking');
   const [path, setPath] = useState<RecognitionPath>('unsupported');
+  const caps = useRef({ browserRecogniser: false, recorder: false });
   const stopRef = useRef<() => void>(() => {});
   const cancelRef = useRef<() => void>(() => {});
   const cb = useRef(onResult);
@@ -66,7 +67,9 @@ export function useSpeechCapture(onResult: (r: CaptureResult) => void, options: 
   const onEvent = useRef<((type: 'onset' | 'end') => void) | null>(null);
 
   useEffect(() => {
-    const p = chooseRecognitionPath(detectCapabilities(), navigator.userAgent);
+    const c = detectCapabilities();
+    caps.current = { browserRecogniser: c.browserRecogniser, recorder: c.recorder };
+    const p = chooseRecognitionPath(c, navigator.userAgent);
     setPath(p);
     setState(p === 'unsupported' ? 'unsupported' : 'idle');
   }, []);
@@ -80,6 +83,16 @@ export function useSpeechCapture(onResult: (r: CaptureResult) => void, options: 
     warm.current = null;
   }, []);
   useEffect(() => closeWarm, [closeWarm]);
+
+  /**
+   * One recogniser could not be reached. Say so, and point the next try at the other one if this device
+   * has it, so a missing key or a dead network on one side does not leave the student stuck (task 19.1).
+   */
+  const unreachable = useCallback((from: RecognitionPath) => {
+    if (from === 'server' && caps.current.browserRecogniser) setPath('browser');
+    else if (from === 'browser' && caps.current.recorder) setPath('server');
+    setState('unavailable');
+  }, []);
 
   const finish = useCallback((r: CaptureResult) => {
     setState('idle');
@@ -151,10 +164,12 @@ export function useSpeechCapture(onResult: (r: CaptureResult) => void, options: 
           return transcript ? finish({ status: 'ok', transcript, confidence: data.confidence ?? null, path: 'server', clipMs, onsetAt: onset }) : finish({ status: 'unclear', path: 'server', onsetAt: onset });
         }
         // Cap reached, rate limited, or the vendor failed: not the student's fault, so not scored.
-        setState(data.status === 'rejected' ? 'idle' : 'unavailable');
-        if (data.status === 'rejected') finish({ status: 'unclear', path: 'server', onsetAt: onset });
+        if (data.status === 'rejected') {
+          setState('idle');
+          finish({ status: 'unclear', path: 'server', onsetAt: onset });
+        } else unreachable('server');
       } catch {
-        setState('unavailable');
+        unreachable('server');
       }
     };
     stopRef.current = () => recorder.state !== 'inactive' && recorder.stop();
@@ -177,7 +192,7 @@ export function useSpeechCapture(onResult: (r: CaptureResult) => void, options: 
     }
     setState('listening');
     timer = setTimeout(() => stopRef.current(), MAX_RECORD_MS);
-  }, [closeWarm, finish, openStream, round]);
+  }, [closeWarm, finish, openStream, round, unreachable]);
 
   const startBrowser = useCallback(() => {
     const w = window as any;
@@ -190,6 +205,7 @@ export function useSpeechCapture(onResult: (r: CaptureResult) => void, options: 
     const t0 = performance.now();
     let best: { transcript: string; confidence: number } | null = null;
     let denied = false;
+    let unreached = false;
     let cancelled = false;
     let onset: number | null = null;
     r.onspeechstart = () => {
@@ -202,9 +218,12 @@ export function useSpeechCapture(onResult: (r: CaptureResult) => void, options: 
     };
     r.onerror = (e) => {
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') denied = true;
+      // The browser's speech service could not be reached: not the student's fault, so not scored.
+      if (e.error === 'network' || e.error === 'audio-capture') unreached = true;
     };
     r.onend = () => {
       if (denied) return setState('denied');
+      if (unreached && !cancelled) return unreachable('browser');
       if (cancelled) return setState('idle');
       const clipMs = Math.round(performance.now() - t0);
       const b = best as { transcript: string; confidence: number } | null;
@@ -217,7 +236,7 @@ export function useSpeechCapture(onResult: (r: CaptureResult) => void, options: 
     };
     setState('listening');
     r.start();
-  }, [finish]);
+  }, [finish, unreachable]);
 
   const start = useCallback(() => {
     if (path === 'unsupported') return setState('unsupported');

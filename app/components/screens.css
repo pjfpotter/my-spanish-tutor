@@ -393,3 +393,6 @@ fieldset.group legend {
   gap: 0.15rem;
   font-size: 0.9rem;
 }
+
+/* The way out of a section: always at the top of the screen, never pushed off it. */
+.section-nav { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }

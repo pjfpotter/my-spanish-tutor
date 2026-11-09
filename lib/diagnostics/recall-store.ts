@@ -1,7 +1,6 @@
 import type { Db } from '../db/types';
 import type { CauseTag } from '../events/attempts';
 import { locateChunks, missedChunks, isHotspot, type ChunkRef } from './chunks';
-import { latestMood } from './mood';
 import { activeTags, loadHistory } from './plan';
 import { tagRecall } from './recall';
 
@@ -60,7 +59,7 @@ export async function causeTagsForRecallFailure(
     ? locateChunks(i.answer, await courseChunks(db, i.courseId)).map((l) => l.chunkId)
     : i.missedChunkIds;
   const tag = tagRecall({
-    timed: i.timed, untimedPassed: passed.rows.length > 0, mood: await latestMood(db, i.profileId),
+    timed: i.timed, untimedPassed: passed.rows.length > 0,
     hotspot: inAnswer.some((id) => hotspots.has(id)),
   });
   return tag ? [tag] : [];

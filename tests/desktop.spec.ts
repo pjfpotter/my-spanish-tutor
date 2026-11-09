@@ -18,9 +18,9 @@ test('shows Tele, the countdown, the five question files and the four phases in 
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'My Spanish Tutor' })).toBeVisible();
   await expect(page.getByRole('img', { name: /Tele, a cream television/ })).toBeVisible();
-  await expect(page.getByTestId('days-to-test')).toContainText(`${daysUntil(SEED_COURSE.testDate)} días`);
+  await expect(page.getByTestId('days-to-test')).toContainText(`${daysUntil(SEED_COURSE.testDate)} day`);
   await expect(page.getByTestId('question-file')).toHaveCount(5);
-  await expect(page.getByTestId('question-file').first()).toContainText('Pregunta1.txt');
+  await expect(page.getByTestId('question-file').first()).toContainText('Question1.txt');
 
   const order = await page.locator('[data-phase]').evaluateAll((els) => els.map((e) => e.getAttribute('data-phase')));
   expect(order).toEqual(['write', 'understand', 'memorise', 'automate']);
