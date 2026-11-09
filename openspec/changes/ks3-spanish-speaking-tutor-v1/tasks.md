@@ -15,7 +15,7 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 - **M6, before anyone but Dolores:** 3.3, 3.5, 3.6
 - **M7, wrap-up:** 14.1, 14.2, 14.3, 15.1, 15.2, 16.1, 16.2, 16.3, 16.4, 13.5
 - **M8, fix what user testing found (before any new feature):** 19.1, 19.2, 19.3, 19.4, 19.5, 19.6, 19.7
-- **M9, make it feel good:** 20.1, 20.2, 20.3, 20.4, 20.5, 21.1, 21.2, 21.3, 21.4, 21.5, 21.6, 21.7, 22.1, 22.2, 22.3, 22.4
+- **M9, make it feel good:** 20.1, 20.2, 20.3, 20.4, 20.5, 21.1, 21.2, 21.3, 21.4, 21.5, 21.6, 22.1, 22.2, 22.3, 22.4
 - **M10, teacher flow and demo:** 23.1, 23.2, 23.3, 24.1, 24.2, 24.3
 - **Alongside, documents for the presentation:** 25.1 to 25.6
 - **On hold:** 23.4 and 26.2 (needs the owner's design decision)
@@ -185,13 +185,12 @@ Note: task 7.x level work (names, thresholds) is superseded by 26.1a. Tasks 10.4
 
 ## 21. Task types and memorising (M9)
 
-- [ ] 21.1 Build match pairs (Spanish with English or picture); verify rapid-key input is safe
+- [ ] 21.1 Build match pairs (Spanish with English); verify rapid-key input is safe
 - [ ] 21.2 Build sentence scramble (tap and drag, coloured by chunk kind); verify for phone touch and keyboard
 - [ ] 21.3 Build fill the gap and tap what you hear; verify distractor rules (similar length, cognates)
 - [ ] 21.4 Build the session mixer (at least three types, no type more than three in a row, rising difficulty); verify unit tests
-- [ ] 21.5 Implement scaffolding kinds (English, picture, chunk reveal, first words, gaps, listen then repeat) chosen from results and cause tags, and chunk-by-chunk build-up; verify step-down by unit tests
-- [ ] 21.6 Add picture or icon per chunk for the sample course and log each in docs/asset-credits.md; verify none is missing
-- [ ] 21.7 Implement skipping a known answer by recall-first; verify mastery rules still apply
+- [ ] 21.5 Implement scaffolding kinds (English, chunk reveal, first words, gaps, listen then repeat) chosen from results and cause tags, and chunk-by-chunk build-up; verify step-down by unit tests
+- [ ] 21.6 Implement skipping a known answer by recall-first; verify mastery rules still apply
 
 ## 22. Automatise ladder (M9)
 
