@@ -17,6 +17,8 @@ export interface LinePlayback {
   loudness: number;
   /** 'audio' when the audio clock drives the caption, 'clock' when it runs silently on a timer. */
   source: 'audio' | 'clock' | null;
+  /** Cuts the line off at once: no more sound, no more caption. `onEnd` is not called. Continuing must never wait for a line. */
+  stop: () => void;
   /** `onEnd` is called once, with performance.now() at the moment the line finished: the start of the response clock in a timed round. */
   play: (line: TutorLine, opts?: { clip?: ClipFile; audioUrl?: string; onEnd?: (endedAt: number) => void }) => void;
 }
@@ -26,7 +28,7 @@ export const AUDIO_START_MS = 1500;
 /** A line always finishes within this many seconds of its expected length, whatever the audio does. */
 export const OVERRUN_S = 3;
 
-type PlayState = Omit<LinePlayback, 'play'>;
+type PlayState = Omit<LinePlayback, 'play' | 'stop'>;
 const IDLE: PlayState = { playing: false, line: null, words: [], activeIndex: null, feelings: null, loudness: 0, source: null };
 
 /**
@@ -40,9 +42,13 @@ export function useLinePlayback(): LinePlayback {
   const raf = useRef(0);
   const busy = useRef(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const cancel = useRef<(() => void) | null>(null);
+
+  const stop = useCallback(() => cancel.current?.(), []);
 
   const play = useCallback((line: TutorLine, opts?: { clip?: ClipFile; audioUrl?: string; onEnd?: (endedAt: number) => void }) => {
-    if (busy.current) return;
+    // A new line replaces one that is still playing: the student moving on cuts the old one off.
+    if (busy.current) cancel.current?.();
     busy.current = true;
     const clip = opts?.clip;
     const timeline: ClipTimeline = clip ?? estimateTimeline(line);
@@ -97,6 +103,17 @@ export function useLinePlayback(): LinePlayback {
       setState(IDLE);
       opts?.onEnd?.(performance.now());
     };
+    cancel.current = () => {
+      if (done) return;
+      done = true;
+      clearTimeout(stall);
+      clearTimeout(hardStop);
+      cancelAnimationFrame(raf.current);
+      busy.current = false;
+      audio?.pause();
+      audioRef.current = null;
+      setState(IDLE);
+    };
     // Independent of animation frames, which pause in a hidden tab or on a starved device.
     hardStop = setTimeout(finish, (timeline.end + OVERRUN_S) * 1000 + 500);
     const startedAt = performance.now();
@@ -122,5 +139,5 @@ export function useLinePlayback(): LinePlayback {
     },
     [],
   );
-  return { ...state, play };
+  return { ...state, play, stop };
 }

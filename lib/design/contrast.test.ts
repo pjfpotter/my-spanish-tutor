@@ -37,6 +37,14 @@ const READING_PAIRS: [text: string, surface: string][] = [
   ['cream', 'title-navy'],
   ['cream', 'ink-navy'], // status strips
   ['soft-pink', 'ink-navy'],
+  ['black', 'kind-opinion'], // practice screens: chunk kinds and the feedback panel
+  ['black', 'kind-reason'],
+  ['black', 'kind-link'],
+  ['black', 'kind-time'],
+  ['black', 'kind-detail'],
+  ['black', 'kind-other'],
+  ['black', 'fb-right'],
+  ['black', 'fb-wrong'],
 ];
 const DECORATION_ONLY = ['hyper-pink', 'lemon', 'toxic-cyan'];
 

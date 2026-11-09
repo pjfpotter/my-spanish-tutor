@@ -60,11 +60,15 @@ button {
 }
 
 /* The calm switch sits in the same corner on every screen. */
-.calm-switch {
+.switches {
   position: fixed;
   top: max(0.5rem, env(safe-area-inset-top));
   right: max(0.5rem, env(safe-area-inset-right));
   z-index: 100;
+  display: flex;
+  gap: 0.35rem;
+}
+.calm-switch {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;

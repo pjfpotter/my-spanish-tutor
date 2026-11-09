@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import './caption.css';
+import './practice/practice.css';
 
 const KEY = 'subtitles';
 
@@ -36,13 +37,45 @@ export interface CaptionProps {
   english: string;
   showEnglish: boolean;
   onToggleEnglish: () => void;
+  /** A small caption for one-screen practice: no window chrome, a short subtitle switch. */
+  compact?: boolean;
 }
 
 const IDLE_ES = '· · · señal débil · · ·';
 const IDLE_EN = 'weak signal';
 
-export function Caption({ words, activeIndex, english, showEnglish, onToggleEnglish }: CaptionProps) {
+export function Caption({ words, activeIndex, english, showEnglish, onToggleEnglish, compact = false }: CaptionProps) {
   const idle = words.length === 0;
+  if (compact) {
+    return (
+      <section className="cap-compact" aria-label="Tele's caption">
+        <p className={idle ? 'cap cap-idle' : 'cap'} lang="es" data-testid="caption-es">
+          {idle
+            ? IDLE_ES
+            : words.map((w, i) => (
+                <span key={i}>
+                  <span className="cw" data-active={i === activeIndex}>
+                    {w}
+                  </span>
+                  {i < words.length - 1 ? ' ' : ''}
+                </span>
+              ))}
+        </p>
+        <div className="cap-row">
+          {showEnglish ? (
+            <p className="cap-en" lang="en" data-testid="caption-en">
+              {idle ? IDLE_EN : english}
+            </p>
+          ) : (
+            <span />
+          )}
+          <button type="button" role="switch" aria-checked={showEnglish} onClick={onToggleEnglish}>
+            English subtitle: {showEnglish ? 'On' : 'Off'}
+          </button>
+        </div>
+      </section>
+    );
+  }
   return (
     <section className="win" aria-label="Tele's caption">
       <div className="win-bar">

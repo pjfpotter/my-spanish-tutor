@@ -17,7 +17,8 @@ export interface MemoriseConfig {
 export const DEFAULT_MEMORISE: MemoriseConfig = { threshold: 80, riseStreak: 2, hardBelow: 40, fallStreak: 3 };
 
 /** 0 is the whole script. 4 is English only. */
-export const LEVEL_NAMES = ['whole script', 'most of the script', 'some of the script', 'first words only', 'English only'] as const;
+/** The support the spoken prompt gives at each level. They match the scaffolding kinds in lib/practice/scaffold.ts, most help first. */
+export const LEVEL_NAMES = ['whole script', 'a gapped script', 'one chunk at a time', 'the first words of each chunk', 'English only'] as const;
 export const MAX_LEVEL = LEVEL_NAMES.length - 1;
 
 export interface FadeState {

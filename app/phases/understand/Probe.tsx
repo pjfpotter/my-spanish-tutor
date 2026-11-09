@@ -71,15 +71,18 @@ export function Probe({
   return (
     <section className="stack" aria-label="Quick check" data-testid="probe">
       <p>
-        <strong>{heard ? 'One word, on its own. What does it mean?' : 'Here is the word written down. What does it mean?'}</strong>
+        <strong>{heard ? 'One word on its own. What does it mean?' : 'The word, written. What does it mean?'}</strong>
       </p>
-      {heard ? (
-        <button type="button" className="btn btn-primary" onClick={() => { playWord(word.spanish, rate, index); setListened(true); }}>
-          {listened ? 'Play again' : step === 'heardSlow' ? 'Listen (slowly)' : 'Listen'}
-        </button>
-      ) : (
-        <p className="heard-text" lang="es">{word.spanish}</p>
-      )}
+      <div className="controls">
+        {heard ? (
+          <button type="button" className="btn btn-primary" onClick={() => { playWord(word.spanish, rate, index); setListened(true); }}>
+            {listened ? 'Play again' : step === 'heardSlow' ? 'Listen (slowly)' : 'Listen'}
+          </button>
+        ) : (
+          <p className="heard-text" lang="es">{word.spanish}</p>
+        )}
+        <button type="button" className="btn" onClick={onSkip}>Skip the check</button>
+      </div>
       <ul className="options">
         {options.map((o) => (
           <li key={o.id}>
@@ -89,7 +92,6 @@ export function Probe({
           </li>
         ))}
       </ul>
-      <button type="button" className="btn" onClick={onSkip}>Skip the check</button>
     </section>
   );
 }

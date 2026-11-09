@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { courseUnlockAll } from '../../../lib/course/unlock';
 import { getDb } from '../../../lib/db';
 import { loadAutomateState } from '../../../lib/automate/store';
-import { loadMemoriseItems } from '../../../lib/memorise/store';
+import { loadCourseChunks, loadMemoriseItems } from '../../../lib/memorise/store';
 import { phaseStates } from '../../../lib/phases/gate';
 import { loadProgress } from '../../../lib/progress/progress';
 import { currentProfile } from '../../../lib/server/session';
@@ -21,5 +21,5 @@ export default async function AutomatePage() {
   const items = await loadMemoriseItems(db, profile.id, profile.courseId);
   if (!items.length) return <NothingToPractise heading="Answer fast" windowTitle="answer-fast.exe" />;
   const state = await loadAutomateState(db, profile.id, items.map((i) => i.id));
-  return <Automate items={items.map(({ id, position, question, english, answer }) => ({ id, position, question, english, answer }))} initial={state} />;
+  return <Automate items={items.map(({ id, position, question, english, answer }) => ({ id, position, question, english, answer }))} initial={state} chunks={await loadCourseChunks(db, profile.courseId)} />;
 }

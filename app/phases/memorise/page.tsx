@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation';
 import { courseUnlockAll } from '../../../lib/course/unlock';
 import { getDb } from '../../../lib/db';
-import { focusedAnswerIds } from '../../../lib/diagnostics/recall-store';
-import { loadMemoriseItems } from '../../../lib/memorise/store';
+import { focusedAnswerIds, liveRecallCauses } from '../../../lib/diagnostics/recall-store';
+import { loadCourseChunks, loadMemoriseItems } from '../../../lib/memorise/store';
 import { phaseStates } from '../../../lib/phases/gate';
 import { loadProgress } from '../../../lib/progress/progress';
 import { currentProfile } from '../../../lib/server/session';
@@ -21,5 +21,5 @@ export default async function MemorisePage() {
   const items = await loadMemoriseItems(db, profile.id, profile.courseId);
   if (!items.length) return <NothingToPractise heading="Say it from memory" windowTitle="memorise.exe" />;
   // Answers with a hotspot chunk or a live recall tag are practised first.
-  return <Memorise items={items} focusIds={await focusedAnswerIds(db, profile.id, profile.courseId, items)} />;
+  return <Memorise items={items} chunks={await loadCourseChunks(db, profile.courseId)} causes={await liveRecallCauses(db, profile.id, profile.courseId, items)} focusIds={await focusedAnswerIds(db, profile.id, profile.courseId, items)} />;
 }
