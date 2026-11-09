@@ -14,6 +14,13 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 - **M5, own it:** 9.1, 9.2, 9.3, 9.4, 9.5, 13.2, 13.3, 13.4, 11.1, 11.2, 11.3, 10.2, 10.3, 10.4, 10.5
 - **M6, before anyone but Dolores:** 3.3, 3.5, 3.6
 - **M7, wrap-up:** 14.1, 14.2, 14.3, 15.1, 15.2, 16.1, 16.2, 16.3, 16.4, 13.5
+- **M8, fix what user testing found (before any new feature):** 19.1, 19.2, 19.3, 19.4, 19.5, 19.6, 19.7
+- **M9, make it feel good:** 20.1, 20.2, 20.3, 20.4, 20.5, 21.1, 21.2, 21.3, 21.4, 21.5, 21.6, 21.7, 22.1, 22.2, 22.3, 22.4
+- **M10, teacher flow and demo:** 23.1, 23.2, 23.3, 24.1, 24.2, 24.3
+- **Alongside, documents for the presentation:** 25.1 to 25.6
+- **On hold:** 23.4 and 26.2 (needs the owner's design decision)
+- **Writing flow rebuild:** 26.1a to 26.1e (decided)
+- **Stretch teacher flow:** 23.4, 23.6
 - **Stretch, only if time:** 17.1, 17.2, 17.3
 
 ## 1. Project setup and shared foundations
@@ -155,6 +162,77 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 - [x] 18.6 Set and record a performance budget (asset size and frame rate) by measuring on an old Chromebook, with effects limited to the home desktop and empty states; verify with a build-size check in CI. Optional manual check: run on a real school Chromebook
 - [x] 18.7 Create docs/asset-credits.md and log every photo and third-party asset before it ships; verify a test fails if an image under public/ has no entry
 - [x] 18.8 Play one ElevenLabs line through Tele with its caption and a baked feeling; verify with Playwright using a stub clip, and manually check that the real voice sounds right on a phone
+
+## 19. Fix what user testing found (M8)
+
+Note: task 7.x level work (names, thresholds) is superseded by 26.1a. Tasks 10.4 (mood check-in) and 11.2 (session plan) are done in code but superseded by the revised specs; 19.4 removes them.
+
+- [ ] 19.1 Fix listening: find why the browser recogniser path is not used or fails and why `/api/transcribe` returns 503 (the key `OPENAI_API_KEY` is unset when it returns `not_configured`); configure the fallback; show a plain-English message with retry and a continue-without-speaking option when both paths fail. Verify with Playwright (mocked 503) and a release-checklist step. Optional manual check: a real phone and a laptop browser
+- [ ] 19.2 Rework the starting-point check into the single-pass placement check: English title, positive feedback on every outcome, results screen, disabled controls after a correct answer, skip the comprehension stage when all are correct first time, only the missed questions otherwise; verify by Playwright for all-correct, some-wrong and all-wrong runs and that the page always has navigation
+- [ ] 19.3 Add a back and an exit-to-desktop control to every screen inside a section, keeping progress; verify with a Playwright walk through every section
+- [ ] 19.4 Remove the mood check-in screen, API route use and storage, the session plan and every timing; keep the parked spec text; keep interest tags out of the join flow; add the little-and-often message; verify no screen shows a timing or asks about mood
+- [ ] 19.5 Audit all interface text for unexplained Spanish and replace titles such as "Punto de partida" with English or add a translation; verify with a test that scans interface strings against an allow-list of learning content
+- [ ] 19.6 Reword the first screen to "Sign up for a new account" and "I lost my account", each with a one-line explanation; verify by Playwright and a copy review for reading age
+- [ ] 19.7 Disable or hide controls that no longer apply (for example replay after a correct answer); verify per screen
+
+## 20. Feedback and tutor rhythm (M9)
+
+- [ ] 20.1 Fit every practice screen into 360 by 640 with no scrolling, with a compact tutor; verify with a Playwright layout check per screen on the phone profile
+- [ ] 20.2 Implement tutor rhythm (speak at start, combo, mistake review, personal best, end, poke; wordless reactions otherwise), non-blocking lines, subtitle visible, and remove the enforced pause; verify the Continue control works while a line plays and the reaction starts within 300 ms
+- [ ] 20.3 Implement the feedback panel (instant, colour plus non-colour cue, correct answer on a miss, Continue), varied praise pool and mistake re-queue with a label; verify unit tests for no-repeat praise and re-queue
+- [ ] 20.4 Add original or licensed feedback sounds and small reward animations with a sound setting, calm switch and reduced motion respected; log them in docs/asset-credits.md; verify settings silence them
+- [ ] 20.5 Implement the combo moment (default five, auto-advances, skipped items neither count nor break); verify unit tests
+
+## 21. Task types and memorising (M9)
+
+- [ ] 21.1 Build match pairs (Spanish with English or picture); verify rapid-key input is safe
+- [ ] 21.2 Build sentence scramble (tap and drag, coloured by chunk kind); verify for phone touch and keyboard
+- [ ] 21.3 Build fill the gap and tap what you hear; verify distractor rules (similar length, cognates)
+- [ ] 21.4 Build the session mixer (at least three types, no type more than three in a row, rising difficulty); verify unit tests
+- [ ] 21.5 Implement scaffolding kinds (English, picture, chunk reveal, first words, gaps, listen then repeat) chosen from results and cause tags, and chunk-by-chunk build-up; verify step-down by unit tests
+- [ ] 21.6 Add picture or icon per chunk for the sample course and log each in docs/asset-credits.md; verify none is missing
+- [ ] 21.7 Implement skipping a known answer by recall-first; verify mastery rules still apply
+
+## 22. Automatise ladder (M9)
+
+- [ ] 22.1 Build the chunk ladder (1, 2, 3, all) with start-higher; verify progression by unit tests
+- [ ] 22.2 Show each chunk, in its colour, as it is said correctly; verify with a stub recogniser
+- [ ] 22.3 Add the hint delay (default 2.5 s) with first words of the next chunk, treated as assisted; verify timing with a fake clock
+- [ ] 22.4 Add expert mode (no text) and personal-best celebration; verify no text appears while answering
+
+## 23. Teacher flow and course shape (M10)
+
+- [ ] 23.1 Document the teacher flow end to end (steps, where each runs, calls made, what is cached) in docs/teacher-flow.md, including the question of local versus server; verify it matches the scripts
+- [ ] 23.2 Extend the course schema for one or more sentence builders, four or five questions and core or extension questions; update readiness and the overview; verify with a two-builder, four-question seed course
+- [ ] 23.3 Record the draft, set-up, review, publish and share status per course; make publish block on missing items; verify re-publishing unchanged text makes no new calls
+- [ ] 23.6 Stretch: add scan-to-start (photo of a sentence builder to an editable draft) with a manual fallback, and edit screening (length, blocklist, valid words, class-code visibility, disable course); verify a blocklisted edit blocks publishing.  Stays with 17.1 as stretch
+- [ ] 23.4 On hold: a teacher-facing setup page that calls the same server functions as the scripts, with regenerate-owner-link; do not start until the owner decides
+- [ ] 23.5 Parked for later: coursework submission dashboard
+
+## 24. Demo mode (M10)
+
+- [ ] 24.1 Build the demo entry, sample course and isolated session with a Demo label; verify nothing is written to real tables
+- [ ] 24.2 Build the one-minute stops (hear, memorise, timed round, tutor, rewards, teacher overview) with direct access and the pretend button for spoken steps; verify the whole tour runs with no microphone
+- [ ] 24.3 Add reset and a recording-friendly switch; verify reset returns to stop one
+
+## 25. Documents for the evaluation and presentation
+
+- [ ] 25.1 Write docs/api-map.md: every route under app/api, its trigger, caller, target, auth, cost-router use, and when it is not called, with a sequence diagram per main flow; verify against the route files
+- [ ] 25.2 Write an evaluation plan that answers each success criterion in proposal.md from test notes or the cost log
+- [ ] 25.3 Run a voice audition (three or more voices, clarity and pace) with a Year 8 student; record the decision in docs/voice-decision.md
+- [ ] 25.4 Write the one-page character reaction spec (states, variants, when the tutor speaks); verify it matches practice-session-feel
+- [ ] 25.5 Write game-mode proposals for memorise and automatise for the owner to approve; build nothing until approved
+- [ ] 25.6 Update docs/PRD.md and docs/ARD.md where they still describe the mood check-in, the session plan, exactly five questions or one sentence builder; verify with a search
+
+## 26. Writing flow rebuild and challenge mode
+
+- [ ] 26.1 Writing flow rebuild (decided in docs/writing-flow-options.md), in these steps; verify each by unit tests or Playwright on the phone profile:
+  - [ ] 26.1a Replace named levels with feature values in the calibration data and rubric engine (value is a blend of count and difficulty, each feature once); update the regression fixtures to assert feature sets and values
+  - [ ] 26.1b Build the empty-slot sentence-builder interface with colours shared with automatise, tap-a-slot to see fitting chunks only, the cement tray and the optional starter answer
+  - [ ] 26.1c Add per-answer confirmation that unlocks memorising for that answer, the all-five bonus, change-resets-progress, the stalled-answer suggestion to simplify (cognates and high-frequency first) and pruning
+  - [ ] 26.1d Add the one-optional-extra nudge, the memorising load note and the animated, cancellable analysis
+  - [ ] 26.1e Pay answer value through memorising and automatising (engagement-rewards) and rename the currency to euros once confirmed
+- [ ] 26.2 Challenge mode flow design (multi-screen), possibly through the design tool
 
 ## Workflow follow-up
 

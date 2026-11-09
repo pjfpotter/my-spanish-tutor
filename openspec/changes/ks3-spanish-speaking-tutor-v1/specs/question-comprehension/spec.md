@@ -40,3 +40,31 @@ Questions not yet mastered SHALL return at increasing intervals within a session
 #### Scenario: Missed question
 - **WHEN** a student chooses the wrong meaning
 - **THEN** the question returns again within the same session after a short gap
+
+### Requirement: Skip by proof
+A student who proves in the starting-point check that they understand a question SHALL skip it in this phase (see learning-diagnostics, Skipping by proof), and SHALL be able to try a question first to skip it at any time.
+
+#### Scenario: Known question
+- **WHEN** a student answers a question correctly at the first attempt in the first session
+- **THEN** they are offered the choice to move on from that question
+
+### Requirement: Resist shallow matching
+Choice options SHALL not be answerable by sentence length or a single cognate alone: distractors SHALL be similar in length and share cognates where the course allows.
+
+#### Scenario: Cognate trap
+- **WHEN** a question contains a cognate
+- **THEN** at least one wrong option also contains a cognate
+
+### Requirement: Mixed task types in comprehension
+The phase SHALL mix at least two task types (hear and choose the meaning, and one of tap what you hear or match pairs) with rising difficulty.
+
+#### Scenario: Variety
+- **WHEN** a comprehension session runs
+- **THEN** it uses at least two task types
+
+### Requirement: Spoken translation is undecided
+Version one SHALL NOT require spoken English translation of a question. Hearing a question and saying its English meaning is stronger evidence of understanding than multiple choice, but it needs English speech recognition and sends a student's English voice to the recogniser. It SHALL be decided after weighing data-protection impact (no recording stored, same handling as Spanish), recogniser accuracy for short English answers on school devices, and effort.
+
+#### Scenario: Comprehension check
+- **WHEN** a student is checked on a question's meaning in version one
+- **THEN** they choose from options and are not asked to speak English
