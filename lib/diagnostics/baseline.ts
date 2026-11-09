@@ -26,25 +26,28 @@ export async function loadBaseline(db: Db, profileId: string): Promise<BaselineR
   return rows.map((r) => ({ questionId: r.question_id, stage: r.stage, correct: r.correct }));
 }
 
-/** The check is finished once every question has its second test. Until then it is still offered. */
+/** The check is a single pass: it is finished once every question has an answer. Until then it is still offered. */
 export function baselineDone(rows: BaselineRow[], questionCount: number): boolean {
-  return rows.filter((r) => r.stage === 'post').length >= questionCount;
+  return rows.filter((r) => r.stage === 'pre').length >= questionCount;
 }
 
 export interface BaselineSummary {
-  before: number;
-  after: number;
+  /** Questions understood first time. */
+  known: number;
   total: number;
+  /** Ids of the questions still to learn, in the order given. */
+  toLearn: string[];
 }
 
-export function summariseBaseline(rows: BaselineRow[], total: number): BaselineSummary {
-  const count = (stage: BaselineStage) => rows.filter((r) => r.stage === stage && r.correct).length;
-  return { before: count('pre'), after: count('post'), total };
+export function summariseBaseline(rows: BaselineRow[], questionIds: readonly string[]): BaselineSummary {
+  const known = knownAtStart(rows);
+  return { known: questionIds.filter((id) => known.has(id)).length, total: questionIds.length, toLearn: questionIds.filter((id) => !known.has(id)) };
 }
 
 /**
- * Questions the student already understood cold, before being taught anything. Practice can begin
- * these at normal speed; every other question starts slowly.
+ * Questions the student proved they understand in the placement check. Practice can begin these at
+ * normal speed, and the comprehension stage skips them (learning-diagnostics: Skipping by proof). They are
+ * not recorded as mastered; they count only for that stage.
  */
 export function knownAtStart(rows: BaselineRow[]): Set<string> {
   return new Set(rows.filter((r) => r.stage === 'pre' && r.correct).map((r) => r.questionId));

@@ -167,13 +167,13 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 
 Note: task 7.x level work (names, thresholds) is superseded by 26.1a. Tasks 10.4 (mood check-in) and 11.2 (session plan) are done in code but superseded by the revised specs; 19.4 removes them.
 
-- [ ] 19.1 Fix listening: find why the browser recogniser path is not used or fails and why `/api/transcribe` returns 503 (the key `OPENAI_API_KEY` is unset when it returns `not_configured`); configure the fallback; show a plain-English message with retry and a continue-without-speaking option when both paths fail. Verify with Playwright (mocked 503) and a release-checklist step. Optional manual check: a real phone and a laptop browser
-- [ ] 19.2 Rework the starting-point check into the single-pass placement check: English title, positive feedback on every outcome, results screen, disabled controls after a correct answer, skip the comprehension stage when all are correct first time, only the missed questions otherwise; verify by Playwright for all-correct, some-wrong and all-wrong runs and that the page always has navigation
-- [ ] 19.3 Add a back and an exit-to-desktop control to every screen inside a section, keeping progress; verify with a Playwright walk through every section
-- [ ] 19.4 Remove the mood check-in screen, API route use and storage, the session plan and every timing; keep the parked spec text; keep interest tags out of the join flow; add the little-and-often message; verify no screen shows a timing or asks about mood
-- [ ] 19.5 Audit all interface text for unexplained Spanish and replace titles such as "Punto de partida" with English or add a translation; verify with a test that scans interface strings against an allow-list of learning content
-- [ ] 19.6 Reword the first screen to "Sign up for a new account" and "I lost my account", each with a one-line explanation; verify by Playwright and a copy review for reading age
-- [ ] 19.7 Disable or hide controls that no longer apply (for example replay after a correct answer); verify per screen
+- [x] 19.1 Fix listening: find why the browser recogniser path is not used or fails and why `/api/transcribe` returns 503 (the key `OPENAI_API_KEY` is unset when it returns `not_configured`); configure the fallback; show a plain-English message with retry and a continue-without-speaking option when both paths fail. Verify with Playwright (mocked 503) and a release-checklist step. Optional manual check: a real phone and a laptop browser
+- [x] 19.2 Rework the starting-point check into the single-pass placement check: English title, positive feedback on every outcome, results screen, disabled controls after a correct answer, skip the comprehension stage when all are correct first time, only the missed questions otherwise; verify by Playwright for all-correct, some-wrong and all-wrong runs and that the page always has navigation
+- [x] 19.3 Add a back and an exit-to-desktop control to every screen inside a section, keeping progress; verify with a Playwright walk through every section
+- [x] 19.4 Remove the mood check-in screen, API route use and storage, the session plan and every timing; keep the parked spec text; keep interest tags out of the join flow; add the little-and-often message; verify no screen shows a timing or asks about mood
+- [x] 19.5 Audit all interface text for unexplained Spanish and replace titles such as "Punto de partida" with English or add a translation; verify with a test that scans interface strings against an allow-list of learning content
+- [x] 19.6 Reword the first screen to "Sign up for a new account" and "I lost my account", each with a one-line explanation; verify by Playwright and a copy review for reading age
+- [x] 19.7 Disable or hide controls that no longer apply (for example replay after a correct answer); verify per screen
 
 ## 20. Feedback and tutor rhythm (M9)
 

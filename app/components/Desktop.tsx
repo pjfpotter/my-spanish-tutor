@@ -2,28 +2,27 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { moodPlan, MOODS, type Mood } from '../../lib/diagnostics/mood';
-import { currentSessionId } from '../../lib/session/session-id';
 import type { ClipFile } from '../../lib/tele/clip';
 import { clipUrls, findClip, loadClip } from '../../lib/tele/clips';
 import { linesFor, type PhraseLine } from '../../lib/tele/phrase-bank';
 import { selectLine } from '../../lib/tele/select';
+import { FIRST_SCREEN } from '../../lib/ui/first-screen';
 import { Status } from '../../lib/ui/Status';
 import { PHASES, QUESTION_COUNT, type PhaseId, type PhaseState } from '../../lib/phases/gate';
 import { Caption, useSubtitles } from './Caption';
 import { Tele } from './Tele';
 import { useLinePlayback } from './useLinePlayback';
-import { ExamWindow, PlanWindow } from './Planner';
+import { ExamWindow, ReminderWindow } from './Planner';
 import type { ReadinessInput } from '../../lib/planner/readiness';
 import { Win } from './Win';
 import './desktop.css';
 import './screens.css';
 
-const PHASE_TEXT: Record<PhaseId, { es: string; en: string }> = {
-  write: { es: 'Escribir', en: 'Write your answers' },
-  understand: { es: 'Entender', en: 'Understand the questions' },
-  memorise: { es: 'Memorizar', en: 'Say your answers from memory' },
-  automate: { es: 'Automatizar', en: 'Answer without thinking' },
+const PHASE_TEXT: Record<PhaseId, { title: string; en: string }> = {
+  write: { title: 'Write', en: 'Write your answers' },
+  understand: { title: 'Understand', en: 'Understand the questions' },
+  memorise: { title: 'Memorise', en: 'Say your answers from memory' },
+  automate: { title: 'Answer fast', en: 'Answer without thinking' },
 };
 
 export interface DesktopProps {
@@ -52,15 +51,6 @@ export interface DesktopProps {
 const NO_LINES: PhraseLine[] = [];
 const NO_READINESS: ReadinessInput = { answersConfirmed: 0, questionsMastered: 0, answersMemorised: 0, questionsAutomated: 0 };
 
-const MOOD_TEXT: Record<Mood, { es: string; en: string }> = {
-  good: { es: 'Bien', en: 'Good' },
-  ok: { es: 'Normal', en: 'Okay' },
-  nervous: { es: 'Nervioso', en: 'Nervous' },
-  tired: { es: 'Cansado', en: 'Tired' },
-  not_a_fan: { es: 'No me gusta', en: 'Spanish is not my favourite' },
-};
-const moodKey = (sessionId: string) => `mood:${sessionId}`;
-
 /** A question's picture in words as well as in the picture, so it is never shown by clarity alone. */
 const clarityWord = (c: number) => (c >= 1 ? 'clear' : c > 0 ? 'clearing' : 'static');
 
@@ -74,53 +64,15 @@ export function Desktop({ states, unlockAll = false, daysToTest, channels = [], 
   const playback = useLinePlayback();
   const lastLine = useRef<string | null>(null);
   const clips = useRef(new Map<string, ClipFile>());
-  /** Null until we know whether this session has been asked; then the answer, or false if not yet answered. */
-  const [mood, setMood] = useState<Mood | false | 'skipped' | null>(null);
-  const [moodError, setMoodError] = useState(false);
 
   // Load clip timelines up front so audio can start inside the tap: iPhone blocks audio that
   // starts after an await. A line with no clip, or whose clip fails to load, plays silently.
   useEffect(() => {
-    for (const line of [...linesFor('poke'), ...cheekyLines, ...linesFor('nervous'), ...linesFor('dislike'), ...linesFor('quick_win')]) {
+    for (const line of [...linesFor('poke'), ...cheekyLines]) {
       const slot = findClip(line.es);
       if (slot) loadClip(slot).then((clip) => clips.current.set(line.id, clip), () => {});
     }
-    // One question per visit: a mood already given in this session is not asked for again.
-    try {
-      const saved = localStorage.getItem(moodKey(currentSessionId()));
-      setMood(saved === 'skipped' ? 'skipped' : (MOODS as readonly string[]).includes(saved ?? '') ? (saved as Mood) : false);
-    } catch {
-      setMood(false);
-    }
   }, [cheekyLines]);
-
-  function skipMood() {
-    try { localStorage.setItem(moodKey(currentSessionId()), 'skipped'); } catch { /* asked again next page load, which is fine */ }
-    setMood('skipped');
-  }
-
-  async function answerMood(m: Mood) {
-    setMoodError(false);
-    const sessionId = currentSessionId();
-    try {
-      const res = await fetch('/api/mood', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mood: m, sessionId }) });
-      if (!res.ok) throw new Error('save failed');
-    } catch {
-      setMoodError(true);
-      return;
-    }
-    try { localStorage.setItem(moodKey(sessionId), m); } catch { /* the answer is still saved on the server */ }
-    setMood(m);
-    // Tele answers in Spanish, lightly. Nothing here earns coins.
-    const [situation] = moodPlan(m).situations;
-    if (situation && !playback.playing) {
-      const line = selectLine(situation, { lastId: lastLine.current });
-      lastLine.current = line.id;
-      const clip = clips.current.get(line.id);
-      const slot = findClip(line.es);
-      playback.play(line, clip && slot ? { clip, audioUrl: clipUrls(slot).audio } : undefined);
-    }
-  }
 
   // Poking Tele plays a stock line. It earns nothing: no coins, no progress, no request to the API.
   function poke() {
@@ -151,64 +103,38 @@ export function Desktop({ states, unlockAll = false, daysToTest, channels = [], 
 
       <div className="desktop-windows">
         {!signedIn && (
-          <Win title="empezar.exe" label="Get started">
-            <p>Make a profile to save your progress. No name or email needed.</p>
-            <div className="controls">
-              <Link className="btn btn-primary" href="/welcome">
-                Make my profile
-              </Link>
-              <Link className="btn" href="/restore">
-                I have a code
-              </Link>
+          <Win title="get-started.exe" label="Get started">
+            <div className="stack">
+              <div className="stack">
+                <Link className="btn btn-primary" href="/welcome" data-testid="sign-up">
+                  {FIRST_SCREEN.signUp.label}
+                </Link>
+                <p className="muted">{FIRST_SCREEN.signUp.hint}</p>
+              </div>
+              <div className="stack">
+                <Link className="btn" href="/restore" data-testid="lost-account">
+                  {FIRST_SCREEN.lost.label}
+                </Link>
+                <p className="muted">{FIRST_SCREEN.lost.hint}</p>
+              </div>
             </div>
           </Win>
         )}
         {signedIn && nickname && (
           <p className="muted" data-testid="nickname">
-            Hola, {nickname}
+            Hi, {nickname}
           </p>
         )}
-        {signedIn && mood !== null && mood !== 'skipped' && (
-          <Win title="animo.exe" label="How are you feeling">
-            {mood === false ? (
-              <>
-                <p>
-                  <strong>¿Cómo estás hoy?</strong> <span className="muted">How are you today? You can skip this.</span>
-                </p>
-                <ul className="options" aria-label="Pick how you feel">
-                  {MOODS.map((m) => (
-                    <li key={m}>
-                      <button type="button" className="option" data-mood={m} onClick={() => answerMood(m)}>
-                        <span lang="es">{MOOD_TEXT[m].es}</span> <span className="muted">{MOOD_TEXT[m].en}</span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-                {moodError && <p className="error" role="alert">That did not save. You can carry on and try again later.</p>}
-                <button type="button" className="btn" onClick={skipMood}>Skip</button>
-              </>
-            ) : (
-              <>
-                <p className="muted" data-testid="mood-done">Thanks. Mood today: {MOOD_TEXT[mood].en}.</p>
-                {moodPlan(mood).quickWin && (
-                  <Link className="btn btn-primary" href="/phases/understand?quick=1" data-testid="quick-win">
-                    One easy one first
-                  </Link>
-                )}
-              </>
-            )}
-          </Win>
-        )}
         {signedIn && !baselineDone && (
-          <Win title="inicio.exe" label="Starting point">
-            <p>Want to see what you already know? Five quick questions, with the answers shown after each.</p>
+          <Win title="start.exe" label="Starting point">
+            <p>Want to see what you already know? Five quick questions, with the meaning shown after each.</p>
             <Link className="btn" href="/baseline" data-testid="baseline-link">Find my starting point</Link>
           </Win>
         )}
         <ExamWindow daysToTest={daysToTest} progress={progress} />
-        <PlanWindow daysToTest={daysToTest} progress={progress} />
+        <ReminderWindow daysToTest={daysToTest} />
 
-        <Win title="fases.exe" label="Your four steps">
+        <Win title="steps.exe" label="Your four steps">
           {unlockAll && (
             <p className="testing-note" data-testid="testing-label">
               <strong>Testing course:</strong> every step is open so you can try them all.
@@ -222,7 +148,7 @@ export function Desktop({ states, unlockAll = false, daysToTest, channels = [], 
                 return (
                   <li key={id}>
                     <Link href={`/phases/${id}`} className="phase phase-open" data-phase={id} data-state="open">
-                      <span className="phase-es">{text.es}</span>
+                      <span className="phase-title">{text.title}</span>
                       <span className="phase-en">{text.en}</span>
                       {state.done && <Status kind="done" label="Done" />}
                     </Link>
@@ -244,7 +170,7 @@ export function Desktop({ states, unlockAll = false, daysToTest, channels = [], 
                     <span className="phase-static" aria-hidden="true" />
                     <span className="phase-chip">
                       <Status kind="locked" label="Locked" />
-                      <span className="phase-es">{text.es}</span>
+                      <span className="phase-title">{text.title}</span>
                       <span className="phase-en">{text.en}</span>
                       <span id={reasonId} className="phase-reason">
                         {state.reason}
@@ -258,7 +184,7 @@ export function Desktop({ states, unlockAll = false, daysToTest, channels = [], 
         </Win>
 
         {signedIn && (
-          <Win title="escritorio.exe" label="Your desktop">
+          <Win title="desktop.exe" label="Your desktop">
             <p data-testid="streak">
               Streak: <strong>{streak}</strong> {streak === 1 ? 'day' : 'days'}
               {freezes > 0 && <span className="muted"> ({freezes} {freezes === 1 ? 'freeze' : 'freezes'} ready)</span>}
@@ -269,13 +195,13 @@ export function Desktop({ states, unlockAll = false, daysToTest, channels = [], 
                 {objects.map((o) => (
                   <li key={o.id} data-testid={`thing-${o.id}`}>
                     <ObjectIcon id={o.id} />
-                    <span lang="es">{o.es}</span>
+                    <span lang="es">{o.es}</span> <span className="muted">{o.en}</span>
                   </li>
                 ))}
               </ul>
             )}
             <div className="controls">
-              <Link className="btn" href="/shop">Tienda</Link>
+              <Link className="btn" href="/shop">Shop</Link>
               <Link className="btn" href="/progress">My progress</Link>
             </div>
           </Win>
@@ -294,7 +220,7 @@ export function Desktop({ states, unlockAll = false, daysToTest, channels = [], 
                     </svg>
                     <span className="file-static" aria-hidden="true" />
                   </span>
-                  <span>Pregunta{i + 1}.txt</span>
+                  <span>Question{i + 1}.txt</span>
                   <span className="file-state">{clarityWord(clarity)}</span>
                 </li>
               );

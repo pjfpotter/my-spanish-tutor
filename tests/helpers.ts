@@ -11,7 +11,6 @@ export async function signUpThroughForm(page: Page): Promise<string> {
   await page.getByRole('checkbox', { name: 'I have read this' }).check();
   await page.getByRole('button', { name: 'Carry on' }).click();
   await page.getByRole('radio').first().check();
-  await page.getByRole('checkbox', { name: 'football' }).check();
   await page.getByRole('button', { name: 'Create my profile' }).click();
   const code = (await page.getByTestId('recovery-code').textContent())!.trim();
   await page.getByRole('button', { name: /Let's go/ }).click();
@@ -25,7 +24,7 @@ export async function signUpThroughForm(page: Page): Promise<string> {
  */
 export async function signUp(page: Page, classCode: string = SEED_CLASS_CODE): Promise<string> {
   const { nicknameOptions } = await import('../lib/profile/profile');
-  const res = await page.request.post('/api/profile', { data: { classCode, privacyAcknowledged: true, nickname: nicknameOptions(1)[0], interests: ['football'] } });
+  const res = await page.request.post('/api/profile', { data: { classCode, privacyAcknowledged: true, nickname: nicknameOptions(1)[0], interests: [] } });
   expect(res.ok()).toBe(true);
   const { recoveryCode } = (await res.json()) as { recoveryCode: string };
   await page.goto('/');

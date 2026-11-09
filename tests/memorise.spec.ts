@@ -263,3 +263,18 @@ test('a sentence missed three times in a row is isolated for short practice, the
   await expect(page.getByTestId('english-prompt')).toHaveText(SEED_COURSE.questions[0].english);
   await expect(page.getByTestId('prompt')).toContainText(sentences[0].split(' ')[0]);
 });
+
+test('when listening fails the student can carry on without speaking, unscored (19.1)', async ({ page }) => {
+  const recall = recallCalls(page);
+  await signUp(page);
+  await unlockMemorise(page);
+  await page.route('**/api/transcribe', (r) => r.fulfill({ status: 503, json: { status: 'unavailable', reason: 'not_configured' } }));
+  await page.goto('/phases/memorise');
+  await speak(page);
+  await expect(page.getByTestId('unavailable')).toContainText('not your fault');
+  await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
+  await page.getByTestId('continue-without-speaking').click();
+  await expect(page.getByTestId('unavailable')).toHaveCount(0);
+  await expect(page.getByTestId('english-prompt')).toBeVisible();
+  expect(recall.sent).toHaveLength(0); // nothing was scored or saved
+});

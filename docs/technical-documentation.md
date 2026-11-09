@@ -89,7 +89,7 @@ These rules shape every module. They are enforced by code and tests where possib
 |---|---|---|
 | R1 | **The tutor never speaks English.** Tutor audio is Spanish; English is subtitle text only. | The audio manifest only plans Spanish text; the caption component renders the subtitle as text. |
 | R2 | **No personal data.** No names, emails, phone numbers, school IDs or audio recordings are stored. | Schema has no such columns; the nickname comes from a generated list; the transcribe route holds audio in memory only (test in `lib/transcription/transcribe.test.ts`). |
-| R3 | **Interests are fixed tags, never free text.** | The profile form has no text field for interests; the server rejects unknown tags. |
+| R3 | **Interests are fixed tags, never free text.** | The join flow no longer asks for interests (19.4); if they return they stay fixed tags, with no text field. |
 | R4 | **The practice loop makes no language-model call.** | There is no model client in the request path of any phase route. A test (task 14.3) fails if a practice round calls one. |
 | R5 | **Scores come from rules, not a model.** A word is matched if the recogniser understood it. A recognition failure or noise is never penalised. | `lib/speech/score.ts`, `lib/speech/capture-judgement.ts`. |
 | R6 | **Every paid call goes through the cost router.** | `createCostRouter` throws if a service has no configured cap. |
@@ -559,9 +559,9 @@ Every practice attempt is stored through `logAttempt`. `validateAttempt` rejects
 | Group | Tags |
 |---|---|
 | Comprehension | `too_fast`, `word_not_known`, `sound_spelling_gap`, `thrown_by_context` |
-| Recall | `not_known_well_enough`, `stress_related`, `chunk_hotspot` |
+| Recall | `not_known_well_enough`, `chunk_hotspot` (`stress_related` is no longer produced: it needed the mood check-in, which was removed) |
 
-The list is closed so that analytics and the teacher overview stay simple (D11). Tags come from rules over probe variations (a key word played slowly alone, at normal speed alone, and in the sentence), timed versus untimed results, and the latest mood check-in. A chunk missed in three or more attempts becomes a **hotspot** and is prioritised in the next session.
+The list is closed so that analytics and the teacher overview stay simple (D11). Tags come from rules over probe variations (a key word played slowly alone, at normal speed alone, and in the sentence), and timed versus untimed results. There is no mood check-in; the `mood_checkins` table is left in place (migrations are additive) but nothing reads or writes it. A chunk missed in three or more attempts becomes a **hotspot** and is prioritised in the next session.
 
 ### 10.8 Coins (`lib/coins/ledger.ts`)
 
@@ -771,9 +771,9 @@ Creates an anonymous profile and sets the cookie.
 
 | | |
 |---|---|
-| **Body** | `{ nickname: string, interests: string[] }` |
+| **Body** | `{ classCode, privacyAcknowledged, nickname: string }`. Interests are not collected at sign-up; an `interests` field, if sent, is ignored |
 | **200** | `{ profile, recoveryCode }`. The recovery code is returned **once** |
-| **400** | Missing fields, nickname not in the generated list, or an unknown interest tag |
+| **400** | Missing fields, or a nickname not in the generated list |
 | **503** | No course exists to join yet |
 
 ### 15.2 `POST /api/profile/restore`
@@ -973,6 +973,7 @@ Plain SQL files named `0001_name.sql`, `0002_name.sql` and so on. Rules:
 4. Any new image is logged in `docs/asset-credits.md`.
 5. Any new paid call has a configured cap and a fallback.
 6. Push to `main`; confirm the Vercel deployment.
+7. Listening works on the deployed site: `OPENAI_API_KEY` is set for Production and Preview, and a real attempt on `/lab/speech` returns a transcript (a 503 from `/api/transcribe` with `not_configured` means the key is missing). Optional manual check: a real phone and a laptop browser.
 
 ### 18.5 Rollback
 

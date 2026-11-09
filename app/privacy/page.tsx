@@ -11,15 +11,15 @@ export default async function Privacy() {
   const signedIn = !!(await currentProfile());
   return (
     <main className="screen">
-      <h1>Privacidad</h1>
-      <Win title="privacidad.exe" label="Privacy notice">
+      <h1>Privacy</h1>
+      <Win title="privacy.exe" label="Privacy notice">
         <PrivacyNotice />
         <p className="muted">
           Teachers and parents: the <Link href="/privacy/dpia" data-testid="dpia-link">data protection impact assessment</Link> has the detail.
         </p>
       </Win>
       {signedIn && (
-        <Win title="borrar.exe" label="Delete everything">
+        <Win title="delete.exe" label="Delete everything">
           <DeleteEverything />
         </Win>
       )}

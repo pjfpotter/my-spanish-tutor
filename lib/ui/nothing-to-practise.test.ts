@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { NothingToPractise } from '../../app/components/NothingToPractise';
 
 describe('memorise and automate with no answer to practise', () => {
-  it.each([['Memorizar', 'memorizar.exe'], ['Automatizar', 'automatizar.exe']])('%s says what to do instead of "all done" or crashing', (heading, windowTitle) => {
+  it.each([['Say it from memory', 'memorise.exe'], ['Answer fast', 'answer-fast.exe']])('%s says what to do instead of "all done" or crashing', (heading, windowTitle) => {
     const html = renderToStaticMarkup(createElement(NothingToPractise, { heading, windowTitle }));
     expect(html).toContain(heading);
     expect(html).toContain('nothing to practise yet');

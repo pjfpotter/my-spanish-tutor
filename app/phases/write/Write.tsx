@@ -7,6 +7,7 @@ import { applySwap, insertGlue, slotsFor } from '../../../lib/coach/swaps';
 import { levelInfo, startingAnswer, viewAnswer, viewWholeTest } from '../../../lib/coach/writing';
 import { LEVELS, type Level } from '../../../lib/course/schema';
 import type { SavedAnswer, WritingCourse } from '../../../lib/progress/writing-store';
+import { SectionNav } from '../../components/SectionNav';
 import { Win } from '../../components/Win';
 import '../../components/screens.css';
 
@@ -100,6 +101,7 @@ export function Write({ course, saved }: { course: WritingCourse; saved: SavedAn
 
   return (
     <main className="screen">
+      <SectionNav onBack={index > 0 ? () => setIndex(index - 1) : undefined} backLabel="Previous question" />
       <h1>Write</h1>
       <Win title="write.exe">
         <div className="stack">

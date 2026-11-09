@@ -114,13 +114,3 @@ export function afterAttempt(q: SessionQueue, id: string, outcome: 'correct' | '
   });
   return { turn, entries, last: id };
 }
-
-/**
- * The easy one for a quick win: the not-yet-mastered question the student already knows best, so the
- * first thing they do is likely to go well. Ties go to the lowest position. Null if all are mastered.
- */
-export function quickWinId(items: { id: string; position: number; mastered: boolean; successes: number }[]): string | null {
-  const open = items.filter((i) => !i.mastered);
-  open.sort((a, b) => b.successes - a.successes || a.position - b.position);
-  return open[0]?.id ?? null;
-}

@@ -13,9 +13,7 @@ export const PRIVACY_NOTICE: NoticeSection[] = [
     heading: 'What we keep',
     lines: [
       'A nickname you pick from a list. It is not your name.',
-      'The interests you tick from a list.',
       'The answers you write, and how your practice goes. Keep private things out of your answers.',
-      'How you say you feel on the day, if you choose to say.',
       'Your coins and the things you buy with them.',
     ],
   },

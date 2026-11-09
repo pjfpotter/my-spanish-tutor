@@ -24,8 +24,8 @@ export default async function ProgressPage() {
 
   return (
     <main className="screen">
-      <h1>Mi progreso</h1>
-      <Win title="historial.exe" label="Your own history">
+      <h1>My progress</h1>
+      <Win title="history.exe" label="Your own history">
         <div className="stack">
           {history.attempts === 0 ? (
             <p data-testid="no-history">Nothing here yet. Your first practice starts your history, and it only ever compares you with you.</p>
@@ -54,7 +54,7 @@ export default async function ProgressPage() {
         </div>
       </Win>
 
-      <Win title="la clase.exe" label="The class goal">
+      <Win title="class-goal.exe" label="The class goal">
         <div className="stack" data-testid="class-goal">
           {goal.shown ? (
             <>

@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { buildPlan, LATE_DAYS, MAX_SESSION_MINUTES } from './plan';
 import { DEFAULT_REMINDER, parsePrefs, reminderDue } from './reminders';
 import { nextPhase, readiness, readinessPercent, type ReadinessInput } from './readiness';
 
 const none: ReadinessInput = { answersConfirmed: 0, questionsMastered: 0, answersMemorised: 0, questionsAutomated: 0 };
 const all: ReadinessInput = { answersConfirmed: 5, questionsMastered: 5, answersMemorised: 5, questionsAutomated: 5 };
-const total = (p: ReturnType<typeof buildPlan>) => p.days.flatMap((d) => d.sessions).reduce((a, s) => a + s.minutes, 0);
 
 describe('readiness', () => {
   it('runs from 0 to 100 as the three measures fill', () => {
@@ -33,48 +31,6 @@ describe('readiness', () => {
       expect(r.nextAction.es.length).toBeGreaterThan(0);
       expect(r.nextAction.en.length).toBeGreaterThan(0);
     }
-  });
-});
-
-describe('session plan', () => {
-  it('fits the minutes per day and keeps every session short', () => {
-    const plan = buildPlan({ progress: none, minutesPerDay: 15, daysLeft: 6 });
-    expect(plan.mode).toBe('normal');
-    for (const d of plan.days) {
-      expect(d.sessions.reduce((a, s) => a + s.minutes, 0)).toBeLessThanOrEqual(15);
-      for (const s of d.sessions) expect(s.minutes).toBeLessThanOrEqual(MAX_SESSION_MINUTES);
-    }
-    expect(plan.days.length).toBeLessThanOrEqual(6);
-  });
-  it('plans nothing for finished work and nothing after the test', () => {
-    expect(buildPlan({ progress: all, minutesPerDay: 15, daysLeft: 6 }).days).toEqual([]);
-    expect(buildPlan({ progress: none, minutesPerDay: 15, daysLeft: 0 }).mode).toBe('none');
-  });
-  it('redistributes after a missed day without alarming language', () => {
-    const before = buildPlan({ progress: none, minutesPerDay: 20, daysLeft: 6 });
-    const after = buildPlan({ progress: none, minutesPerDay: 20, daysLeft: 5 });
-    expect(total(after)).toBe(total(before));
-    expect(after.days.length).toBeLessThanOrEqual(5);
-    expect(after.days[0].sessions.reduce((a, s) => a + s.minutes, 0)).toBeGreaterThanOrEqual(before.days[0].sessions.reduce((a, s) => a + s.minutes, 0));
-    expect(after.message).not.toMatch(/miss|behind|late|fail|worry|panic|urgent|!/i);
-  });
-  it('says kindly when the days are full, and never plans above the minutes offered', () => {
-    const plan = buildPlan({ progress: none, minutesPerDay: 5, daysLeft: 4 });
-    expect(plan.tight).toBe(true);
-    expect(plan.message).not.toMatch(/miss|behind|fail|worry|panic|urgent|!/i);
-    for (const d of plan.days) expect(d.sessions.reduce((a, s) => a + s.minutes, 0)).toBeLessThanOrEqual(5);
-  });
-  it('late starter with two days left: short answers first, then rapid recall, shorter phases', () => {
-    const late = buildPlan({ progress: none, minutesPerDay: 45, daysLeft: 2 });
-    const normal = buildPlan({ progress: none, minutesPerDay: 45, daysLeft: LATE_DAYS + 1 });
-    expect(late.mode).toBe('late');
-    expect(late.focus).toEqual(['write', 'automate']);
-    expect(late.days[0].sessions[0].phase).toBe('write');
-    const phases = late.days.flatMap((d) => d.sessions.map((s) => s.phase));
-    expect(phases).toContain('automate');
-    const minutesIn = (p: typeof late, phase: string) => p.days.flatMap((d) => d.sessions).filter((s) => s.phase === phase).reduce((a, s) => a + s.minutes, 0);
-    expect(minutesIn(late, 'understand')).toBeLessThan(minutesIn(normal, 'understand'));
-    expect(minutesIn(late, 'automate')).toBeGreaterThan(minutesIn(normal, 'automate'));
   });
 });
 

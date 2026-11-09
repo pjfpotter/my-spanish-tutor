@@ -7,7 +7,7 @@ const OWNER = '/owner/e2e-owner-token-0123456789';
 
 test('the owner link opens the class overview with nicknames and progress only', async ({ page }) => {
   await signUp(page);
-  const nickname = (await page.getByTestId('nickname').textContent())!.replace('Hola, ', '').trim();
+  const nickname = (await page.getByTestId('nickname').textContent())!.replace('Hi, ', '').trim();
   await page.goto(OWNER);
   await expect(page.getByRole('heading', { name: SEED_COURSE.title })).toBeVisible();
   await expect(page.getByText('Joined:')).toBeVisible();

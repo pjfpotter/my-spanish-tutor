@@ -51,7 +51,7 @@ test('join, write, understand, memorise and automate on the seeded course, then 
   await expect(state(page, 'memorise')).toHaveAttribute('data-state', 'open');
   await expect(state(page, 'automate')).toHaveAttribute('data-state', 'locked');
   await expect(page.getByTestId('readiness')).toHaveText('Readiness: 33%');
-  await expect(page.getByTestId('readiness-next')).toContainText('Memoriza');
+  await expect(page.getByTestId('readiness-next')).toContainText('Say your answers from memory');
 
   // 3. Memorised: automate opens.
   await unlockAutomate(page);

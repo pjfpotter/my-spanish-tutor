@@ -64,28 +64,10 @@ describe('recall cause tags and hotspots (10.3)', () => {
     expect((await tagsOf(id))[0].cause_tags).toEqual([]);
   });
 
-  it('stress pattern: right untimed, wrong timed after feeling nervous', async () => {
-    const id = await newStudent(4, ANSWER);
-    await recall(id, { accuracy: 95 }); // passes untimed
-    await db.query(`insert into mood_checkins (profile_id, session_id, mood) values ($1,$2,'nervous')`, [id, randomUUID()]);
-    await recordResponse(db, { profileId: id, courseId, itemId: q[0], sessionId: randomUUID(), blank: false, accuracy: 30, responseTimeMs: 2000, speed: 1, repeats: 0, assisted: false });
-    const rows = await tagsOf(id);
-    expect(rows[1]).toMatchObject({ phase: 'automate', outcome: 'wrong', cause_tags: ['stress_related'] });
-  });
-
-  it('the same timed failure is not stress when the student felt fine', async () => {
-    const id = await newStudent(5, ANSWER);
-    await recall(id, { accuracy: 95 });
-    await db.query(`insert into mood_checkins (profile_id, session_id, mood) values ($1,$2,'good')`, [id, randomUUID()]);
-    await recordResponse(db, { profileId: id, courseId, itemId: q[0], sessionId: randomUUID(), blank: false, accuracy: 30, responseTimeMs: 2000, speed: 1, repeats: 0, assisted: false });
-    expect((await tagsOf(id))[1].cause_tags).toEqual([]);
-  });
-
   it('a blank timed answer is still a blank, and is tagged by the same rule', async () => {
     const id = await newStudent(6, ANSWER);
     await recall(id, { accuracy: 95 });
-    await db.query(`insert into mood_checkins (profile_id, session_id, mood) values ($1,$2,'nervous')`, [id, randomUUID()]);
     await recordResponse(db, { profileId: id, courseId, itemId: q[0], sessionId: randomUUID(), blank: true, accuracy: null, responseTimeMs: null, speed: 1, repeats: 0, assisted: false });
-    expect((await tagsOf(id))[1]).toMatchObject({ outcome: 'blank', cause_tags: ['stress_related'] });
+    expect((await tagsOf(id))[1]).toMatchObject({ outcome: 'blank', cause_tags: [] });
   });
 });

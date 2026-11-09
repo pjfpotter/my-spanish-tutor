@@ -20,7 +20,10 @@ import { Status } from '../../../lib/ui/Status';
 import { Caption, useSubtitles } from '../../components/Caption';
 import { Tele } from '../../components/Tele';
 import { useLinePlayback } from '../../components/useLinePlayback';
+import { LittleAndOften } from '../../components/LittleAndOften';
+import { ListeningProblem } from '../../components/ListeningProblem';
 import { useSpeechCapture, type CaptureResult } from '../../components/useSpeechCapture';
+import { SectionNav } from '../../components/SectionNav';
 import { Win } from '../../components/Win';
 import '../../components/screens.css';
 
@@ -260,14 +263,14 @@ export function Automate({ items, initial }: { items: AutomateItem[]; initial: A
   const counted = results.filter((r) => !r.assisted);
   const answered = counted.filter((r) => !r.blank && r.responseMs !== null);
   const roundAverage = answered.length ? Math.round(answered.reduce((t, r) => t + (r.responseMs as number), 0) / answered.length) : null;
-  const mic = capture.state === 'denied' ? 'denied' : capture.state === 'unsupported' ? 'unsupported' : capture.state === 'unavailable' ? 'unavailable' : null;
 
   return (
     <main className="screen">
-      <h1>Automatizar</h1>
+      <SectionNav />
+      <h1>Answer fast</h1>
       <Tele feelings={playback.feelings ?? undefined} loudness={playback.loudness} speaking={playback.playing} question={stage === 'listening' || stage === 'speaking'} />
 
-      <Win title="automatizar.exe" label="Hear a question and answer it fast">
+      <Win title="answer-fast.exe" label="Hear a question and answer it fast">
         <div className="stack">
           {stage === 'intro' && (
             <div className="stack" data-testid="intro">
@@ -280,6 +283,7 @@ export function Automate({ items, initial }: { items: AutomateItem[]; initial: A
               </p>
               <RankLadder state={state} />
               {state.ready && <ReadyNote />}
+              <LittleAndOften />
               <div className="controls">
                 <button type="button" className="btn btn-primary" onClick={start} disabled={capture.state === 'checking'}>
                   Start a round
@@ -289,20 +293,7 @@ export function Automate({ items, initial }: { items: AutomateItem[]; initial: A
             </div>
           )}
 
-          {mic === 'denied' && (
-            <p className="error" role="status" data-testid="denied">
-              The microphone is blocked. Tele cannot hear you without it. Allow the microphone for this site in your browser, then try again.
-            </p>
-          )}
-          {mic === 'unsupported' && (
-            <p className="error" role="status" data-testid="unsupported">This browser cannot use a microphone here. Try Chrome on a phone or a Chromebook, or a different device.</p>
-          )}
-          {mic === 'unavailable' && (
-            <p className="error" role="status" data-testid="unavailable">
-              Tele could not listen just now. That is not your fault and it does not count against you.
-              <button type="button" className="btn" onClick={() => { capture.retry(); retry(); }}>Ask it again</button>
-            </p>
-          )}
+          <ListeningProblem state={capture.state} onRetry={() => { capture.retry(); retry(); }} onSkip={stage === 'intro' || stage === 'summary' ? undefined : () => { capture.retry(); next(); }} />
 
           {stage !== 'intro' && stage !== 'summary' && item && (
             <>

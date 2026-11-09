@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { ListeningProblem } from '../../components/ListeningProblem';
 import { useSpeechCapture, type CaptureResult } from '../../components/useSpeechCapture';
 import { Win } from '../../components/Win';
 import '../../components/screens.css';
@@ -21,21 +22,7 @@ export default function SpeechLab() {
               device will ask to use the microphone the first time.
             </p>
           )}
-          {cap.state === 'denied' && (
-            <p className="error" role="status" data-testid="denied">
-              The microphone is blocked. Tele cannot hear you without it. Allow the microphone for this site in your browser, then try again.
-            </p>
-          )}
-          {cap.state === 'unsupported' && (
-            <p className="error" role="status" data-testid="unsupported">
-              This browser cannot use a microphone here. Try Chrome on a phone or a Chromebook, or a different device.
-            </p>
-          )}
-          {cap.state === 'unavailable' && (
-            <p className="error" role="status" data-testid="unavailable">
-              Tele could not listen just now. That is not your fault and it does not count against you. Try again in a moment.
-            </p>
-          )}
+          <ListeningProblem state={cap.state} onRetry={cap.retry} />
           {cap.state === 'listening' && <p data-testid="listening">Listening… say your answer, then press Done.</p>}
           {cap.state === 'processing' && <p data-testid="processing">Checking what you said…</p>}
 
@@ -48,11 +35,6 @@ export default function SpeechLab() {
             {cap.state === 'listening' && (
               <button type="button" className="btn btn-primary" onClick={cap.stop}>
                 Done
-              </button>
-            )}
-            {(cap.state === 'denied' || cap.state === 'unavailable') && (
-              <button type="button" className="btn btn-primary" onClick={cap.retry}>
-                Try again
               </button>
             )}
           </div>

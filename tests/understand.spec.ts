@@ -210,6 +210,8 @@ test('three correct in one session is not mastery: the student is done for today
     if ((await page.getByTestId('finished').count()) > 0) break;
   }
   await expect(page.getByTestId('finished')).toContainText('come back tomorrow');
+  await expect(page.getByTestId('little-and-often')).toContainText('short sessions'); // plain words, no plan and no timings
+  await expect(page.getByTestId('finished')).not.toContainText(/\d+\s*min/);
   await expect(page.getByTestId('mastered-count')).toContainText('0 of 5'); // one session is not mastery
 });
 
@@ -260,4 +262,21 @@ test('the quick check can be skipped and sends nothing', async ({ page }) => {
   await page.getByTestId('probe').getByRole('button', { name: 'Skip the check' }).click();
   await expect(page.getByTestId('probe')).toHaveCount(0);
   expect(probes).toHaveLength(0);
+});
+
+test('after a right answer, replay, slower, show-the-words and every option are disabled; after a wrong one replay stays (19.7)', async ({ page }) => {
+  const rec = recordAttempts(page);
+  await open(page);
+  await answer(page, rec, true);
+  await expect(page.getByRole('button', { name: 'Play again' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Slower' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Show the words' })).toBeDisabled();
+  await expect(page.locator('.options button:not([disabled])')).toHaveCount(0);
+  await expect(next(page)).toBeEnabled();
+
+  await next(page).click();
+  await answer(page, rec, false);
+  await expect(page.locator('.options button:not([disabled])')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Show the words' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Play again' })).toBeEnabled(); // hearing it again, now that the words show, still helps
 });

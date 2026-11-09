@@ -2,22 +2,12 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import type { PhaseId } from '../../lib/phases/gate';
-import { buildPlan } from '../../lib/planner/plan';
 import { DEFAULT_REMINDER, isValidTime, localDate, parsePrefs, reminderDue, type Permission, type ReminderPrefs } from '../../lib/planner/reminders';
 import { readiness, type ReadinessInput } from '../../lib/planner/readiness';
 import { Win } from './Win';
 
-const MINUTES = [10, 15, 20, 30] as const;
 const PREFS_KEY = 'planner:prefs';
-const MINUTES_KEY = 'planner:minutes';
 const SHOWN_KEY = 'planner:reminder-shown';
-const PHASE_NAME: Record<PhaseId, { es: string; en: string }> = {
-  write: { es: 'Escribir', en: 'Write' },
-  understand: { es: 'Entender', en: 'Understand' },
-  memorise: { es: 'Memorizar', en: 'Memorise' },
-  automate: { es: 'Automatizar', en: 'Automate' },
-};
 
 const read = (key: string) => { try { return localStorage.getItem(key); } catch { return null; } };
 const write = (key: string, value: string) => { try { localStorage.setItem(key, value); } catch { /* kept for this visit only */ } };
@@ -29,8 +19,8 @@ export function ExamWindow({ daysToTest, progress }: { daysToTest: number; progr
   const r = readiness(progress);
   if (daysToTest < 0) {
     return (
-      <Win title="examen.exe" label="Your speaking test">
-        <p><strong>¿Qué tal fue?</strong> <span className="muted">How did it go?</span></p>
+      <Win title="test.exe" label="Your speaking test">
+        <p><strong>How did it go?</strong></p>
         {reflection === 'open' ? (
           <>
             <p>Think of one thing you did well in the test. Nothing is saved or marked.</p>
@@ -44,15 +34,15 @@ export function ExamWindow({ daysToTest, progress }: { daysToTest: number; progr
     );
   }
   return (
-    <Win title="examen.exe" label="Your speaking test">
+    <Win title="test.exe" label="Your speaking test">
       {daysToTest === 0 ? (
         <>
-          <p className="days" data-testid="days-to-test"><strong>Hoy</strong></p>
+          <p className="days" data-testid="days-to-test"><strong>Today</strong></p>
           <p className="days-en">Your speaking test is today</p>
         </>
       ) : (
         <>
-          <p className="days" data-testid="days-to-test"><strong>{daysToTest}</strong> días</p>
+          <p className="days" data-testid="days-to-test"><strong>{daysToTest}</strong> {daysToTest === 1 ? 'day' : 'days'}</p>
           <p className="days-en">{daysToTest === 1 ? '1 day' : `${daysToTest} days`} until your speaking test</p>
         </>
       )}
@@ -61,33 +51,29 @@ export function ExamWindow({ daysToTest, progress }: { daysToTest: number; progr
         <span style={{ width: `${r.percent}%` }} />
       </div>
       <p className="muted" data-testid="readiness-next">
-        Next: <span lang="es">{r.nextAction.es}</span>. {r.nextAction.en}
+        Next: {r.nextAction.en}
       </p>
     </Win>
   );
 }
 
-/** A short plan for the days left, and one optional daily reminder. Everything stays on this device. */
-export function PlanWindow({ daysToTest, progress }: { daysToTest: number; progress: ReadinessInput }) {
-  const [minutes, setMinutes] = useState<number>(15);
+/** One optional daily reminder. There is no session plan and no session lengths (revision-planner: No session plan or timings). Everything stays on this device. */
+export function ReminderWindow({ daysToTest }: { daysToTest: number }) {
   const [prefs, setPrefs] = useState<ReminderPrefs>(DEFAULT_REMINDER);
   const [perm, setPerm] = useState<Permission>('unsupported');
 
   useEffect(() => {
-    const saved = Number(read(MINUTES_KEY));
-    if ((MINUTES as readonly number[]).includes(saved)) setMinutes(saved);
     const p = parsePrefs(read(PREFS_KEY));
     setPrefs(p);
     setPerm(permission());
     // Shown at most once a day, only if the student turned it on and the device allows it.
     if (reminderDue({ prefs: p, permission: permission(), now: new Date(), lastShownDate: read(SHOWN_KEY), daysToTest })) {
       write(SHOWN_KEY, localDate(new Date()));
-      try { new Notification('Tele te espera', { body: 'A few minutes of Spanish today?' }); } catch { /* some phones only allow this from a service worker */ }
+      try { new Notification('Tele te espera', { body: 'Time for a little Spanish today?' }); } catch { /* some phones only allow this from a service worker */ }
     }
   }, [daysToTest]);
 
   if (daysToTest < 1) return null;
-  const plan = buildPlan({ progress, minutesPerDay: minutes, daysLeft: daysToTest });
 
   function save(next: ReminderPrefs) { setPrefs(next); write(PREFS_KEY, JSON.stringify(next)); }
   async function toggleReminder() {
@@ -98,36 +84,7 @@ export function PlanWindow({ daysToTest, progress }: { daysToTest: number; progr
   }
 
   return (
-    <Win title="plan.exe" label="Your plan">
-      <p id="minutes-label"><strong>How long can you do each day?</strong></p>
-      <ul className="options minutes" aria-labelledby="minutes-label">
-        {MINUTES.map((m) => (
-          <li key={m}>
-            <button type="button" className="option" aria-pressed={minutes === m} data-minutes={m} onClick={() => { setMinutes(m); write(MINUTES_KEY, String(m)); }}>
-              {m} min
-            </button>
-          </li>
-        ))}
-      </ul>
-      {plan.mode === 'late' && <p className="muted" data-testid="late-note">Not much time left, so the plan is short: write simple answers, then practise saying them fast.</p>}
-      {plan.days.length > 0 ? (
-        <>
-          <p data-testid="plan-message">{plan.message}</p>
-          <ol className="plan-days">
-            {plan.days.map((d) => (
-              <li key={d.day} data-testid="plan-day">
-                <strong>{d.day === 0 ? 'Today' : d.day === 1 ? 'Tomorrow' : `In ${d.day} days`}</strong>
-                {': '}
-                {d.sessions.map((s, i) => (
-                  <span key={i}>{i > 0 && ', '}<span lang="es">{PHASE_NAME[s.phase].es}</span> {s.minutes} min</span>
-                ))}
-              </li>
-            ))}
-          </ol>
-        </>
-      ) : (
-        <p data-testid="plan-message">{plan.message}</p>
-      )}
+    <Win title="reminder.exe" label="Daily reminder">
       <div className="reminder">
         <button type="button" className="btn" aria-pressed={prefs.enabled} onClick={toggleReminder} data-testid="reminder-toggle" disabled={perm === 'unsupported' || perm === 'denied'}>
           {prefs.enabled ? 'Turn reminder off' : 'Remind me each day'}
