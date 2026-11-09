@@ -177,27 +177,27 @@ Note: task 7.x level work (names, thresholds) is superseded by 26.1a. Tasks 10.4
 
 ## 20. Feedback and tutor rhythm (M9)
 
-- [ ] 20.1 Fit every practice screen into 360 by 640 with no scrolling, with a compact tutor; verify with a Playwright layout check per screen on the phone profile
-- [ ] 20.2 Implement tutor rhythm (speak at start, combo, mistake review, personal best, end, poke; wordless reactions otherwise), non-blocking lines, subtitle visible, and remove the enforced pause; verify the Continue control works while a line plays and the reaction starts within 300 ms
-- [ ] 20.3 Implement the feedback panel (instant, colour plus non-colour cue, correct answer on a miss, Continue), varied praise pool and mistake re-queue with a label; verify unit tests for no-repeat praise and re-queue
-- [ ] 20.4 Add original or licensed feedback sounds and small reward animations with a sound setting, calm switch and reduced motion respected; log them in docs/asset-credits.md; verify settings silence them
-- [ ] 20.5 Implement the combo moment (default five, auto-advances, skipped items neither count nor break); verify unit tests
+- [x] 20.1 Fit every practice screen into 360 by 640 with no scrolling, with a compact tutor; verify with a Playwright layout check per screen on the phone profile
+- [x] 20.2 Implement tutor rhythm (speak at start, combo, mistake review, personal best, end, poke; wordless reactions otherwise), non-blocking lines, subtitle visible, and remove the enforced pause; verify the Continue control works while a line plays and the reaction starts within 300 ms
+- [x] 20.3 Implement the feedback panel (instant, colour plus non-colour cue, correct answer on a miss, Continue), varied praise pool and mistake re-queue with a label; verify unit tests for no-repeat praise and re-queue
+- [x] 20.4 Add original or licensed feedback sounds and small reward animations with a sound setting, calm switch and reduced motion respected; log them in docs/asset-credits.md; verify settings silence them
+- [x] 20.5 Implement the combo moment (default five, auto-advances, skipped items neither count nor break); verify unit tests
 
 ## 21. Task types and memorising (M9)
 
-- [ ] 21.1 Build match pairs (Spanish with English); verify rapid-key input is safe
-- [ ] 21.2 Build sentence scramble (tap and drag, coloured by chunk kind); verify for phone touch and keyboard
-- [ ] 21.3 Build fill the gap and tap what you hear; verify distractor rules (similar length, cognates)
-- [ ] 21.4 Build the session mixer (at least three types, no type more than three in a row, rising difficulty); verify unit tests
-- [ ] 21.5 Implement scaffolding kinds (English, chunk reveal, first words, gaps, listen then repeat) chosen from results and cause tags, and chunk-by-chunk build-up; verify step-down by unit tests
-- [ ] 21.6 Implement skipping a known answer by recall-first; verify mastery rules still apply
+- [x] 21.1 Build match pairs (Spanish with English); verify rapid-key input is safe
+- [x] 21.2 Build sentence scramble (tap and drag, coloured by chunk kind); verify for phone touch and keyboard
+- [x] 21.3 Build fill the gap and tap what you hear; verify distractor rules (similar length, cognates)
+- [x] 21.4 Build the session mixer (at least three types, no type more than three in a row, rising difficulty); verify unit tests
+- [x] 21.5 Implement scaffolding kinds (English, chunk reveal, first words, gaps, listen then repeat) chosen from results and cause tags, and chunk-by-chunk build-up; verify step-down by unit tests
+- [x] 21.6 Implement skipping a known answer by recall-first; verify mastery rules still apply
 
 ## 22. Automatise ladder (M9)
 
-- [ ] 22.1 Build the chunk ladder (1, 2, 3, all) with start-higher; verify progression by unit tests
-- [ ] 22.2 Show each chunk, in its colour, as it is said correctly; verify with a stub recogniser
-- [ ] 22.3 Add the hint delay (default 2.5 s) with first words of the next chunk, treated as assisted; verify timing with a fake clock
-- [ ] 22.4 Add expert mode (no text) and personal-best celebration; verify no text appears while answering
+- [x] 22.1 Build the chunk ladder (1, 2, 3, all) with start-higher; verify progression by unit tests
+- [x] 22.2 Show each chunk, in its colour, as it is said correctly; verify with a stub recogniser
+- [x] 22.3 Add the hint delay (default 2.5 s) with first words of the next chunk, treated as assisted; verify timing with a fake clock
+- [x] 22.4 Add expert mode (no text) and personal-best celebration; verify no text appears while answering
 
 ## 23. Teacher flow and course shape (M10)
 

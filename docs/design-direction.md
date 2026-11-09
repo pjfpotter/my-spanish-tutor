@@ -138,3 +138,15 @@ Source: the dreamcore page on the Aesthetics Wiki, read 2026-11-02. It describes
 - Short present-tense Castilian Spanish at Year 8 level. English only as subtitles.
 - At most one thing to fix, and never blame. "No pasa nada" before "otra vez".
 - Draft bank: `lib/tele/phrase-bank.ts`. Placeholder poke lines in `lib/tele/lines.ts` are replaced by the bank's `poke` lines in task 12.3.
+
+## Practice screens (M9)
+
+Reuses the tokens and materials above. Decisions made while building the one-screen practice layout (tasks 20.x to 22.x):
+
+- **One screen, no scrolling, down to 360 by 640.** A thin top band (Exit on the left, the Sound and Calm switches fixed at the right), a compact Tele (4rem wide) beside a short caption, one line of progress and coins, a white task card, and the feedback panel docked at the bottom. Components: `PracticeShell`, `Caption compact`, `FeedbackPanel` in `app/components/practice/`. Layout is checked at 360 by 640 by `expectFits` in `tests/helpers.ts`.
+- **Feedback panel.** Same place every time and instant. Words ("Correct", "Not yet"), a symbol in a box, and a colour (`--fb-right`, `--fb-wrong`) together, so colour is never the only cue. Continue sits on the same row as the heading and takes focus, so Enter carries on. A blank is never called wrong: it says "No answer in time".
+- **Chunk kinds.** Opinion, reason, link, when, detail and other each have a pastel fill (`--kind-*`, black text) plus a symbol and a word. Pair tiles in match pairs are plain, because they are not chunk-kind coloured.
+- **Sounds and reward animations.** Interface sounds sit in `public/audio/sfx`, are short and soft, and are silenced by the Sound switch and the calm switch. Reduced motion stops the confetti but not the sounds. Tele's wordless reactions use the `tele-*` clips.
+- **No pictures anywhere in support.** Sentence builders are deliberately text only, and no picture can be sourced when a course is created.
+- **Support follows results and cause tags.** The prompt shows listen then repeat, a gapped script, chunk by chunk, first words, or English only, never weaker than a live cause tag allows. A missed chunk at chunk-by-chunk or less is built back up: the chunk alone, then with its neighbour, then the whole answer.
+- **Mix per answer.** Each answer opens with three short warm-ups chosen by the session mixer, then the spoken task. "I know this one" skips straight to saying it.
