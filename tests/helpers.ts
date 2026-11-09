@@ -139,3 +139,39 @@ export async function installCuedMic(page: Page) {
     };
   });
 }
+
+/**
+ * Each answer in the memorise phase opens with a few short warm-up tasks. A student who already knows the answer can
+ * say it straight away; tests of the spoken step use this to get there. It does nothing if the spoken step is already showing.
+ */
+export async function skipWarmups(page: Page) {
+  const know = page.getByTestId('know-it');
+  const prompt = page.getByTestId('english-prompt');
+  await expect(know.or(prompt)).toBeVisible();
+  if (await know.isVisible()) await know.click();
+  await expect(prompt).toBeVisible();
+}
+
+/** Everything inside the practice screen must sit inside the viewport, and the task card must not need scrolling. */
+export async function expectFits(page: Page, where: string) {
+  // The panel slides in; measure it where it comes to rest.
+  await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => undefined))));
+  const bad = await page.evaluate(() => {
+    const out: string[] = [];
+    const vh = window.innerHeight;
+    const vw = window.innerWidth;
+    if (document.documentElement.scrollHeight > vh + 1) out.push(`page scrolls (${document.documentElement.scrollHeight} > ${vh})`);
+    if (document.documentElement.scrollWidth > vw + 1) out.push('page scrolls sideways');
+    const body = document.querySelector('.practice-body');
+    if (body && body.scrollHeight > body.clientHeight + 1) out.push(`task card scrolls (${body.scrollHeight} > ${body.clientHeight})`);
+    for (const el of document.querySelectorAll('.practice *')) {
+      if (el.closest('.sr-only, .sr-only-live, .reward')) continue;
+      const r = el.getBoundingClientRect();
+      if (!r.width && !r.height) continue;
+      if (r.bottom > vh + 1 || r.right > vw + 1 || r.left < -1) out.push(`${el.tagName}.${(el as HTMLElement).className} ${el.textContent?.slice(0, 30)}`);
+    }
+    return out;
+  });
+  expect(bad, where).toEqual([]);
+}
+

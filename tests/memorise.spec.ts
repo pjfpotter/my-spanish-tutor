@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { SEED_COURSE } from '../lib/course/seed';
-import { signUp, unlockMemorise } from './helpers';
+import { signUp, skipWarmups, unlockMemorise } from './helpers';
 
 // Tasks 8.1 to 8.4 and 5.3 to 5.5: say a confirmed answer from memory. The transcription call is stubbed
 // (these tests cost nothing) and the fake microphone supplies the audio. Nothing here calls a model.
@@ -41,6 +41,7 @@ test('memorise stays locked until the answers are confirmed and the questions ma
   await unlockMemorise(page);
   await page.goto('/phases/memorise');
   await expect(page).toHaveURL('/phases/memorise');
+  await skipWarmups(page);
   await expect(page.getByTestId('english-prompt')).toHaveText(SEED_COURSE.questions[0].english);
   await expect(page.getByTestId('best')).toContainText('No personal best yet');
 });
@@ -53,6 +54,7 @@ test('an attempt shows its accuracy within two seconds of the end of speech, and
   const heard = hear(page);
   heard.text = ROCK(1);
   await page.goto('/phases/memorise');
+  await skipWarmups(page);
 
   await page.getByRole('button', { name: 'Start speaking' }).click();
   await expect(page.getByTestId('listening')).toBeVisible();
@@ -73,6 +75,7 @@ test('the prompt gives less of the script after two good attempts in a row, and 
   const recall = recallCalls(page);
   heard.text = ROCK(1);
   await page.goto('/phases/memorise');
+  await skipWarmups(page);
 
   await expect(page.getByTestId('support')).toHaveText('Showing: whole script');
   await expect(page.locator('[data-testid="prompt"] .gap')).toHaveCount(0);
@@ -89,12 +92,13 @@ test('the prompt gives less of the script after two good attempts in a row, and 
 
   // Now some words dim out. The prompt says so in words as well.
   await page.getByRole('button', { name: 'Say it again' }).click();
-  await expect(page.getByTestId('support')).toHaveText('Showing: most of the script');
+  await expect(page.getByTestId('support')).toHaveText('Showing: a gapped script');
   const dimmed = await page.locator('[data-testid="prompt"] .gap').count();
   expect(dimmed).toBeGreaterThan(0);
   // And the level carries over to the next visit.
   await page.reload();
-  await expect(page.getByTestId('support')).toHaveText('Showing: most of the script');
+  await skipWarmups(page);
+  await expect(page.getByTestId('support')).toHaveText('Showing: a gapped script');
 });
 
 test('three good recalls in one session leave the answer in progress, and a later session memorises it (8.3)', async ({ page }) => {
@@ -105,6 +109,7 @@ test('three good recalls in one session leave the answer in progress, and a late
   const recall = recallCalls(page);
   heard.text = ROCK(1);
   await page.goto('/phases/memorise');
+  await skipWarmups(page);
 
   for (let i = 0; i < 5; i++) {
     if (i) await page.getByRole('button', { name: 'Say it again' }).click();
@@ -129,6 +134,7 @@ test('feedback leads with what was right and names one thing to fix, with a tip 
   await unlockMemorise(page);
   const heard = hear(page);
   await page.goto('/phases/memorise');
+  await skipWarmups(page);
 
   // A missed word with no matching confusion: a plain pointer, no tip.
   heard.text = 'Me gustan las películas de acción porque son';
@@ -157,6 +163,8 @@ test('a missed word shows its syllables, plays slowly, and can be repeated (5.4)
   await unlockMemorise(page);
   const heard = hear(page);
   await page.goto('/phases/memorise');
+  await skipWarmups(page);
+  await page.evaluate(() => ((window as any).__spoken.length = 0)); // a warm-up that plays a chunk when it opens is not what this test is about
   heard.text = 'Me gustan las películas de acción porque son';
   await speak(page);
 
@@ -190,6 +198,7 @@ test('with no voice on the device, the syllables still show and the student carr
   await unlockMemorise(page);
   const heard = hear(page);
   await page.goto('/phases/memorise');
+  await skipWarmups(page);
   heard.text = 'Me gustan las películas de acción porque son';
   await speak(page);
   await page.getByRole('button', { name: /divertidas, missed/ }).click();
@@ -203,6 +212,7 @@ test('a noisy or unclear recording is not scored, saved or counted, and a retry 
   const heard = hear(page);
   const recall = recallCalls(page);
   await page.goto('/phases/memorise');
+  await skipWarmups(page);
 
   // Low confidence: the recogniser is guessing.
   heard.text = 'brr mmm';
@@ -236,6 +246,7 @@ test('a sentence missed three times in a row is isolated for short practice, the
   const heard = hear(page);
   const sentences = SHOWING_OFF_1.split(/(?<=[.!?])\s+/);
   await page.goto('/phases/memorise');
+  await skipWarmups(page);
 
   // Say every sentence except the second, three attempts running.
   heard.text = sentences.filter((_, i) => i !== 1).join(' ');
@@ -270,6 +281,7 @@ test('when listening fails the student can carry on without speaking, unscored (
   await unlockMemorise(page);
   await page.route('**/api/transcribe', (r) => r.fulfill({ status: 503, json: { status: 'unavailable', reason: 'not_configured' } }));
   await page.goto('/phases/memorise');
+  await skipWarmups(page);
   await speak(page);
   await expect(page.getByTestId('unavailable')).toContainText('not your fault');
   await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
