@@ -17,7 +17,7 @@ beforeAll(async () => {
   if (!p.ok) throw new Error('profile');
   profileId = p.profile.id;
   // Questions 1 and 2 have confirmed answers, question 3 is only a draft.
-  await db.query(`insert into answers (profile_id, question_id, text, level, confirmed_at) values ($1,$2,'Me llamo Ana.',1, now()), ($1,$3,'Vivo en Leeds.',1, now()), ($1,$4,'Borrador',1, null)`, [profileId, q[0], q[1], q[2]]);
+  await db.query(`insert into answers (profile_id, question_id, text, value, confirmed_at) values ($1,$2,'Me llamo Ana.',1, now()), ($1,$3,'Vivo en Leeds.',1, now()), ($1,$4,'Borrador',1, null)`, [profileId, q[0], q[1], q[2]]);
 });
 afterAll(() => db.close());
 

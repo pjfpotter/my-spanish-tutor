@@ -1,6 +1,7 @@
 import type { Db } from '../db/types';
 import { courseUnlockAll } from '../course/unlock';
-import type { ModelAnswer } from '../course/schema';
+import type { Calibration, ModelAnswer } from '../course/schema';
+import { simplestModelAnswer } from '../coach/model-answers';
 
 /**
  * The text a student practises for one question: their own confirmed answer, or, only in a testing course
@@ -14,10 +15,10 @@ export async function practiceAnswerText(db: Db, profileId: string, courseId: st
   );
   if (own.rows[0]) return own.rows[0].text;
   if (!(await courseUnlockAll(db, courseId))) return null;
-  const q = await db.query<{ position: number; model_answers: ModelAnswer[] }>(
-    'select q.position, c.model_answers from questions q join courses c on c.id = q.course_id where q.id = $1 and q.course_id = $2',
+  const q = await db.query<{ position: number; model_answers: ModelAnswer[]; calibration: Calibration }>(
+    'select q.position, c.model_answers, c.calibration from questions q join courses c on c.id = q.course_id where q.id = $1 and q.course_id = $2',
     [questionId, courseId],
   );
   const row = q.rows[0];
-  return row?.model_answers.find((m) => m.questionPosition === row.position && m.level === 'rock_solid')?.text ?? null;
+  return row ? (simplestModelAnswer(row.model_answers, row.position, row.calibration)?.text ?? null) : null;
 }

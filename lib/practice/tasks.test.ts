@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { SEED_COURSE } from '../course/seed';
+import { SEED_COURSE, simplestSeedAnswer } from '../course/seed';
 import { answerPieces, availableTypes, buildTask, type ChoiceTask, type ScrambleTask, type MatchTask } from './tasks';
 
-const ANSWER = SEED_COURSE.modelAnswers.find((a) => a.questionPosition === 1 && a.level === 'rock_solid')!.text;
+const ANSWER = simplestSeedAnswer(1);
 const pool = SEED_COURSE.chunks;
 
 describe('answer pieces', () => {

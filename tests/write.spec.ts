@@ -1,12 +1,12 @@
 import { expect, test } from '@playwright/test';
 import { assessAnswer } from '../lib/coach/rubric';
-import { SEED_COURSE } from '../lib/course/seed';
+import { SEED_COURSE, simplestSeedAnswer } from '../lib/course/seed';
 import { signUp } from './helpers';
 
-// Tasks 7.4 and 7.6: the write phase end to end. Pick a style, swap, confirm all five, and the
+// Tasks 7.4 and 7.6: the write phase end to end. Swap, confirm all five, and the
 // features that light up match what the rubric counts. No model is called anywhere on this screen.
 
-const rock = (n: number) => SEED_COURSE.modelAnswers.find((a) => a.questionPosition === n && a.level === 'rock_solid')!.text;
+const rock = (n: number) => simplestSeedAnswer(n);
 
 test('writes, swaps and confirms all five answers, and memorise stays locked until then', async ({ page }) => {
   const modelCalls: string[] = [];
@@ -14,11 +14,11 @@ test('writes, swaps and confirms all five answers, and memorise stays locked unt
   await signUp(page);
   await page.goto('/phases/write');
 
-  // Starts at Rock solid with the easiest model answer, and names the level without a grade.
+  // Starts from the simplest starter answer and shows its value, with no level names or grades.
   await expect(page.locator('.answer-text')).toHaveText(rock(1));
-  await expect(page.getByText('Your answer is Rock solid.')).toBeVisible();
-  await expect(page.getByRole('radio', { name: 'Rock solid' })).toBeChecked();
-  await expect(page.locator('body')).not.toContainText(/grade|WTG/i);
+  const value = assessAnswer(SEED_COURSE.calibration, rock(1)).value;
+  await expect(page.getByText(`Your answer is worth ${value}.`)).toBeVisible();
+  await expect(page.locator('body')).not.toContainText(/grade|WTG|rock solid|stepping out|showing off/i);
 
   // A swap re-counts the rubric at once, and the lit features equal the rubric's own output.
   await page.getByLabel(/Swap “Los fines de semana”|Swap “aunque”|Swap “acción”/).first().selectOption({ index: 1 });
@@ -27,16 +27,7 @@ test('writes, swaps and confirms all five answers, and memorise stays locked unt
   const lit = (await page.locator('.file ~ section .features li[data-on="true"]').allTextContents()).map((t) => t.replace(/^✓\s*/, '').replace(/\s*\(used\)$/, '')).sort();
   expect(lit).toEqual(expected);
 
-  // Switching style offers the matching model answer for untouched answers, and leaves the student's own edit alone.
-  await page.getByRole('radio', { name: 'Stepping out' }).check();
-  await expect(page.locator('.answer-text')).toHaveText(text);
-  await page.getByRole('button', { name: /^2/ }).first().click();
-  const stepping = SEED_COURSE.modelAnswers.find((a) => a.questionPosition === 2 && a.level === 'stepping_out')!.text;
-  await expect(page.locator('.answer-text')).toHaveText(stepping);
-  await page.getByRole('button', { name: /^1/ }).first().click();
-
   // Confirm each question. Memorise is locked until all five are.
-  await page.getByRole('radio', { name: 'Rock solid' }).check();
   for (let n = 1; n <= 5; n++) {
     await page.getByRole('button', { name: new RegExp(`^${n}`) }).first().click();
     await page.getByRole('button', { name: 'Confirm this answer' }).click();

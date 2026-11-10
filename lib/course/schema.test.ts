@@ -14,8 +14,8 @@ const good = (): Course => ({
   })),
   calibration: structuredClone(FREE_TIME),
   modelAnswers: [1, 2, 3, 4, 5].flatMap((n): ModelAnswer[] => [
-    { questionPosition: n, level: 'rock_solid', text: 'Me gusta.' },
-    { questionPosition: n, level: 'stepping_out', text: 'Me gusta porque es.' },
+    { questionPosition: n, text: 'Me gusta.' },
+    { questionPosition: n, text: 'Me gusta porque es.' },
   ]),
 });
 
@@ -70,23 +70,21 @@ describe('validateCourse', () => {
 });
 
 describe('model answers', () => {
-  it('needs a Rock solid answer for every question, and lets other levels be missing', () => {
-    const noStart = good();
-    noStart.modelAnswers = noStart.modelAnswers.map((a) => (a.questionPosition === 2 ? { ...a, level: 'showing_off' as const } : a));
-    expect(problems(noStart).join()).toMatch(/question 2 needs a Rock solid model answer/);
-    const onlyRock = good();
-    onlyRock.modelAnswers = onlyRock.modelAnswers.filter((a) => a.level === 'rock_solid');
-    expect(validateCourse(onlyRock).ok).toBe(true);
+  it('does not need a model answer for every question: the starter is optional', () => {
+    const none = good();
+    none.modelAnswers = none.modelAnswers.filter((a) => a.questionPosition !== 2);
+    expect(validateCourse(none).ok).toBe(true);
+    const empty = good();
+    empty.modelAnswers = [];
+    expect(validateCourse(empty).ok).toBe(true);
   });
 
-  it('rejects an answer for a missing question, an unknown level, or no text', () => {
+  it('rejects an answer for a missing question, or with no text', () => {
     const c = good();
-    c.modelAnswers.push({ questionPosition: 9, level: 'rock_solid', text: 'x' });
-    c.modelAnswers.push({ questionPosition: 1, level: 'grade 3' as never, text: 'x' });
-    c.modelAnswers.push({ questionPosition: 1, level: 'showing_off', text: '  ' });
+    c.modelAnswers.push({ questionPosition: 9, text: 'x' });
+    c.modelAnswers.push({ questionPosition: 1, text: '  ' });
     const p = problems(c).join();
     expect(p).toMatch(/question 9, which does not exist/);
-    expect(p).toMatch(/unknown level "grade 3"/);
     expect(p).toMatch(/no text/);
   });
 });
@@ -104,12 +102,13 @@ describe('calibration data', () => {
     for (const t of [...BASIC_TENSES, ...FANCY_TAGS]) expect(FEATURE_TAGS).toContain(t);
   });
 
-  it('needs showing off to ask for more than stepping out', () => {
-    expect(withCal((c) => (c.thresholds.showingOff.extras = 1))).toMatch(/more extras than stepping out/);
+  it('needs a frame value, a load-note value and a weight of 0, 1 or 2 on every feature', () => {
+    expect(withCal((c) => (c.frame.value = 0))).toMatch(/frame needs a value/);
+    expect(withCal((c) => (c.loadNoteValue = 0))).toMatch(/loadNoteValue/);
+    expect(withCal((c) => (c.features[0].weight = 5 as never))).toMatch(/needs a weight of 0, 1 or 2/);
   });
 
-  it('cannot demand more hard features, or more tenses, than exist', () => {
-    expect(withCal((c) => (c.thresholds.showingOff.hard = 9))).toMatch(/fewer hard features/);
+  it('cannot demand more tenses than exist', () => {
     expect(withCal((c) => (c.wholeTest.tenses = 5))).toMatch(/from 1 to 4/);
   });
 
@@ -119,10 +118,9 @@ describe('calibration data', () => {
     expect(problems({ ...good(), calibration: undefined }).join()).toMatch(/calibration/);
   });
 
-  it('names the three levels and refuses grades or marks anywhere', () => {
-    expect(withCal((c) => (c.levels.showing_off.name = ' '))).toMatch(/needs a name and a blurb/);
+  it('refuses grades or marks anywhere', () => {
     for (const word of ['grade', 'WTG', 'mark', 'score']) {
-      expect(withCal((c) => (c.levels.rock_solid.blurb = `Worth a ${word}`)), word).toMatch(/must not contain grades or marks/);
+      expect(withCal((c) => (c.features[0].label = `Worth a ${word}`)), word).toMatch(/must not contain grades or marks/);
     }
   });
 

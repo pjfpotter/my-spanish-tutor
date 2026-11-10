@@ -226,7 +226,7 @@ Note: task 7.x level work (names, thresholds) is superseded by 26.1a. Tasks 10.4
 ## 26. Writing flow rebuild and challenge mode
 
 - [ ] 26.1 Writing flow rebuild (decided in docs/writing-flow-options.md), in these steps; verify each by unit tests or Playwright on the phone profile:
-  - [ ] 26.1a Replace named levels with feature values in the calibration data and rubric engine (value is a blend of count and difficulty, each feature once); update the regression fixtures to assert feature sets and values
+  - [x] 26.1a Replace named levels with feature values in the calibration data and rubric engine (value is a blend of count and difficulty, each feature once); update the regression fixtures to assert feature sets and values
   - [ ] 26.1b Build the empty-slot sentence-builder interface with colours shared with automatise, tap-a-slot to see fitting chunks only, the cement tray and the optional starter answer
   - [ ] 26.1c Add per-answer confirmation that unlocks memorising for that answer, the all-five bonus, change-resets-progress, the stalled-answer suggestion to simplify (cognates and high-frequency first) and pruning
   - [ ] 26.1d Add the one-optional-extra nudge, the memorising load note and the animated, cancellable analysis

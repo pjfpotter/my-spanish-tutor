@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FREE_TIME, FREE_TIME_CHUNKS } from '../course/calibration';
-import { assessAnswer, assessTest, levelFromCounts, matchChunks, survivesOneSwap, tokens } from './rubric';
+import { assessAnswer, assessTest, featureValue, matchChunks, tokens } from './rubric';
 import { buildWordBank, validateDraft } from './validator';
 
 const cal = FREE_TIME;
@@ -12,16 +12,23 @@ describe('rubric engine: the teacher\'s calibration (tasks 7.1 and 7.7)', () => 
     expect(cal.examples.length).toBe(12);
   });
 
-  it.each(cal.examples.map((e, i) => [`${e.source} ${e.level} #${i + 1}`, e]))('%s lands on the level it was written for', (_n, e) => {
-    expect(assessAnswer(cal, e.text).level).toBe(e.level);
+  it.each(cal.examples.map((e, i) => [`${e.source} rank ${e.rank} #${i + 1}`, e]))('%s lights the features and has the value it was calibrated to', (_n, e) => {
+    const a = assessAnswer(cal, e.text);
+    expect(a.features.map((f) => f.id)).toEqual(e.features);
+    expect(a.value).toBe(e.value);
   });
 
-  it('matches the counts in the teacher\'s rubric table', () => {
+  it('keeps the teacher\'s order from simplest to richest', () => {
+    const by = (rank: number) => cal.examples.filter((e) => e.rank === rank).map((e) => assessAnswer(cal, e.text).value);
+    expect(Math.max(...by(1))).toBeLessThan(Math.min(...by(2)));
+    expect(Math.max(...by(2))).toBeLessThan(Math.min(...by(3)));
+  });
+
+  it('matches the features in the teacher\'s rubric table', () => {
     const [a, b, c] = cal.examples.slice(0, 3).map((e) => assessAnswer(cal, e.text));
-    expect([a.extras, a.hardExtras]).toEqual([0, 0]);
-    expect([b.extras, b.hardExtras]).toEqual([4, 1]);
+    expect(a.features).toEqual([]);
     expect(b.features.map((f) => f.id)).toEqual(['E1', 'E2', 'E3', 'E6']);
-    expect([c.extras, c.hardExtras]).toEqual([7, 3]);
+    expect(c.features).toHaveLength(7);
   });
 
   it('keeps every generated example inside the sentence builder, glue words and common words', () => {
@@ -33,38 +40,41 @@ describe('rubric engine: the teacher\'s calibration (tasks 7.1 and 7.7)', () => 
   });
 });
 
-describe('levels', () => {
-  it('Rock solid is a justified opinion and nothing more', () => {
+describe('value', () => {
+  it('a justified opinion is worth the frame value and nothing more', () => {
     const a = assessAnswer(cal, 'Me gusta jugar al fútbol porque es divertido.');
     expect(a.justifiedOpinions).toBe(1);
-    expect(a.level).toBe('rock_solid');
+    expect(a.features).toEqual([]);
+    expect(a.value).toBe(cal.frame.value);
   });
 
-  it('gives no level, and lowers nothing, until there is a justified opinion', () => {
-    expect(assessAnswer(cal, 'Me gusta jugar al fútbol.').level).toBeNull();
-    expect(assessAnswer(cal, 'Sin embargo, lo hago los sábados.').level).toBeNull();
+  it('is worth nothing, and lowers nothing, until there is a justified opinion', () => {
+    expect(assessAnswer(cal, 'Me gusta jugar al fútbol.').value).toBe(0);
+    expect(assessAnswer(cal, 'Me gusta jugar al fútbol.').justifiedOpinions).toBe(0);
   });
 
-  it('Stepping out is the frame plus one extra', () => {
-    expect(assessAnswer(cal, 'Me gusta bailar porque es divertido, a veces.').level).toBe('stepping_out');
+  it('adding a feature raises the value by one unit plus the feature\'s weight', () => {
+    const base = assessAnswer(cal, 'Me gusta bailar porque es divertido.').value;
+    const time = assessAnswer(cal, 'Me gusta bailar porque es divertido, a veces.');
+    expect(time.value - base).toBe(featureValue(cal.features.find((f) => f.id === 'E2')!));
+    const hard = assessAnswer(cal, 'Me gusta bailar porque es divertido, lo hago.');
+    expect(hard.value - base).toBe(3);
+    expect(hard.features.map((f) => f.value)).toEqual([3]);
   });
 
   it('repeating the frame adds nothing, and each feature counts once', () => {
     const one = assessAnswer(cal, 'Me gusta bailar porque es divertido.');
     const three = assessAnswer(cal, 'Me gusta bailar porque es divertido. Me gusta cocinar porque es divertido. Me gusta leer libros porque es aburrido.');
-    expect(three.level).toBe(one.level);
+    expect(three.value).toBe(one.value);
     expect(three.justifiedOpinions).toBe(3);
     expect(ids('Sin embargo, aunque, sin embargo')).toEqual(['E1']);
+    const twice = assessAnswer(cal, 'Me gusta bailar porque es divertido, a veces, de vez en cuando.');
+    expect(twice.value).toBe(assessAnswer(cal, 'Me gusta bailar porque es divertido, a veces.').value);
   });
 
-  it('five extras with only one hard feature is Stepping out, not Showing off', () => {
-    const a = assessAnswer(
-      cal,
-      'Me gusta bailar porque es divertido, lo hago los sábados. Sin embargo, no me gusta cocinar ya que me relaja, de vez en cuando.',
-    );
-    expect(a.hardExtras).toBe(1);
-    expect(a.extras).toBeGreaterThanOrEqual(4);
-    expect(a.level).toBe('stepping_out');
+  it('glue words carry no value', () => {
+    const a = assessAnswer(cal, 'Me gusta bailar porque es divertido.').value;
+    expect(assessAnswer(cal, 'Me gusta bailar y cantar pero también leer porque es divertido.').value).toBe(a);
   });
 
   it('counts a second justifier only beside "porque"', () => {
@@ -72,41 +82,33 @@ describe('levels', () => {
     expect(ids('Me gusta bailar porque es divertido ya que me relaja.')).toContain('E7');
   });
 
-  it('ignores accents, capitals and punctuation, so recognition slips never lower the level', () => {
-    expect(assessAnswer(cal, 'ME GUSTA bailar PORQUE es divertido').level).toBe('rock_solid');
+  it('ignores accents, capitals and punctuation, so recognition slips never lower the value', () => {
+    const plain = assessAnswer(cal, 'Me gusta bailar porque es divertido. Tengo mucho tiempo libre.').value;
+    expect(assessAnswer(cal, 'ME GUSTA bailar PORQUE es divertido. ¡Tengo mucho tiempo libre!').value).toBe(plain);
     expect(ids('¡Que gUaY! tengo mucho tiempo libre')).toContain('E5');
     expect(tokens('¿Qué año? Mañana')).toEqual(['que', 'año', 'mañana']);
   });
 
-  it('never mentions a grade', () => {
-    expect(JSON.stringify(cal)).not.toMatch(/\bgrade\b|\bwtg\b/i);
-  });
-});
-
-describe('one swap', () => {
-  it('flags answers that sit exactly on a threshold', () => {
-    const edge = assessAnswer(cal, 'Me gusta bailar porque es divertido, a veces.'); // one extra
-    expect(edge.level).toBe('stepping_out');
-    expect(survivesOneSwap(cal, edge)).toBe(false);
-    const roomy = assessAnswer(cal, 'Me gusta bailar porque es divertido, a veces. Sin embargo, me relaja.');
-    expect(survivesOneSwap(cal, roomy)).toBe(true);
+  it('never mentions a level or a grade', () => {
+    expect(JSON.stringify(cal)).not.toMatch(/\bgrade\b|\bwtg\b|rock_solid|stepping_out|showing_off/i);
   });
 });
 
 describe('editable calibration', () => {
-  it('a threshold edit changes results with no code change', () => {
+  it('a weight edit changes values with no code change', () => {
     const answer = 'Me gusta bailar porque es divertido, a veces.';
-    expect(assessAnswer(cal, answer).level).toBe('stepping_out');
-    const stricter = structuredClone(cal);
-    stricter.thresholds.steppingOut.extras = 2;
-    expect(assessAnswer(stricter, answer).level).toBe('rock_solid');
-    expect(levelFromCounts(stricter, 1, 2, 0)).toBe('stepping_out');
+    const before = assessAnswer(cal, answer).value;
+    const heavier = structuredClone(cal);
+    heavier.features.find((f) => f.id === 'E2')!.weight = 2;
+    expect(assessAnswer(heavier, answer).value).toBe(before + 2);
   });
 
   it('a new feature added to the data is counted at once', () => {
     const more = structuredClone(cal);
-    more.features.push({ id: 'X1', label: 'a new touch', hard: false, phrases: ['muy a menudo'] });
-    expect(assessAnswer(more, 'Me gusta bailar porque es divertido, muy a menudo.').features.map((f) => f.id)).toEqual(['X1']);
+    more.features.push({ id: 'X1', label: 'a new touch', weight: 1, phrases: ['muy a menudo'] });
+    const a = assessAnswer(more, 'Me gusta bailar porque es divertido, muy a menudo.');
+    expect(a.features.map((f) => f.id)).toEqual(['X1']);
+    expect(a.value).toBe(cal.frame.value + 2);
   });
 });
 
@@ -117,7 +119,7 @@ describe('whole test', () => {
     const t = assessTest(cal, answers('Me gusta bailar porque es divertido.', 'Me gusta cocinar porque es divertido.'));
     expect(t.checklist.tenses).toMatchObject({ have: 1, need: 3, met: false });
     expect(t.checklist.justifiedOpinions).toMatchObject({ have: 2, need: 2, met: true });
-    expect(t.answers.every((a) => a.level === 'rock_solid')).toBe(true);
+    expect(t.answers.every((a) => a.value === cal.frame.value)).toBe(true);
   });
 
   it('counts tenses across the answers, not within one', () => {

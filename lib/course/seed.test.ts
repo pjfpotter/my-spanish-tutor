@@ -35,11 +35,13 @@ describe('seed course', () => {
     }
   });
 
-  it('has a Rock solid model answer for every question and uses only Rock solid, Stepping out and Showing off', () => {
+  it('has a model answer for every question, each worth something, and no level labels', () => {
     for (const q of SEED_COURSE.questions) {
-      expect(SEED_COURSE.modelAnswers.some((a) => a.questionPosition === q.position && a.level === 'rock_solid'), `question ${q.position}`).toBe(true);
+      const own = SEED_COURSE.modelAnswers.filter((a) => a.questionPosition === q.position);
+      expect(own.length, `question ${q.position}`).toBeGreaterThan(0);
+      for (const a of own) expect(assessAnswer(SEED_COURSE.calibration, a.text).value, a.text).toBeGreaterThan(0);
     }
-    expect(new Set(SEED_COURSE.modelAnswers.map((a) => a.level))).toEqual(new Set(['rock_solid', 'stepping_out', 'showing_off']));
+    expect(JSON.stringify(SEED_COURSE.modelAnswers)).not.toMatch(/level|rock_solid|stepping_out|showing_off/);
   });
 
   it('makes the tense target reachable from the model answers across the test', () => {

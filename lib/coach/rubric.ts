@@ -1,14 +1,15 @@
-import { BASIC_TENSES, LEVELS, type BasicTense, type Calibration, type FeatureDef, type Level } from '../course/calibration/types.ts';
+import { BASIC_TENSES, type BasicTense, type Calibration, type FeatureDef } from '../course/calibration/types.ts';
 import type { Chunk } from '../course/schema.ts';
 
 /**
- * The rubric engine (tasks 7.1 and 7.7, design D8). It counts the features an answer uses, as defined
- * by the course's calibration data, and works out its level by rules alone: no model is involved and it
- * does not matter who or what wrote the answer. It never produces a grade or a mark.
+ * The rubric engine (tasks 7.1, 7.7 and 26.1a, design D8). It counts the features an answer uses, as
+ * defined by the course's calibration data, and works out the answer's value by rules alone: no model
+ * is involved and it does not matter who or what wrote the answer. There are no levels, grades or marks.
  *
- *  - A justified opinion is a starter followed by a justifier ("porque", "ya que", "dado que").
- *  - Rock solid is one justified opinion. Stepping out adds at least one extra feature. Showing off
- *    adds enough extras, including enough hard ones. Each feature counts once; repeating the frame adds nothing.
+ *  - A justified opinion is a starter followed by a justifier ("porque", "ya que", "dado que"). It is
+ *    worth the frame's value, once, however many times it is repeated.
+ *  - Each other feature is worth one unit plus its weight (how hard it is to learn), once.
+ *  - Glue words, accents, small slips and recognition failures never change the value.
  *  - The whole-test targets (tenses, justified opinions) are a checklist and gate nothing.
  */
 
@@ -71,29 +72,23 @@ export interface LitFeature {
   id: string;
   /** What the student sees, by name. */
   label: string;
-  hard: boolean;
+  weight: number;
+  /** What this feature adds to the answer's value: one unit plus its weight. */
+  value: number;
 }
 
 export interface AnswerAssessment {
-  /** Null until the answer has a justified opinion: there is no level to show yet, and nothing is lowered. */
-  level: Level | null;
   justifiedOpinions: number;
-  /** The features the answer uses, in the order the calibration data lists them. */
+  /** The features the answer uses, in the order the calibration data lists them. Each counts once. */
   features: LitFeature[];
-  extras: number;
-  hardExtras: number;
+  /** What the answer is worth, in the in-app currency: the frame (once) plus each feature's value. */
+  value: number;
   /** The basic tenses this answer uses. */
   tenses: BasicTense[];
 }
 
-/** Pure level rule, so "what if one feature were removed" can be asked without re-reading text. */
-export function levelFromCounts(cal: Calibration, justifiedOpinions: number, extras: number, hardExtras: number): Level | null {
-  if (justifiedOpinions < 1) return null;
-  const { steppingOut, showingOff } = cal.thresholds;
-  if (extras >= showingOff.extras && hardExtras >= showingOff.hard) return 'showing_off';
-  if (extras >= steppingOut.extras) return 'stepping_out';
-  return 'rock_solid';
-}
+/** What a feature adds: one unit per extra, plus a weight for how hard it is to learn. */
+export const featureValue = (f: Pick<FeatureDef, 'weight'>) => 1 + f.weight;
 
 function featureHit(words: string[], f: FeatureDef): boolean {
   return hasAny(words, f.phrases) && (!f.alsoRequires || hasAny(words, f.alsoRequires));
@@ -114,24 +109,17 @@ function countJustifiedOpinions(words: string[], cal: Calibration): number {
 
 export function assessAnswer(cal: Calibration, text: string): AnswerAssessment {
   const words = tokens(text);
-  const features = cal.features.filter((f) => featureHit(words, f)).map(({ id, label, hard }) => ({ id, label, hard }));
+  const features = cal.features
+    .filter((f) => featureHit(words, f))
+    .map(({ id, label, weight }) => ({ id, label, weight, value: 1 + weight }));
   const justifiedOpinions = countJustifiedOpinions(words, cal);
-  const extras = features.length;
-  const hardExtras = features.filter((f) => f.hard).length;
+  const value = (justifiedOpinions > 0 ? cal.frame.value : 0) + features.reduce((n, f) => n + f.value, 0);
   return {
-    level: levelFromCounts(cal, justifiedOpinions, extras, hardExtras),
     justifiedOpinions,
     features,
-    extras,
-    hardExtras,
+    value,
     tenses: BASIC_TENSES.filter((t) => hasAny(words, cal.tenses[t])),
   };
-}
-
-/** True when removing any single feature (one swap) leaves the answer on the same level. */
-export function survivesOneSwap(cal: Calibration, a: AnswerAssessment): boolean {
-  if (!a.level) return false;
-  return a.features.every((f) => levelFromCounts(cal, a.justifiedOpinions, a.extras - 1, a.hardExtras - (f.hard ? 1 : 0)) === a.level);
 }
 
 export interface ChecklistItem {
@@ -146,7 +134,7 @@ export interface TestAssessment {
   /** Different basic tenses used across the whole test. */
   tenses: BasicTense[];
   justifiedOpinions: number;
-  /** Targets shown to the student as ticks. None of them gates a level. */
+  /** Targets shown to the student as ticks. None of them gates anything. */
   checklist: { tenses: ChecklistItem; justifiedOpinions: ChecklistItem };
 }
 
@@ -165,5 +153,3 @@ export function assessTest(cal: Calibration, answers: { questionPosition: number
     },
   };
 }
-
-export { LEVELS };

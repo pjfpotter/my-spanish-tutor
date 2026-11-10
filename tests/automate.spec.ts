@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { SEED_COURSE } from '../lib/course/seed';
+import { SEED_COURSE, simplestSeedAnswer } from '../lib/course/seed';
 import { installCuedMic, signUp, stubQuestionAudio, unlockAutomate } from './helpers';
 
 // Tasks 9.1 to 9.5 and 13.2: hear a question with no text, answer it against the clock. Clips are stubs, the
@@ -9,7 +9,7 @@ import { installCuedMic, signUp, stubQuestionAudio, unlockAutomate } from './hel
 const QUESTIONS = SEED_COURSE.questions.map((q) => q.spanish);
 const ANSWER = (spanish: string) => {
   const position = SEED_COURSE.questions.find((q) => q.spanish === spanish)!.position;
-  return SEED_COURSE.modelAnswers.find((a) => a.questionPosition === position && a.level === 'rock_solid')!.text;
+  return simplestSeedAnswer(position);
 };
 
 test.beforeEach(async ({ page }) => {

@@ -38,14 +38,14 @@ export async function signUp(page: Page, classCode: string = SEED_CLASS_CODE): P
  * Returns the question ids in order.
  */
 export async function unlockMemorise(page: Page, answers: Record<number, string> = {}): Promise<string[]> {
-  const { SEED_COURSE } = await import('../lib/course/seed');
+  const { SEED_COURSE, simplestSeedAnswer } = await import('../lib/course/seed');
   const html = await (await page.request.get('/phases/write')).text();
   const ids = [...html.matchAll(/\\?"id\\?":\\?"([0-9a-f-]{36})\\?",\\?"position\\?":(\d)/g)].map((m) => ({ id: m[1], position: Number(m[2]) }));
   const ordered = [...new Map(ids.map((q) => [q.position, q.id])).entries()].sort((a, b) => a[0] - b[0]);
   expect(ordered).toHaveLength(5);
   const [sessionA, sessionB] = [crypto.randomUUID(), crypto.randomUUID()];
   for (const [position, id] of ordered) {
-    const text = answers[position] ?? SEED_COURSE.modelAnswers.find((a) => a.questionPosition === position && a.level === 'rock_solid')!.text;
+    const text = answers[position] ?? simplestSeedAnswer(position);
     const saved = await page.request.post('/api/answers', { data: { questionId: id, text, confirm: true } });
     expect(saved.ok()).toBe(true);
     for (const sessionId of [sessionA, sessionA, sessionB]) {
@@ -71,7 +71,7 @@ export async function unlockAutomate(page: Page, answers: Record<number, string>
 
 /** Stub clips for the five seed questions at three speeds. `onAsk` is told which question starts playing. */
 export async function stubQuestionAudio(page: Page, onAsk?: (spanish: string, speed: number) => void) {
-  const { SEED_COURSE } = await import('../lib/course/seed');
+  const { SEED_COURSE, simplestSeedAnswer } = await import('../lib/course/seed');
   const { SPEEDS } = await import('../lib/audio/manifest');
   const speeds = Object.values(SPEEDS);
   const slotOf = (q: number, s: number) => String(q * 3 + s + 1).padStart(12, '0');

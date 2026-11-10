@@ -56,7 +56,7 @@ describe('class overview (task 15.1)', () => {
     const b = await student();
     await student(); // never starts
     await fail(a.id, qids[0]);
-    await db.query(`insert into answers (profile_id, question_id, text, level) values ($1, $2, 'x', 1)`, [b.id, qids[0]]);
+    await db.query(`insert into answers (profile_id, question_id, text, value) values ($1, $2, 'x', 1)`, [b.id, qids[0]]);
     const o = await loadOverview(db, courseId);
     expect(o.joined).toBe(3);
     expect(o.started).toBe(2);

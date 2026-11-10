@@ -1,5 +1,5 @@
-import { LEVELS, type Calibration, type Chunk, type Level, type ModelAnswer } from '../course/schema';
-import { matchChunks, tokens } from './rubric';
+import type { Calibration, Chunk, ModelAnswer } from '../course/schema';
+import { assessAnswer, matchChunks, tokens } from './rubric';
 
 /**
  * How easy an answer is to say, 0 upward and higher is easier. Many students want the easiest route to
@@ -16,33 +16,25 @@ export function easeScore(text: string, chunks: Chunk[], cal: Pick<Calibration, 
   return cognateShare * 2 + recycledWords / words.length - avgLength / 10 - words.length / 50;
 }
 
-/** The levels a question has a model answer for, lowest first. A missing level is marked for the teacher. */
-export function levelsAvailable(answers: ModelAnswer[], questionPosition: number): Level[] {
-  return LEVELS.filter((l) => answers.some((a) => a.questionPosition === questionPosition && a.level === l));
-}
-
 /**
- * The course's model answers for one question, nearest the student's target level first (ties go to the
- * lower level, so the easier answer is never hidden below a harder one). Pass `ease` to put the easiest
- * answer first within a level.
+ * The course's model answers for one question, simplest first: lowest value, then easiest to say, then
+ * the order they were listed in. The first is where a student who wants the quickest route starts, and
+ * the practice text used when a testing course has no written answer of its own.
  */
 export function modelAnswersFor(
   answers: ModelAnswer[],
   questionPosition: number,
-  target: Level = 'rock_solid',
-  ease?: { chunks: Chunk[]; cal: Pick<Calibration, 'cognates'> },
+  ctx: { chunks: Chunk[]; cal: Calibration },
 ): ModelAnswer[] {
-  const rank = (l: Level) => LEVELS.indexOf(l);
-  const score = (a: ModelAnswer) => (ease ? easeScore(a.text, ease.chunks, ease.cal) : 0);
   return answers
     .filter((a) => a.questionPosition === questionPosition)
-    .map((a, i) => ({ a, i, s: score(a) }))
-    .sort(
-      (x, y) =>
-        Math.abs(rank(x.a.level) - rank(target)) - Math.abs(rank(y.a.level) - rank(target)) ||
-        rank(x.a.level) - rank(y.a.level) ||
-        y.s - x.s ||
-        x.i - y.i,
-    )
+    .map((a, i) => ({ a, i, value: assessAnswer(ctx.cal, a.text).value, ease: easeScore(a.text, ctx.chunks, ctx.cal) }))
+    .sort((x, y) => x.value - y.value || y.ease - x.ease || x.i - y.i)
     .map(({ a }) => a);
+}
+
+/** The simplest model answer for a question by value alone (no sentence builder needed), or null. */
+export function simplestModelAnswer(answers: ModelAnswer[], questionPosition: number, cal: Calibration): ModelAnswer | null {
+  const own = answers.filter((a) => a.questionPosition === questionPosition);
+  return own.map((a, i) => ({ a, i, value: assessAnswer(cal, a.text).value })).sort((x, y) => x.value - y.value || x.i - y.i)[0]?.a ?? null;
 }

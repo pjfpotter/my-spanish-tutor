@@ -1,7 +1,7 @@
 import { QUESTION_COUNT } from '../phases/gate.ts';
-import { BASIC_TENSES, LEVELS, validateCalibration, type BasicTense, type Calibration, type Level } from './calibration/types.ts';
+import { BASIC_TENSES, validateCalibration, type BasicTense, type Calibration } from './calibration/types.ts';
 
-export { BASIC_TENSES, LEVELS, type BasicTense, type Calibration, type Level };
+export { BASIC_TENSES, type BasicTense, type Calibration };
 
 /**
  * What a chunk can count for in the mark scheme (design D8). The rubric engine (task 7.1) counts
@@ -56,13 +56,11 @@ export interface Question {
 }
 
 /**
- * A model answer for one question at one level: the starting point in the writing stage. Written once
- * when the sentence builder is uploaded (or by hand). `level` is the intent; the rubric still works out
- * the real level, and an answer is only offered when the two agree.
+ * A model answer for one question: the optional starting point in the writing stage. Written once when
+ * the sentence builder is uploaded (or by hand). Its worth comes from the rubric, never from a label.
  */
 export interface ModelAnswer {
   questionPosition: number;
-  level: Level;
   text: string;
 }
 
@@ -73,7 +71,7 @@ export interface Course {
   testDate: string;
   chunks: Chunk[];
   questions: Question[];
-  /** Editable calibration data: features, thresholds, level names, glue words and the teacher's examples. */
+  /** Editable calibration data: features and their weights, glue words and the teacher's examples. */
   calibration: Calibration;
   modelAnswers: ModelAnswer[];
   /**
@@ -132,14 +130,7 @@ export function validateCourse(input: unknown): CourseCheck {
   const answers = Array.isArray(c.modelAnswers) ? c.modelAnswers : [];
   for (const a of answers) {
     if (!questions.some((q) => q?.position === a?.questionPosition)) problems.push(`a model answer is for question ${a?.questionPosition}, which does not exist`);
-    if (!(LEVELS as readonly string[]).includes(a?.level)) problems.push(`a model answer has an unknown level "${a?.level}"`);
     if (blank(a?.text)) problems.push('a model answer has no text');
-  }
-  // Rock solid is the level every student can reach, so every question needs one. Other levels may be missing.
-  for (const q of questions) {
-    if (!answers.some((a) => a?.questionPosition === q?.position && a.level === 'rock_solid')) {
-      problems.push(`question ${q?.position} needs a Rock solid model answer so every student has somewhere to start`);
-    }
   }
   return problems.length ? { ok: false, problems } : { ok: true, course: c as Course };
 }
