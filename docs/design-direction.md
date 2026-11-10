@@ -150,3 +150,14 @@ Reuses the tokens and materials above. Decisions made while building the one-scr
 - **No pictures anywhere in support.** Sentence builders are deliberately text only, and no picture can be sourced when a course is created.
 - **Support follows results and cause tags.** The prompt shows listen then repeat, a gapped script, chunk by chunk, first words, or English only, never weaker than a live cause tag allows. A missed chunk at chunk-by-chunk or less is built back up: the chunk alone, then with its neighbour, then the whole answer.
 - **Mix per answer.** Each answer opens with three short warm-ups chosen by the session mixer, then the spoken task. "I know this one" skips straight to saying it.
+
+## Write screen (26.1b)
+
+Built inside `PracticeShell`, so it keeps the one-screen rule down to 360 by 640 and reuses the chunk-kind colours, symbols and words from the practice screens.
+
+- **Empty slots first.** Each question opens on one empty block per category in the question's `template`, coloured by the same kind as the automatise phase. A dashed outline with a coloured underline, the kind symbol and the category name marks an empty block, so colour is never the only cue. Nothing is pre-filled and no level or target is asked for.
+- **Tap a block, see only what fits.** The tray opens in place under the row and lists chunks of that block's category from the question's own builder (`topics`), recycled first, none already used in the answer. Each chunk shows its English gloss in small type. Long trays scroll inside their own box; the page never scrolls.
+- **Cement.** Joining words (y, pero, también) come from a second tray reached from a block ("Add a joining word after"). They show as white pills and carry no value.
+- **Starter is a button, never the default.** "Give me a starter answer" appears only while the answer is empty. If the course has none, the screen says so and the blocks still work.
+- **Value, not level.** The meta line shows "Worth N", which grows as detail is added. The whole-test checklist sits in the footer line.
+- **Leaving out for later:** the analysis animation, the load note's placement and the nudge wording are finished in 26.1d.

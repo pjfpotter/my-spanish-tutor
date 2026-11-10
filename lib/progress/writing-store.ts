@@ -3,7 +3,7 @@ import type { Db } from '../db/types';
 import type { Calibration, Chunk, ModelAnswer } from '../course/schema';
 
 export interface WritingCourse {
-  questions: { id: string; position: number; spanish: string; english: string }[];
+  questions: { id: string; position: number; spanish: string; english: string; topics: string[]; template: string[] }[];
   chunks: Chunk[];
   calibration: Calibration;
   modelAnswers: ModelAnswer[];
@@ -17,12 +17,12 @@ export interface SavedAnswer {
 
 export async function loadWritingCourse(db: Db, courseId: string): Promise<WritingCourse> {
   const course = await db.query<{ calibration: Calibration; model_answers: ModelAnswer[] }>('select calibration, model_answers from courses where id = $1', [courseId]);
-  const questions = await db.query<{ id: string; position: number; spanish: string; english_subtitle: string }>(
-    'select id, position, spanish, english_subtitle from questions where course_id = $1 order by position', [courseId]);
+  const questions = await db.query<{ id: string; position: number; spanish: string; english_subtitle: string; topics: string[]; template: string[] }>(
+    'select id, position, spanish, english_subtitle, topics, template from questions where course_id = $1 order by position', [courseId]);
   const chunks = await db.query<{ spanish: string; english_gloss: string; category: string; feature_tags: string[]; recycled: boolean }>(
     'select spanish, english_gloss, category, feature_tags, recycled from chunks where course_id = $1 order by spanish', [courseId]);
   return {
-    questions: questions.rows.map((q) => ({ id: q.id, position: q.position, spanish: q.spanish, english: q.english_subtitle })),
+    questions: questions.rows.map((q) => ({ id: q.id, position: q.position, spanish: q.spanish, english: q.english_subtitle, topics: q.topics, template: q.template.length ? q.template : q.topics })),
     chunks: chunks.rows.map((c) => ({ spanish: c.spanish, english: c.english_gloss, category: c.category, featureTags: c.feature_tags as Chunk['featureTags'], recycled: c.recycled })),
     calibration: course.rows[0].calibration,
     modelAnswers: course.rows[0].model_answers,

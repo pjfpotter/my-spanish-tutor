@@ -1,48 +1,58 @@
 'use client';
 
-import Link from 'next/link';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { modelAnswersFor } from '../../../lib/coach/model-answers';
-import { applySwap, insertGlue, slotsFor } from '../../../lib/coach/swaps';
+import {
+  addGlue, addSlot, clearBlock, emptyParts, fillBlock, fittingChunks, isEmpty, kindOfCategory, partsFromText, removePart, textFromParts, type Part,
+} from '../../../lib/coach/builder';
 import { startingAnswer, viewAnswer, viewWholeTest } from '../../../lib/coach/writing';
+import { KIND_LABEL } from '../../../lib/practice/chunk-kind';
 import type { SavedAnswer, WritingCourse } from '../../../lib/progress/writing-store';
-import { SectionNav } from '../../components/SectionNav';
-import { Win } from '../../components/Win';
+import { Caption, useSubtitles } from '../../components/Caption';
+import { Tele } from '../../components/Tele';
+import { PracticeShell } from '../../components/practice/PracticeShell';
 import '../../components/screens.css';
+import './write.css';
 
-type Texts = Record<string, string>;
+type Rows = Record<string, Part[]>;
+type Tray = { id: string; mode: 'chunks' | 'glue' } | { mode: 'add' } | null;
 
 /**
- * The write phase (tasks 7.4 and 7.6; rebuilt in 26.1). Interim version for 26.1a: no styles or levels,
- * only a starter answer, swaps, the answer's value and a confirm. 26.1b replaces it with the empty-slot
- * sentence builder. All judging is by the rubric in the browser; nothing here calls a model.
+ * The write phase (tasks 7.4, 7.6 and 26.1b). Every question opens on empty coloured slots laid out like the
+ * sentence builder the student knows, filled from that question's own builder, with the same kind colours
+ * as the automatise phase. Tapping a block opens only the chunks that fit it, in place. Joining words sit in
+ * a cement tray. A starter answer is there if the student asks, never by default. All judging is by the rubric
+ * in the browser; nothing here calls a model, and no level or target is asked for.
  */
 export function Write({ course, saved }: { course: WritingCourse; saved: SavedAnswer[] }) {
   const [index, setIndex] = useState(0);
-  const [texts, setTexts] = useState<Texts>(() => {
-    const t: Texts = {};
+  const [rows, setRows] = useState<Rows>(() => {
+    const r: Rows = {};
     for (const q of course.questions) {
-      const mine = saved.find((s) => s.questionId === q.id);
-      t[q.id] = mine?.text ?? startingAnswer(course, q.position)?.text ?? '';
+      const mine = saved.find((s) => s.questionId === q.id)?.text ?? '';
+      const parts = partsFromText(mine, course.chunks);
+      r[q.id] = parts.length ? parts : emptyParts(q.template);
     }
-    return t;
+    return r;
   });
   const [confirmed, setConfirmed] = useState(() => new Set(saved.filter((s) => s.confirmed).map((s) => s.questionId)));
+  const [tray, setTray] = useState<Tray>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [showEnglish, toggleEnglish] = useSubtitles();
   const live = useRef<HTMLParagraphElement>(null);
 
   const q = course.questions[index];
-  const text = texts[q.id] ?? '';
+  const parts = rows[q.id];
+  const text = useMemo(() => textFromParts(parts), [parts]);
   const view = useMemo(() => viewAnswer(course, text), [course, text]);
-  const slots = useMemo(() => slotsFor(text, course.chunks), [course, text]);
   const whole = useMemo(
-    () => viewWholeTest(course, course.questions.map((x) => ({ questionPosition: x.position, text: texts[x.id] ?? '' }))),
-    [course, texts],
+    () => viewWholeTest(course, course.questions.map((x) => ({ questionPosition: x.position, text: textFromParts(rows[x.id]) }))),
+    [course, rows],
   );
-  const start = startingAnswer(course, q.position);
+  const starter = startingAnswer(course, q.position);
   const isConfirmed = confirmed.has(q.id);
   const glue = course.calibration.glueWords;
+  const open = tray && 'id' in tray ? parts.find((p) => p.id === tray.id) ?? null : null;
 
   const post = useCallback(async (questionId: string, body: string, confirm: boolean) => {
     const res = await fetch('/api/answers', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ questionId, text: body, confirm }) }).catch(() => null);
@@ -51,21 +61,55 @@ export function Write({ course, saved }: { course: WritingCourse; saved: SavedAn
     return null;
   }, []);
 
-  const change = (next: string) => {
-    setTexts((t) => ({ ...t, [q.id]: next }));
+  const change = (next: Part[]) => {
+    setRows((r) => ({ ...r, [q.id]: next }));
     setConfirmed((c) => {
       const n = new Set(c);
       n.delete(q.id); // changing a confirmed answer reopens it
       return n;
     });
     setError(null);
-    void post(q.id, next, false).then((e) => e && setError(e));
+    void post(q.id, textFromParts(next), false).then((e) => e && setError(e));
   };
 
-  const onSlot = (slotIndex: number, value: string) => {
-    const slot = slots[slotIndex];
-    if (value.startsWith('glue:')) change(insertGlue(text, slot, value.slice(5)));
-    else if (value !== slot.current.spanish) change(applySwap(text, slot, value));
+  const goTo = (i: number) => {
+    setIndex(i);
+    setTray(null);
+    setError(null);
+  };
+
+  const pick = (spanish: string) => {
+    if (!open) return;
+    const chunk = course.chunks.find((c) => c.spanish === spanish)!;
+    change(fillBlock(parts, open.id, chunk));
+    setTray(null);
+  };
+
+  const takeOut = () => {
+    if (!open) return;
+    const inTemplate = open.kind === 'block' && q.template.includes(open.category) && parts.filter((p) => p.kind === 'block' && p.category === open.category).length === 1;
+    change(inTemplate ? clearBlock(parts, open.id) : removePart(parts, open.id));
+    setTray(null);
+  };
+
+  const useGlue = (word: string) => {
+    if (!tray || !('id' in tray)) return;
+    if (open?.kind === 'glue') change(parts.map((p) => (p.id === open.id ? { ...p, text: word } : p)));
+    else change(addGlue(parts, tray.id, word));
+    setTray(null);
+  };
+
+  const addCategory = (category: string) => {
+    const next = addSlot(parts, category);
+    change(next);
+    setTray({ id: next[next.length - 1].id, mode: 'chunks' });
+  };
+
+  const useStarter = () => {
+    if (!starter) return;
+    const next = partsFromText(starter.text, course.chunks);
+    change(next);
+    setTray(null);
   };
 
   const confirm = async () => {
@@ -78,145 +122,185 @@ export function Write({ course, saved }: { course: WritingCourse; saved: SavedAn
   };
 
   const all = course.questions.every((x) => confirmed.has(x.id));
-  const options = modelAnswersFor(course.modelAnswers, q.position, { chunks: course.chunks, cal: course.calibration });
+  const fits = open?.kind === 'block' ? fittingChunks(parts, open.id, course.chunks, q.topics) : [];
+  const words = useMemo(() => q.spanish.split(/\s+/), [q]);
+  const meta = (
+    <>
+      <span data-testid="confirmed-count">{confirmed.size} of {course.questions.length} confirmed</span>
+      <span data-testid="answer-value">
+        Worth {view.assessment.value}
+        <span className="sr-only"> (grows as you add detail)</span>
+      </span>
+    </>
+  );
 
   return (
-    <main className="screen">
-      <SectionNav onBack={index > 0 ? () => setIndex(index - 1) : undefined} backLabel="Previous question" />
-      <h1>Write</h1>
-      <Win title="write.exe">
-        <div className="stack">
-          <ol className="dots" aria-label="Your five questions">
-            {course.questions.map((x, i) => (
-              <li key={x.id}>
-                <button type="button" className="btn" aria-current={i === index} onClick={() => setIndex(i)} data-confirmed={confirmed.has(x.id)}>
-                  {i + 1}
-                  <span className="sr-only">{confirmed.has(x.id) ? ' (confirmed)' : ''}</span>
-                  {confirmed.has(x.id) ? ' ✓' : ''}
+    <PracticeShell
+      onBack={index > 0 ? () => goTo(index - 1) : undefined}
+      backLabel="Back"
+      tele={<Tele question />}
+      caption={<Caption compact words={words} activeIndex={null} english={q.english} showEnglish={showEnglish} onToggleEnglish={toggleEnglish} />}
+      meta={meta}
+      footer={
+        <p className="write-checklist" data-testid="checklist">
+          {Object.values(whole.test.checklist).map((c) => (
+            <span key={c.label} data-on={c.met}>
+              <span aria-hidden="true">{c.met ? '✓' : '○'}</span> {Math.min(c.have, c.need)} of {c.need} {c.label.replace(' across your answers', '')}
+              <span className="sr-only">{c.met ? ' (done)' : ' (not yet, and it never lowers an answer)'}</span>
+            </span>
+          ))}
+        </p>
+      }
+    >
+      <h1 className="sr-only">Write your answer to question {index + 1}</h1>
+      <ol className="dots" aria-label="Your five questions">
+        {course.questions.map((x, i) => (
+          <li key={x.id}>
+            <button type="button" className="btn" aria-current={i === index} onClick={() => goTo(i)} data-confirmed={confirmed.has(x.id)}>
+              {i + 1}
+              {confirmed.has(x.id) ? <span aria-hidden="true"> ✓</span> : null}
+              <span className="sr-only">{confirmed.has(x.id) ? ' (confirmed)' : ''}</span>
+            </button>
+          </li>
+        ))}
+      </ol>
+
+      <section className="builder" aria-label="Your answer" data-testid="builder">
+        <ul className="blocks">
+          {parts.map((p) => {
+            if (p.kind === 'glue') {
+              const on = tray && 'id' in tray && tray.id === p.id;
+              return (
+                <li key={p.id}>
+                  <button type="button" className="tile block block-glue" lang="es" aria-pressed={!!on} onClick={() => setTray(on ? null : { id: p.id, mode: 'glue' })} data-testid="block-glue">
+                    {p.text}
+                    <span className="sr-only"> (joining word)</span>
+                  </button>
+                </li>
+              );
+            }
+            const kind = kindOfCategory(p.category, course.chunks);
+            const k = KIND_LABEL[kind];
+            const on = tray && 'id' in tray && tray.id === p.id;
+            return (
+              <li key={p.id}>
+                <button
+                  type="button"
+                  className={`tile block${p.text === null ? ' block-empty' : ''}`}
+                  data-kind={kind}
+                  data-empty={p.text === null}
+                  lang={p.text === null ? undefined : 'es'}
+                  aria-pressed={!!on}
+                  onClick={() => setTray(on ? null : { id: p.id, mode: 'chunks' })}
+                  data-testid="block"
+                >
+                  <span className="tile-kind" aria-hidden="true">{k.symbol}</span>
+                  <span>{p.text ?? p.category}</span>
+                  <span className="sr-only">{p.text === null ? ` (empty block, ${k.word})` : ` (${k.word})`}</span>
                 </button>
               </li>
-            ))}
-          </ol>
-
-          <div>
-            <p className="heard-text" lang="es">{q.spanish}</p>
-            <p className="heard-en">{q.english}</p>
-          </div>
-
-          {!start && <p className="error">No model answer yet for this question. Ask your teacher to add one.</p>}
-
-          <section className="file" aria-label="Your answer">
-            <p className="answer-text" lang="es">
-              {slots.length ? <Segments text={text} slots={slots} /> : text || 'Pick a model answer to start.'}
-            </p>
-            <div className="swaps">
-              {slots.map((s, i) => (
-                <label key={`${s.start}-${s.current.spanish}`} className="swap">
-                  <span>Swap “{s.current.spanish}”</span>
-                  <select value={s.current.spanish} onChange={(e) => onSlot(i, e.target.value)}>
-                    <option value={s.current.spanish}>{s.current.spanish}</option>
-                    {s.options.length > 0 && (
-                      <optgroup label="Swap for">
-                        {s.options.map((o) => (
-                          <option key={o.spanish} value={o.spanish}>{o.spanish} ({o.english})</option>
-                        ))}
-                      </optgroup>
-                    )}
-                    <optgroup label="Add a linking word after it">
-                      {glue.map((g) => (
-                        <option key={g} value={`glue:${g}`}>{g}</option>
-                      ))}
-                    </optgroup>
-                  </select>
-                </label>
-              ))}
-            </div>
-            {options.length > 1 && (
-              <div className="controls">
-                {options.map((a, i) => (
-                  <button key={a.text} type="button" className="btn" onClick={() => change(a.text)}>
-                    Start again from example {i + 1}
-                  </button>
-                ))}
-              </div>
-            )}
-          </section>
-
-          {view.outOfBank.length > 0 && (
-            <p className="error">
-              These words are not in your sentence builder: {view.outOfBank.join(', ')}. Swap them out to confirm. They do not count against you.
-            </p>
-          )}
-
-          <section aria-label="What your answer uses">
-            <p className="heard-text">{view.assessment.value > 0 ? `Your answer is worth ${view.assessment.value}.` : 'Add a reason with “porque” and it is ready to go.'}</p>
-            <ul className="features">
-              {course.calibration.features.map((f) => {
-                const on = view.assessment.features.some((x) => x.id === f.id);
-                return (
-                  <li key={f.id} data-on={on}>
-                    <span aria-hidden="true">{on ? '✓' : '○'}</span> {f.label}
-                    <span className="sr-only">{on ? ' (used)' : ' (not used)'}</span>
-                  </li>
-                );
-              })}
-            </ul>
-            {view.loadNote && <p className="heard-en">A longer answer takes more learning. Taking chunks out is fine at any time.</p>}
-            {view.suggestion && (
-              <p className="heard-en">
-                {view.suggestion.text} For example: <span lang="es">{view.suggestion.example}</span>
-              </p>
-            )}
-          </section>
-
-          {error && <p className="error" role="alert">{error}</p>}
-          <div className="controls">
-            <button type="button" className="btn btn-primary" onClick={confirm} disabled={busy || isConfirmed || !view.canConfirm || !text.trim()}>
-              {isConfirmed ? 'Confirmed' : 'Confirm this answer'}
+            );
+          })}
+          <li>
+            <button type="button" className="tile block block-add" aria-pressed={tray?.mode === 'add'} onClick={() => setTray(tray?.mode === 'add' ? null : { mode: 'add' })} data-testid="add-block">
+              <span aria-hidden="true">+</span> Add a block
             </button>
-            {isConfirmed && <span className="heard-en">Change anything above to reopen it.</span>}
-          </div>
-          <p ref={live} className="sr-only" role="status" aria-live="polite" />
-        </div>
-      </Win>
-
-      <Win title="across your answers.exe">
-        <ul className="features">
-          {Object.values(whole.test.checklist).map((c) => (
-            <li key={c.label} data-on={c.met}>
-              <span aria-hidden="true">{c.met ? '✓' : '○'}</span> {c.met ? `${c.need} of ${c.need}` : `${c.have} of ${c.need}`} {c.label}
-              <span className="sr-only">{c.met ? ' (done)' : ' (not yet)'}</span>
-            </li>
-          ))}
+          </li>
         </ul>
-        <p className="heard-en">These are things to aim for. They never lower an answer.</p>
-        {whole.tenseHint && (
-          <p className="heard-en">
-            If you like, question {whole.tenseHint.questionPosition} is the easiest place to add another tense, for example <span lang="es">{whole.tenseHint.example}</span>.
-          </p>
-        )}
-      </Win>
 
-      <div className="controls">
-        {all ? (
-          <Link className="btn btn-primary" href="/">All five confirmed. Back to the desktop</Link>
-        ) : (
-          <Link className="btn" href="/">Back to the desktop</Link>
-        )}
+        <div className="tray" data-testid="tray" aria-live="polite">
+          {tray?.mode === 'add' && (
+            <>
+              <p className="tray-head">Add a block of…</p>
+              <ul className="tray-list">
+                {q.topics.map((cat) => {
+                  const kind = kindOfCategory(cat, course.chunks);
+                  return (
+                    <li key={cat}>
+                      <button type="button" className="tile" data-kind={kind} onClick={() => addCategory(cat)}>
+                        <span className="tile-kind" aria-hidden="true">{KIND_LABEL[kind].symbol}</span> {cat}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
+          )}
+          {open && tray?.mode === 'chunks' && open.kind === 'block' && (
+            <>
+              <p className="tray-head">{open.text ? `Swap “${open.text}” for…` : 'Pick one…'}</p>
+              {fits.length ? (
+                <ul className="tray-list">
+                  {fits.map((c) => (
+                    <li key={c.spanish}>
+                      <button type="button" className="tile" data-kind={kindOfCategory(c.category, course.chunks)} lang="es" onClick={() => pick(c.spanish)} data-testid="fit">
+                        <span>{c.spanish}</span>
+                        <small lang="en">{c.english}</small>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="heard-en">Nothing else fits here.</p>
+              )}
+              <div className="tray-actions">
+                <button type="button" className="btn" onClick={() => setTray({ id: open.id, mode: 'glue' })}>Add a joining word after</button>
+                {open.text && <button type="button" className="btn" onClick={takeOut}>Take out</button>}
+              </div>
+            </>
+          )}
+          {open && tray?.mode === 'glue' && (
+            <>
+              <p className="tray-head">{open.kind === 'glue' ? `Swap “${open.text}” for…` : 'Pick a joining word…'}</p>
+              <ul className="tray-list">
+                {glue.map((g) => (
+                  <li key={g}>
+                    <button type="button" className="tile" lang="es" onClick={() => useGlue(g)} data-testid="glue">{g}</button>
+                  </li>
+                ))}
+              </ul>
+              {open.kind === 'glue' && (
+                <div className="tray-actions">
+                  <button type="button" className="btn" onClick={takeOut}>Take out</button>
+                </div>
+              )}
+            </>
+          )}
+          {!tray && isEmpty(parts) && (
+            <div className="starter">
+              <p className="heard-en">Tap a block to fill it in.</p>
+              {starter ? (
+                <button type="button" className="btn" onClick={useStarter} data-testid="starter">Give me a starter answer</button>
+              ) : (
+                <p className="heard-en" data-testid="no-starter">There is no starter answer for this question. Build it from the blocks.</p>
+              )}
+            </div>
+          )}
+          {!tray && !isEmpty(parts) && (
+            <>
+              <p className="answer-text" lang="es" data-testid="answer-text">{text}</p>
+              {view.loadNote && <p className="heard-en">A longer answer takes more learning. Taking blocks out is fine at any time.</p>}
+              {view.suggestion && (
+                <p className="heard-en">
+                  {view.suggestion.text} For example: <span lang="es">{view.suggestion.example}</span>
+                </p>
+              )}
+            </>
+          )}
+        </div>
+      </section>
+
+      {view.outOfBank.length > 0 && (
+        <p className="error">These words are not in your sentence builder: {view.outOfBank.join(', ')}. Take them out to confirm.</p>
+      )}
+      {error && <p className="error" role="alert">{error}</p>}
+      <div className="write-actions">
+        <button type="button" className="btn btn-primary" onClick={confirm} disabled={busy || isConfirmed || !view.canConfirm || !text.trim()} data-testid="confirm">
+          {isConfirmed ? 'Confirmed' : 'Confirm this answer'}
+        </button>
+        {all && <span className="heard-en" data-testid="all-confirmed">All five confirmed.</span>}
       </div>
-    </main>
+      <p ref={live} className="sr-only" role="status" aria-live="polite" />
+    </PracticeShell>
   );
-}
-
-/** The answer as text, with each chunk marked so the student can see what the swap menus refer to. */
-function Segments({ text, slots }: { text: string; slots: ReturnType<typeof slotsFor> }) {
-  const parts: React.ReactNode[] = [];
-  let at = 0;
-  slots.forEach((s, i) => {
-    if (s.start > at) parts.push(text.slice(at, s.start));
-    parts.push(<mark key={i}>{text.slice(s.start, s.end)}</mark>);
-    at = s.end;
-  });
-  if (at < text.length) parts.push(text.slice(at));
-  return <>{parts}</>;
 }

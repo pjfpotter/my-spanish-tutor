@@ -166,6 +166,8 @@ export async function expectFits(page: Page, where: string) {
     if (body && body.scrollHeight > body.clientHeight + 1) out.push(`task card scrolls (${body.scrollHeight} > ${body.clientHeight})`);
     for (const el of document.querySelectorAll('.practice *')) {
       if (el.closest('.sr-only, .sr-only-live, .reward')) continue;
+      // A long tray of chunks may scroll inside its own box (the box itself is still checked).
+      if (el !== el.closest('.tray') && el.closest('.tray')) continue;
       const r = el.getBoundingClientRect();
       if (!r.width && !r.height) continue;
       if (r.bottom > vh + 1 || r.right > vw + 1 || r.left < -1) out.push(`${el.tagName}.${(el as HTMLElement).className} ${el.textContent?.slice(0, 30)}`);

@@ -415,10 +415,10 @@ For user testing, a course can be flagged `courses.unlock_all` (migration `0011`
 
 The coach helps a student reach a Spanish answer they can memorise (`lib/coach/`).
 
-1. The student picks a target level for the whole test and may switch at any time. Switching is a change of *style*, not an upgrade or demotion.
-2. Each question starts from empty slots. A student may ask for a **starter**: the course's simplest model answer (lowest value, then the most cognates, shortest words and most recycled chunks).
-3. The student may **swap chunks** from the sentence builder. Every word must come from the sentence builder, the course's glue-word bank (for example *y*, *pero*, *también*) or the allowed common-word list (`lib/coach/allowed-words.ts`). Glue words never count as features.
-4. After each change the rubric **recomputes locally** and the checklist of lit-up features updates. No model call is made.
+1. Each question opens on **empty coloured slots**, one per category in the question's `template`, laid out like the sentence builder. No target or level is asked for. The pure model is `lib/coach/builder.ts`: an answer is a row of parts (blocks and joining words), turned into the saved text by `textFromParts` and back by `partsFromText`.
+2. A student may ask for a **starter**: the course's simplest model answer (lowest value, then the most cognates, shortest words and most recycled chunks). It is a button, never the default.
+3. Tapping a block opens **only the chunks that fit it**: same category, from the question's own builder (`topics`), none already used in the answer, recycled first (`fittingChunks`). Joining words (for example *y*, *pero*, *también*) come from the cement tray and carry no value. Every word must come from the sentence builder, the glue bank or the allowed common-word list (`lib/coach/allowed-words.ts`).
+4. After each change the rubric **recomputes locally** and the answer's value updates. No model call is made.
 5. The student explicitly **confirms** each answer. Confirmation is blocked while any out-of-bank word remains.
 
 Supporting behaviour: at most one optional suggestion per answer; a whole-test checklist (three tenses, two justified opinions) that gates nothing; a one-time "a longer answer takes more learning" note once an answer's value passes the course's `loadNoteValue`.

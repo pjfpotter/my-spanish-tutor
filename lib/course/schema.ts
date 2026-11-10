@@ -51,6 +51,8 @@ export interface Question {
   recycled: boolean;
   /** Chunk categories that answer this question. An answer is relevant if it uses at least one. */
   topics: string[];
+  /** The categories shown as empty slots when a student opens the question. Defaults to all of `topics`. */
+  template?: string[];
   /** The word the comprehension probe plays alone after a missed question, with its English meaning. */
   keyWord?: { spanish: string; english: string };
 }
@@ -120,6 +122,7 @@ export function validateCourse(input: unknown): CourseCheck {
     if (blank(q?.english)) problems.push(`question ${i + 1} is missing its English subtitle`);
     if (!Array.isArray(q?.topics) || !q.topics.length) problems.push(`question ${i + 1} lists no topics that answer it`);
     else for (const t of q.topics) if (!categories.has(t)) problems.push(`question ${i + 1} names a topic "${t}" that no chunk has`);
+    for (const t of q?.template ?? []) if (!(q.topics ?? []).includes(t)) problems.push(`question ${i + 1} has a starting slot "${t}" that is not one of its topics`);
   });
   if (questions.length === QUESTION_COUNT && questions.filter((q) => q?.recycled).length !== 1) {
     problems.push('exactly one question must be recycled from an earlier topic');

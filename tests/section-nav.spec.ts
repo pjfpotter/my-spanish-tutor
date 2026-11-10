@@ -19,10 +19,11 @@ test('every section screen has an exit to the desktop that works', async ({ page
   }
 });
 
-test('leaving the write section keeps a confirmed answer, and Previous question goes back without losing it', async ({ page }) => {
+test('leaving the write section keeps a confirmed answer, and Back goes back without losing it', async ({ page }) => {
   await signUp(page);
   await page.goto('/phases/write');
   await expect(page.getByTestId('section-back')).toHaveCount(0); // nothing before the first question
+  await page.getByTestId('starter').click();
   await page.getByRole('button', { name: 'Confirm this answer' }).click();
   await expect(page.getByRole('button', { name: 'Confirmed', exact: true })).toBeVisible();
 
