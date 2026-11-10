@@ -12,7 +12,7 @@ const BUDGET = {
   jsGzipKb: 300, // all JavaScript chunks, gzipped (measured 203 KB on 2026-11-01)
   cssGzipKb: 20, // all CSS, gzipped (measured 4 KB)
   fontsKb: 250, // web fonts as shipped (measured 117 KB)
-  publicKb: 3072, // everything under public/, including wallpapers when they arrive (measured 8 KB)
+  publicKb: 3072, // everything under public/, including wallpapers when they arrive (measured 2.8 MB after the sound effects were compressed)
 };
 
 function files(dir) {

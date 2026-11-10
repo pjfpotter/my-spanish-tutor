@@ -165,7 +165,8 @@ def build_command(src: Path, dst: Path, p: dict, amount: float, ir: Path | None)
              f'afade=t=out:st={total - fade:.3f}:d={fade:.3f}[out]')
 
     cmd += ['-filter_complex', ';'.join(g), '-map', '[out]',
-            '-c:a', 'libmp3lame', '-q:a', '2', str(dst)]
+            # Short interface sounds: mono at 64 kbps keeps public/ inside the performance budget.
+            '-ac', '1', '-ar', '44100', '-c:a', 'libmp3lame', '-b:a', '64k', str(dst)]
     return cmd
 
 
