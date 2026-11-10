@@ -2,6 +2,7 @@ import type { Db } from '../db/types';
 import { courseUnlockAll } from '../course/unlock';
 import type { Calibration, Chunk, FeatureTag, ModelAnswer } from '../course/schema';
 import { simplestModelAnswer } from '../coach/model-answers';
+import { isStalled } from '../coach/simplify';
 import { practiceAnswerText } from './practice-text';
 import { causeTagsForRecallFailure, recordChunkEvents } from '../diagnostics/recall-store';
 import { logAttempt, type AttemptResult } from '../events/attempts';
@@ -25,6 +26,8 @@ export interface MemoriseItem {
   mastered: boolean;
   /** Reached the bar enough times, but all in one session: a later day confirms it. */
   laterSession: boolean;
+  /** Repeated failures to recall it, so the app suggests a simpler version (answer-writing-coach). */
+  stalled: boolean;
 }
 
 /** Accuracies of the whole-answer attempts at one item, oldest first. */
@@ -78,6 +81,7 @@ export async function loadMemoriseItems(db: Db, profileId: string, courseId: str
       successes: m.qualifyingSuccesses,
       mastered: isMastered(m, DEFAULT_MASTERY),
       laterSession: needsLaterSession(m, DEFAULT_MASTERY),
+      stalled: isStalled(accuracies, isMastered(m, DEFAULT_MASTERY)),
     });
   }
   return items;

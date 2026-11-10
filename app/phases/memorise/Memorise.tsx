@@ -330,7 +330,7 @@ export function Memorise({ items: initial, chunks = [], causes = {}, focusIds = 
       const newBest = out.previousBest !== null && score.accuracy > out.previousBest;
       const doneForToday = out.mastered || (out.mastery.qualifyingSuccesses >= 3 && out.mastery.distinctSessions < 2);
       setCoins((c) => c + out.coinsAwarded);
-      setItems((all) => all.map((x) => (x.id === it.id ? { ...x, level: out.level, best: out.best, mastered: out.mastered, successes: out.mastery.qualifyingSuccesses, laterSession: !out.mastered && out.mastery.qualifyingSuccesses >= 3 } : x)));
+      setItems((all) => all.map((x) => (x.id === it.id ? { ...x, level: out.level, best: out.best, mastered: out.mastered, successes: out.mastery.qualifyingSuccesses, laterSession: !out.mastered && out.mastery.qualifyingSuccesses >= 3, stalled: x.stalled && !out.mastered } : x)));
       setAttempt({ score, script: text, drill: false, best: out.best, newBest, mastered: out.mastered });
       setQueue((q) => afterAttempt(q, it.id, good ? 'correct' : 'wrong', doneForToday));
       if (!good) setMissed((m) => new Set(m).add(it.id));
@@ -566,6 +566,11 @@ export function Memorise({ items: initial, chunks = [], causes = {}, focusIds = 
             </>
           )}
           <p data-testid="best">{item.best === null ? 'No personal best yet. Your first go sets it.' : `Your best: ${item.best}%`}</p>
+          {item.stalled && !attempt && (
+            <p data-testid="stalled" className="muted">
+              This one is hard to hold. <Link href={`/phases/write?question=${item.position}`}>Try a shorter version</Link>
+            </p>
+          )}
 
           {capture.state === 'idle' && !attempt && !unclear && (
             <p data-testid="explain" className="muted">

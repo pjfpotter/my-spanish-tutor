@@ -31,6 +31,28 @@ export async function signUp(page: Page, classCode: string = SEED_CLASS_CODE): P
   return recoveryCode;
 }
 
+/** The question ids and positions of the course the signed-in student is in, in order. */
+export async function questionIdsInOrder(page: Page): Promise<[number, string][]> {
+  const html = await (await page.request.get('/phases/write')).text();
+  const ids = [...html.matchAll(/\\?"id\\?":\\?"([0-9a-f-]{36})\\?",\\?"position\\?":(\d)/g)].map((m) => ({ id: m[1], position: Number(m[2]) }));
+  const ordered = [...new Map(ids.map((q) => [q.position, q.id])).entries()].sort((a, b) => a[0] - b[0]);
+  expect(ordered).toHaveLength(5);
+  return ordered;
+}
+
+/** Masters all five questions by ear on two sessions, through the app's own route, and confirms nothing. */
+export async function masterUnderstand(page: Page): Promise<[number, string][]> {
+  const ordered = await questionIdsInOrder(page);
+  const [sessionA, sessionB] = [crypto.randomUUID(), crypto.randomUUID()];
+  for (const [, id] of ordered) {
+    for (const sessionId of [sessionA, sessionA, sessionB]) {
+      const r = await page.request.post('/api/attempts', { data: { itemId: id, outcome: 'correct', sessionId } });
+      expect(r.ok()).toBe(true);
+    }
+  }
+  return ordered;
+}
+
 /**
  * Opens the memorise phase for a signed-in student by doing what a student would, through the app's own
  * routes: confirm all five answers (write phase), and master all five questions by ear on two separate

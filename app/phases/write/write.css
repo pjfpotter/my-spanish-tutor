@@ -134,3 +134,8 @@
   color: #333333;
   border-style: dashed;
 }
+.shorter .btn {
+  min-height: var(--tap-min);
+  padding: 0.1rem 0.7rem;
+  font-size: 0.95rem;
+}

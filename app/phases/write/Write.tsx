@@ -4,11 +4,13 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   addGlue, addSlot, clearBlock, emptyParts, fillBlock, fittingChunks, isEmpty, kindOfCategory, partsFromText, removePart, textFromParts, type Part,
 } from '../../../lib/coach/builder';
+import type { Simplification } from '../../../lib/coach/simplify';
 import { startingAnswer, viewAnswer, viewWholeTest } from '../../../lib/coach/writing';
 import { KIND_LABEL } from '../../../lib/practice/chunk-kind';
 import type { SavedAnswer, WritingCourse } from '../../../lib/progress/writing-store';
 import { Caption, useSubtitles } from '../../components/Caption';
 import { Tele } from '../../components/Tele';
+import { useSfx } from '../../components/useSfx';
 import { PracticeShell } from '../../components/practice/PracticeShell';
 import '../../components/screens.css';
 import './write.css';
@@ -23,8 +25,8 @@ type Tray = { id: string; mode: 'chunks' | 'glue' } | { mode: 'add' } | null;
  * a cement tray. A starter answer is there if the student asks, never by default. All judging is by the rubric
  * in the browser; nothing here calls a model, and no level or target is asked for.
  */
-export function Write({ course, saved }: { course: WritingCourse; saved: SavedAnswer[] }) {
-  const [index, setIndex] = useState(0);
+export function Write({ course, saved, suggestions = {}, focus = 0 }: { course: WritingCourse; saved: SavedAnswer[]; suggestions?: Record<string, Simplification>; focus?: number }) {
+  const [index, setIndex] = useState(focus);
   const [rows, setRows] = useState<Rows>(() => {
     const r: Rows = {};
     for (const q of course.questions) {
@@ -38,6 +40,9 @@ export function Write({ course, saved }: { course: WritingCourse; saved: SavedAn
   const [tray, setTray] = useState<Tray>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [used, setUsed] = useState(() => new Set<string>());
+  const sfx = useSfx();
   const [showEnglish, toggleEnglish] = useSubtitles();
   const live = useRef<HTMLParagraphElement>(null);
 
@@ -51,14 +56,17 @@ export function Write({ course, saved }: { course: WritingCourse; saved: SavedAn
   );
   const starter = startingAnswer(course, q.position);
   const isConfirmed = confirmed.has(q.id);
+  // A stalled answer is offered a shorter version, so it is not also nudged to grow.
+  const offerShorter = !!suggestions[q.id] && !used.has(q.id);
   const glue = course.calibration.glueWords;
   const open = tray && 'id' in tray ? parts.find((p) => p.id === tray.id) ?? null : null;
 
-  const post = useCallback(async (questionId: string, body: string, confirm: boolean) => {
+  const post = useCallback(async (questionId: string, body: string, confirm: boolean): Promise<{ error: string | null; bonus: number; reset: boolean }> => {
     const res = await fetch('/api/answers', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ questionId, text: body, confirm }) }).catch(() => null);
-    if (!res) return 'Could not save just now. Your answer is still here; try again in a moment.';
-    if (!res.ok) return ((await res.json().catch(() => null)) as { error?: string } | null)?.error ?? 'Could not save that.';
-    return null;
+    if (!res) return { error: 'Could not save just now. Your answer is still here; try again in a moment.', bonus: 0, reset: false };
+    const json = (await res.json().catch(() => null)) as { error?: string; bonus?: number; progressReset?: boolean } | null;
+    if (!res.ok) return { error: json?.error ?? 'Could not save that.', bonus: 0, reset: false };
+    return { error: null, bonus: json?.bonus ?? 0, reset: json?.progressReset === true };
   }, []);
 
   const change = (next: Part[]) => {
@@ -69,13 +77,17 @@ export function Write({ course, saved }: { course: WritingCourse; saved: SavedAn
       return n;
     });
     setError(null);
-    void post(q.id, textFromParts(next), false).then((e) => e && setError(e));
+    void post(q.id, textFromParts(next), false).then((r) => {
+      if (r.error) setError(r.error);
+      else if (r.reset) setNotice('Changing this answer starts its memorising again.');
+    });
   };
 
   const goTo = (i: number) => {
     setIndex(i);
     setTray(null);
     setError(null);
+    setNotice(null);
   };
 
   const pick = (spanish: string) => {
@@ -105,6 +117,14 @@ export function Write({ course, saved }: { course: WritingCourse; saved: SavedAn
     setTray({ id: next[next.length - 1].id, mode: 'chunks' });
   };
 
+  const useShorter = () => {
+    const s = suggestions[q.id];
+    if (!s) return;
+    change(partsFromText(s.text, course.chunks));
+    setUsed((u) => new Set(u).add(q.id));
+    setTray(null);
+  };
+
   const useStarter = () => {
     if (!starter) return;
     const next = partsFromText(starter.text, course.chunks);
@@ -114,11 +134,16 @@ export function Write({ course, saved }: { course: WritingCourse; saved: SavedAn
 
   const confirm = async () => {
     setBusy(true);
-    const e = await post(q.id, text, true);
+    const r = await post(q.id, text, true);
     setBusy(false);
-    if (e) return setError(e);
+    if (r.error) return setError(r.error);
     setConfirmed((c) => new Set(c).add(q.id));
-    if (live.current) live.current.textContent = 'Answer confirmed.';
+    setNotice(null);
+    if (r.bonus > 0) {
+      sfx('section-complete');
+      setNotice(`All five confirmed. Bonus: +${r.bonus} coins.`);
+    }
+    if (live.current) live.current.textContent = r.bonus > 0 ? `Answer confirmed. All five done, bonus of ${r.bonus} coins.` : 'Answer confirmed.';
   };
 
   const all = course.questions.every((x) => confirmed.has(x.id));
@@ -208,6 +233,7 @@ export function Write({ course, saved }: { course: WritingCourse; saved: SavedAn
           </li>
         </ul>
 
+        {(tray || isEmpty(parts)) && (
         <div className="tray" data-testid="tray" aria-live="polite">
           {tray?.mode === 'add' && (
             <>
@@ -276,20 +302,28 @@ export function Write({ course, saved }: { course: WritingCourse; saved: SavedAn
               )}
             </div>
           )}
-          {!tray && !isEmpty(parts) && (
-            <>
-              <p className="answer-text" lang="es" data-testid="answer-text">{text}</p>
-              {view.loadNote && <p className="heard-en">A longer answer takes more learning. Taking blocks out is fine at any time.</p>}
-              {view.suggestion && (
-                <p className="heard-en">
-                  {view.suggestion.text} For example: <span lang="es">{view.suggestion.example}</span>
-                </p>
-              )}
-            </>
-          )}
         </div>
+        )}
+        {!tray && !isEmpty(parts) && (
+          <>
+            <p className="answer-text sr-only" lang="es" data-testid="answer-text">{text}</p>
+            {view.loadNote && !offerShorter && <p className="heard-en">A longer answer takes more learning. Taking blocks out is fine at any time.</p>}
+            {view.suggestion && !offerShorter && (
+              <p className="heard-en">
+                {view.suggestion.text} For example: <span lang="es">{view.suggestion.example}</span>
+              </p>
+            )}
+          </>
+        )}
       </section>
 
+      {offerShorter && (
+        <p className="heard-en shorter" data-testid="shorter">
+          Hard to remember? A shorter version is ready.{' '}
+          <button type="button" className="btn" onClick={useShorter} data-testid="use-shorter">Use it</button>
+        </p>
+      )}
+      {notice && <p className="heard-en" role="status" data-testid="notice">{notice}</p>}
       {view.outOfBank.length > 0 && (
         <p className="error">These words are not in your sentence builder: {view.outOfBank.join(', ')}. Take them out to confirm.</p>
       )}

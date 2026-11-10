@@ -397,10 +397,10 @@ flowchart LR
 |---|---|---|
 | `write` | Always | Five answers confirmed |
 | `understand` | Always | Five questions mastered by ear |
-| `memorise` | Five answers confirmed **and** five questions mastered | Five answers memorised |
+| `memorise` | At least one answer confirmed **and** five questions mastered. Only confirmed answers are practised | Five answers memorised |
 | `automate` | Five answers memorised | `testReady` is true |
 
-A locked phase appears in Tele's world as static and cannot be opened. The `phaseStates()` function returns, for each phase, `open` or `locked` with a human reason (for example "First confirm all five answers.").
+A locked phase appears in Tele's world as static and cannot be opened. The `phaseStates()` function returns, for each phase, `open` or `locked` with a human reason (for example "First confirm an answer and master all five questions by ear.").
 
 #### Testing course (`unlock_all`)
 
@@ -419,11 +419,14 @@ The coach helps a student reach a Spanish answer they can memorise (`lib/coach/`
 2. A student may ask for a **starter**: the course's simplest model answer (lowest value, then the most cognates, shortest words and most recycled chunks). It is a button, never the default.
 3. Tapping a block opens **only the chunks that fit it**: same category, from the question's own builder (`topics`), none already used in the answer, recycled first (`fittingChunks`). Joining words (for example *y*, *pero*, *también*) come from the cement tray and carry no value. Every word must come from the sentence builder, the glue bank or the allowed common-word list (`lib/coach/allowed-words.ts`).
 4. After each change the rubric **recomputes locally** and the answer's value updates. No model call is made.
-5. The student explicitly **confirms** each answer. Confirmation is blocked while any out-of-bank word remains.
+5. The student explicitly **confirms** each answer. Confirmation is blocked while any out-of-bank word remains. A confirmed answer unlocks memorising for that answer alone, so a student may start memorising it while still writing the others.
+6. **All-five bonus.** Confirming the last of the course's answers pays one bonus, once, equal to the value of the lowest-valued answer (`payBonusIfComplete`, ledger reason `bonus`). Writing an answer pays nothing by itself; each answer's value is paid through memorising and automatising (26.1e).
+7. **Changing a confirmed answer resets its progress.** `saveAnswer` deletes the memorise and automate mastery and attempt history for that question when the words of a confirmed answer change (punctuation-only edits do not count). Coins already earned stay. Taking blocks out (pruning) is a change like any other, so it resets the answer; the chunk-level hotspot events are kept.
+8. **Stalled answers.** `isStalled` (`lib/coach/simplify.ts`) is true after six or more whole-answer attempts with the latest five all under 70% and no mastery. The memorise screen then links to the write screen, which offers `simplerVersion`: easier chunks of the same kind first (cognates and recurring chunks, with `canStandIn` guarding grammar), then the hardest-weighted extras taken out, never the justified opinion. The student chooses whether to use it.
 
 Supporting behaviour: at most one optional suggestion per answer; a whole-test checklist (three tenses, two justified opinions) that gates nothing; a one-time "a longer answer takes more learning" note once an answer's value passes the course's `loadNoteValue`.
 
-If a course has no model answer for a question and level, the coach says so, offers the levels that exist, and lets the student build from chunks. A student is never blocked.
+If a course has no model answer for a question, the starter option says so and the student builds from the blocks. A student is never blocked.
 
 ### 9.3 Hear it
 

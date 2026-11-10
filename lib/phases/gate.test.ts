@@ -9,15 +9,21 @@ describe('phase gate', () => {
     expect(status(NO_PROGRESS)).toEqual({ write: 'open', understand: 'open', memorise: 'locked', automate: 'locked' });
   });
 
-  it('keeps memorising locked until BOTH all answers are confirmed and all questions mastered', () => {
+  it('keeps memorising locked until an answer is confirmed AND all questions are mastered', () => {
     expect(status({ answersConfirmed: 5, questionsMastered: 4, answersMemorised: 0 }).memorise).toBe('locked');
-    expect(status({ answersConfirmed: 4, questionsMastered: 5, answersMemorised: 0 }).memorise).toBe('locked');
+    expect(status({ answersConfirmed: 0, questionsMastered: 5, answersMemorised: 0 }).memorise).toBe('locked');
     expect(status({ answersConfirmed: 5, questionsMastered: 5, answersMemorised: 0 }).memorise).toBe('open');
+  });
+
+  it('opens memorising with a single confirmed answer, while the others are still being written', () => {
+    const s = phaseStates({ answersConfirmed: 1, questionsMastered: 5, answersMemorised: 0 });
+    expect(s.memorise).toEqual({ status: 'open', done: false });
+    expect(s.write.done).toBe(false);
   });
 
   it('says what is missing, in plain words', () => {
     const none = phaseStates(NO_PROGRESS).memorise;
-    expect(none).toMatchObject({ status: 'locked', reason: 'First confirm all five answers and master all five questions by ear.' });
+    expect(none).toMatchObject({ status: 'locked', reason: 'First confirm an answer and master all five questions by ear.' });
     const oneLeft = phaseStates({ answersConfirmed: 5, questionsMastered: 3, answersMemorised: 0 }).memorise;
     expect(oneLeft).toMatchObject({ reason: 'First master all five questions by ear.' });
   });

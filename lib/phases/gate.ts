@@ -6,9 +6,9 @@
  *   understand ─┘
  *
  * From the specs:
- * - Memorisation begins once all five answers are confirmed (answer-writing-coach), and a
- *   student does not advance from comprehension until all five questions are mastered
- *   (question-comprehension). So memorise needs both.
+ * - A confirmed answer unlocks memorising for that answer alone (answer-writing-coach: Confirm each answer),
+ *   so memorise opens once at least one answer is confirmed. A student does not advance from comprehension
+ *   until all five questions are mastered (question-comprehension). So memorise needs both.
  * - response-automatisation states no unlock rule. Inferred: it follows memorisation.
  */
 export const PHASES = ['write', 'understand', 'memorise', 'automate'] as const;
@@ -43,6 +43,7 @@ export interface GateOptions {
 
 export function phaseStates(p: Progress, opts: GateOptions = {}): Record<PhaseId, PhaseState> {
   const wrote = p.answersConfirmed >= QUESTION_COUNT;
+  const hasAnswer = p.answersConfirmed >= 1;
   const understood = p.questionsMastered >= QUESTION_COUNT;
   const memorised = p.answersMemorised >= QUESTION_COUNT;
 
@@ -56,7 +57,7 @@ export function phaseStates(p: Progress, opts: GateOptions = {}): Record<PhaseId
     };
   }
 
-  const memoriseMissing = [!wrote && 'confirm all five answers', !understood && 'master all five questions by ear'].filter(
+  const memoriseMissing = [!hasAnswer && 'confirm an answer', !understood && 'master all five questions by ear'].filter(
     Boolean,
   ) as string[];
 

@@ -142,3 +142,8 @@ export function addGlue(parts: Part[], afterPartId: string, word: string): Part[
   const at = i < 0 ? parts.length : i + 1;
   return [...parts.slice(0, at), { id: nextId(), kind: 'glue', text: word, after: '' }, ...parts.slice(at)];
 }
+
+/** Chunks of one category that are not already used in an answer, recycled first. For suggesting easier swaps. */
+export function addableUnused(chunks: Chunk[], category: string, used: Set<string | null>): Chunk[] {
+  return chunks.filter((c) => c.category === category && !used.has(c.spanish)).sort((a, b) => Number(b.recycled) - Number(a.recycled));
+}
