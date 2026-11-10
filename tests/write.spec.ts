@@ -135,7 +135,7 @@ test('confirming the last of the five pays a bonus once, and says so', async ({ 
     await expect(page.getByRole('button', { name: 'Confirmed', exact: true })).toBeVisible();
     if (n < 5) await expect(page.getByTestId('notice')).toHaveCount(0);
   }
-  await expect(page.getByTestId('notice')).toContainText(/Bonus: \+\d+ coins/);
+  await expect(page.getByTestId('notice')).toContainText(/Bonus: \+€\d+/);
   await expectFits(page, 'bonus notice');
 });
 

@@ -163,3 +163,7 @@ Built inside `PracticeShell`, so it keeps the one-screen rule down to 360 by 640
 - **One nudge, once.** After an answer works, one optional extra is offered at a time ("Add a contrast if you like. For example: aunque") with a "No thanks" that is not repeated for that answer. It is the cheapest unused feature, recycled chunks first. A stalled answer is offered a shorter version instead of a nudge.
 - **The load note comes once per question.** "A longer answer takes more learning. Taking blocks out is fine at any time." appears when the value passes the course's `loadNoteValue`, with a "Got it", and never blocks confirming.
 - **Analysis on request.** "Why this value?" opens a short praise session in the same card: up to five highlights, richest first, about a second each, with the feature named in English ("a time phrase!", "+1"), a soft reward sound, a small burst and a running total. It can be cancelled at any moment (the button or Escape) and always ends on the true total. Under reduced motion or calm mode it shows everything at once with no timer, burst or sound. It can be played again.
+
+## Euros (26.1e)
+
+The in-app currency is shown as euros with the euro sign ("€12", "+€3 today", "Spend your euros"). It is a pretend currency: the shop says so, nothing can be bought with money and no wording suggests real money. Code and the database keep the older names (`coins`, `coin_ledger`). An answer's value is paid through learning, so the numbers on the practice screens include it as the answer is practised, memorised and automated.

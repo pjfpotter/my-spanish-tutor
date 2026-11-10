@@ -77,7 +77,7 @@ export async function buyItem(db: Db, profileId: string, itemId: string): Promis
   } else if ((await db.query('select 1 from inventory where profile_id = $1 and item = $2', [profileId, item.id])).rows.length) {
     return { ok: false, error: 'You already have that.' };
   }
-  if (coins < item.price) return { ok: false, error: `You need ${item.price - coins} more coins for that.` };
+  if (coins < item.price) return { ok: false, error: `You need €${item.price - coins} more for that.` };
 
   const { rows } = await db.query(
     `with have as (select coalesce(sum(amount), 0) as b from coin_ledger where profile_id = $1),

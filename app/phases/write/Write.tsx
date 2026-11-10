@@ -151,9 +151,9 @@ export function Write({ course, saved, suggestions = {}, focus = 0 }: { course: 
     setNotice(null);
     if (r.bonus > 0) {
       sfx('section-complete');
-      setNotice(`All five confirmed. Bonus: +${r.bonus} coins.`);
+      setNotice(`All five confirmed. Bonus: +€${r.bonus}.`);
     }
-    if (live.current) live.current.textContent = r.bonus > 0 ? `Answer confirmed. All five done, bonus of ${r.bonus} coins.` : 'Answer confirmed.';
+    if (live.current) live.current.textContent = r.bonus > 0 ? `Answer confirmed. All five done, bonus of ${r.bonus} euros.` : 'Answer confirmed.';
   };
 
   const all = course.questions.every((x) => confirmed.has(x.id));

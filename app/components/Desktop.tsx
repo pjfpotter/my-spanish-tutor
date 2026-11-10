@@ -189,7 +189,7 @@ export function Desktop({ states, unlockAll = false, daysToTest, channels = [], 
               Streak: <strong>{streak}</strong> {streak === 1 ? 'day' : 'days'}
               {freezes > 0 && <span className="muted"> ({freezes} {freezes === 1 ? 'freeze' : 'freezes'} ready)</span>}
             </p>
-            <p className="coins" data-testid="desktop-coins">{coins} coins</p>
+            <p className="coins" data-testid="desktop-coins">€{coins}</p>
             {objects.length > 0 && (
               <ul className="desk-things" aria-label="Things on your desktop">
                 {objects.map((o) => (

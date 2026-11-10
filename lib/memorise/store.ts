@@ -3,6 +3,7 @@ import { courseUnlockAll } from '../course/unlock';
 import type { Calibration, Chunk, FeatureTag, ModelAnswer } from '../course/schema';
 import { simplestModelAnswer } from '../coach/model-answers';
 import { isStalled } from '../coach/simplify';
+import { payAnswerValue } from '../coins/answer-value';
 import { practiceAnswerText } from './practice-text';
 import { causeTagsForRecallFailure, recordChunkEvents } from '../diagnostics/recall-store';
 import { logAttempt, type AttemptResult } from '../events/attempts';
@@ -102,7 +103,7 @@ export interface RecallInput {
 }
 
 export type RecallResult =
-  | ({ ok: true; level: number; best: number; previousBest: number | null } & AttemptResult)
+  | ({ ok: true; level: number; best: number; previousBest: number | null; answerValue: number } & AttemptResult)
   | { ok: false; error: string };
 
 /**
@@ -133,7 +134,9 @@ export async function recordRecall(db: Db, i: RecallInput, cfg: MemoriseConfig =
       accuracy: Math.round(i.accuracy), responseTimeMs: i.responseTimeMs ?? null, assisted, causeTags,
     });
     const fade: FadeState = foldFade([...previous, Math.round(i.accuracy)], cfg);
-    return { ok: true, ...result, level: fade.level, best: Math.max(Math.round(i.accuracy), ...previous), previousBest: previous.length ? Math.max(...previous) : null };
+    // The answer's value is paid through learning: effort, then memorised (answer-value.ts).
+    const answerValue = await payAnswerValue(db, i.profileId, i.itemId);
+    return { ok: true, ...result, answerValue, level: fade.level, best: Math.max(Math.round(i.accuracy), ...previous), previousBest: previous.length ? Math.max(...previous) : null };
   } catch (e) {
     return { ok: false, error: (e as Error).message };
   }

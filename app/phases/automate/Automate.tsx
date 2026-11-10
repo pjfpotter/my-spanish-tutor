@@ -196,8 +196,8 @@ export function Automate({ items, initial, chunks = [] }: { items: AutomateItem[
     try {
       const res = await fetch('/api/respond', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sessionId: sessionId.current, ...body }) });
       if (!res.ok) throw new Error('save failed');
-      const out = (await res.json()) as { coinsAwarded: number; bonusCoins: number; state: AutomateState };
-      setCoins((c) => c + out.coinsAwarded + out.bonusCoins);
+      const out = (await res.json()) as { coinsAwarded: number; bonusCoins: number; answerValue?: number; state: AutomateState };
+      setCoins((c) => c + out.coinsAwarded + out.bonusCoins + (out.answerValue ?? 0));
       setState(out.state);
       return out;
     } catch {
@@ -441,7 +441,7 @@ export function Automate({ items, initial, chunks = [] }: { items: AutomateItem[
   const meta = (
     <>
       <span data-testid="progress">{stage === 'intro' || stage === 'summary' || !round.length ? 'Answer fast' : `Question ${idx + 1} of ${round.length}`}</span>
-      <span data-testid="coins">+{coins} coins today</span>
+      <span data-testid="coins">+€{coins} today</span>
     </>
   );
 

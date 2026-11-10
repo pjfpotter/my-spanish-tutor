@@ -100,7 +100,7 @@ test('plays the question with its words hidden, then the student picks what it m
   await expect(page.getByTestId('question-text')).toHaveCount(0);
 
   await optionFor(page, english(q)).click();
-  await expect(page.getByTestId('coins')).toContainText('+2 coins');
+  await expect(page.getByTestId('coins')).toContainText('+€2');
   await expect(page.getByTestId('question-text')).toBeVisible(); // the words appear after answering
   expect(rec.sent[0]).toMatchObject({ outcome: 'correct', revealed: false, speed: SPEEDS.slow });
   expect(rec.replies[0].coinsAwarded).toBe(2);
@@ -111,7 +111,7 @@ test('a wrong choice still earns coins and brings the question back within a few
   await open(page);
   const first = await answer(page, rec, false);
   expect(rec.sent[0].outcome).toBe('wrong');
-  await expect(page.getByTestId('coins')).toContainText('+2 coins');
+  await expect(page.getByTestId('coins')).toContainText('+€2');
 
   const seen: number[] = [];
   for (let i = 0; i < 3; i++) {

@@ -326,10 +326,10 @@ export function Memorise({ items: initial, chunks = [], causes = {}, focusIds = 
         body: JSON.stringify({ itemId: it.id, sessionId: sessionId.current, accuracy: score.accuracy, level: shownLevel, missedWords: score.words.flatMap((w, n) => (w.status === 'matched' ? [] : [n])) }),
       });
       if (!res.ok) throw new Error('save failed');
-      const out = (await res.json()) as { mastered: boolean; mastery: { qualifyingSuccesses: number; distinctSessions: number }; coinsAwarded: number; level: number; best: number; previousBest: number | null };
+      const out = (await res.json()) as { mastered: boolean; mastery: { qualifyingSuccesses: number; distinctSessions: number }; coinsAwarded: number; answerValue?: number; level: number; best: number; previousBest: number | null };
       const newBest = out.previousBest !== null && score.accuracy > out.previousBest;
       const doneForToday = out.mastered || (out.mastery.qualifyingSuccesses >= 3 && out.mastery.distinctSessions < 2);
-      setCoins((c) => c + out.coinsAwarded);
+      setCoins((c) => c + out.coinsAwarded + (out.answerValue ?? 0));
       setItems((all) => all.map((x) => (x.id === it.id ? { ...x, level: out.level, best: out.best, mastered: out.mastered, successes: out.mastery.qualifyingSuccesses, laterSession: !out.mastered && out.mastery.qualifyingSuccesses >= 3, stalled: x.stalled && !out.mastered } : x)));
       setAttempt({ score, script: text, drill: false, best: out.best, newBest, mastered: out.mastered });
       setQueue((q) => afterAttempt(q, it.id, good ? 'correct' : 'wrong', doneForToday));
@@ -466,7 +466,7 @@ export function Memorise({ items: initial, chunks = [], causes = {}, focusIds = 
   const meta = (
     <>
       <span data-testid="memorised-count">{memorised} of {items.length} answers memorised</span>
-      <span data-testid="coins">+{coins} coins today</span>
+      <span data-testid="coins">+€{coins} today</span>
     </>
   );
 

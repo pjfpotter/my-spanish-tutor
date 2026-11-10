@@ -1,4 +1,5 @@
 import type { Db } from '../db/types';
+import { payAnswerValue } from '../coins/answer-value';
 import { awardCoins } from '../coins/ledger';
 import { causeTagsForRecallFailure } from '../diagnostics/recall-store';
 import { logAttempt, type AttemptResult } from '../events/attempts';
@@ -86,7 +87,7 @@ export interface ResponseInput {
   assisted: boolean;
 }
 
-export type ResponseResult = ({ ok: true; bonusCoins: number; state: AutomateState } & AttemptResult) | { ok: false; error: string };
+export type ResponseResult = ({ ok: true; bonusCoins: number; answerValue: number; state: AutomateState } & AttemptResult) | { ok: false; error: string };
 
 /** Logs one timed attempt and returns the student's new state. Only the numbers are stored: never audio or what was said. */
 export async function recordResponse(db: Db, i: ResponseInput, cfg: AutomateConfig = DEFAULT_AUTOMATE): Promise<ResponseResult> {
@@ -114,7 +115,9 @@ export async function recordResponse(db: Db, i: ResponseInput, cfg: AutomateConf
     // Asking for the question again in Spanish is rewarded, never penalised.
     const bonusCoins = i.repeats > 0 ? 1 : 0;
     if (bonusCoins) await awardCoins(db, i.profileId, bonusCoins, 'attempt');
-    return { ok: true, ...result, bonusCoins, state: await loadAutomateState(db, i.profileId, ids, cfg) };
+    // The answer's value is paid through learning: the last stage comes when it meets the timed target (answer-value.ts).
+    const answerValue = await payAnswerValue(db, i.profileId, i.itemId);
+    return { ok: true, ...result, bonusCoins, answerValue, state: await loadAutomateState(db, i.profileId, ids, cfg) };
   } catch (e) {
     return { ok: false, error: (e as Error).message };
   }

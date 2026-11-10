@@ -113,5 +113,5 @@ test('the starting-point check does not count as practice: no coins and no maste
   await page.goto('/baseline');
   await answerOne(page);
   await page.goto('/');
-  await expect(page.getByTestId('desktop-coins')).toContainText('0 coins');
+  await expect(page.getByTestId('desktop-coins')).toContainText('€0');
 });
