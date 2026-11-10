@@ -139,3 +139,49 @@
   padding: 0.1rem 0.7rem;
   font-size: 0.95rem;
 }
+.analysis {
+  display: grid;
+  gap: 0.4rem;
+  align-content: start;
+  position: relative;
+  min-height: 0;
+}
+.analysis .reward {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+}
+.practice-body .analysis-text {
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+.analysis-text mark {
+  background: var(--kind-link);
+  color: var(--black);
+  outline: 2px solid var(--black);
+  outline-offset: 1px;
+  padding: 0 0.1rem;
+}
+.analysis-text mark[data-now='true'] {
+  background: var(--kind-reason);
+  outline-width: 3px;
+}
+.practice-body .analysis-step {
+  font-size: 1.2rem;
+}
+.practice-body .analysis-step span {
+  font-family: var(--font-status);
+}
+.practice-body .analysis-total {
+  font-family: var(--font-status);
+  font-size: 1.15rem;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .analysis-text mark[data-now='true'] {
+    animation: mark-pop 220ms ease-out;
+  }
+}
+@keyframes mark-pop {
+  from { transform: scale(0.94); }
+  to { transform: none; }
+}

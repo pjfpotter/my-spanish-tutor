@@ -27,7 +27,7 @@ export function tokens(text: string): string[] {
 }
 
 /** Where a phrase starts in a list of words (whole-word matches only). */
-function findPhrase(words: string[], phrase: string): number[] {
+export function findPhrase(words: string[], phrase: string): number[] {
   const t = tokens(phrase);
   const at: number[] = [];
   if (!t.length) return at;

@@ -177,3 +177,78 @@ test('an answer that will not stick gets a shorter version, which the student ma
   await expect(page.getByTestId('shorter')).toHaveCount(0);
   await expect(page.getByTestId('confirm')).toBeEnabled();
 });
+
+const richest = (position: number) =>
+  SEED_COURSE.modelAnswers.filter((a) => a.questionPosition === position).sort((a, b) => value(b.text) - value(a.text))[0].text;
+
+test('offers one optional extra at a time once the answer works, and a dismissed one is not repeated', async ({ page }) => {
+  await signUp(page);
+  await page.goto('/phases/write');
+  await expect(page.getByTestId('nudge')).toHaveCount(0); // nothing built yet: no nudge before a first working answer
+  await page.getByTestId('starter').click();
+  const nudge = page.getByTestId('nudge');
+  await expect(nudge).toHaveCount(1);
+  await expect(nudge).toContainText('if you like');
+  await expectFits(page, 'nudge');
+  await nudge.getByRole('button', { name: 'No thanks' }).click();
+  await expect(nudge).toHaveCount(0);
+  await page.getByRole('button', { name: /^2/ }).first().click();
+  await page.getByRole('button', { name: /^1/ }).first().click();
+  await expect(nudge).toHaveCount(0); // not repeated for this answer
+});
+
+test('says once per question that a longer answer takes more learning, and never blocks confirming', async ({ page }) => {
+  await signUp(page);
+  const rich = richest(1);
+  expect(value(rich)).toBeGreaterThan(SEED_COURSE.calibration.loadNoteValue);
+  const [[, q1]] = await masterUnderstand(page);
+  await page.request.post('/api/answers', { data: { questionId: q1, text: rich, confirm: false } });
+  await page.goto('/phases/write');
+  const note = page.getByTestId('load-note');
+  await expect(note).toContainText('takes more learning');
+  await expect(page.getByTestId('confirm')).toBeEnabled();
+  await note.getByRole('button', { name: 'Got it' }).click();
+  await expect(note).toHaveCount(0);
+  await page.getByRole('button', { name: /^2/ }).first().click();
+  await page.getByRole('button', { name: /^1/ }).first().click();
+  await expect(note).toHaveCount(0); // once per question
+});
+
+test('the analysis highlights what earns value one step at a time, adds up, and can be cancelled at once', async ({ page }) => {
+  await signUp(page);
+  const rich = richest(1);
+  const [[, q1]] = await masterUnderstand(page);
+  await page.request.post('/api/answers', { data: { questionId: q1, text: rich, confirm: false } });
+  await page.goto('/phases/write');
+  await page.getByTestId('analyse').click();
+  await expect(page.getByTestId('analysis')).toBeVisible();
+  await expect(page.getByTestId('analysis-step')).toContainText('!');
+  await expect(page.getByTestId('analysis-mark').first()).toBeVisible();
+  await expectFits(page, 'analysis playing');
+
+  // Cancel stops it and returns to writing.
+  await page.getByTestId('analysis-close').click();
+  await expect(page.getByTestId('analysis')).toHaveCount(0);
+  await expect(page.getByTestId('builder')).toBeVisible();
+
+  // Played to the end it totals the value the student saw.
+  await page.getByTestId('analyse').click();
+  await expect(page.getByTestId('analysis-total')).toContainText(`Worth in all: ${value(rich)}`, { timeout: 10_000 });
+  await expect(page.getByTestId('analysis-replay')).toBeVisible();
+  await page.getByTestId('analysis-close').click();
+  await expect(page.getByTestId('builder')).toBeVisible();
+});
+
+test('with reduced motion the analysis shows everything at once, with no animation to wait for', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await signUp(page);
+  const rich = richest(1);
+  const [[, q1]] = await masterUnderstand(page);
+  await page.request.post('/api/answers', { data: { questionId: q1, text: rich, confirm: false } });
+  await page.goto('/phases/write');
+  await page.getByTestId('analyse').click();
+  await expect(page.getByTestId('analysis-total')).toContainText(`Worth in all: ${value(rich)}`, { timeout: 1000 });
+  await expect(page.getByTestId('analysis-skip')).toHaveCount(0);
+  await page.getByTestId('analysis-close').click();
+  await expect(page.getByTestId('builder')).toBeVisible();
+});

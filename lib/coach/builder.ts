@@ -70,7 +70,7 @@ export function textFromParts(parts: Part[]): string {
 export const isEmpty = (parts: Part[]) => !parts.some((p) => p.kind !== 'block' || p.text !== null);
 
 /** Character spans of each word, in the same order as `tokens()` produces them. */
-function wordSpans(text: string): { start: number; end: number }[] {
+export function wordSpans(text: string): { start: number; end: number }[] {
   const out: { start: number; end: number }[] = [];
   for (const m of text.matchAll(/[\p{L}\p{M}\p{N}]+/gu)) {
     if (tokens(m[0]).length === 1) out.push({ start: m.index!, end: m.index! + m[0].length });

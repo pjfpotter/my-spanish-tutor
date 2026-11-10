@@ -5,12 +5,14 @@ import {
   addGlue, addSlot, clearBlock, emptyParts, fillBlock, fittingChunks, isEmpty, kindOfCategory, partsFromText, removePart, textFromParts, type Part,
 } from '../../../lib/coach/builder';
 import type { Simplification } from '../../../lib/coach/simplify';
+import { analyse } from '../../../lib/coach/analysis';
 import { startingAnswer, viewAnswer, viewWholeTest } from '../../../lib/coach/writing';
 import { KIND_LABEL } from '../../../lib/practice/chunk-kind';
 import type { SavedAnswer, WritingCourse } from '../../../lib/progress/writing-store';
 import { Caption, useSubtitles } from '../../components/Caption';
 import { Tele } from '../../components/Tele';
 import { useSfx } from '../../components/useSfx';
+import { AnalysisView } from './AnalysisView';
 import { PracticeShell } from '../../components/practice/PracticeShell';
 import '../../components/screens.css';
 import './write.css';
@@ -41,6 +43,9 @@ export function Write({ course, saved, suggestions = {}, focus = 0 }: { course: 
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [analysing, setAnalysing] = useState(false);
+  const [dismissed, setDismissed] = useState(() => new Set<string>());
+  const [noted, setNoted] = useState(() => new Set<string>());
   const [used, setUsed] = useState(() => new Set<string>());
   const sfx = useSfx();
   const [showEnglish, toggleEnglish] = useSubtitles();
@@ -58,6 +63,10 @@ export function Write({ course, saved, suggestions = {}, focus = 0 }: { course: 
   const isConfirmed = confirmed.has(q.id);
   // A stalled answer is offered a shorter version, so it is not also nudged to grow.
   const offerShorter = !!suggestions[q.id] && !used.has(q.id);
+  // One optional extra at a time, only once the answer works, and not again for this answer once dismissed.
+  const nudge = view.canConfirm && !offerShorter && !dismissed.has(q.id) ? view.suggestion : null;
+  // The memorising load note comes once per question and never blocks confirming.
+  const noteDue = view.loadNote && !offerShorter && !noted.has(q.id);
   const glue = course.calibration.glueWords;
   const open = tray && 'id' in tray ? parts.find((p) => p.id === tray.id) ?? null : null;
 
@@ -85,6 +94,7 @@ export function Write({ course, saved, suggestions = {}, focus = 0 }: { course: 
 
   const goTo = (i: number) => {
     setIndex(i);
+    setAnalysing(false);
     setTray(null);
     setError(null);
     setNotice(null);
@@ -190,6 +200,9 @@ export function Write({ course, saved, suggestions = {}, focus = 0 }: { course: 
         ))}
       </ol>
 
+      {analysing ? (
+        <AnalysisView text={text} analysis={analyse(course.calibration, text)} onClose={() => setAnalysing(false)} />
+      ) : (
       <section className="builder" aria-label="Your answer" data-testid="builder">
         <ul className="blocks">
           {parts.map((p) => {
@@ -307,15 +320,22 @@ export function Write({ course, saved, suggestions = {}, focus = 0 }: { course: 
         {!tray && !isEmpty(parts) && (
           <>
             <p className="answer-text sr-only" lang="es" data-testid="answer-text">{text}</p>
-            {view.loadNote && !offerShorter && <p className="heard-en">A longer answer takes more learning. Taking blocks out is fine at any time.</p>}
-            {view.suggestion && !offerShorter && (
-              <p className="heard-en">
-                {view.suggestion.text} For example: <span lang="es">{view.suggestion.example}</span>
+            {noteDue && (
+              <p className="heard-en" data-testid="load-note">
+                A longer answer takes more learning. Taking blocks out is fine at any time.{' '}
+                <button type="button" className="btn" onClick={() => setNoted((n) => new Set(n).add(q.id))}>Got it</button>
+              </p>
+            )}
+            {nudge && !noteDue && (
+              <p className="heard-en" data-testid="nudge">
+                {nudge.text} For example: <span lang="es">{nudge.example}</span>{' '}
+                <button type="button" className="btn" onClick={() => setDismissed((d) => new Set(d).add(q.id))}>No thanks</button>
               </p>
             )}
           </>
         )}
       </section>
+      )}
 
       {offerShorter && (
         <p className="heard-en shorter" data-testid="shorter">
@@ -332,6 +352,9 @@ export function Write({ course, saved, suggestions = {}, focus = 0 }: { course: 
         <button type="button" className="btn btn-primary" onClick={confirm} disabled={busy || isConfirmed || !view.canConfirm || !text.trim()} data-testid="confirm">
           {isConfirmed ? 'Confirmed' : 'Confirm this answer'}
         </button>
+        {view.assessment.value > 0 && !analysing && (
+          <button type="button" className="btn" onClick={() => setAnalysing(true)} data-testid="analyse">Why this value?</button>
+        )}
         {all && <span className="heard-en" data-testid="all-confirmed">All five confirmed.</span>}
       </div>
       <p ref={live} className="sr-only" role="status" aria-live="polite" />

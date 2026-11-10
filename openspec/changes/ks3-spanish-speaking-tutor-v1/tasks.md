@@ -229,7 +229,7 @@ Note: task 7.x level work (names, thresholds) is superseded by 26.1a. Tasks 10.4
   - [x] 26.1a Replace named levels with feature values in the calibration data and rubric engine (value is a blend of count and difficulty, each feature once); update the regression fixtures to assert feature sets and values
   - [x] 26.1b Build the empty-slot sentence-builder interface with colours shared with automatise, tap-a-slot to see fitting chunks only, the cement tray and the optional starter answer
   - [x] 26.1c Add per-answer confirmation that unlocks memorising for that answer, the all-five bonus, change-resets-progress, the stalled-answer suggestion to simplify (cognates and high-frequency first) and pruning
-  - [ ] 26.1d Add the one-optional-extra nudge, the memorising load note and the animated, cancellable analysis
+  - [x] 26.1d Add the one-optional-extra nudge, the memorising load note and the animated, cancellable analysis
   - [ ] 26.1e Pay answer value through memorising and automatising (engagement-rewards) and rename the currency to euros once confirmed
 - [ ] 26.2 Challenge mode flow design (multi-screen), possibly through the design tool
 
