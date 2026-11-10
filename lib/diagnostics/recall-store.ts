@@ -80,3 +80,20 @@ export async function focusedAnswerIds(db: Db, profileId: string, courseId: stri
     })
     .map((it) => it.id);
 }
+
+/**
+ * The cause tags that still apply to each answer: its live recall tags, plus a hotspot tag when one of its chunks is a
+ * hotspot. The memorise screen uses them so support never falls below what the problem needs (task 21.5).
+ */
+export async function liveRecallCauses(db: Db, profileId: string, courseId: string, items: { id: string; answer: string }[]): Promise<Record<string, CauseTag[]>> {
+  const hotspots = await hotspotChunkIds(db, profileId);
+  const chunks = hotspots.size ? await courseChunks(db, courseId) : [];
+  const history = await loadHistory(db, profileId, 'memorise');
+  const out: Record<string, CauseTag[]> = {};
+  for (const it of items) {
+    const tags = new Set<CauseTag>(activeTags(history.get(it.id) ?? []));
+    if (hotspots.size > 0 && locateChunks(it.answer, chunks).some((l) => hotspots.has(l.chunkId))) tags.add('chunk_hotspot');
+    if (tags.size) out[it.id] = [...tags];
+  }
+  return out;
+}

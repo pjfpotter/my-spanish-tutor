@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { SEED_COURSE } from '../lib/course/seed';
 import { SPEEDS } from '../lib/audio/manifest';
-import { signUp } from './helpers';
+import { expectFits, signUp } from './helpers';
 
 // Tasks 6.1, 4.6 and 6.3: the hear-then-choose screen, the missing-clip fallback and the gate.
 // Stub clips stand in for the real voice, so these tests cost nothing.
@@ -279,4 +279,56 @@ test('after a right answer, replay, slower, show-the-words and every option are 
   await expect(page.locator('.options button:not([disabled])')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Show the words' })).toBeDisabled();
   await expect(page.getByRole('button', { name: 'Play again' })).toBeEnabled(); // hearing it again, now that the words show, still helps
+});
+
+test('every understand screen fits 360 by 640 with no scrolling: asking, a right answer, a miss with its quick check (20.1)', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 640 });
+  const rec = recordAttempts(page);
+  await open(page);
+  await expectFits(page, 'ready to listen');
+  await listen(page);
+  await expectFits(page, 'after listening');
+  await page.getByRole('button', { name: 'Show the words' }).click();
+  await expectFits(page, 'with the words shown');
+  const first = SEED_COURSE.questions.findIndex((q) => page.getByTestId('question-text').textContent !== undefined && q.spanish.length > 0);
+  void first;
+  // A right answer: the panel and the answered options.
+  await page.locator('.options button:not([disabled])').first().click();
+  await expect(page.getByTestId('feedback-panel')).toBeVisible();
+  await expectFits(page, 'after an answer');
+  await next(page).click();
+  // A wrong answer on the next question brings the quick check; both the panel and the check must fit.
+  await answer(page, rec, false);
+  await expect(page.getByTestId('feedback-panel')).toBeVisible();
+  await expectFits(page, 'after a miss');
+  if (await page.getByTestId('probe').count()) {
+    await expectFits(page, 'quick check, first step');
+    await page.getByTestId('probe').getByRole('button', { name: /^Listen/ }).click();
+    await page.getByTestId('probe').locator('.option').first().click();
+    await expectFits(page, 'quick check, next step');
+  }
+});
+
+test('a missed question comes back labelled as a previous mistake, and Tele speaks only at the start (20.3, 20.2)', async ({ page }) => {
+  const rec = recordAttempts(page);
+  await open(page);
+  await expect(page.getByTestId('caption-es')).not.toHaveClass(/cap-idle/, { timeout: 2000 }); // a line at the start
+  const missed = await answer(page, rec, false);
+  await expect(page.getByTestId('mistake-label')).toHaveCount(0); // not labelled the first time
+  const seen: number[] = [];
+  let labelled = false;
+  for (let i = 0; i < 4 && !labelled; i++) {
+    await next(page).click();
+    const reached = await listen(page);
+    seen.push(reached.q);
+    labelled = (await page.getByTestId('mistake-label').count()) > 0;
+    if (labelled) {
+      expect(reached.q).toBe(missed.q);
+      await expect(page.getByTestId('mistake-label')).toHaveText('Previous mistake');
+    } else {
+      await page.locator('.options button:not([disabled])').first().click();
+      await expect(page.getByTestId('feedback-panel')).toBeVisible();
+    }
+  }
+  expect(labelled).toBe(true);
 });

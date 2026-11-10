@@ -42,11 +42,11 @@ Feedback SHALL focus on what the student got right, name at most one thing to fi
 - **THEN** the tutor highlights the strongest part and names a single next step
 
 ### Requirement: Scaffolding beyond fading words
-Support SHALL come from several kinds, not only from words fading out: the English meaning, a picture or icon per chunk (dual coding), chunk-by-chunk reveal, the first word of each chunk, a gapped script, and listening to the answer then repeating it. The kind of support SHALL be chosen from the student's recent results and cause tags, and the support SHALL step down one kind at a time.
+Support SHALL come from several kinds, not only from words fading out: the English meaning, chunk-by-chunk reveal, the first word of each chunk, a gapped script, and listening to the answer then repeating it. The kind of support SHALL be chosen from the student's recent results and cause tags, and the support SHALL step down one kind at a time.
 
-#### Scenario: Picture support
-- **WHEN** an answer has a picture for a chunk
-- **THEN** the picture is shown beside the English meaning at the start of practice and removed as accuracy rises
+#### Scenario: No pictures
+- **WHEN** support is chosen for any chunk
+- **THEN** it never includes a picture or icon, because sentence builders are deliberately text-only and no pictures can be sourced when a course is created
 
 ### Requirement: Chunked memorising
 Answers SHALL be learned in chunks: each chunk is practised alone, then in pairs, then as the full answer, with chunk colours matching those used in automatisation and writing.

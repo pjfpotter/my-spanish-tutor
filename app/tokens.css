@@ -26,6 +26,16 @@
   --grass-deep: #5bbb2e;
   --text-muted: #404040;
 
+  /* practice screens: chunk kinds and the feedback panel. Black text sits on all of these. */
+  --kind-opinion: #ffc7e3;
+  --kind-reason: #c4f0b8;
+  --kind-link: #ffe69a;
+  --kind-time: #b9ddff;
+  --kind-detail: #dccbff;
+  --kind-other: #e6e6e6;
+  --fb-right: #c4f0b8;
+  --fb-wrong: #ffd9b3;
+
   /* decoration only, never text */
   --hyper-pink: #ff1fa9;
   --lemon: #ffeb00;

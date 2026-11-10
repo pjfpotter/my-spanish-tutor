@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Atkinson_Hyperlegible, Fredoka, Pixelify_Sans, VT323 } from 'next/font/google';
 import { CalmSwitch } from './components/CalmSwitch';
+import { SoundSwitch } from './components/SoundSwitch';
 import './globals.css';
 
 const atkinson = Atkinson_Hyperlegible({ weight: ['400', '700'], subsets: ['latin'], variable: '--font-atkinson' });
@@ -30,7 +31,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: CALM_BOOTSTRAP }} />
       </head>
       <body>
-        <CalmSwitch />
+        <div className="switches">
+          <SoundSwitch />
+          <CalmSwitch />
+        </div>
         {children}
       </body>
     </html>

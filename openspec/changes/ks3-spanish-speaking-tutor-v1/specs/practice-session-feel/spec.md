@@ -50,7 +50,7 @@ Items answered incorrectly SHALL be re-queued later in the same session, labelle
 - **THEN** it returns before the session ends with a "previous mistake" label
 
 ### Requirement: Mixed task types
-A session SHALL mix task types, with a rising difficulty curve, and SHALL NOT repeat the same type more than three times in a row. The minimum set of task types is: hear and choose the meaning, match pairs (Spanish with English or a picture), sentence scramble (tap or drag chunks into order), fill the gap (choose the missing chunk), tap what you hear, and say it aloud. A task type SHALL be added only if it gives a different thinking load.
+A session SHALL mix task types, with a rising difficulty curve, and SHALL NOT repeat the same type more than three times in a row. The minimum set of task types is: hear and choose the meaning, match pairs (Spanish with English), sentence scramble (tap or drag chunks into order), fill the gap (choose the missing chunk), tap what you hear, and say it aloud. A task type SHALL be added only if it gives a different thinking load.
 
 #### Scenario: Mix within a session
 - **WHEN** a memorise session runs for ten items

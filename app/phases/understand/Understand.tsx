@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SPEEDS, type SpeedName } from '../../../lib/audio/speeds';
+import { NO_COMBO, stepCombo, type ComboState } from '../../../lib/practice/combo';
+import { pickPraise } from '../../../lib/practice/praise';
 import type { Support } from '../../../lib/diagnostics/plan';
 import { afterAttempt, newQueue, nextInQueue, type SessionQueue } from '../../../lib/mastery/mastery';
 import { currentSessionId } from '../../../lib/session/session-id';
@@ -17,8 +19,10 @@ import { LittleAndOften } from '../../components/LittleAndOften';
 import { Caption, useSubtitles } from '../../components/Caption';
 import { Tele } from '../../components/Tele';
 import { useLinePlayback } from '../../components/useLinePlayback';
-import { SectionNav } from '../../components/SectionNav';
-import { Win } from '../../components/Win';
+import { FeedbackPanel } from '../../components/practice/FeedbackPanel';
+import { PracticeShell } from '../../components/practice/PracticeShell';
+import { Reward } from '../../components/practice/Reward';
+import { useSfx } from '../../components/useSfx';
 import { canPlayWord, Probe } from './Probe';
 import '../../components/screens.css';
 
@@ -76,6 +80,17 @@ export function Understand({ questions, plans = {} }: { questions: QuestionItem[
   const [ready, setReady] = useState(false);
   /** After a miss, the id of the question being probed; null when no check is running. */
   const [probing, setProbing] = useState<string | null>(null);
+  const [praise, setPraise] = useState('');
+  const [burst, setBurst] = useState({ n: 0, big: false });
+  const [comboShow, setComboShow] = useState(false);
+  const [returning, setReturning] = useState(false);
+  const missedRef = useRef(new Set<string>());
+  const [reaction, setReaction] = useState<'idle' | 'correct' | 'wrong'>('idle');
+  const combo = useRef<ComboState>(NO_COMBO);
+  const lastPraise = useRef<string | null>(null);
+  const comboTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const sfx = useSfx();
+  useEffect(() => () => clearTimeout(comboTimer.current), []);
 
   const tele = (situation: Parameters<typeof selectLine>[0]): TutorLine => {
     const line = selectLine(situation, { lastId: lastLine.current });
@@ -97,6 +112,7 @@ export function Understand({ questions, plans = {} }: { questions: QuestionItem[
 
   const present = useCallback(
     (q: SessionQueue) => {
+      playback.stop(); // moving on cuts any line off
       const id = nextInQueue(q);
       if (!id) {
         setCur(null);
@@ -111,17 +127,24 @@ export function Understand({ questions, plans = {} }: { questions: QuestionItem[
       setPicked(null);
       setMessage(null);
       setProbing(null);
+      setReaction('idle');
+      setReturning(missedRef.current.has(id));
+      if (missedRef.current.has(id)) playback.play(tele('wrong')); // the review of a mistake gets a few kind words
       // Load this question's three clips ahead of the tap, so audio can start inside it (iPhone blocks audio that starts later).
       for (const s of Object.values(SPEEDS)) {
         const slot = slotFor(index.current, item.spanish, s);
         if (slot && !clips.current.has(slot)) loadClip(slot).then((c) => clips.current.set(slot, c), () => {});
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [byId, questions, plans],
   );
 
   useEffect(() => {
-    if (ready) present(queue);
+    if (ready) {
+      present(queue);
+      playback.play(tele('quick_win')); // Tele speaks at the start of the section
+    }
     // Present the first question once clip index is known; later ones come from `next`.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
@@ -172,6 +195,18 @@ export function Understand({ questions, plans = {} }: { questions: QuestionItem[
     const outcome = cur.revealed ? 'assisted' : correct ? 'correct' : 'wrong';
     setPicked(optionId);
     setStage('answered');
+    // The panel, the sound and Tele's reaction come at once; the save happens beside them.
+    const good = correct && !cur.revealed;
+    const line = good ? pickPraise(lastPraise.current) : '';
+    if (good) lastPraise.current = line;
+    setPraise(line);
+    setReaction(correct ? 'correct' : 'wrong');
+    sfx(correct ? 'correct' : 'miss');
+    sfx(correct ? 'tele-correct' : 'tele-wrong');
+    if (correct) setBurst((b) => ({ n: b.n + 1, big: false }));
+    if (!correct) missedRef.current.add(cur.id);
+    const step = stepCombo(combo.current, cur.revealed ? 'assisted' : correct ? 'correct' : 'wrong');
+    combo.current = step.state;
     try {
       const res = await fetch('/api/attempts', {
         method: 'POST',
@@ -192,11 +227,20 @@ export function Understand({ questions, plans = {} }: { questions: QuestionItem[
       setQueue((q) => afterAttempt(q, cur.id, outcome, doneForToday));
       const kw = byId.get(cur.id)?.keyWord;
       if (!correct && !cur.revealed && kw && canPlayWord(kw.spanish, index.current)) setProbing(cur.id);
-      playback.play(tele(result.mastered ? 'mastered' : correct && !cur.revealed ? 'correct' : cur.revealed ? 'hint' : 'wrong'));
+      // Tele speaks at meaningful moments only: mastering a question, or a combo. Otherwise the reaction is wordless.
+      if (result.mastered) playback.play(tele('mastered'));
+      else if (step.combo) {
+        sfx('combo');
+        setBurst((b) => ({ n: b.n + 1, big: true }));
+        playback.play(tele('streak'));
+        setComboShow(true);
+        comboTimer.current = setTimeout(() => setComboShow(false), 1800);
+      }
     } catch {
       setMessage('That did not save. Check your connection and try again.');
       setStage('choosing');
       setPicked(null);
+      setReaction('idle');
     }
   }
 
@@ -210,55 +254,84 @@ export function Understand({ questions, plans = {} }: { questions: QuestionItem[
   // The question's words stay hidden in the caption while it plays, unless the student asked to see them.
   const hideWords = !!cur && !cur.revealed && !!playback.line?.id.startsWith('q-');
 
+  const rightText = cur ? cur.options.find((o) => o.id === cur.id)?.text : undefined;
+  const probeShowing = stage === 'answered' && !!cur && probing === cur.id && !!item?.keyWord;
+  const footer =
+    stage === 'answered' && cur ? (
+      <FeedbackPanel state={rightAnswer ? 'correct' : 'wrong'} praise={praise} answer={rightAnswer ? undefined : rightText} continueLabel="Next" onContinue={() => present(queue)} />
+    ) : null;
+
   return (
-    <main className="screen">
-      <SectionNav />
-      <h1>Understand the questions</h1>
-      <Tele feelings={playback.feelings ?? undefined} loudness={playback.loudness} speaking={playback.playing} question={stage === 'choosing'} />
+    <PracticeShell
+      tele={
+        <div data-testid="tele-reaction" data-reaction={reaction}>
+          <Tele feelings={playback.feelings ?? (reaction === 'correct' ? { joy: 0.8 } : reaction === 'wrong' ? { sadness: 0.45 } : undefined)} loudness={playback.loudness} speaking={playback.playing} question={stage === 'choosing'} />
+        </div>
+      }
+      caption={
+        <Caption
+          compact
+          words={hideWords ? [] : playback.words}
+          activeIndex={hideWords ? null : playback.activeIndex}
+          english={hideWords ? '' : playback.line?.en ?? ''}
+          showEnglish={showEnglish}
+          onToggleEnglish={toggleEnglish}
+        />
+      }
+      meta={
+        <>
+          <span data-testid="mastered-count">{masteredIds.size} of {questions.length} questions mastered</span>
+          <span data-testid="coins">+{coins} coins today</span>
+        </>
+      }
+      footer={footer}
+    >
+      <h1 className="sr-only">Understand the questions</h1>
+      <Reward burstKey={burst.n} big={burst.big} />
 
-      <Win title="understand.exe" label="Understand the questions">
-        <div className="stack">
-          <ul className="dots" aria-label={`${masteredIds.size} of ${questions.length} questions mastered`}>
-            {questions.map((q) => (
-              <li key={q.id} className="dot" data-mastered={masteredIds.has(q.id)} />
-            ))}
-          </ul>
-          <p className="muted" data-testid="mastered-count">
-            {masteredIds.size} of {questions.length} questions mastered
+      {finished && (
+        <div className="stack" data-testid="finished">
+          <Status kind="done" label={allMastered ? 'All five mastered' : 'Done for today'} />
+          <p>
+            {allMastered
+              ? 'You can understand all five questions. The next step is open.'
+              : 'That is enough for today. Questions are only mastered once you get them right on more than one day, so come back tomorrow.'}
           </p>
+          <LittleAndOften />
+          <Link className="btn btn-primary" href="/">
+            Back to the desktop
+          </Link>
+        </div>
+      )}
 
-          {finished && (
-            <div className="stack" data-testid="finished">
-              <Status kind="done" label={allMastered ? 'All five mastered' : 'Done for today'} />
-              <p>
-                {allMastered
-                  ? 'You can understand all five questions. The next step is open.'
-                  : 'That is enough for today. Questions are only mastered once you get them right on more than one day, so come back tomorrow.'}
-              </p>
-              <LittleAndOften />
-              <Link className="btn btn-primary" href="/">
-                Back to the desktop
-              </Link>
+      {comboShow && (
+        <div className="combo" role="status" data-testid="combo">
+          <strong>Combo!</strong>
+          <span>Five in a row.</span>
+        </div>
+      )}
+
+      {cur && item && !comboShow && (
+        <>
+          {!probeShowing && (!showText || returning) && (
+            <div className="warm-row">
+              {!showText ? <p><strong>What does the question mean?</strong></p> : <span />}
+              {returning && stage !== 'answered' && <span className="mistake-label" data-testid="mistake-label">Previous mistake</span>}
             </div>
           )}
-
-          {cur && item && (
+          <div className="controls">
+            <button type="button" className="btn btn-primary" onClick={() => listen(cur.speed, cur.played ? 'replay' : 'first')} disabled={playback.playing || rightAnswer}>
+              {cur.played ? 'Play again' : 'Listen'}
+            </button>
+            <button type="button" className="btn" onClick={() => listen('slow', 'slow')} disabled={playback.playing || !cur.played || rightAnswer}>
+              Slower
+            </button>
+            <button type="button" className="btn" onClick={reveal} disabled={cur.revealed || stage === 'answered'}>
+              Show the words
+            </button>
+          </div>
+          {!probeShowing && (
             <>
-              <p>
-                <strong>What does the question mean?</strong>
-              </p>
-              <div className="controls">
-                <button type="button" className="btn btn-primary" onClick={() => listen(cur.speed, cur.played ? 'replay' : 'first')} disabled={playback.playing || rightAnswer}>
-                  {cur.played ? 'Play again' : 'Listen'}
-                </button>
-                <button type="button" className="btn" onClick={() => listen('slow', 'slow')} disabled={playback.playing || !cur.played || rightAnswer}>
-                  Slower
-                </button>
-                <button type="button" className="btn" onClick={reveal} disabled={cur.revealed || stage === 'answered'}>
-                  Show the words
-                </button>
-              </div>
-
               {cur.textFallback && (
                 <p className="error" role="status" data-testid="text-fallback">
                   The sound did not load, so here is the question as text. You can carry on.
@@ -277,6 +350,8 @@ export function Understand({ questions, plans = {} }: { questions: QuestionItem[
               <ul className="options">
                 {cur.options.map((o) => {
                   const result = stage === 'answered' ? (o.id === cur.id ? 'right' : o.id === picked ? 'wrong' : undefined) : undefined;
+                  // Once answered, only the right option and the one picked stay: nothing else matters now.
+                  if (stage === 'answered' && !result) return null;
                   return (
                     <li key={o.id}>
                       <button type="button" className="option" data-result={result} disabled={stage !== 'choosing'} onClick={() => choose(o.id)}>
@@ -299,42 +374,25 @@ export function Understand({ questions, plans = {} }: { questions: QuestionItem[
                   {message}
                 </p>
               )}
-
-              {stage === 'answered' && probing === cur.id && item.keyWord && (
-                <Probe
-                  word={{ id: cur.id, ...item.keyWord }}
-                  words={probeWords}
-                  index={index.current}
-                  onSkip={() => setProbing(null)}
-                  onFinish={(r) => {
-                    void fetch('/api/probe', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ itemId: cur.id, sessionId: sessionId.current, ...r }) }).catch(() => {});
-                    setProbing(null);
-                  }}
-                />
-              )}
-
-              {stage === 'answered' && (
-                <div className="stack">
-                  <p className="coins" data-testid="coins">
-                    +{coins} coins today
-                  </p>
-                  <button type="button" className="btn btn-primary" onClick={() => present(queue)} disabled={playback.playing}>
-                    Next
-                  </button>
-                </div>
-              )}
             </>
           )}
-        </div>
-      </Win>
 
-      <Caption
-        words={hideWords ? [] : playback.words}
-        activeIndex={hideWords ? null : playback.activeIndex}
-        english={hideWords ? '' : playback.line?.en ?? ''}
-        showEnglish={showEnglish}
-        onToggleEnglish={toggleEnglish}
-      />
-    </main>
+          {probeShowing && item.keyWord && (
+            <>
+              <Probe
+                word={{ id: cur.id, ...item.keyWord }}
+                words={probeWords}
+                index={index.current}
+                onSkip={() => setProbing(null)}
+                onFinish={(r) => {
+                  void fetch('/api/probe', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ itemId: cur.id, sessionId: sessionId.current, ...r }) }).catch(() => {});
+                  setProbing(null);
+                }}
+              />
+            </>
+          )}
+        </>
+      )}
+    </PracticeShell>
   );
 }
