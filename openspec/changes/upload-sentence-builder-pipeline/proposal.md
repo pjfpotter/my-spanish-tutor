@@ -16,6 +16,8 @@ The owner's decisions: upload and go with no teacher review stage; a language-mo
 - Model-judged pair verdicts (fits, odd, clash) replace hand-written fit rules. A pair is blocked only when two independent passes agree. The standard is the exam marking rule: credit anything that is grammatical and could be true.
 - Teacher errors (spelling, gender and number, missing or wrong English) are corrected at upload. The originals are kept.
 - The writing screen changes as tested: the card shows the real Spanish sentence with English beneath and chips as editing handles; extras sit behind "Add more"; the sheet dims what the active slot cannot take; multi-sentence sheets are separate sentence frames that are complete or absent; clothes-style lists take several items; "Check it" stays on screen.
+- When processing finishes the teacher is told how many corrections were made and what each one was. It is a notice, never a gate.
+- While a sheet is read, the screen shows short Spanish loading messages with English subtitles and a small Tele animation, so a 30 to 60 second wait feels like part of the product.
 - The permitted uses of a language model gain upload-time interpretation, correction and pair judging, all through the cost router and cached by document content. The practice loop stays model-free.
 
 ## Capabilities
