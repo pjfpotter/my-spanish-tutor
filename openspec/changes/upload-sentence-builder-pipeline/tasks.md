@@ -6,13 +6,13 @@ Every model stage is built and tested against stub models first. Tasks marked "N
 
 ## 1. The reader
 
-- [ ] 1.1 Port the prototype's unzip, inflate and table reader (`docs/design/writing-sheet-prototype/engine.js`) to `lib/sheets/read-docx.ts` with types for sheet, table, cell, chunk; verify a unit test reads a synthetic fixture and returns the expected cells, spans and chunks
-- [ ] 1.2 Add `scripts/make-fixture-sheets.mjs` that writes synthetic `.docx` fixtures for each layout family (bold plus brackets, no bold plus italic brackets, square brackets, merged cells, aligned lists, floating box, optional "(no)", alternatives, unclosed bracket, several chunks per paragraph, image, shaded cells); verify the fixtures build in CI and none contains third-party text
-- [ ] 1.3 Separate Spanish from English using brackets, italics, bold and a language check together; verify one fixture per formatting habit reads every chunk with its gloss, including a sheet with no bold
-- [ ] 1.4 Expand "(no)" variants, slash alternatives with shared endings, and several chunks in one paragraph; keep "alto/a" and "Skype/Zoom" whole; verify unit tests for each, including the ones above
-- [ ] 1.5 Read floating text boxes (merge lines split on "="), record images and shading without relying on them; verify the box items and the notes
-- [ ] 1.6 Keep grid, spans and row alignment on the sheet model; verify a fixture with aligned lists reports the alignment
-- [ ] 1.7 Optional manual check: run the reader on the owner's seven real sheets from a local folder and compare chunk and gloss counts with the prototype's
+- [x] 1.1 Port the prototype's unzip, inflate and table reader (`docs/design/writing-sheet-prototype/engine.js`) to `lib/sheets/read-docx.ts` with types for sheet, table, cell, chunk; verify a unit test reads a synthetic fixture and returns the expected cells, spans and chunks
+- [x] 1.2 Add `scripts/make-fixture-sheets.mjs` that writes synthetic `.docx` fixtures for each layout family (bold plus brackets, no bold plus italic brackets, square brackets, merged cells, aligned lists, floating box, optional "(no)", alternatives, unclosed bracket, several chunks per paragraph, image, shaded cells); verify the fixtures build in CI and none contains third-party text
+- [x] 1.3 Separate Spanish from English using brackets, italics, bold and a language check together; verify one fixture per formatting habit reads every chunk with its gloss, including a sheet with no bold
+- [x] 1.4 Expand "(no)" variants, slash alternatives with shared endings, and several chunks in one paragraph; keep "alto/a" and "Skype/Zoom" whole; verify unit tests for each, including the ones above
+- [x] 1.5 Read floating text boxes (merge lines split on "="), record images and shading without relying on them; verify the box items and the notes
+- [x] 1.6 Keep grid, spans and row alignment on the sheet model; verify a fixture with aligned lists reports the alignment
+- [x] 1.7 Optional manual check: run the reader on the owner's seven real sheets from a local folder and compare chunk and gloss counts with the prototype's
 
 ## 2. Interpretation schema and validator
 
