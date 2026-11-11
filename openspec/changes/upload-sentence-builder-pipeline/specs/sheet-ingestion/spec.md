@@ -57,7 +57,7 @@ If a draft still fails after repair, the course SHALL use a layout-order draft w
 - **THEN** the sheet goes live as the fallback draft and the failures are recorded
 
 ### Requirement: Teacher errors are corrected, not flagged
-At upload, spelling, gender and number agreement with an article, missing English glosses and wrong-tense English glosses SHALL be corrected. Corrections SHALL NOT change vocabulary or meaning, add or remove chunks, or make a Spanish edit of more than two letters. The original text SHALL be kept and the corrected text used on the student's sheet, card and subtitles.
+At upload, spelling, gender and number agreement with an article, missing English glosses and wrong English glosses (wrong tense, typos) SHALL be corrected. Corrections SHALL NOT change vocabulary or meaning, add or remove chunks, or make a Spanish edit of more than two letters. The original text SHALL be kept and the corrected text used on the student's sheet, card and subtitles.
 
 #### Scenario: A misspelt colour
 - **WHEN** a sheet reads "marrónes"
@@ -68,7 +68,7 @@ At upload, spelling, gender and number agreement with an article, missing Englis
 - **THEN** it is rejected and the original is used
 
 ### Requirement: Teachers are told what was corrected
-When processing finishes, the teacher SHALL be shown the number of corrections made and each one: the original text, the corrected text and the type (spelling, agreement, missing English, wrong-tense English). The list SHALL remain available on the course page.
+When processing finishes, the teacher SHALL be shown the number of corrections made and each one: the original text, the corrected text and the type (spelling, agreement, missing English, wrong English). The list SHALL remain available on the course page.
 
 #### Scenario: Three corrections
 - **WHEN** a sheet is processed and three corrections were made

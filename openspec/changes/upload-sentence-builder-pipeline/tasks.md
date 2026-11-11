@@ -18,12 +18,12 @@ Every model stage is built and tested against stub models first. Tasks marked "N
 
 - [x] 2.1 Define the interpretation types and a JSON schema in `lib/sheets/interpretation.ts`: columns, chunk roles and tags, slots (accepted roles, dependencies, alignment, agreement, distinctness), frames (core, fixed words, lists, joins), questions, rule triples (polarity, tense, person); verify the four prototype interpretations convert to it without loss
 - [x] 2.2 Write the validator: every reference resolves to a reader chunk or slot, no chunk added or removed, only allowed edit types, Spanish edits that keep the same words and change each by at most two letters; verify tests for each rejection
-- [ ] 2.3 Port the engine (clash, compose, read typed text, agreement, lists, frames) to `lib/coach/` driven only by the schema, removing function-valued rules; verify the prototype's walkthrough test and its pair sweep give the same results
+- [x] 2.3 Port the engine (clash, compose, read typed text, agreement, lists, frames) to `lib/coach/` driven only by the schema, removing function-valued rules; verify the prototype's walkthrough test and its pair sweep give the same results
 
 ## 3. The verification gate
 
-- [ ] 3.1 Port the pair sweep, fragment and dangling-ending checks, English-in-English and repeated-word lints, typo lexicon, typed round-trip, dead-end and reading-size checks to `lib/sheets/verify.ts`, returning a failure list; verify each check fires on a deliberately broken interpretation and none fires on the four reviewed ones
-- [ ] 3.2 Add the layout-order fallback draft and the codes-only check of a finished answer; verify a sheet with no model still produces a usable course
+- [x] 3.1 Port the pair sweep, fragment and dangling-ending checks, English-in-English and repeated-word lints, typo lexicon, typed round-trip, dead-end and reading-size checks to `lib/sheets/verify.ts`, returning a failure list; verify each check fires on a deliberately broken interpretation and none fires on the four reviewed ones
+- [x] 3.2 Add the layout-order fallback draft and the codes-only check of a finished answer; verify a sheet with no model still produces a usable course
 
 ## 4. Model stages
 

@@ -101,7 +101,7 @@ describe('from a Word file to a working builder', () => {
 
   it('uses a corrected English gloss in the subtitle', () => {
     const i = interp();
-    i.corrections = [{ chunk: 'g0:0', field: 'en', to: 'a sweater', type: 'english-tense' }];
+    i.corrections = [{ chunk: 'g0:0', field: 'en', to: 'a sweater', type: 'wrong-english' }];
     const B = build(i);
     expect(compose(B, mkAns(B, { verb: 'Voy a llevar', g1: 'un jersey' }), 'en')).toBe('I am going to wear a sweater.');
     expect(B.cols.g0.items[0].original).toEqual({ en: 'a jumper' });

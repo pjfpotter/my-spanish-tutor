@@ -124,7 +124,7 @@ export interface InterpretedQuestion {
   required?: string[];
 }
 
-export type CorrectionType = 'spelling' | 'agreement' | 'missing-english' | 'english-tense';
+export type CorrectionType = 'spelling' | 'agreement' | 'missing-english' | 'wrong-english';
 export interface Correction {
   /** The chunk, as `column:index`. */
   chunk: string;
@@ -159,4 +159,4 @@ export interface Interpretation {
   corrections: Correction[];
 }
 
-export const CORRECTION_TYPES: CorrectionType[] = ['spelling', 'agreement', 'missing-english', 'english-tense'];
+export const CORRECTION_TYPES: CorrectionType[] = ['spelling', 'agreement', 'missing-english', 'wrong-english'];

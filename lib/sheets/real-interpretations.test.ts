@@ -6,6 +6,7 @@ import { compose, prepare, slotFits, type Answer } from './engine';
 import type { Interpretation } from './interpretation';
 import { readDocx } from './read-docx';
 import { validateInterpretation } from './validate';
+import { verifyBuilder } from './verify';
 
 /**
  * Optional manual check (tasks 2.1 and 3.1). The owner's real sheets and the interpretations written for
@@ -27,6 +28,8 @@ describe.skipIf(!ready)('real sheets with their reviewed interpretations (local 
     const interp = JSON.parse(readFileSync(join(idir, `${id}.json`), 'utf8')) as Interpretation;
     expect(validateInterpretation(sheet, interp)).toEqual([]);
     const B = prepare(buildBuilder(id, sheet, interp));
+    const v = verifyBuilder(B, { walks: 150, sheet });
+    expect(v.failures, 'the gate finds nothing').toEqual([]);
     const a: Answer = {};
     const q = B.questions[0], need = q.required ?? (B.required.length ? B.required : (B.requiredAny?.[0] ?? []));
     for (const k of need) { const fit = slotFits(B, a, k, q); expect(fit.length, `something fits ${k}`).toBeGreaterThan(0); a[k] = fit[0]; }

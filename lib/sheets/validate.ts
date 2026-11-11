@@ -110,7 +110,7 @@ export function validateInterpretation(sheet: Sheet, interp: Interpretation): Pr
     const cell = interp.columns.find((x) => x.key === col)?.cell as string;
     const src = cell === 'float0' ? sheet.floats.flatMap((f) => f.items)[Number(idx)] : sheet.tables.flatMap((t) => t.cells).find((x) => x.id === cell)?.items[Number(idx)];
     if (c.field === 'es') {
-      if (c.type === 'missing-english' || c.type === 'english-tense') bad(p, 'That kind of correction is for English.');
+      if (c.type === 'missing-english' || c.type === 'wrong-english') bad(p, 'That kind of correction is for English.');
       else if (src && !smallSpanishEdit(src.es, c.to)) bad(p, `“${src.es}” to “${c.to}” changes more than spelling or agreement.`);
     } else {
       if (c.type === 'spelling' || c.type === 'agreement') bad(p, 'That kind of correction is for Spanish.');
