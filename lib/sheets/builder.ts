@@ -16,6 +16,8 @@ export interface Item extends ChunkProps {
   vi?: number;
 }
 
+export const pairKey = (a: string, b: string) => (a < b ? `${a}|${b}` : `${b}|${a}`);
+
 export interface Column extends InterpretedColumn { items: Item[]; w: number }
 export interface Slot extends InterpretedSlot { line?: number }
 export interface Pattern { it: Item; t: string[]; vi?: number; es: string }
@@ -38,6 +40,8 @@ export interface Builder {
   ignore: string[];
   rules: { polarity: PolarityRule[] };
   patterns: Pattern[];
+  /** `a|b` with the two chunk references in sorted order. */
+  pairBlocks: Set<string>;
 }
 
 /**
@@ -72,6 +76,6 @@ export function buildBuilder(id: string, sheet: Sheet, interp: Interpretation): 
   interp.frames.forEach((f, i) => f.slots.forEach((k) => { const s = slotMap[k]; if (s) { s.line = i; if (f.block != null) s.block = f.block; } }));
   return {
     id, name: interp.name, title: interp.title, subtitle: interp.subtitle, columns, cols, slots, slotMap, frames: interp.frames, questions: interp.questions,
-    required: interp.required, requiredAny: interp.requiredAny, together: interp.together, auto: interp.auto, ignore: interp.ignore, rules: interp.rules, patterns: [],
+    required: interp.required, requiredAny: interp.requiredAny, together: interp.together, auto: interp.auto, ignore: interp.ignore, rules: interp.rules, patterns: [], pairBlocks: new Set((interp.pairBlocks ?? []).map((p) => pairKey(p.a, p.b))),
   };
 }

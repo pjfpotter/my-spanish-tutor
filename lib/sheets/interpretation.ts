@@ -157,6 +157,8 @@ export interface Interpretation {
   ignore: string[];
   rules: { polarity: PolarityRule[] };
   corrections: Correction[];
+  /** Pairs of chunks that cannot be on one card, found by judging every pair at upload (`column:index` each). */
+  pairBlocks?: { a: string; b: string }[];
 }
 
 export const CORRECTION_TYPES: CorrectionType[] = ['spelling', 'agreement', 'missing-english', 'wrong-english'];

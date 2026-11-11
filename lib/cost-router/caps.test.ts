@@ -3,6 +3,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { buildClips, TTS_SERVICE } from '../audio/build';
 import { setUpCourse, SETUP_SERVICE } from '../coach/setup';
+import { INGEST_SERVICE } from '../sheets/ingest';
 import { SEED_COURSE } from '../course/seed';
 import { createClipTranscriber, TRANSCRIPTION_SERVICE } from '../transcription/transcribe';
 import { SERVICE_FALLBACKS, SERVICE_LIMITS } from './limits';
@@ -32,7 +33,7 @@ describe('every paid service has a cap and a fallback (task 14.1)', () => {
       }
     };
     for (const d of ['lib', 'app', 'scripts']) walk(path.join(process.cwd(), d));
-    expect([...found].sort()).toEqual([SETUP_SERVICE, TRANSCRIPTION_SERVICE, TTS_SERVICE].sort());
+    expect([...found].sort()).toEqual([INGEST_SERVICE, SETUP_SERVICE, TRANSCRIPTION_SERVICE, TTS_SERVICE].sort());
     for (const s of found) {
       expect(SERVICE_LIMITS[s], s).toBeDefined();
       expect(SERVICE_LIMITS[s].capGbp).toBeGreaterThan(0);

@@ -1,4 +1,4 @@
-import type { Builder, Item, Pattern, Slot } from './builder.ts';
+import { pairKey, type Builder, type Item, type Pattern, type Slot } from './builder.ts';
 import type { Condition, Frame, InterpretedQuestion } from './interpretation.ts';
 
 /**
@@ -116,6 +116,7 @@ export function clash(B: Builder, a: Answer, slotKey: string, item: Item, Q?: Qu
     if (s && r && (!R.c || c || !canFlip) && !polOK(s, c ?? null, r)) for (const k of [R.s, R.c, R.r]) if (k && k !== slotKey && a2[k]) blockers.push(a2[k] as Item);
   }
   if (item.branch) for (const k of Object.keys(a)) { const x = a[k]; if (k !== slotKey && x?.branch && x.branch !== item.branch) blockers.push(x); }
+  if (B.pairBlocks.size) for (const k of Object.keys(a)) { const x = a[k]; if (k !== slotKey && x && B.pairBlocks.has(pairKey(`${baseOf(x).col}:${baseOf(x).i}`, `${baseOf(item).col}:${baseOf(item).i}`))) blockers.push(x); }
   const u = [...new Set(blockers)];
   return u.length ? { blockers: u, msg: `“${item.es}” doesn't go with ${u.map((b) => '“' + b.es + '”').join(' and ')}. Take ${u.length > 1 ? 'one' : 'it'} out to use it.` } : null;
 }

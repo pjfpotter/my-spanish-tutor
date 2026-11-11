@@ -27,13 +27,13 @@ Every model stage is built and tested against stub models first. Tasks marked "N
 
 ## 4. Model stages
 
-- [ ] 4.1 Add an `ingest` call class to the cost router with budget, per-course rate limit, log and fallback; verify a capped call falls back and is logged
-- [ ] 4.2 Draft stage: prompt and schema call with the document passed as quoted data; verify with a stub model that out-of-schema output is rejected and an injected instruction in a chunk has no effect
-- [ ] 4.3 Repair loop: at most three passes with the failure list, then the fallback; verify with a stub that converges on pass two and one that never converges
-- [ ] 4.4 Corrections: bounded edit types, deterministic validation, originals stored; verify "marrónes" is corrected, a meaning-changing edit is rejected, and the student sheet and subtitles use the corrected text
-- [ ] 4.5 Pair judging: batched, two independent passes, hard block only on agreement, odd allowed and not shown; verify with stubs for agree, disagree and odd
-- [ ] 4.6 Cache by content hash plus prompt and schema version with a migration for the interpretation, corrections, verdicts and versions; verify a second identical upload makes no model call
-- [ ] 4.7 Screen uploads for inappropriate content before and after drafting; verify a blocklisted chunk blocks the course
+- [x] 4.1 Add a `sheet-ingest` service to the cost router with a monthly spend cap, an hourly rate setting, log and fallback (the router limits per student profile, not per course, so uploads have no per-course limit beyond the cap); verify a capped call falls back and is logged
+- [x] 4.2 Draft stage: prompt and schema call with the document passed as quoted data; verify with a stub model that out-of-schema output is rejected and an injected instruction in a chunk has no effect
+- [x] 4.3 Repair loop: at most three passes with the failure list, then the fallback; verify with a stub that converges on pass two and one that never converges
+- [x] 4.4 Corrections: bounded edit types, deterministic validation, originals stored; verify "marrónes" is corrected, a meaning-changing edit is rejected, and the student sheet and subtitles use the corrected text
+- [x] 4.5 Pair judging: batched, two independent passes, hard block only on agreement, odd allowed and not shown; verify with stubs for agree, disagree and odd
+- [x] 4.6 Cache by content hash plus prompt and schema version with a migration for the interpretation, corrections, verdicts and versions; verify a second identical upload makes no model call
+- [x] 4.7 Screen uploads for inappropriate content before and after drafting; verify a blocklisted chunk blocks the course
 - [ ] 4.8 Upload screen: Tele reading the sheet, a progress bar tied to the real stages (read, draft, check, repair) and rotating Spanish messages with English subtitles; animation stops under reduced motion and the calm switch while messages still change; plain English failure message with retry; verify a Playwright run on the phone profile for success, fallback, failure and reduced motion
 - [ ] 4.9 Correction notice: after processing show the number of corrections and each one (original, corrected, type), keep the list on the course page, never block a course on it; verify with a stub that 3 corrections and 0 corrections both render and that students can use the course before the teacher opens the notice
 

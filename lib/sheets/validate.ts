@@ -101,6 +101,7 @@ export function validateInterpretation(sheet: Sheet, interp: Interpretation): Pr
   interp.auto.forEach((k) => slot('auto', k));
   for (const r of interp.rules.polarity) { slot('rules', r.s); slot('rules', r.c); slot('rules', r.r); }
 
+  (interp.pairBlocks ?? []).forEach((pb, i) => { if (!chunkOk(pb.a) || !chunkOk(pb.b)) bad(`pairBlocks[${i}]`, 'A blocked pair must name two chunks on the sheet.'); });
   interp.corrections.forEach((c, i) => {
     const p = `corrections[${i}]`;
     if (!chunkOk(c.chunk)) { bad(p, `No chunk “${c.chunk}”: a correction cannot add chunks.`); return; }
