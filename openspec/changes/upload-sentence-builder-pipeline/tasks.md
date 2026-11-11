@@ -16,8 +16,8 @@ Every model stage is built and tested against stub models first. Tasks marked "N
 
 ## 2. Interpretation schema and validator
 
-- [ ] 2.1 Define the interpretation types and a JSON schema in `lib/sheets/interpretation.ts`: columns, chunk roles and tags, slots (accepted roles, dependencies, alignment, agreement, distinctness), frames (core, fixed words, lists, joins), questions, rule triples (polarity, tense, person); verify the four prototype interpretations convert to it without loss
-- [ ] 2.2 Write the validator: every reference resolves to a reader chunk or slot, no chunk added or removed, only allowed edit types, Spanish edits within two letters and inside the sheet's word bank; verify tests for each rejection
+- [x] 2.1 Define the interpretation types and a JSON schema in `lib/sheets/interpretation.ts`: columns, chunk roles and tags, slots (accepted roles, dependencies, alignment, agreement, distinctness), frames (core, fixed words, lists, joins), questions, rule triples (polarity, tense, person); verify the four prototype interpretations convert to it without loss
+- [x] 2.2 Write the validator: every reference resolves to a reader chunk or slot, no chunk added or removed, only allowed edit types, Spanish edits that keep the same words and change each by at most two letters; verify tests for each rejection
 - [ ] 2.3 Port the engine (clash, compose, read typed text, agreement, lists, frames) to `lib/coach/` driven only by the schema, removing function-valued rules; verify the prototype's walkthrough test and its pair sweep give the same results
 
 ## 3. The verification gate
