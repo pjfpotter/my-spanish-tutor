@@ -16,8 +16,12 @@ export interface WriteSheetProps {
   /** The pick-up view, where the sheet lifts over the card. A setting, off by default until approved. */
   pickup?: boolean;
   /** Called when the student has a sentence the check accepts and taps Done. */
-  onSignedOff?: (text: string, english: string) => void;
+  onSignedOff?: (text: string, english: string, answer: Answer) => void;
   onChange?: (a: Answer) => void;
+  /** Choices to start from, for an answer saved earlier. */
+  initial?: Answer;
+  /** The question the student is answering, when it is not one of the sheet's own. */
+  heading?: { es: string; en: string };
 }
 
 const SHEET_W = 980;
@@ -28,8 +32,8 @@ const SHEET_W = 980;
  * its English subtitle, and the chosen chunks as handles. All rules come from the interpretation;
  * no model is called here.
  */
-export function WriteSheet({ builder: B, sheet, question: Q, pickup = false, onSignedOff, onChange }: WriteSheetProps) {
-  const [ans, setAns] = useState<Answer>({});
+export function WriteSheet({ builder: B, sheet, question: Q, pickup = false, onSignedOff, onChange, initial, heading }: WriteSheetProps) {
+  const [ans, setAns] = useState<Answer>(initial ?? {});
   const [active, setActive] = useState<string | null>(null);
   const [result, setResult] = useState<SignOff | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -199,7 +203,7 @@ export function WriteSheet({ builder: B, sheet, question: Q, pickup = false, onS
   const fix = (slot: string) => { setResult(null); activate(slot); };
 
   // Start at the first slot.
-  useEffect(() => { setActive(nextEmpty({})); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setActive(nextEmpty(initial ?? {})); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ---------- the card ---------- */
   const keys = activeLines(B, Q).flatMap((l) => l.slots);
@@ -294,7 +298,7 @@ export function WriteSheet({ builder: B, sheet, question: Q, pickup = false, onS
       </div>
 
       <div className="ws-card-area" inert={pickup && open ? true : undefined}>
-        {Q && <div className="ws-qtab"><span className="ws-qes" lang="es">{Q.es}</span><span className="ws-qen">{Q.en}</span></div>}
+        {(heading ?? Q) && <div className="ws-qtab"><span className="ws-qes" lang="es">{(heading ?? Q)!.es}</span><span className="ws-qen">{(heading ?? Q)!.en}</span></div>}
         <div className="ws-acard" data-testid="answer-card">
           <p className={`ws-said${es.length ? '' : ' empty'}`} lang="es" data-testid="sentence">{es.length ? es.map((x, i) => <span className="sn" key={i}>{x}</span>) : 'Your sentence appears here.'}</p>
           <p className="ws-sub" data-testid="subtitle">{en}</p>
@@ -330,7 +334,7 @@ export function WriteSheet({ builder: B, sheet, question: Q, pickup = false, onS
               </div>
               <div className="ws-rbtn">
                 {result.code === 'ok' ? (
-                  <button type="button" className="ws-btn primary" onClick={() => onSignedOff?.(es.join(' '), en)}>Done</button>
+                  <button type="button" className="ws-btn primary" onClick={() => onSignedOff?.(es.join(' '), en, ans)}>Done</button>
                 ) : (
                   <button type="button" className="ws-btn primary" onClick={() => fix(result.fix.slot)}>Fix it</button>
                 )}
