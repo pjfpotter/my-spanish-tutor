@@ -72,21 +72,31 @@ For each held-out sheet, 100 random complete answers are judged blind. The targe
 ### D9. The writing screen as tested
 The card shows the real sentence; chips are handles in one scrolling strip; the active slot's list dims what it cannot take, with the reason on tap; extras are behind "Add more"; frames show half-built parts with "…"; lists take up to four items; "Check it" is pinned and the result panel always fits; the sheet keeps at least about 45 per cent of the height at 340 by 640. Pick-up mode is available as a setting and is not the default until the owner approves it.
 
+### D10. Teachers are told what was corrected
+After processing, the teacher sees the number of corrections and each one (original, corrected, and the type: spelling, agreement, missing English, wrong-tense English). It is informational: students never wait for it and nothing is held back. The same list stays on the course page. The originals are kept so a correction can be reversed later.
+
+### D11. The wait is part of the experience
+A sheet takes about 30 to 60 seconds to process. The upload screen shows Tele "reading" the sheet, a progress bar and rotating Spanish messages with English subtitles ("Leyendo tu hoja…", "Contando las palabras…"). Messages are tied to the real stages (read, draft, check, repair) so they never run ahead of the work. Motion stops under reduced motion and the calm switch, and the text still changes.
+
 ### Relationship to the v1 change
 This change supersedes these requirements of `answer-writing-coach` and `course-content` in the unarchived v1 change: "Guidance about what fits" (fit rules from data, now model-drafted and verified), "Only words from the allowed sets" (typed own words are allowed with a safeguarding screen), "Show only what the next tap needs" (extras behind Add more), and the statement that writing makes no model call (upload-time calls are allowed). `teacher-course-setup` gains upload-and-go. The rest stands.
 
 ## Risks / Trade-offs
 
 - **Final model verdicts with no review** can block good sentences or credit bad ones. Mitigation: agreement-to-block, the exam rule, blind audits, and a fail-soft `odd` outcome.
-- **Silent corrections** may surprise a teacher whose printed sheet differs. Mitigation: originals kept; the open question below asks whether a notice is wanted.
+- **Silent corrections** may surprise a teacher whose printed sheet differs. Mitigation: originals kept and the teacher is told what changed (D10).
 - **Upload latency and cost** for large sheets. Mitigation: batching, caching, budget caps in the cost router, a visible progress state.
 - **Overfitting to seven sheets.** Mitigation: D8 and a growing fixture library of synthetic sheets, one per layout family.
 - **Model drift.** Mitigation: prompt and schema versioning and re-audit when either changes.
 
+## Decisions taken by the owner
+
+- Teachers are told how many corrections were made and what they were (D10).
+- A 30 to 60 second wait is acceptable with Spanish loading messages and animation (D11).
+- The target is no more than 2 per cent unacceptable answers (D8).
+- No model key is available in the cloud session. Everything that needs a real model (drafting, repair, pair judging, the held-out acceptance run) is written against stubs and run later, locally, by the owner.
+
 ## Open Questions
 
-- Should a teacher see a short notice of what was corrected, or nothing at all? Default: nothing, with originals stored.
-- Is a 30 to 60 second wait while the sheet is read acceptable? Default: yes, with a progress state.
-- Which model tier for drafting, repair and pair judging, and what monthly cap? To be set from the cost log after the first uploads.
-- The unacceptable-sentence target (2 per cent) is a proposal.
+- Which model tier for drafting, repair and pair judging, and what monthly cap? To be set from the cost log after the first real uploads.
 - Where do interpretations live when a teacher re-uploads an edited sheet? Default: a new content hash, a new interpretation.

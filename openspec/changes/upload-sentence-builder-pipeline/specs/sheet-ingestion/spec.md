@@ -67,6 +67,28 @@ At upload, spelling, gender and number agreement with an article, missing Englis
 - **WHEN** a proposed correction would change a word's meaning
 - **THEN** it is rejected and the original is used
 
+### Requirement: Teachers are told what was corrected
+When processing finishes, the teacher SHALL be shown the number of corrections made and each one: the original text, the corrected text and the type (spelling, agreement, missing English, wrong-tense English). The list SHALL remain available on the course page.
+
+#### Scenario: Three corrections
+- **WHEN** a sheet is processed and three corrections were made
+- **THEN** the teacher sees "3 corrections" and the three changes, and students can already use the sheet
+
+#### Scenario: Nothing to correct
+- **WHEN** no corrections were made
+- **THEN** the teacher sees that none were needed
+
+### Requirement: The wait is shown, not hidden
+While a sheet is processed the screen SHALL show Tele reading the sheet, a progress indicator tied to the real stages, and short Spanish messages with English subtitles. Animation SHALL stop under reduced motion and the calm switch while the messages keep changing. A failure SHALL be explained in plain English with a way to try again.
+
+#### Scenario: Reduced motion
+- **WHEN** the student or teacher has reduced motion on
+- **THEN** no animation plays and the stage messages still update
+
+#### Scenario: Spanish with a subtitle
+- **WHEN** a stage message is shown
+- **THEN** it is in Spanish with an English subtitle
+
 ### Requirement: Pair verdicts by the exam rule
 Pairs of chunks SHALL be judged by whether the combination is grammatical and could be true. A pair SHALL be blocked only when two independent judgements both say it does not fit. A disagreement SHALL leave the pair allowed. A pair judged merely odd SHALL be allowed and not flagged to the student.
 
@@ -93,7 +115,7 @@ Model results SHALL be keyed by the document content hash and the prompt and sch
 - **THEN** the second upload reuses the stored interpretation
 
 ### Requirement: No review stage
-A course SHALL be usable by students as soon as verification passes or the fallback is in place. No teacher approval, review screen or editing step SHALL be required.
+A course SHALL be usable by students as soon as verification passes or the fallback is in place. No teacher approval, review screen or editing step SHALL be required. The correction notice below is informational and SHALL NOT delay or block a course.
 
 #### Scenario: Upload and go
 - **WHEN** a teacher uploads a sheet
@@ -108,4 +130,4 @@ Each held-out sheet SHALL be accepted only after a blind audit of 100 random com
 
 ## Open questions
 
-- Whether teachers see a notice of corrections, the upload wait that is acceptable, the model tier and monthly cap, and the 2 per cent target (see `design.md`).
+- The model tier and monthly cap (see `design.md`).
