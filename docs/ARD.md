@@ -34,7 +34,7 @@ Quality attributes drive the design. Each is stated so that it can be tested.
 
 | ID | Requirement | Why it matters |
 |---|---|---|
-| AR-1 | **Cost.** Live practice loops make no language-model calls and no per-request speech synthesis. Every paid call is metered, capped and has a fallback. | Scale story and budget |
+| AR-1 | **Cost.** Live practice loops, including the writing screen, make no language-model calls and no per-request speech synthesis. Upload-time calls on teacher documents are allowed. Every paid call is metered, capped and has a fallback. | Scale story and budget |
 | AR-2 | **Privacy.** No real names, emails or audio recordings are stored. Interests are fixed tags. Everything a student created can be deleted in one action. | Children's data |
 | AR-3 | **Latency.** Spoken-attempt feedback appears within about two seconds of the end of speech on a mid-range phone. | Feels like a game |
 | AR-4 | **Sync.** Mouth movement stays aligned with audio at 0.5x, 0.75x and 1x speed on every supported device. | Credibility of the tutor |
@@ -149,12 +149,13 @@ sequenceDiagram
 
 If browser recognition is unavailable, the clip is sent to a fallback transcription call through the cost router and discarded after the response.
 
-### 4.3 Course set-up and the writing stage (no model call in the learning loop)
+### 4.3 Course set-up and the writing stage (models at upload time only; no model call in the learning loop)
 
-1. At sentence-builder upload, the router checks budget and rate limit.
-2. One small-model call receives the chunk bank, calibration data and teacher examples, flags bad combinations and returns model answers per question and level as structured output.
-3. Code validates every word against the allowed set and the rubric must place each answer at its intended level; a mismatch is regenerated once, then marked missing.
-4. In the writing stage the student picks a level, starts from a model answer and swaps chunks; the rubric recomputes locally with no model call.
+1. At sentence-builder upload, the router checks budget and rate limit (service `sheet-ingest`). The .docx is read deterministically (`lib/sheets/read-docx.ts`); the model never sees an unscreened document and receives it only as quoted data.
+2. A model drafts an **Interpretation**: data describing the lists, which chunks fit which slots, sentence frames, teacher-error corrections and which pairs of chunks clash. It never writes code or student-facing text.
+3. A verification gate (pair sweep and Spanish and English lint) checks the draft; failures go back for up to three bounded repairs. Pairs the model-free rules cannot decide are judged twice, and a pair is blocked only if both passes say it clashes. If all else fails a safe fallback (layout order, codes-only check) goes live. Results are cached by content hash, prompt version and schema version.
+4. The teacher is told, without being asked to review anything, how many corrections were made and what each was.
+5. In the writing stage the student builds a sentence on the re-typeset sheet; the engine and the exam-rule sign-off run locally in the browser and again on the server with no model call. A course with no sheet keeps the original level, model-answer and swap flow.
 
 ## 5. Data model (summary)
 

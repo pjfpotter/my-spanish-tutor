@@ -40,7 +40,8 @@ Every model stage is built and tested against stub models first. Tasks marked "N
 ## 5. The writing screen
 
 - [x] 5.1a Build the writing screen on the engine as a component (`WriteSheet`): sentence and subtitle on the card, handle strip, Add more, active-slot dimming with reasons, frames with "…", lists, pinned Check it, result panel that fits; verify Playwright at 340 by 640 and 360 by 640 replays the owner's walkthrough (`tests/write-sheet.spec.ts`, lab page `/lab/write-sheet`)
-- [ ] 5.1b Wire `WriteSheet` into `app/phases/write/`, `/api/answers`, `saveAnswer`, the readiness gates and memorise, and link a course to its stored interpretation. Paused: the old rubric, levels and five-confirmed model need an owner decision first
+- [x] 5.1b Wire `WriteSheet` into `app/phases/write/` (`SheetWrite`), `/api/answers` (`selection`), `saveSheetAnswer` and a course-to-sheet link (migration 0013). The confirmed count, readiness gates and memorise read `answers` as before, so they are unchanged; a course with no sheet keeps the old flow. Verified by `lib/progress/sheet-answers.test.ts` and `tests/write-sheet-flow.spec.ts`
+- [ ] 5.1c Teacher upload route and screen: accept a .docx, run `ingestSheet` with the real model client, show `UploadProgress` and `CorrectionNotice`, and attach the result to the course with `attachSheet`. Needs a model key to verify end to end; until then a sheet is attached by script or in tests
 - [x] 5.2 Sign-off by the exam rule with at most one thing to fix; verify unit tests for fragment, contradiction, strange-but-possible and complete
 - [ ] 5.3 Pick-up view as a setting, off by default; verify the setting and the short-screen behaviour
 - [ ] 5.4 Optional manual check: the owner re-runs the first testing walkthrough on a phone
@@ -53,8 +54,8 @@ Every model stage is built and tested against stub models first. Tasks marked "N
 
 ## 7. Rules and documents
 
-- [ ] 7.1 Update `CLAUDE.md` and the v1 `answer-writing-coach` spec: upload-time interpretation, correction and pair judging are permitted model uses through the cost router; the practice loop stays model-free; verify with a search that no document still says the writing stage never calls a model
-- [ ] 7.2 Update `docs/dpia.md` (documents are teacher content, no student data in any model call), `docs/ARD.md` and `docs/technical-documentation.md`
+- [x] 7.1 Update `CLAUDE.md` and the v1 `answer-writing-coach` spec: upload-time interpretation, correction and pair judging are permitted model uses through the cost router; the practice loop stays model-free; verify with a search that no document still says the writing stage never calls a model
+- [x] 7.2 Update `docs/dpia.md` (documents are teacher content, no student data in any model call), `docs/ARD.md` and `docs/technical-documentation.md`
 - [ ] 7.3 Remove or archive the prototype's hand-written interpretations once the pipeline passes acceptance; keep the fixtures and checks
 
 ## 8. Stretch (cut first)
