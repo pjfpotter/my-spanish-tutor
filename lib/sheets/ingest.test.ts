@@ -140,6 +140,14 @@ describe('corrections (task 4.4)', () => {
     expect(r.corrections).toEqual([{ chunk: 'act:0', field: 'es', original: 'bailar', corrected: 'bailár', type: 'spelling' }]);
   });
 
+  it('is informational: the course is usable at once, with the corrections already applied and nothing waiting on the teacher', async () => {
+    const s = setup({ draft: () => withFix('bailár') });
+    const r = await ingestSheet(sheet(), { route: s.route, model: s.model });
+    expect(r.status).toBe('ready');
+    expect(r.corrections).toHaveLength(1);
+    expect(compose(r.builder!, mkAns(r.builder!, { s: 'Me gusta', a: 'bailár' }), 'es')).toBe('Me gusta bailár.');
+  });
+
   it('rejects a correction that changes meaning and asks for a repair', async () => {
     const s = setup({ draft: (n) => (n === 1 ? withFix('cocinar') : good()) });
     const r = await ingestSheet(sheet(), { route: s.route, model: s.model });

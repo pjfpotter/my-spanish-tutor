@@ -34,8 +34,8 @@ Every model stage is built and tested against stub models first. Tasks marked "N
 - [x] 4.5 Pair judging: batched, two independent passes, hard block only on agreement, odd allowed and not shown; verify with stubs for agree, disagree and odd
 - [x] 4.6 Cache by content hash plus prompt and schema version with a migration for the interpretation, corrections, verdicts and versions; verify a second identical upload makes no model call
 - [x] 4.7 Screen uploads for inappropriate content before and after drafting; verify a blocklisted chunk blocks the course
-- [ ] 4.8 Upload screen: Tele reading the sheet, a progress bar tied to the real stages (read, draft, check, repair) and rotating Spanish messages with English subtitles; animation stops under reduced motion and the calm switch while messages still change; plain English failure message with retry; verify a Playwright run on the phone profile for success, fallback, failure and reduced motion
-- [ ] 4.9 Correction notice: after processing show the number of corrections and each one (original, corrected, type), keep the list on the course page, never block a course on it; verify with a stub that 3 corrections and 0 corrections both render and that students can use the course before the teacher opens the notice
+- [x] 4.8 Upload screen: Tele reading the sheet, a progress bar tied to the real stages (read, draft, check, repair) and rotating Spanish messages with English subtitles; animation stops under reduced motion and the calm switch while messages still change; plain English failure message with retry; verify a Playwright run on the phone profile for success, fallback, failure and reduced motion
+- [x] 4.9 Correction notice: after processing show the number of corrections and each one (original, corrected, type), keep the list on the course page, never block a course on it; verify with a stub that 3 corrections and 0 corrections both render and that students can use the course before the teacher opens the notice
 
 ## 5. The writing screen
 

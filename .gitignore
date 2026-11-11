@@ -32,3 +32,4 @@ next-env.d.ts
 docs/teaching-resources/
 .next-test/
 tests/local/
+playwright.local.config.ts
