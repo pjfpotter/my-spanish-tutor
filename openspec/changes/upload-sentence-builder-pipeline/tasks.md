@@ -39,8 +39,9 @@ Every model stage is built and tested against stub models first. Tasks marked "N
 
 ## 5. The writing screen
 
-- [ ] 5.1 Rebuild `app/phases/write/` on the engine: sentence and subtitle on the card, handle strip, Add more, active-slot dimming with reasons, frames with "…", lists, pinned Check it, result panel that fits; verify Playwright at 340 by 640 and 360 by 640 replays the owner's walkthrough
-- [ ] 5.2 Sign-off by the exam rule with at most one thing to fix; verify unit tests for fragment, contradiction, strange-but-possible and complete
+- [x] 5.1a Build the writing screen on the engine as a component (`WriteSheet`): sentence and subtitle on the card, handle strip, Add more, active-slot dimming with reasons, frames with "…", lists, pinned Check it, result panel that fits; verify Playwright at 340 by 640 and 360 by 640 replays the owner's walkthrough (`tests/write-sheet.spec.ts`, lab page `/lab/write-sheet`)
+- [ ] 5.1b Wire `WriteSheet` into `app/phases/write/`, `/api/answers`, `saveAnswer`, the readiness gates and memorise, and link a course to its stored interpretation. Paused: the old rubric, levels and five-confirmed model need an owner decision first
+- [x] 5.2 Sign-off by the exam rule with at most one thing to fix; verify unit tests for fragment, contradiction, strange-but-possible and complete
 - [ ] 5.3 Pick-up view as a setting, off by default; verify the setting and the short-screen behaviour
 - [ ] 5.4 Optional manual check: the owner re-runs the first testing walkthrough on a phone
 

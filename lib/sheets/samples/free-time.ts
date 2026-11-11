@@ -20,10 +20,18 @@ const LISTS: Record<string, Row[]> = {
   glue: [['y', 'and'], ['pero', 'but'], ['también', 'also']],
 };
 const ORDER = Object.keys(LISTS);
+/** The printed sheet has three blocks; each is a table whose cells are the lists. Widths follow the printed columns. */
+const BLOCKS: { keys: string[]; grid: number[] }[] = [
+  { keys: ['starter', 'activity', 'connector', 'reason'], grid: [184, 362, 142, 196] },
+  { keys: ['lohago', 'when', 'with', 'who'], grid: [140, 212, 62, 196] },
+  { keys: ['closing', 'glue'], grid: [330, 232] },
+];
+const CELL: Record<string, string> = {};
+BLOCKS.forEach((b, t) => b.keys.forEach((k, c) => { CELL[k] = `t${t}r0c${c}`; }));
 
 export const FREE_TIME_SHEET: Sheet = {
   titles: [{ es: '¿Qué haces en tu tiempo libre?', en: 'What do you do in your free time?', after: 0 }],
-  tables: [{ index: 0, grid: ORDER.map(() => 1000), rows: 1, cells: ORDER.map((k, c) => ({ id: `t0r0c${c}`, r: 0, c, rs: 1, cs: 1, fill: null, items: LISTS[k].map(([es, en]) => ({ es, en, hard: false })) })) }],
+  tables: BLOCKS.map((b, t) => ({ index: t, grid: b.grid, rows: 1, cells: b.keys.map((k, c) => ({ id: `t${t}r0c${c}`, r: 0, c, rs: 1, cs: 1, fill: null, items: LISTS[k].map(([es, en]) => ({ es, en, hard: false })) })) })),
   floats: [], warnings: [], stats: { items: 0, glossed: 0, hard: 0 }, flags: { hasBold: true, hasItalic: false }, images: 0,
 };
 
@@ -63,7 +71,7 @@ export const FREE_TIME: Interpretation = {
   name: 'Free time',
   title: '¿Qué haces en tu tiempo libre?',
   subtitle: 'What do you do in your free time?',
-  columns: ORDER.map((k, c) => ({ key: k, cell: `t0r0c${c}`, title: TITLES[k], kind: KINDS[k], ...(k === 'with' ? { static: true } : {}), ...(k === 'glue' ? { sticky: true } : {}) })),
+  columns: ORDER.map((k) => ({ key: k, cell: CELL[k], title: TITLES[k], kind: KINDS[k], ...(k === 'with' ? { static: true } : {}) })),
   props,
   slots: [
     slot('starter', ['starter'], 'opinion', 'an opinion', 'Pick how you feel about it', { accepts: ['opinion'] }),
