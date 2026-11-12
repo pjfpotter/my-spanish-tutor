@@ -281,7 +281,7 @@ export function Understand({ questions, plans = {} }: { questions: QuestionItem[
       meta={
         <>
           <span data-testid="mastered-count">{masteredIds.size} of {questions.length} questions mastered</span>
-          <span data-testid="coins">+{coins} coins today</span>
+          <span data-testid="coins">+€{coins} today</span>
         </>
       }
       footer={footer}

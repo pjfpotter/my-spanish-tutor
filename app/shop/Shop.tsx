@@ -17,7 +17,7 @@ const GROUPS: { kind: ShopItem['kind']; title: string }[] = [
 ];
 
 /**
- * The shop. Coins come from practice and buy fixed-price things for the desktop. Each item costs one price and the student
+ * The shop. Euros come from practice and buy fixed-price things for the desktop. Each item costs one price and the student
  * gets exactly that item: no packs, no chances, no real money. Having nothing yet is fine and loses nothing.
  */
 export function Shop({ initial, cheekyOn = false }: { initial: ShopState; cheekyOn?: boolean }) {
@@ -40,10 +40,10 @@ export function Shop({ initial, cheekyOn = false }: { initial: ShopState; cheeky
   return (
     <main className="screen">
       <h1>Shop</h1>
-      <Win title="shop.exe" label="Spend your coins">
+      <Win title="shop.exe" label="Spend your euros">
         <div className="stack">
-          <p className="coins" data-testid="coins">{state.coins} coins</p>
-          <p className="muted">Coins come from practising. Looking around earns none, and nothing here costs real money.</p>
+          <p className="coins" data-testid="coins">€{state.coins}</p>
+          <p className="muted">Euros come from practising. They are pretend: looking around earns none, and nothing here costs real money.</p>
           {message && <p role="status" data-testid="message">{message}</p>}
 
           {GROUPS.filter((g) => g.kind !== 'phrases' || cheekyOn).map((g) => (
@@ -72,7 +72,7 @@ export function Shop({ initial, cheekyOn = false }: { initial: ShopState; cheeky
                         )
                       ) : (
                         <button type="button" className="btn btn-primary" disabled={busy || short > 0 || full} onClick={() => act({ action: 'buy', item: item.id }, `You got ${item.en}.`)}>
-                          {full ? `You have ${MAX_FREEZES}` : `${item.price} coins`}
+                          {full ? `You have ${MAX_FREEZES}` : `€${item.price}`}
                           {short > 0 && !full && <span className="sr-only"> (you need {short} more)</span>}
                         </button>
                       )}

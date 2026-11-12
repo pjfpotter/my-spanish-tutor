@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { recordResponse } from '../automate/store';
-import { SEED_COURSE, TESTING_COURSE } from '../course/seed';
+import { SEED_COURSE, TESTING_COURSE, simplestSeedAnswer } from '../course/seed';
 import { seedCourse } from '../course/seed-db';
 import { newTestDb } from '../db/test-db';
 import { loadMastery, loadProgress } from '../progress/progress';
@@ -14,7 +14,7 @@ let db: Awaited<ReturnType<typeof newTestDb>>;
 let testing: { courseId: string; profileId: string; q: string[] };
 let real: { courseId: string; profileId: string; q: string[] };
 
-const modelFor = (position: number) => SEED_COURSE.modelAnswers.find((a) => a.questionPosition === position && a.level === 'rock_solid')!.text;
+const modelFor = (position: number) => simplestSeedAnswer(position);
 
 async function join(code: string, nickname: string) {
   const courseId = (await db.query<{ id: string }>('select id from courses where class_code = $1', [code])).rows[0].id;
@@ -48,7 +48,7 @@ describe('memorise items in a testing course', () => {
   });
 
   it('uses the tester’s own confirmed answer for a question when they have one, and the model for the rest', async () => {
-    await db.query(`insert into answers (profile_id, question_id, text, level, confirmed_at) values ($1,$2,'Mi respuesta.',1, now())`, [testing.profileId, testing.q[1]]);
+    await db.query(`insert into answers (profile_id, question_id, text, value, confirmed_at) values ($1,$2,'Mi respuesta.',1, now())`, [testing.profileId, testing.q[1]]);
     const items = await loadMemoriseItems(db, testing.profileId, testing.courseId);
     expect(items).toHaveLength(5);
     expect(items[1]).toMatchObject({ id: testing.q[1], answer: 'Mi respuesta.' });
@@ -57,7 +57,7 @@ describe('memorise items in a testing course', () => {
   });
 
   it('treats an unconfirmed draft as no answer', async () => {
-    await db.query(`insert into answers (profile_id, question_id, text, level, confirmed_at) values ($1,$2,'Borrador',1, null)`, [testing.profileId, testing.q[2]]);
+    await db.query(`insert into answers (profile_id, question_id, text, value, confirmed_at) values ($1,$2,'Borrador',1, null)`, [testing.profileId, testing.q[2]]);
     const items = await loadMemoriseItems(db, testing.profileId, testing.courseId);
     expect(items[2].answer).toBe(modelFor(3));
     await db.query('delete from answers where profile_id = $1', [testing.profileId]);

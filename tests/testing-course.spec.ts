@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { SEED_COURSE, TESTING_COURSE } from '../lib/course/seed';
+import { SEED_COURSE, TESTING_COURSE, simplestSeedAnswer } from '../lib/course/seed';
 import { installCuedMic, signUp, stubQuestionAudio } from './helpers';
 
 // course-unlock-testing: the testing course opens every phase, and the real course does not. Clips are stubs and
@@ -8,7 +8,7 @@ import { installCuedMic, signUp, stubQuestionAudio } from './helpers';
 const TESTING = TESTING_COURSE.classCode;
 const modelAnswer = (spanish: string) => {
   const position = SEED_COURSE.questions.find((q) => q.spanish === spanish)!.position;
-  return SEED_COURSE.modelAnswers.find((a) => a.questionPosition === position && a.level === 'rock_solid')!.text;
+  return simplestSeedAnswer(position);
 };
 
 test.beforeEach(async ({ page }) => {

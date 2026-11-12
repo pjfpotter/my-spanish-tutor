@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { SEED_COURSE } from '../lib/course/seed';
+import { SEED_COURSE, simplestSeedAnswer } from '../lib/course/seed';
 import { answerPieces } from '../lib/practice/tasks';
 import { expectFits, signUp, skipWarmups, unlockMemorise } from './helpers';
 
@@ -7,7 +7,7 @@ import { expectFits, signUp, skipWarmups, unlockMemorise } from './helpers';
 // mistakes come back, sounds follow the switches, and the tutor never holds anything up. Nothing here calls a model.
 
 const PHONE = { width: 360, height: 640 };
-const ROCK = (n: number) => SEED_COURSE.modelAnswers.find((a) => a.questionPosition === n && a.level === 'rock_solid')!.text;
+const ROCK = (n: number) => simplestSeedAnswer(n);
 const answerFor = (english: string) => ROCK(SEED_COURSE.questions.find((q) => q.english === english)!.position);
 
 /** A fixed random source, so the warm-ups a test sees are the same each run. */

@@ -69,7 +69,7 @@ describe('the gate, from seeded mastery records (tasks 6.3 and 6.4)', () => {
       for (const s of [s1, s1, s2]) await logAttempt(d, { profileId: pid, itemKind: 'question', itemId: qid, phase: 'understand', outcome: 'correct', assisted: false, sessionId: s });
     };
     const confirmAll = async () => {
-      for (const qid of questionIds) await d.query(`insert into answers (profile_id, question_id, text, level, confirmed_at) values ($1,$2,'x',1, now())`, [pid, qid]);
+      for (const qid of questionIds) await d.query(`insert into answers (profile_id, question_id, text, value, confirmed_at) values ($1,$2,'x',1, now())`, [pid, qid]);
     };
 
     await confirmAll();

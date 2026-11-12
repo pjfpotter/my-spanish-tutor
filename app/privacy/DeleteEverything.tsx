@@ -31,7 +31,7 @@ export function DeleteEverything() {
   }
   return (
     <div className="stack" role="alertdialog" aria-labelledby="delete-q">
-      <p id="delete-q"><strong>Delete everything?</strong> Your progress, answers and coins will be gone for good. Your recovery code will stop working.</p>
+      <p id="delete-q"><strong>Delete everything?</strong> Your progress, answers and euros will be gone for good. Your recovery code will stop working.</p>
       {error && <p className="error" role="alert">{error}</p>}
       <div className="controls">
         <button type="button" className="btn btn-primary" disabled={busy} onClick={confirm}>Yes, delete everything</button>

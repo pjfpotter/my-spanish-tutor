@@ -94,7 +94,7 @@ These rules shape every module. They are enforced by code and tests where possib
 | R5 | **Scores come from rules, not a model.** A word is matched if the recogniser understood it. A recognition failure or noise is never penalised. | `lib/speech/score.ts`, `lib/speech/capture-judgement.ts`. |
 | R6 | **Every paid call goes through the cost router.** | `createCostRouter` throws if a service has no configured cap. |
 | R7 | **No hearts, lives, public ranking, random draws or real-money payments.** | None exist in the schema or routes. Coins are an append-only ledger. |
-| R8 | **No grades are shown.** Students see only the level names *Rock solid*, *Stepping out* and *Showing off*, never as a ladder. | A test fails if a screen mentions grades. |
+| R8 | **No grades or levels are shown.** Students see only the value of an answer, which grows as they add detail. There are no level names or ladders. | A test fails if a screen mentions grades. |
 | R9 | **No copyrighted characters.** Original persona only. | Single character, no persona picker. Image assets logged in `docs/asset-credits.md` (test-enforced). |
 | R10 | **Tone is cheeky but school-safe, encouraging, and names at most one thing to fix per attempt.** | Feedback builders return a single next step (`lib/memorise/feedback.ts`). |
 | R11 | **Play earns nothing.** Poking Tele or exploring the desktop gives no coins or progress. | Coins are awarded only inside attempt and session handlers. |
@@ -397,10 +397,10 @@ flowchart LR
 |---|---|---|
 | `write` | Always | Five answers confirmed |
 | `understand` | Always | Five questions mastered by ear |
-| `memorise` | Five answers confirmed **and** five questions mastered | Five answers memorised |
+| `memorise` | At least one answer confirmed **and** five questions mastered. Only confirmed answers are practised | Five answers memorised |
 | `automate` | Five answers memorised | `testReady` is true |
 
-A locked phase appears in Tele's world as static and cannot be opened. The `phaseStates()` function returns, for each phase, `open` or `locked` with a human reason (for example "First confirm all five answers.").
+A locked phase appears in Tele's world as static and cannot be opened. The `phaseStates()` function returns, for each phase, `open` or `locked` with a human reason (for example "First confirm an answer and master all five questions by ear.").
 
 #### Testing course (`unlock_all`)
 
@@ -408,22 +408,27 @@ For user testing, a course can be flagged `courses.unlock_all` (migration `0011`
 
 - **One read.** `courseUnlockAll(db, courseId)` in `lib/course/unlock.ts` is the only place the flag is read. The four call sites pass it: `lib/server/home.ts`, `app/phases/[phase]/page.tsx`, `app/phases/memorise/page.tsx` and `app/phases/automate/page.tsx`. `lib/phases/gate-callers.test.ts` fails if a new call forgets to pass it.
 - **Set only by the seed.** The default is `false`, and nothing in the app, an address or a header can turn it on. `TESTING_COURSE` in `lib/course/seed.ts` is the real course's content under its own class code with `unlockAll: true`; `npm run seed` writes both courses. The desktop shows a "Testing course" label when it is on.
-- **No written answers needed.** In a testing course, `practiceAnswerText()` (`lib/memorise/practice-text.ts`) gives a question's Rock solid model answer when the student has not confirmed one, for the memorise list, `recordRecall` and the automate recorder. It is read, never stored in `answers`, so `answersConfirmed` stays truthful.
+- **No written answers needed.** In a testing course, `practiceAnswerText()` (`lib/memorise/practice-text.ts`) gives a question's simplest model answer (lowest value) when the student has not confirmed one, for the memorise list, `recordRecall` and the automate recorder. It is read, never stored in `answers`, so `answersConfirmed` stays truthful.
 - **Another testing course.** Add a `Course` with a new class code and `unlockAll: true` to `scripts/seed.mjs`. A gated course needs nothing.
 
 ### 9.2 Write it
 
 The coach helps a student reach a Spanish answer they can memorise (`lib/coach/`).
 
-1. The student picks a target level for the whole test and may switch at any time. Switching is a change of *style*, not an upgrade or demotion.
-2. For each question, the coach offers the course's **model answers** at that level. For Rock solid, the default is the answer with the most cognates, shortest words and most recycled chunks.
-3. The student may **swap chunks** from the sentence builder. Every word must come from the sentence builder, the course's glue-word bank (for example *y*, *pero*, *también*) or the allowed common-word list (`lib/coach/allowed-words.ts`). Glue words never count as features.
-4. After each change the rubric **recomputes locally** and the checklist of lit-up features updates. No model call is made.
-5. The student explicitly **confirms** each answer. Confirmation is blocked while any out-of-bank word remains.
+1. Each question opens on **empty coloured slots**, one per category in the question's `template`, laid out like the sentence builder. No target or level is asked for. The pure model is `lib/coach/builder.ts`: an answer is a row of parts (blocks and joining words), turned into the saved text by `textFromParts` and back by `partsFromText`.
+2. A student may ask for a **starter**: the course's simplest model answer (lowest value, then the most cognates, shortest words and most recycled chunks). It is a button, never the default.
+3. Tapping a block opens **only the chunks that fit it**: same category, from the question's own builder (`topics`), none already used in the answer, recycled first (`fittingChunks`). Joining words (for example *y*, *pero*, *también*) come from the cement tray and carry no value. Every word must come from the sentence builder, the glue bank or the allowed common-word list (`lib/coach/allowed-words.ts`).
+4. After each change the rubric **recomputes locally** and the answer's value updates. No model call is made.
+5. The student explicitly **confirms** each answer. Confirmation is blocked while any out-of-bank word remains. A confirmed answer unlocks memorising for that answer alone, so a student may start memorising it while still writing the others.
+6. **All-five bonus.** Confirming the last of the course's answers pays one bonus, once, equal to the value of the lowest-valued answer (`payBonusIfComplete`, ledger reason `bonus`). Writing an answer pays nothing by itself; each answer's value is paid through memorising and automatising (26.1e).
+7. **Changing a confirmed answer resets its progress.** `saveAnswer` deletes the memorise and automate mastery and attempt history for that question when the words of a confirmed answer change (punctuation-only edits do not count). Coins already earned stay. Taking blocks out (pruning) is a change like any other, so it resets the answer; the chunk-level hotspot events are kept.
+8. **Nudge, load note and analysis (26.1d).** `suggestTouch` offers at most one optional extra, only when the answer is valid and has a justified opinion; a dismissed nudge is not repeated for that answer, and a stalled answer gets the shorter version instead. The load note shows once per question when the value passes `loadNoteValue`. `analyse` (`lib/coach/analysis.ts`) turns the same rubric into up to five steps, richest first, each with an English label and the character range of the words that earn it; the steps plus the remainder always add up to the value. `AnalysisView` plays them about a second apart with a sound and burst each, is cancellable at any time, and shows everything at once under reduced motion or calm mode.
+9. **Paying through learning (26.1e).** `lib/coins/answer-value.ts` pays an answer's value in stages as it is practised, from stored progress: 20% for effort (four equal parts, one per separate memorise session with a whole-answer attempt, however it went), 50% when memorised, 30% when it meets the timed target in enough sessions. Cumulative rounding means a finished answer pays exactly its value. `payAnswerValue` is called after every recall and timed response, pays only the top-up against `answer_payouts.paid` (ledger reason `answer`), never pays a stage twice and never takes anything back, so changing an answer resets its progress but not what was earned. Writing pays nothing by itself; the all-five bonus is paid at confirmation.
+10. **Stalled answers.** `isStalled` (`lib/coach/simplify.ts`) is true after six or more whole-answer attempts with the latest five all under 70% and no mastery. The memorise screen then links to the write screen, which offers `simplerVersion`: easier chunks of the same kind first (cognates and recurring chunks, with `canStandIn` guarding grammar), then the hardest-weighted extras taken out, never the justified opinion. The student chooses whether to use it.
 
-Supporting behaviour: at most one optional suggestion per answer; a whole-test checklist (three tenses, two justified opinions) that gates nothing; a one-time "this takes more memorising" note at Showing off; spare extras on model answers that sit exactly on a threshold, so one swap does not drop a level.
+Supporting behaviour: at most one optional suggestion per answer; a whole-test checklist (three tenses, two justified opinions) that gates nothing; a one-time "a longer answer takes more learning" note once an answer's value passes the course's `loadNoteValue`.
 
-If a course has no model answer for a question and level, the coach says so, offers the levels that exist, and lets the student build from chunks. A student is never blocked.
+If a course has no model answer for a question, the starter option says so and the student builds from the blocks. A student is never blocked.
 
 ### 9.3 Hear it
 
@@ -538,19 +543,17 @@ These boundaries are a first guess to be tuned from user-testing data. Rank comp
 
 ### 10.6 Rubric and calibration (`lib/coach/rubric.ts`, `lib/course/calibration/`)
 
-The rubric assigns an answer to one of three levels by counting features, independently of how the answer was written (D8).
+The rubric values an answer by counting the features it uses, independently of how the answer was written (D8). There are no levels.
 
-| Level | Rule |
+| Part | Value |
 |---|---|
-| **Rock solid** | At least one justified opinion |
-| **Stepping out** | A justified opinion plus at least one extra feature |
-| **Showing off** | A justified opinion plus at least four extras, **including at least two hard features** |
+| **Justified opinion** (frame) | `frame.value` (3), once however often it is repeated |
+| **Each extra feature** | 1 + its weight, once (weight 0 easy, 1 medium, 2 hard) |
+| **Glue words, accents, slips, recognition failures** | Nothing, and they never lower the value |
 
-A **justified opinion** is a starter from the sentence builder, an activity, *porque*, *ya que* or *dado que*, and a reason. Repeating the frame adds nothing, and each feature counts once. The seven extra features are: contrast, frequency or time phrase, *lo hago* or *lo hacemos*, another time frame, closing line, a reason beyond *es* plus an adjective, and a second justifier. Three of them are hard.
+A **justified opinion** is a starter from the sentence builder, an activity, *porque*, *ya que* or *dado que*, and a reason. The seven extra features for the free-time course are: contrast (0), frequency or time phrase (0), *lo hago* or *lo hacemos* (2), another time frame (1), closing line (2), a reason beyond *es* plus an adjective (0), and a second justifier (1). The teacher's examples come out at 3 (simplest), 5 to 9 and 16 (richest), so their order is preserved.
 
-Everything above is **data**, in `lib/course/calibration/`: feature definitions and the phrases that count, which are hard, thresholds, level names, glue words, and the teacher's example answers. A course uses the defaults unless it overrides them. The teacher's examples are run as **regression fixtures**: the rubric must classify each at the level it was written for. To change behaviour after live testing, edit the data, not the code (section 19.1).
-
-Accents, small spelling slips and recognition failures never lower a level. Words outside the sentence builder are flagged and do not count as features.
+Everything above is **data**, in `lib/course/calibration/`: feature definitions, the phrases that count, their weights, the frame value, `loadNoteValue`, glue words, and the teacher's example answers (with the features and value each must produce). The examples run as **regression fixtures**. To change behaviour after live testing, edit the data, not the code (section 19.1). The `answers.value` column stores the value at save time.
 
 ### 10.7 Attempt events and cause tags (`lib/events/attempts.ts`)
 
@@ -989,7 +992,7 @@ Watch `cost_log` for `cap_reached` and `rate_limited` outcomes. A burst of `cap_
 
 ### 19.1 Tune the rubric
 
-Edit the calibration data in `lib/course/calibration/` (for example change the Stepping out threshold, add a phrase that counts as a feature, or add a teacher example). No code change is needed. Run `npm test`: the teacher examples re-run as regression fixtures and any answer that now classifies at the wrong level fails the build. Per-course overrides are stored in `courses.calibration`.
+Edit the calibration data in `lib/course/calibration/` (for example change a feature's weight, add a phrase that counts as a feature, or add a teacher example). No code change is needed. Run `npm test`: the teacher examples re-run as regression fixtures and any answer whose features or value changed fails the build. Per-course overrides are stored in `courses.calibration`.
 
 ### 19.2 Add a course
 
@@ -1082,7 +1085,8 @@ Photo import of a sentence builder, meme and reggaeton remix, a virtual-pet wrap
 | **Justified opinion** | A starter, an activity, *porque*/*ya que*/*dado que* and a reason |
 | **KS3** | UK Key Stage 3, ages 11 to 14 |
 | **Mastery** | Enough qualifying successes across enough separate sessions |
-| **Rock solid / Stepping out / Showing off** | The three answer levels, named for what an answer does, never shown as a ladder or grade |
+| **Euros (€)** | What students see for the in-app currency, with the euro sign. It is pretend: it is never bought or exchanged and no wording suggests real money. Code and the database keep the names `coins`, `coin_ledger` and `awardCoins` |
+| **Value** | What an answer is worth: the frame (3, once) plus 1 + weight for each feature it uses, once. Replaces the old Rock solid / Stepping out / Showing off levels, which no longer exist |
 | **Sentence builder** | A classroom grid of Spanish chunks students combine into answers |
 | **Slot** | The content hash that names a clip's files |
 | **Tele** | The tutor: an original mouthless television character with one eye |

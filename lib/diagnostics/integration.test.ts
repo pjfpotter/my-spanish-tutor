@@ -17,7 +17,7 @@ const ANSWER = 'Me gustaría ir al cine. Prefiero el sábado.';
 async function newStudent(n: number, answerFor: string) {
   const p = await createProfile(db, { courseId, nickname: nicknameOptions(n)[0], interests: [] });
   if (!p.ok) throw new Error('profile');
-  await db.query(`insert into answers (profile_id, question_id, text, level, confirmed_at) values ($1,$2,$3,1, now())`, [p.profile.id, q[0], answerFor]);
+  await db.query(`insert into answers (profile_id, question_id, text, value, confirmed_at) values ($1,$2,$3,1, now())`, [p.profile.id, q[0], answerFor]);
   return p.profile.id;
 }
 const tagsOf = async (profileId: string) =>

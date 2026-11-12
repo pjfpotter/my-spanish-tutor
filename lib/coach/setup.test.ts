@@ -18,20 +18,19 @@ const run = (st: CostStore, callModel: (r: SetupRequest) => Promise<{ value: Set
 const reply = (modelAnswers: ModelAnswer[], flags: string[] = []) => ({ value: { modelAnswers, flags }, units: 900, costGbp: 0.01 });
 
 describe('upload-time course set-up (task 7.8)', () => {
-  it('keeps answers the rubric agrees with, logs the cost, and marks the levels the model did not write as missing', async () => {
+  it('keeps answers the rubric accepts, logs the cost and reports the model\'s flags', async () => {
     const { s, log } = store();
     const call = vi.fn(async () => reply(SEED_COURSE.modelAnswers, ['"siempre" does not fit "voy a llevar"']));
     const r = await run(s, call);
     expect(r.modelAnswers).toHaveLength(SEED_COURSE.modelAnswers.length);
     expect(r.flags).toEqual(['"siempre" does not fit "voy a llevar"']);
-    expect(r.missing.every((m) => m.level === 'showing_off')).toBe(true);
-    expect(r.missing.map((m) => m.questionPosition)).toEqual([2, 3, 4, 5]); // only Q1 has a Showing off answer
+    expect(r.missing).toEqual([]);
     expect(log[0]).toMatchObject({ service: SETUP_SERVICE, tier: 'small_model', outcome: 'ok', courseId: COURSE_ID, profileId: null });
   });
 
-  it('asks again once for a mislevelled answer, with the reason, and keeps the fix', async () => {
+  it('asks again once for a question with no acceptable answer, with the reason, and keeps the fix', async () => {
     const { s } = store();
-    const bad: ModelAnswer = { questionPosition: 5, level: 'showing_off', text: 'Me gusta montar en bici porque es divertido.' };
+    const bad: ModelAnswer = { questionPosition: 5, text: 'Me gusta montar en bici.' };
     const calls: SetupRequest[] = [];
     const call = vi.fn(async (req: SetupRequest) => {
       calls.push(req);
@@ -39,21 +38,30 @@ describe('upload-time course set-up (task 7.8)', () => {
     });
     const r = await run(s, call);
     expect(call).toHaveBeenCalledTimes(2);
-    expect(calls[1].retry?.some((x) => x.questionPosition === 5 && x.level === 'showing_off' && /not showing_off/.test(x.problem))).toBe(true);
-    expect(r.modelAnswers.filter((a) => a.questionPosition === 5).map((a) => a.level).sort()).toEqual(['rock_solid', 'stepping_out']);
+    expect(calls[1].retry).toEqual([{ questionPosition: 5, problem: expect.stringMatching(/no opinion with a reason/) }]);
+    expect(r.modelAnswers.filter((a) => a.questionPosition === 5).length).toBeGreaterThan(0);
     expect(r.modelAnswers.some((a) => a === bad)).toBe(false);
+    expect(r.missing).toEqual([]);
   });
 
-  it('marks an answer missing rather than offering it when it is still wrong after one retry', async () => {
-    const bad: ModelAnswer = { questionPosition: 5, level: 'showing_off', text: 'Me gusta montar en bici porque es divertido.' };
-    const r = await run(store().s, async () => reply([...SEED_COURSE.modelAnswers, bad]));
+  it('marks a question missing rather than offering a bad answer when it is still wrong after one retry', async () => {
+    const bad: ModelAnswer = { questionPosition: 5, text: 'Me gusta montar en bici.' };
+    const r = await run(store().s, async () => reply([...SEED_COURSE.modelAnswers.filter((a) => a.questionPosition !== 5), bad]));
     expect(r.modelAnswers).not.toContainEqual(bad);
-    expect(r.missing.find((m) => m.questionPosition === 5 && m.level === 'showing_off')?.problem).toMatch(/not showing_off/);
+    expect(r.missing.find((m) => m.questionPosition === 5)?.problem).toMatch(/no opinion with a reason/);
   });
 
-  it('rejects words outside the bank and answers with no spare extra', () => {
-    expect(problemWith(course, { questionPosition: 1, level: 'rock_solid', text: 'Me gustan las películas de acción porque son fantásticas.' })).toMatch(/outside the sentence builder/);
-    expect(problemWith(course, { questionPosition: 4, level: 'stepping_out', text: 'Voy a llevar una camiseta blanca porque quiero estar guay. A veces llevo unas zapatillas.' })).toMatch(/spare extra/);
+  it('rejects words outside the bank and answers that are worth nothing', () => {
+    expect(problemWith(course, { questionPosition: 1, text: 'Me gustan las películas de acción porque son fantásticas.' })).toMatch(/outside the sentence builder/);
+    expect(problemWith(course, { questionPosition: 4, text: 'Voy a llevar una camiseta blanca.' })).toMatch(/no opinion with a reason/);
+    expect(problemWith(course, { questionPosition: 4, text: 'Voy a llevar una camiseta blanca porque quiero estar guay.' })).toBeNull();
+  });
+
+  it('asks for a few answers per question and never mentions levels', async () => {
+    const calls: SetupRequest[] = [];
+    await run(store().s, async (req) => { calls.push(req); return reply(SEED_COURSE.modelAnswers); });
+    expect(calls[0].perQuestion).toBeGreaterThanOrEqual(2);
+    expect(JSON.stringify(calls[0])).not.toMatch(/rock_solid|stepping_out|showing_off|level/i);
   });
 
   it('uses no model when the cap is reached, and says so', async () => {

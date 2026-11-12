@@ -326,11 +326,11 @@ export function Memorise({ items: initial, chunks = [], causes = {}, focusIds = 
         body: JSON.stringify({ itemId: it.id, sessionId: sessionId.current, accuracy: score.accuracy, level: shownLevel, missedWords: score.words.flatMap((w, n) => (w.status === 'matched' ? [] : [n])) }),
       });
       if (!res.ok) throw new Error('save failed');
-      const out = (await res.json()) as { mastered: boolean; mastery: { qualifyingSuccesses: number; distinctSessions: number }; coinsAwarded: number; level: number; best: number; previousBest: number | null };
+      const out = (await res.json()) as { mastered: boolean; mastery: { qualifyingSuccesses: number; distinctSessions: number }; coinsAwarded: number; answerValue?: number; level: number; best: number; previousBest: number | null };
       const newBest = out.previousBest !== null && score.accuracy > out.previousBest;
       const doneForToday = out.mastered || (out.mastery.qualifyingSuccesses >= 3 && out.mastery.distinctSessions < 2);
-      setCoins((c) => c + out.coinsAwarded);
-      setItems((all) => all.map((x) => (x.id === it.id ? { ...x, level: out.level, best: out.best, mastered: out.mastered, successes: out.mastery.qualifyingSuccesses, laterSession: !out.mastered && out.mastery.qualifyingSuccesses >= 3 } : x)));
+      setCoins((c) => c + out.coinsAwarded + (out.answerValue ?? 0));
+      setItems((all) => all.map((x) => (x.id === it.id ? { ...x, level: out.level, best: out.best, mastered: out.mastered, successes: out.mastery.qualifyingSuccesses, laterSession: !out.mastered && out.mastery.qualifyingSuccesses >= 3, stalled: x.stalled && !out.mastered } : x)));
       setAttempt({ score, script: text, drill: false, best: out.best, newBest, mastered: out.mastered });
       setQueue((q) => afterAttempt(q, it.id, good ? 'correct' : 'wrong', doneForToday));
       if (!good) setMissed((m) => new Set(m).add(it.id));
@@ -466,7 +466,7 @@ export function Memorise({ items: initial, chunks = [], causes = {}, focusIds = 
   const meta = (
     <>
       <span data-testid="memorised-count">{memorised} of {items.length} answers memorised</span>
-      <span data-testid="coins">+{coins} coins today</span>
+      <span data-testid="coins">+€{coins} today</span>
     </>
   );
 
@@ -566,6 +566,11 @@ export function Memorise({ items: initial, chunks = [], causes = {}, focusIds = 
             </>
           )}
           <p data-testid="best">{item.best === null ? 'No personal best yet. Your first go sets it.' : `Your best: ${item.best}%`}</p>
+          {item.stalled && !attempt && (
+            <p data-testid="stalled" className="muted">
+              This one is hard to hold. <Link href={`/phases/write?question=${item.position}`}>Try a shorter version</Link>
+            </p>
+          )}
 
           {capture.state === 'idle' && !attempt && !unclear && (
             <p data-testid="explain" className="muted">

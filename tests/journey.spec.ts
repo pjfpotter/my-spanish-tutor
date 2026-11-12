@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { SEED_COURSE } from '../lib/course/seed';
+import { SEED_COURSE, simplestSeedAnswer } from '../lib/course/seed';
 import { installCuedMic, SEED_CLASS_CODE, stubQuestionAudio, unlockAutomate, unlockMemorise } from './helpers';
 
 // Task 16.1: one scripted pass of all four phases on the seeded course, from joining to test-ready, on the phone and
@@ -23,7 +23,7 @@ test('join, write, understand, memorise and automate on the seeded course, then 
   await stubQuestionAudio(page, (spanish) => asked.push(spanish));
   await page.route('**/api/transcribe', (r) => {
     const q = SEED_COURSE.questions.find((x) => x.spanish === asked.at(-1))!;
-    const text = SEED_COURSE.modelAnswers.find((a) => a.questionPosition === q.position && a.level === 'rock_solid')!.text;
+    const text = simplestSeedAnswer(q.position);
     return r.fulfill({ json: { status: 'ok', text, confidence: 0.9 } });
   });
 

@@ -1,6 +1,9 @@
 import type { Db } from '../db/types';
 import { courseUnlockAll } from '../course/unlock';
-import type { Chunk, FeatureTag, ModelAnswer } from '../course/schema';
+import type { Calibration, Chunk, FeatureTag, ModelAnswer } from '../course/schema';
+import { simplestModelAnswer } from '../coach/model-answers';
+import { isStalled } from '../coach/simplify';
+import { payAnswerValue } from '../coins/answer-value';
 import { practiceAnswerText } from './practice-text';
 import { causeTagsForRecallFailure, recordChunkEvents } from '../diagnostics/recall-store';
 import { logAttempt, type AttemptResult } from '../events/attempts';
@@ -24,6 +27,8 @@ export interface MemoriseItem {
   mastered: boolean;
   /** Reached the bar enough times, but all in one session: a later day confirms it. */
   laterSession: boolean;
+  /** Repeated failures to recall it, so the app suggests a simpler version (answer-writing-coach). */
+  stalled: boolean;
 }
 
 /** Accuracies of the whole-answer attempts at one item, oldest first. */
@@ -51,15 +56,16 @@ export async function loadMemoriseItems(db: Db, profileId: string, courseId: str
   );
   let rows = own.rows;
   if (await courseUnlockAll(db, courseId)) {
-    const course = await db.query<{ model_answers: ModelAnswer[] }>('select model_answers from courses where id = $1', [courseId]);
+    const course = await db.query<{ model_answers: ModelAnswer[]; calibration: Calibration }>('select model_answers, calibration from courses where id = $1', [courseId]);
     const models = course.rows[0]?.model_answers ?? [];
+    const cal = course.rows[0]?.calibration;
     const have = new Set(rows.map((r) => r.id));
     const all = await db.query<{ id: string; position: number; spanish: string; english_subtitle: string }>(
       'select id, position, spanish, english_subtitle from questions where course_id = $1 order by position',
       [courseId],
     );
     const stand = all.rows.flatMap((q) => {
-      const model = models.find((m) => m.questionPosition === q.position && m.level === 'rock_solid');
+      const model = cal ? simplestModelAnswer(models, q.position, cal) : null;
       return have.has(q.id) || !model ? [] : [{ ...q, text: model.text }];
     });
     rows = [...rows, ...stand].sort((a, b) => a.position - b.position);
@@ -76,6 +82,7 @@ export async function loadMemoriseItems(db: Db, profileId: string, courseId: str
       successes: m.qualifyingSuccesses,
       mastered: isMastered(m, DEFAULT_MASTERY),
       laterSession: needsLaterSession(m, DEFAULT_MASTERY),
+      stalled: isStalled(accuracies, isMastered(m, DEFAULT_MASTERY)),
     });
   }
   return items;
@@ -96,7 +103,7 @@ export interface RecallInput {
 }
 
 export type RecallResult =
-  | ({ ok: true; level: number; best: number; previousBest: number | null } & AttemptResult)
+  | ({ ok: true; level: number; best: number; previousBest: number | null; answerValue: number } & AttemptResult)
   | { ok: false; error: string };
 
 /**
@@ -127,7 +134,9 @@ export async function recordRecall(db: Db, i: RecallInput, cfg: MemoriseConfig =
       accuracy: Math.round(i.accuracy), responseTimeMs: i.responseTimeMs ?? null, assisted, causeTags,
     });
     const fade: FadeState = foldFade([...previous, Math.round(i.accuracy)], cfg);
-    return { ok: true, ...result, level: fade.level, best: Math.max(Math.round(i.accuracy), ...previous), previousBest: previous.length ? Math.max(...previous) : null };
+    // The answer's value is paid through learning: effort, then memorised (answer-value.ts).
+    const answerValue = await payAnswerValue(db, i.profileId, i.itemId);
+    return { ok: true, ...result, answerValue, level: fade.level, best: Math.max(Math.round(i.accuracy), ...previous), previousBest: previous.length ? Math.max(...previous) : null };
   } catch (e) {
     return { ok: false, error: (e as Error).message };
   }

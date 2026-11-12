@@ -35,7 +35,7 @@ test('write and understand are open; memorise and automate are locked with a rea
   const memorise = page.locator('[data-phase="memorise"]');
   await expect(memorise).toHaveAttribute('data-state', 'locked');
   await expect(memorise).toHaveAttribute('aria-disabled', 'true');
-  await expect(memorise).toContainText('First confirm all five answers and master all five questions by ear.');
+  await expect(memorise).toContainText('First confirm an answer and master all five questions by ear.');
   await expect(page.locator('[data-phase="automate"]')).toContainText('First memorise all five answers.');
 });
 

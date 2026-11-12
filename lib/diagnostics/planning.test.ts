@@ -74,7 +74,7 @@ describe('diagnostics drive practice (10.5)', () => {
 
   it('memorise practises first the answer with a hotspot chunk', async () => {
     const id = await student();
-    await db.query(`insert into answers (profile_id, question_id, text, level, confirmed_at) values ($1,$2,'Voy al cine.',1, now()), ($1,$3,'Vivo en Leeds.',1, now())`, [id, q[0], q[1]]);
+    await db.query(`insert into answers (profile_id, question_id, text, value, confirmed_at) values ($1,$2,'Voy al cine.',1, now()), ($1,$3,'Vivo en Leeds.',1, now())`, [id, q[0], q[1]]);
     const items = [{ id: q[0], answer: 'Voy al cine.' }, { id: q[1], answer: 'Vivo en Leeds.' }];
     expect(await focusedAnswerIds(db, id, courseId, items)).toEqual([]);
     for (let i = 0; i < 3; i++) await recordRecall(db, { profileId: id, courseId, itemId: q[0], sessionId: randomUUID(), accuracy: 40, level: 2, missedWords: [1, 2] });

@@ -150,3 +150,20 @@ Reuses the tokens and materials above. Decisions made while building the one-scr
 - **No pictures anywhere in support.** Sentence builders are deliberately text only, and no picture can be sourced when a course is created.
 - **Support follows results and cause tags.** The prompt shows listen then repeat, a gapped script, chunk by chunk, first words, or English only, never weaker than a live cause tag allows. A missed chunk at chunk-by-chunk or less is built back up: the chunk alone, then with its neighbour, then the whole answer.
 - **Mix per answer.** Each answer opens with three short warm-ups chosen by the session mixer, then the spoken task. "I know this one" skips straight to saying it.
+
+## Write screen (26.1b)
+
+Built inside `PracticeShell`, so it keeps the one-screen rule down to 360 by 640 and reuses the chunk-kind colours, symbols and words from the practice screens.
+
+- **Empty slots first.** Each question opens on one empty block per category in the question's `template`, coloured by the same kind as the automatise phase. A dashed outline with a coloured underline, the kind symbol and the category name marks an empty block, so colour is never the only cue. Nothing is pre-filled and no level or target is asked for.
+- **Tap a block, see only what fits.** The tray opens in place under the row and lists chunks of that block's category from the question's own builder (`topics`), recycled first, none already used in the answer. Each chunk shows its English gloss in small type. Long trays scroll inside their own box; the page never scrolls.
+- **Cement.** Joining words (y, pero, también) come from a second tray reached from a block ("Add a joining word after"). They show as white pills and carry no value.
+- **Starter is a button, never the default.** "Give me a starter answer" appears only while the answer is empty. If the course has none, the screen says so and the blocks still work.
+- **Value, not level.** The meta line shows "Worth N", which grows as detail is added. The whole-test checklist sits in the footer line.
+- **One nudge, once.** After an answer works, one optional extra is offered at a time ("Add a contrast if you like. For example: aunque") with a "No thanks" that is not repeated for that answer. It is the cheapest unused feature, recycled chunks first. A stalled answer is offered a shorter version instead of a nudge.
+- **The load note comes once per question.** "A longer answer takes more learning. Taking blocks out is fine at any time." appears when the value passes the course's `loadNoteValue`, with a "Got it", and never blocks confirming.
+- **Analysis on request.** "Why this value?" opens a short praise session in the same card: up to five highlights, richest first, about a second each, with the feature named in English ("a time phrase!", "+1"), a soft reward sound, a small burst and a running total. It can be cancelled at any moment (the button or Escape) and always ends on the true total. Under reduced motion or calm mode it shows everything at once with no timer, burst or sound. It can be played again.
+
+## Euros (26.1e)
+
+The in-app currency is shown as euros with the euro sign ("€12", "+€3 today", "Spend your euros"). It is a pretend currency: the shop says so, nothing can be bought with money and no wording suggests real money. Code and the database keep the older names (`coins`, `coin_ledger`). An answer's value is paid through learning, so the numbers on the practice screens include it as the answer is practised, memorised and automated.

@@ -1,28 +1,5 @@
 {
   "version": 1,
-  "levels": {
-    "rock_solid": {
-      "name": "Rock solid",
-      "blurb": "A complete answer you can say with confidence."
-    },
-    "stepping_out": {
-      "name": "Stepping out",
-      "blurb": "Rock solid, plus a few extra touches."
-    },
-    "showing_off": {
-      "name": "Showing off",
-      "blurb": "The full performance. It takes more memorising."
-    }
-  },
-  "thresholds": {
-    "steppingOut": {
-      "extras": 1
-    },
-    "showingOff": {
-      "extras": 4,
-      "hard": 2
-    }
-  },
   "frame": {
     "starters": [
       "me gusta",
@@ -39,13 +16,15 @@
       "porque",
       "ya que",
       "dado que"
-    ]
+    ],
+    "value": 3
   },
+  "loadNoteValue": 12,
   "features": [
     {
       "id": "E1",
       "label": "a contrast",
-      "hard": false,
+      "weight": 0,
       "phrases": [
         "sin embargo",
         "aunque"
@@ -54,7 +33,7 @@
     {
       "id": "E2",
       "label": "a time phrase",
-      "hard": false,
+      "weight": 0,
       "phrases": [
         "todos los dias",
         "los fines de semana",
@@ -68,7 +47,7 @@
     {
       "id": "E3",
       "label": "lo hago / lo hacemos",
-      "hard": true,
+      "weight": 2,
       "phrases": [
         "lo hago",
         "lo hacemos"
@@ -77,7 +56,7 @@
     {
       "id": "E4",
       "label": "another time frame",
-      "hard": true,
+      "weight": 1,
       "phrases": [
         "me gustaria",
         "voy a"
@@ -86,7 +65,7 @@
     {
       "id": "E5",
       "label": "a closing line",
-      "hard": true,
+      "weight": 2,
       "phrases": [
         "tengo mucho tiempo libre",
         "que guay",
@@ -96,7 +75,7 @@
     {
       "id": "E6",
       "label": "a reason with more to it",
-      "hard": false,
+      "weight": 0,
       "phrases": [
         "es bueno para la salud",
         "me hace reir",
@@ -106,7 +85,7 @@
     {
       "id": "E7",
       "label": "a second way to say because",
-      "hard": false,
+      "weight": 1,
       "phrases": [
         "ya que",
         "dado que"
@@ -167,64 +146,137 @@
   },
   "examples": [
     {
-      "level": "rock_solid",
+      "rank": 1,
+      "text": "Me gusta jugar al fútbol porque es divertido. Me encanta jugar a los videojuegos porque es emocionante. Me gusta ver la tele porque es relajante.",
       "source": "teacher",
-      "text": "Me gusta jugar al fútbol porque es divertido. Me encanta jugar a los videojuegos porque es emocionante. Me gusta ver la tele porque es relajante."
+      "features": [],
+      "value": 3
     },
     {
-      "level": "stepping_out",
+      "rank": 2,
+      "text": "Me gusta jugar al baloncesto porque es bueno para la salud pero no me gusta leer libros porque es aburrido. Suelo chatear con mis amigos todos los días porque me hace reir. Sin embargo, no me gusta ir al cine.  Los fines de semana prefiero escuchar música, lo hago con mi hermana aunque a veces es aburrido.",
       "source": "teacher",
-      "text": "Me gusta jugar al baloncesto porque es bueno para la salud pero no me gusta leer libros porque es aburrido. Suelo chatear con mis amigos todos los días porque me hace reir. Sin embargo, no me gusta ir al cine.  Los fines de semana prefiero escuchar música, lo hago con mi hermana aunque a veces es aburrido."
+      "features": [
+        "E1",
+        "E2",
+        "E3",
+        "E6"
+      ],
+      "value": 9
     },
     {
-      "level": "showing_off",
+      "rank": 3,
+      "text": "Tengo mucho tiempo libre. ¡Qué guay! Suelo montar en bici por la tarde y a veces me gusta leer libros ya que me relaja. Me gustaría tocar la guitarra. Sábado, voy a bailar con mis amigas.  No tengo mucho tiempo libre por los deberes. ¡Qué rollo! No me gusta hacer deporte aunque es bueno para la salud. Me gustaría salir con mis amigos porque me hace reir. Lo hacemos los sábados. Suelo jugar al fútbol aunque me gustaría jugar al baloncesto. Odio jugar a los videojuegos porque es aburrido. Me gusta ver la tele, lo hago con mi familia de vez en cuando.",
       "source": "teacher",
-      "text": "Tengo mucho tiempo libre. ¡Qué guay! Suelo montar en bici por la tarde y a veces me gusta leer libros ya que me relaja. Me gustaría tocar la guitarra. Sábado, voy a bailar con mis amigas.  No tengo mucho tiempo libre por los deberes. ¡Qué rollo! No me gusta hacer deporte aunque es bueno para la salud. Me gustaría salir con mis amigos porque me hace reir. Lo hacemos los sábados. Suelo jugar al fútbol aunque me gustaría jugar al baloncesto. Odio jugar a los videojuegos porque es aburrido. Me gusta ver la tele, lo hago con mi familia de vez en cuando."
+      "features": [
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5",
+        "E6",
+        "E7"
+      ],
+      "value": 16
     },
     {
-      "level": "rock_solid",
+      "rank": 1,
+      "text": "Me gusta jugar al fútbol porque es divertido.",
       "source": "generated",
-      "text": "Me gusta jugar al fútbol porque es divertido."
+      "features": [],
+      "value": 3
     },
     {
-      "level": "rock_solid",
+      "rank": 1,
+      "text": "Me encanta escuchar música porque es relajante.",
       "source": "generated",
-      "text": "Me encanta escuchar música porque es relajante."
+      "features": [],
+      "value": 3
     },
     {
-      "level": "rock_solid",
+      "rank": 1,
+      "text": "No me gusta leer libros porque es aburrido.",
       "source": "generated",
-      "text": "No me gusta leer libros porque es aburrido."
+      "features": [],
+      "value": 3
     },
     {
-      "level": "stepping_out",
+      "rank": 2,
+      "text": "Me gusta montar en bici porque es bueno para la salud. Sin embargo, no me gusta leer libros porque es aburrido.",
       "source": "generated",
-      "text": "Me gusta montar en bici porque es bueno para la salud. Sin embargo, no me gusta leer libros porque es aburrido."
+      "features": [
+        "E1",
+        "E6"
+      ],
+      "value": 5
     },
     {
-      "level": "stepping_out",
+      "rank": 2,
+      "text": "Suelo chatear con mis amigos todos los días porque es divertido. Me gustaría jugar al baloncesto ya que es emocionante.",
       "source": "generated",
-      "text": "Suelo chatear con mis amigos todos los días porque es divertido. Me gustaría jugar al baloncesto ya que es emocionante."
+      "features": [
+        "E2",
+        "E4",
+        "E7"
+      ],
+      "value": 8
     },
     {
-      "level": "stepping_out",
+      "rank": 2,
+      "text": "Me chifla bailar porque es divertido, lo hago con mis primos los sábados. Odio hacer deporte aunque es bueno para la salud.",
       "source": "generated",
-      "text": "Me chifla bailar porque es divertido, lo hago con mis primos los sábados. Odio hacer deporte aunque es bueno para la salud."
+      "features": [
+        "E1",
+        "E2",
+        "E3",
+        "E6"
+      ],
+      "value": 9
     },
     {
-      "level": "showing_off",
+      "rank": 3,
+      "text": "Tengo mucho tiempo libre. ¡Qué guay! Suelo jugar al fútbol los sábados porque es divertido, lo hago con mis amigos una vez a la semana. Me encanta ir al cine de vez en cuando ya que es emocionante. Sin embargo, no me gusta leer libros aunque es bueno para la salud. Me gustaría tocar la guitarra porque me relaja. Voy a cocinar por la tarde, lo hacemos con mi familia. Odio ver la tele dado que es aburrido.",
       "source": "generated",
-      "text": "Tengo mucho tiempo libre. ¡Qué guay! Suelo jugar al fútbol los sábados porque es divertido, lo hago con mis amigos una vez a la semana. Me encanta ir al cine de vez en cuando ya que es emocionante. Sin embargo, no me gusta leer libros aunque es bueno para la salud. Me gustaría tocar la guitarra porque me relaja. Voy a cocinar por la tarde, lo hacemos con mi familia. Odio ver la tele dado que es aburrido."
+      "features": [
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5",
+        "E6",
+        "E7"
+      ],
+      "value": 16
     },
     {
-      "level": "showing_off",
+      "rank": 3,
+      "text": "No tengo mucho tiempo libre por los deberes. ¡Qué rollo! Sin embargo, suelo chatear con mis amigos todos los días porque me hace reír. Los fines de semana prefiero montar en bici, lo hacemos con mis primos aunque a veces es aburrido. Me encanta jugar a los videojuegos aunque es caro. Me gustaría jugar al baloncesto porque es bueno para la salud. Voy a ir de compras los sábados, lo hago con mi mejor amigo/a ya que es divertido.",
       "source": "generated",
-      "text": "No tengo mucho tiempo libre por los deberes. ¡Qué rollo! Sin embargo, suelo chatear con mis amigos todos los días porque me hace reír. Los fines de semana prefiero montar en bici, lo hacemos con mis primos aunque a veces es aburrido. Me encanta jugar a los videojuegos aunque es caro. Me gustaría jugar al baloncesto porque es bueno para la salud. Voy a ir de compras los sábados, lo hago con mi mejor amigo/a ya que es divertido."
+      "features": [
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5",
+        "E6",
+        "E7"
+      ],
+      "value": 16
     },
     {
-      "level": "showing_off",
+      "rank": 3,
+      "text": "Tengo mucho tiempo libre. ¡Qué guay! Me chifla bailar porque es divertido, lo hago una vez a la semana con mis amigos. Suelo escuchar música todos los días ya que me relaja. Prefiero hacer deporte los fines de semana porque es bueno para la salud. Sin embargo, no me gusta jugar al baloncesto dado que es aburrido. Me gustaría tocar la guitarra aunque es caro. Voy a salir con mis amigos por la tarde, lo hacemos de vez en cuando.",
       "source": "generated",
-      "text": "Tengo mucho tiempo libre. ¡Qué guay! Me chifla bailar porque es divertido, lo hago una vez a la semana con mis amigos. Suelo escuchar música todos los días ya que me relaja. Prefiero hacer deporte los fines de semana porque es bueno para la salud. Sin embargo, no me gusta jugar al baloncesto dado que es aburrido. Me gustaría tocar la guitarra aunque es caro. Voy a salir con mis amigos por la tarde, lo hacemos de vez en cuando."
+      "features": [
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5",
+        "E6",
+        "E7"
+      ],
+      "value": 16
     }
   ]
 }

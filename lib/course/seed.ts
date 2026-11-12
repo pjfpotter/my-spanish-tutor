@@ -1,5 +1,6 @@
+import { assessAnswer } from '../coach/rubric';
 import goingOut from './calibration/going-out.json' with { type: 'json' };
-import type { Calibration, Chunk, Course, FeatureTag, ModelAnswer, Level } from './schema';
+import type { Calibration, Chunk, Course, FeatureTag, ModelAnswer } from './schema';
 
 /**
  * The one hand-authored course for v1 (task 3.2): Year 8 "Going out", with one question recycled
@@ -106,36 +107,36 @@ const chunks: Chunk[] = [
   c('Cuando era pequeño, veía dibujos animados', 'When I was little, I used to watch cartoons', 'fancy', ['verb_phrase', 'other_tense', 'adverb_phrase']),
 ];
 
-const m = (questionPosition: number, level: Level, text: string): ModelAnswer => ({ questionPosition, level, text });
+const m = (questionPosition: number, text: string): ModelAnswer => ({ questionPosition, text });
 
 /**
  * Model answers for the writing stage, written from the chunks above with only glue and common words,
  * so the word validator and rubric can check them. DRAFT for the developer to read and approve. Every
- * question has a Rock solid answer; Showing off exists only where the question gives room for it, and
- * the rest are marked missing rather than forced. Once the upload-time set-up call exists (task 7.8),
- * it writes these. Tests check each answer lands on the level it is filed under and survives one swap.
+ * question has a simple answer and some have richer ones; the simplest is where a student who asks for a
+ * starter begins. Once the upload-time set-up call exists (task 7.8), it writes these. Tests check each
+ * answer is valid, is worth something and that every question has a simple one.
  */
 const modelAnswers: ModelAnswer[] = [
   // 1. What type of films do you like, and why?
-  m(1, 'rock_solid', 'Me gustan las películas de acción porque son divertidas.'),
-  m(1, 'stepping_out', 'Me encantan las películas de miedo porque son muy divertidas, aunque me dan miedo.'),
-  m(1, 'showing_off', 'Primero, me gustan las películas de acción porque son muy divertidas y emocionantes. Después, a mis padres les encantan las películas de amor, aunque no me gustan las películas de miedo. He visto muchas películas este año. Me gustaría ir al cine.'),
+  m(1, 'Me gustan las películas de acción porque son divertidas.'),
+  m(1, 'Me encantan las películas de miedo porque son muy divertidas, aunque me dan miedo.'),
+  m(1, 'Primero, me gustan las películas de acción porque son muy divertidas y emocionantes. Después, a mis padres les encantan las películas de amor, aunque no me gustan las películas de miedo. He visto muchas películas este año. Me gustaría ir al cine.'),
 
   // 2. Would you like to go to the cinema this Saturday?
-  m(2, 'rock_solid', 'Lo siento, no puedo porque tengo que hacer los deberes.'),
-  m(2, 'stepping_out', 'Me gustaría ir al cine el sábado porque es divertido.'),
+  m(2, 'Lo siento, no puedo porque tengo que hacer los deberes.'),
+  m(2, 'Me gustaría ir al cine el sábado porque es divertido.'),
 
   // 3. What clothes do you normally wear when you go out with your friends?
-  m(3, 'rock_solid', 'Normalmente llevo unos vaqueros porque quiero estar cómodo.'),
-  m(3, 'stepping_out', 'Normalmente llevo unos vaqueros negros y una camiseta blanca porque quiero estar cómodo. A veces llevo unas zapatillas de moda.'),
+  m(3, 'Normalmente llevo unos vaqueros porque quiero estar cómodo.'),
+  m(3, 'Normalmente llevo unos vaqueros negros y una camiseta blanca porque quiero estar cómodo. A veces llevo unas zapatillas de moda.'),
 
   // 4. What are you going to wear to the party?
-  m(4, 'rock_solid', 'Voy a llevar una camiseta blanca para la fiesta porque quiero estar guay.'),
-  m(4, 'stepping_out', 'Voy a llevar una camiseta blanca y unos vaqueros negros para la fiesta porque quiero estar guay. Después, me gustaría llevar una chaqueta de moda.'),
+  m(4, 'Voy a llevar una camiseta blanca para la fiesta porque quiero estar guay.'),
+  m(4, 'Voy a llevar una camiseta blanca y unos vaqueros negros para la fiesta porque quiero estar guay. Después, me gustaría llevar una chaqueta de moda.'),
 
   // 5. What do you do in your free time?
-  m(5, 'rock_solid', 'Me gusta montar en bici porque es divertido.'),
-  m(5, 'stepping_out', 'Los fines de semana juego a los videojuegos y escucho música. Me gusta montar en bici porque es divertido, aunque a veces me gusta salir con mis amigos.'),
+  m(5, 'Me gusta montar en bici porque es divertido.'),
+  m(5, 'Los fines de semana juego a los videojuegos y escucho música. Me gusta montar en bici porque es divertido, aunque a veces me gusta salir con mis amigos.'),
 ];
 
 export const SEED_COURSE: Course = {
@@ -146,27 +147,37 @@ export const SEED_COURSE: Course = {
   questions: [
     {
       position: 1, spanish: '¿Qué tipo de películas te gustan y por qué?', english: 'What type of films do you like, and why?',
-      recycled: false, topics: ['film opinion', 'film type', 'reason'],
+      recycled: false,
+      topics: ['film opinion', 'film type', 'reason', 'reason adjective', 'connective', 'sequencer', 'fancy', 'invitation', 'place'],
+      template: ['film opinion', 'film type', 'reason', 'reason adjective'],
       keyWord: { spanish: 'películas', english: 'films' },
     },
     {
       position: 2, spanish: '¿Te gustaría ir al cine este sábado?', english: 'Would you like to go to the cinema this Saturday?',
-      recycled: false, topics: ['invitation', 'place', 'when', 'reply', 'excuse'],
+      recycled: false,
+      topics: ['invitation', 'place', 'when', 'reply', 'excuse', 'reason', 'reason adjective'],
+      template: ['invitation', 'place', 'when', 'reply', 'excuse'],
       keyWord: { spanish: 'cine', english: 'cinema' },
     },
     {
       position: 3, spanish: '¿Qué ropa llevas normalmente cuando sales con tus amigos?', english: 'What clothes do you normally wear when you go out with your friends?',
-      recycled: false, topics: ['clothes', 'clothing', 'colour'],
+      recycled: false,
+      topics: ['clothes', 'clothing', 'colour', 'reason', 'connective', 'frequency', 'clothes adjective'],
+      template: ['clothes', 'clothing', 'colour', 'reason'],
       keyWord: { spanish: 'ropa', english: 'clothes' },
     },
     {
       position: 4, spanish: '¿Qué vas a llevar para la fiesta?', english: 'What are you going to wear to the party?',
-      recycled: false, topics: ['clothes future', 'clothing', 'event'],
+      recycled: false,
+      topics: ['clothes future', 'clothing', 'event', 'colour', 'reason', 'connective', 'sequencer', 'clothes adjective'],
+      template: ['clothes future', 'clothing', 'event', 'reason'],
       keyWord: { spanish: 'fiesta', english: 'party' },
     },
     {
       position: 5, spanish: '¿Qué haces en tu tiempo libre?', english: 'What do you do in your free time?',
-      recycled: true, topics: ['free time', 'free time opinion', 'free time activity', 'frequency'],
+      recycled: true,
+      topics: ['free time', 'free time opinion', 'free time activity', 'frequency', 'reason', 'reason adjective', 'connective'],
+      template: ['free time opinion', 'free time activity', 'frequency', 'reason'],
       keyWord: { spanish: 'tiempo libre', english: 'free time' },
     },
   ],
@@ -185,4 +196,10 @@ export const TESTING_COURSE: Course = {
   title: `${SEED_COURSE.title} (testing)`,
   classCode: 'PRBA7K3M',
   unlockAll: true,
+};
+
+/** The simplest seeded model answer for a question, for tests and testing courses. */
+export const simplestSeedAnswer = (position: number): string => {
+  const own = SEED_COURSE.modelAnswers.filter((a) => a.questionPosition === position);
+  return own.sort((x, y) => assessAnswer(SEED_COURSE.calibration, x.text).value - assessAnswer(SEED_COURSE.calibration, y.text).value)[0].text;
 };

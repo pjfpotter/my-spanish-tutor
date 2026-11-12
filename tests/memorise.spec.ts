@@ -1,12 +1,12 @@
 import { expect, test, type Page } from '@playwright/test';
-import { SEED_COURSE } from '../lib/course/seed';
+import { SEED_COURSE, simplestSeedAnswer } from '../lib/course/seed';
 import { signUp, skipWarmups, unlockMemorise } from './helpers';
 
 // Tasks 8.1 to 8.4 and 5.3 to 5.5: say a confirmed answer from memory. The transcription call is stubbed
 // (these tests cost nothing) and the fake microphone supplies the audio. Nothing here calls a model.
 
-const ROCK = (n: number) => SEED_COURSE.modelAnswers.find((a) => a.questionPosition === n && a.level === 'rock_solid')!.text;
-const SHOWING_OFF_1 = SEED_COURSE.modelAnswers.find((a) => a.questionPosition === 1 && a.level === 'showing_off')!.text;
+const ROCK = (n: number) => simplestSeedAnswer(n);
+const SHOWING_OFF_1 = SEED_COURSE.modelAnswers.filter((a) => a.questionPosition === 1).sort((a, b) => b.text.length - a.text.length)[0].text;
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => localStorage.getItem('calm') ?? localStorage.setItem('calm', 'on'));

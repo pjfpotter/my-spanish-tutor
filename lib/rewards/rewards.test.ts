@@ -77,7 +77,7 @@ describe('the shop (task 13.3)', () => {
   it('refuses when there are not enough coins, taking nothing and saying how many more', async () => {
     const id = await student();
     await awardCoins(db, id, 30, 'attempt');
-    expect(await buyItem(db, id, 'obj-reloj')).toEqual({ ok: false, error: 'You need 50 more coins for that.' });
+    expect(await buyItem(db, id, 'obj-reloj')).toEqual({ ok: false, error: 'You need €50 more for that.' });
     expect(await balance(db, id)).toBe(30);
     expect((await loadShop(db, id)).owned).toEqual([]);
   });

@@ -15,6 +15,7 @@ The app must stay light on an old school Chromebook and a mid-range phone (CLAUD
 
 Rules that are not numbers:
 - Camcorder effects, grain and the photo collage appear only on the home desktop, empty states and transitions. Never over question, caption or feedback surfaces (design D15).
+- Interface sound effects (`public/audio/sfx`) are mono, 64 kbps MP3s (about 290 KB for all 25). `scripts/dreamcore-sfx.py` encodes at that setting, so a re-run stays inside the budget.
 - Wallpapers are compressed static images. Nothing animated that needs a video decoder.
 - The calm switch and reduced motion stop idle animation entirely.
 

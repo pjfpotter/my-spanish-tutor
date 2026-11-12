@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { SEED_COURSE } from '../lib/course/seed';
+import { SEED_COURSE, simplestSeedAnswer } from '../lib/course/seed';
 import { answerPieces } from '../lib/practice/tasks';
 import { levelsFor } from '../lib/practice/ladder';
 import { expectFits, installCuedMic, signUp, stubQuestionAudio, unlockAutomate } from './helpers';
@@ -9,7 +9,7 @@ import { expectFits, installCuedMic, signUp, stubQuestionAudio, unlockAutomate }
 
 const ANSWER = (spanish: string) => {
   const position = SEED_COURSE.questions.find((q) => q.spanish === spanish)!.position;
-  return SEED_COURSE.modelAnswers.find((a) => a.questionPosition === position && a.level === 'rock_solid')!.text;
+  return simplestSeedAnswer(position);
 };
 const PIECES = (spanish: string) => answerPieces(ANSWER(spanish), SEED_COURSE.chunks);
 
