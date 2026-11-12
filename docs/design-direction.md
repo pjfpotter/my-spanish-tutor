@@ -167,3 +167,16 @@ Built inside `PracticeShell`, so it keeps the one-screen rule down to 360 by 640
 ## Euros (26.1e)
 
 The in-app currency is shown as euros with the euro sign ("€12", "+€3 today", "Spend your euros"). It is a pretend currency: the shop says so, nothing can be bought with money and no wording suggests real money. Code and the database keep the older names (`coins`, `coin_ledger`). An answer's value is paid through learning, so the numbers on the practice screens include it as the answer is practised, memorised and automated.
+
+## Live listening (memorise lab)
+
+A design rule from the first test user, built at `/lab/memorise` and not yet in the memorise phase itself.
+
+- **Whenever the microphone is open, the screen shows it is hearing.** A level meter moves with the voice, and each word lights the moment the recogniser understands it, on listen-and-repeat screens too. A small line shows the last few words heard, so a word that will not light still reads as "heard", not "ignored".
+- **Words only ever turn on.** Nothing is shown as wrong while the student is speaking. What is missing is judged at the end, and one bit is named.
+- **No Done button when it goes right.** The screen moves on by itself once every bit has been said.
+- **A pause is not a failure and there is no clock.** After about three seconds without a new word, "Give me a hint" and "Move on" appear and Tele keeps listening for as long as the student needs. A hint shows the next word; it still has to be said.
+- **Keep going.** A skipped or mangled bit does not stop the words after it from counting. A student who reaches the end with one bit missing passes the screen and only tidies that bit.
+- **Tele speaks first, then the microphone opens,** so Tele's own voice is never taken for the student's.
+- Logic: `lib/speech/live-match.ts`, `lib/speech/pause.ts`, `lib/memorise/ladder.ts`. Microphone: `app/components/useLiveSpeech.ts`.
+- Open: this needs the browser's built-in recogniser with interim results, which `docs/device-matrix.md` still lists as unverified on every device. Where it is missing the lab falls back to the student checking their own answer. Some phones cannot share the microphone between the recogniser and the level meter, so the meter is a switch in the lab's tester tools and starts off on phones.
