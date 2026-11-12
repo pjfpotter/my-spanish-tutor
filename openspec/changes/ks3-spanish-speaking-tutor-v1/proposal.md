@@ -33,7 +33,7 @@ Out of scope for v1: student or teacher accounts, payments, native apps, real gr
 - `speech-audio-assets`: Cached multi-voice, multi-speed Spanish audio and clip timelines (word times, loudness, feelings) for questions and tutor lines.
 - `answer-writing-coach`: Model answers written once at sentence-builder upload, built by filling empty sentence-builder slots with fitting chunks (with an optional starter answer), valued by rules from editable calibration data in the in-app currency, with no named levels, with no model call in the writing stage and no grades shown.
 - `question-comprehension`: Listening-to-understand practice with mastery across separate sessions.
-- `answer-memorisation`: Recall of the student's own answer from an English prompt, spoken aloud, with accuracy feedback.
+- `answer-memorisation`: Recall of the student's own answer, spoken aloud in short lessons with fading help, ending on the Spanish question alone.
 - `response-automatisation`: Timed question-to-answer practice with response-time measurement.
 - `spoken-answer-feedback`: Speech capture, transcript comparison, confusion hints and syllable help.
 - `learning-diagnostics`: Error-cause tagging, probes, chunk hotspots and the placement check. Mood check-in is parked.

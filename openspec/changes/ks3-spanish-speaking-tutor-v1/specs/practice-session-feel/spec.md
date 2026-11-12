@@ -80,3 +80,10 @@ No game in the style of a multiplayer quiz game (such as tower defence) SHALL be
 #### Scenario: Game idea
 - **WHEN** a new game mode is suggested
 - **THEN** a proposal is written for the owner and nothing is built until it is approved
+
+### Requirement: Speaking and tapping screens are told apart at a glance
+A screen that expects speech and a screen that expects a tap SHALL be distinguishable without reading, by a consistent visual signal (for example the listening indicator against a tap cue, and a short transition when the kind changes). The signal SHALL use little or no text and SHALL NOT rely on colour alone.
+
+#### Scenario: Switching kind
+- **WHEN** a tapping screen follows a speaking screen
+- **THEN** the change of kind is signalled before the student acts, and the microphone indicator is not shown

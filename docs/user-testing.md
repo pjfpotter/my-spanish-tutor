@@ -52,4 +52,4 @@ A profile belongs to one course. After tasks 1 and 2, open **Privacy** and use *
 
 ## After
 
-Save the filled-in notes in this folder as `docs/user-testing-notes.md`. Pick the top three issues, fix them, and tick 16.2.
+Save the filled-in notes in this folder as `docs/user-testing-notes.md` (it already holds the notes from the memorise lab session). Pick the top three issues, fix them, and tick 16.2.
