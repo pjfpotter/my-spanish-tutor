@@ -74,7 +74,18 @@ body:has(.ml-lesson) .switches { display: none; }
 .ml-prog { flex: 1; min-width: 0; display: flex; gap: 2px; height: 1.4rem; padding: 3px; background: var(--white); box-shadow: var(--bevel-in); }
 .ml-prog i { flex: 1; min-width: 2px; }
 .ml-prog i.on { background: var(--title-navy-end); }
-.ml-head { display: grid; gap: 0.15rem; }
+.ml-head { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.6rem; align-items: center; }
+.ml-headtext { display: grid; gap: 0.15rem; min-width: 0; }
+/* Which kind of screen this is, told by shape and picture: a round microphone to speak, a square pointer to tap. */
+.ml-kind { display: inline-grid; place-items: center; flex: none; width: 2.5rem; height: 2.5rem; padding: 0.4rem; border: 3px solid var(--black); color: var(--black); }
+.ml-kind[data-kind='speak'] { border-radius: 50%; background: var(--soft-pink); }
+.ml-kind[data-kind='tap'] { border-radius: 0.2rem; background: var(--cream); box-shadow: 3px 3px 0 var(--ml-shadow); }
+.ml-kind svg { display: block; }
+/* A short cue when the kind of screen changes: the badge pops large over the card, then is gone. Hidden when motion is off. */
+.ml-lesson { position: relative; }
+.ml-switch { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; pointer-events: none; opacity: 0; background: rgba(244, 244, 208, 0.82); animation: ml-switch 0.7s ease-out; }
+.ml-kind-big { width: 6.5rem; height: 6.5rem; padding: 1.1rem; border-width: 4px; }
+.ml-report { margin: 0; padding: 0.5rem; overflow: auto; max-height: 11rem; background: var(--cream); color: var(--black); border: 2px solid var(--black); font: 0.74rem/1.35 ui-monospace, monospace; white-space: pre-wrap; overflow-wrap: anywhere; user-select: all; }
 .ml-head h1 { font-size: 1.4rem; line-height: 1.2; text-wrap: balance; }
 .ml-tag { justify-self: start; font-size: 0.85rem; font-weight: 700; padding: 0.05rem 0.45rem; background: var(--cream); color: var(--black); border: 2px solid var(--black); }
 .ml-mid { min-height: 0; overflow: auto; display: grid; align-content: start; gap: 0.7rem; padding: 0 4px 4px 0; }
@@ -156,12 +167,15 @@ button.ml-tile { cursor: pointer; }
 .ml-steps small { font-size: 0.82rem; font-weight: 400; }
 .ml-earned { font-size: 0.95rem; border-top: 2px solid var(--ml-edge); padding-top: 0.5rem; }
 
+@keyframes ml-switch { 0% { opacity: 0; transform: scale(0.9); } 25% { opacity: 1; transform: scale(1); } 70% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes ml-pop { from { transform: scale(1.25); } }
 @keyframes ml-shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
 @keyframes ml-breathe { 50% { transform: scaleY(0.4); } }
 @keyframes ml-hear { from { transform: scaleY(0.3); } to { transform: scaleY(0.95); } }
+:root[data-calm='on'] .ml-switch { display: none; }
 :root[data-calm='on'] .ml * { animation: none !important; transition: none !important; }
 :root[data-calm='on'] .ml-shout { text-shadow: none; color: var(--ink-navy); }
 @media (prefers-reduced-motion: reduce) {
+  .ml-switch { display: none; }
   .ml * { animation: none !important; transition: none !important; }
 }

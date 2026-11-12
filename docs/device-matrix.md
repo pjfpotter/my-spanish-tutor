@@ -19,6 +19,17 @@ Status: no real-device runs have been recorded yet. Task 2.1 was verified with a
 2. Copy the "Copy for the device matrix" block from the bottom of the page.
 3. Paste it under **Results** below, then change that row's status to **Verified** and its path to **Browser recognition** (or leave it on the fallback with a reason).
 
+## Running the memorise lab on a device (task 27.12)
+
+The lab at `/lab/memorise` checks more than the spike does: whether words light **while** the student speaks, how fast, whether the screen stays awake, and whether listening survives a screen lock.
+
+1. Open `/lab/memorise` on the device. In **Tester tools** leave the level meter at its default (off on phones, on elsewhere).
+2. Do one **From memory** lesson, speaking the answers. Lock the screen for a few seconds during one spoken screen and unlock it.
+3. Back on the home screen open **Tester tools** and press **Show and copy the device report**.
+4. Paste the block under **Results** below, name the device and microphone, and set that row's status.
+
+Move a device to **Browser recognition** only if the report says interim results were seen, the first result came back without errors, and listening resumed after the lock. A device that fails stays on the server fallback; what live listening means there is decided in design D22.
+
 ## Results
 
 None yet.

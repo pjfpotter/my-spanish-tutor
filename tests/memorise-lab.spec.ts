@@ -15,12 +15,20 @@ async function open(page: Page) {
       onstart: (() => void) | null = null;
       onresult: ((e: unknown) => void) | null = null;
       onend: (() => void) | null = null;
-      constructor() { w.__rec = this; }
+      constructor() { w.__rec = this; w.__recCount = (w.__recCount ?? 0) + 1; }
       start() { setTimeout(() => this.onstart?.(), 0); }
       stop() { this.onend?.(); }
       abort() {}
     }
     w.SpeechRecognition = w.webkitSpeechRecognition = FakeRecogniser;
+    // A stand-in screen wake lock that counts how often it was taken and let go.
+    w.__locks = 0; w.__unlocks = 0;
+    try {
+      Object.defineProperty(navigator, 'wakeLock', {
+        configurable: true,
+        value: { request: async () => { w.__locks++; return { released: false, addEventListener() {}, release: async () => { w.__unlocks++; } }; } },
+      });
+    } catch { /* keep the real one */ }
     /** What the recogniser has understood so far, as one interim result. */
     w.__hear = (text: string) => w.__rec?.onresult?.({ results: [Object.assign([{ transcript: text }], { isFinal: false })] });
   });
@@ -97,4 +105,119 @@ test('a lesson screen fits a small phone without scrolling', async ({ page }) =>
     return { page: document.documentElement.scrollHeight - innerHeight, card: mid.scrollHeight - mid.clientHeight, wide: document.documentElement.scrollWidth - innerWidth };
   });
   expect(over).toEqual({ page: 0, card: 0, wide: 0 });
+});
+
+const answer = 'lo siento no puedo porque tengo que hacer los deberes';
+/** Says the whole answer from memory and carries on past the result, until the next screen is up. */
+async function sayAndContinue(page: Page) {
+  await hear(page, answer);
+  await expect(page.getByTestId('lab-fb')).toBeVisible({ timeout: 5000 });
+  const next = page.getByTestId('lab-continue');
+  if (await next.isVisible()) await next.click();
+  await expect(page.getByTestId('lab-fb')).toHaveCount(0, { timeout: 8000 });
+}
+async function toFirstTapScreen(page: Page) {
+  await open(page);
+  await page.locator('.ml-tools summary').click();
+  await page.getByRole('button', { name: 'From memory', exact: true }).click();
+  await expect(page.getByTestId('lab-listen')).toBeVisible();
+  await sayAndContinue(page); // the first-letters screen
+  await expect(page.getByTestId('lab-listen')).toBeVisible();
+  await sayAndContinue(page); // the letters-gone screen; a tapping screen follows
+}
+
+test('27.10 speaking and tapping screens are told apart without reading', async ({ page }) => {
+  await open(page);
+  await page.locator('.ml-tools summary').click();
+  await page.getByRole('button', { name: 'From memory', exact: true }).click();
+  await expect(page.getByTestId('lab-listen')).toBeVisible();
+  await expect(page.getByTestId('lab-kind')).toHaveAttribute('data-kind', 'speak');
+  await expect(page.getByTestId('lab-kind')).toHaveAttribute('aria-label', 'Speaking screen');
+  await expect(page.getByTestId('lab-switch')).toHaveCount(0); // the first screen follows nothing
+
+  await sayAndContinue(page);
+  await expect(page.getByTestId('lab-switch')).toHaveCount(0); // speaking to speaking is no change
+  await expect(page.getByTestId('lab-kind')).toHaveAttribute('data-kind', 'speak');
+  await sayAndContinue(page);
+
+  // A tapping screen: a different badge, a cue for the change, and no microphone indicator.
+  await expect(page.getByTestId('lab-kind')).toHaveAttribute('data-kind', 'tap');
+  await expect(page.getByTestId('lab-kind')).toHaveAttribute('aria-label', 'Tapping screen');
+  await expect(page.getByTestId('lab-switch')).toBeVisible();
+  await expect(page.getByTestId('lab-switch')).toHaveAttribute('data-kind', 'tap');
+  await expect(page.getByTestId('lab-listen')).toHaveCount(0);
+});
+
+test('27.10 the change cue is left out when motion is reduced', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await toFirstTapScreen(page);
+  await expect(page.getByTestId('lab-kind')).toHaveAttribute('data-kind', 'tap'); // the badge still tells them apart
+  await expect(page.getByTestId('lab-switch')).toBeHidden();
+});
+
+test('27.11 the screen is kept awake while a lesson listens and let go afterwards', async ({ page }) => {
+  await open(page);
+  const locks = () => page.evaluate(() => (window as unknown as { __locks: number }).__locks);
+  const unlocks = () => page.evaluate(() => (window as unknown as { __unlocks: number }).__unlocks);
+  expect(await locks()).toBe(0);
+  await page.locator('.ml-tools summary').click();
+  await page.getByRole('button', { name: 'From memory', exact: true }).click();
+  await expect(page.getByTestId('lab-listen')).toBeVisible();
+  await expect.poll(locks).toBeGreaterThanOrEqual(1);
+  await page.getByRole('button', { name: 'Leave this lesson' }).click();
+  await expect.poll(unlocks).toBeGreaterThanOrEqual(1);
+});
+
+test('27.11 listening comes back after the screen locks, with nothing marked and no switch to self-marking', async ({ page }) => {
+  await open(page);
+  await page.locator('.ml-tools summary').click();
+  await page.getByRole('button', { name: 'From memory', exact: true }).click();
+  await expect(page.getByTestId('lab-listen')).toBeVisible();
+  await hear(page, 'lo siento');
+  await expect(lit(page)).toHaveCount(2);
+  const sessions = () => page.evaluate(() => (window as unknown as { __recCount: number }).__recCount);
+  const before = await sessions();
+
+  // The phone locks: the page is hidden and the browser takes the microphone, reporting an error and ending the session.
+  await page.evaluate(() => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
+    document.dispatchEvent(new Event('visibilitychange'));
+    const r = (window as unknown as { __rec: { onerror?: (e: unknown) => void; onend?: () => void } }).__rec;
+    r.onerror?.({ error: 'audio-capture' });
+    r.onend?.();
+  });
+  await page.waitForTimeout(300);
+  expect(await sessions()).toBe(before); // nothing restarts while hidden
+
+  // Unlocked: the same screen is listening again.
+  await page.evaluate(() => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await expect.poll(sessions).toBeGreaterThan(before);
+  await expect(page.getByTestId('lab-lesson')).toHaveAttribute('data-phase', 'listening');
+  await expect(page.getByTestId('lab-listen')).toBeVisible();
+  await expect(page.getByText('check your answer yourself')).toHaveCount(0);
+  await expect(lit(page)).toHaveCount(2); // what was already heard is still lit, and nothing was marked
+  await hear(page, answer);
+  await expect(page.getByTestId('lab-fb')).toBeVisible({ timeout: 5000 });
+});
+
+test('27.9 and 27.12 the tester can copy a device report with timings', async ({ page }) => {
+  await open(page);
+  await page.locator('.ml-tools summary').click();
+  await page.getByRole('button', { name: 'From memory', exact: true }).click();
+  await expect(page.getByTestId('lab-listen')).toBeVisible();
+  await hear(page, 'lo siento');
+  await expect(lit(page)).toHaveCount(2);
+  await hear(page, 'lo siento no');
+  await page.waitForTimeout(100);
+  await page.getByRole('button', { name: 'Leave this lesson' }).click();
+  await page.locator('.ml-tools summary').click();
+  await page.getByTestId('lab-report').click();
+  const text = page.getByTestId('lab-report-text');
+  await expect(text).toContainText('Built-in recogniser present: yes');
+  await expect(text).toContainText('interim results seen): yes');
+  await expect(text).toContainText('Result to screen: median');
+  await expect(text).toContainText('Screen stays awake: supported');
 });

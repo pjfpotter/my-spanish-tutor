@@ -8,12 +8,14 @@ import {
 } from '../../../lib/memorise/ladder';
 import { SOUND_KEY, soundOn } from '../../../lib/practice/sound';
 import { liveMatch, type LiveMatch } from '../../../lib/speech/live-match';
+import { LATENCY_BUDGET, LatencyLog, budgetVerdict, deviceReport } from '../../../lib/speech/latency';
 import { listenCall } from '../../../lib/speech/pause';
 import { clipUrls, findClip } from '../../../lib/tele/clips';
 import type { Feelings } from '../../../lib/tele/feelings';
 import { Tele } from '../../components/Tele';
 import { useLiveSpeech } from '../../components/useLiveSpeech';
 import { useSfx } from '../../components/useSfx';
+import { useWakeLock } from '../../components/useWakeLock';
 import { LAB_ANSWERS, TELE } from './content';
 import './lab.css';
 
@@ -21,6 +23,32 @@ const KEY = 'memorise-lab-v1';
 const A = LAB_ANSWERS;
 type Line = readonly [string, string];
 type Mode = 'full' | 'letters' | 'blank' | 'ghost';
+/** A screen the student speaks to, or one they tap. */
+type Kind = 'speak' | 'tap';
+
+/**
+ * Tells the two kinds of screen apart without words (task 27.10): a round badge with a microphone for speaking,
+ * a square badge with a pointer for tapping. Shape and picture carry it, never colour alone.
+ */
+function KindBadge({ kind, big }: { kind: Kind; big?: boolean }) {
+  return (
+    <span className={`ml-kind${big ? ' ml-kind-big' : ''}`} data-kind={kind} data-testid={big ? undefined : 'lab-kind'} role={big ? undefined : 'img'} aria-label={big ? undefined : kind === 'speak' ? 'Speaking screen' : 'Tapping screen'} aria-hidden={big || undefined}>
+      <svg viewBox="0 0 24 24" width="100%" height="100%" fill="currentColor" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" focusable="false">
+        {kind === 'speak' ? (
+          <>
+            <rect x="9" y="3" width="6" height="11" rx="3" stroke="none" />
+            <path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7" fill="none" strokeWidth="2" />
+          </>
+        ) : (
+          <>
+            <path d="M8 4l9 7.2-4.2.9 2.4 4.6-2 1-2.4-4.6L8 16z" strokeWidth="1" />
+            <path d="M16.5 4.5a5 5 0 0 1 2.6 3M18.8 2.2a8 8 0 0 1 3.4 4.4" fill="none" strokeWidth="1.6" />
+          </>
+        )}
+      </svg>
+    </span>
+  );
+}
 
 interface Ui {
   phase: 'cue' | 'listening' | 'ready' | 'mark' | 'pick' | 'result';
@@ -48,8 +76,15 @@ interface Ui {
   startedAt: number;
   lastProgressAt: number | null;
   lastVoiceAt: number | null;
+  /** Which kind of screen this is, and whether it follows the other kind (so the change is signalled). */
+  kind: Kind;
+  switched: boolean;
+  /** The whole transcript last drawn, so a repeated interim result costs nothing. */
+  raw: string;
+  /** Counts screens, so each one is a fresh element and its switch cue plays once. */
+  n: number;
 }
-const newUi = (): Ui => ({ phase: 'cue', match: null, helped: false, shown: new Set(), offer: false, heard: '', fb: null, line: null, showQ: false, blocks: false, note: '', opts: [], right: '', picked: null, built: [], pool: [], wrong: null, errors: 0, startedAt: 0, lastProgressAt: null, lastVoiceAt: null });
+const newUi = (): Ui => ({ phase: 'cue', match: null, helped: false, shown: new Set(), offer: false, heard: '', fb: null, line: null, showQ: false, blocks: false, note: '', opts: [], right: '', picked: null, built: [], pool: [], wrong: null, errors: 0, startedAt: 0, lastProgressAt: null, lastVoiceAt: null, kind: 'speak', switched: false, raw: '', n: 0 });
 
 const freshWorld = (): World => ({ answers: A, day: 1, euros: 0, states: A.map(freshState) });
 const pick = <T,>(list: readonly T[]): T => list[Math.floor(Math.random() * list.length)];
@@ -130,6 +165,12 @@ export function MemoriseLab() {
   const hearTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const autoTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const fallback = useRef(false);
+  const lat = useRef(new LatencyLog());
+  const speechStartAt = useRef<number | null>(null);
+  const lastResultAt = useRef<number | null>(null);
+  const lastKind = useRef<Kind | null>(null);
+  const screens = useRef(0);
+  const [report, setReport] = useState('');
   const sfx = useSfx();
   const voice = useVoice();
   const w = world.current;
@@ -160,13 +201,33 @@ export function MemoriseLab() {
       const u = ui.current;
       const s = ses.current?.cur;
       if (u.phase !== 'listening' || !s || s.t !== 'say') return;
+      const t0 = performance.now();
+      if (lastResultAt.current !== null) lat.current.add('gap', t0 - lastResultAt.current);
+      lastResultAt.current = t0;
+      const before = u.match?.matched ?? 0;
+      const heard = text.split(/\s+/).slice(-6).join(' ');
+      // Interim results often repeat. If nothing the student can see has changed, there is nothing to draw.
+      if (text === u.raw && u.match) return;
+      u.raw = text;
       const m = liveMatch(spanChunks(s), text, u.match);
-      if (m.matched > (u.match?.matched ?? 0)) {
-        u.lastProgressAt = performance.now();
+      const lit = m.matched > before;
+      if (lit) {
+        u.lastProgressAt = t0;
         u.offer = false;
+        if (before === 0 && speechStartAt.current !== null) lat.current.add('first-word', t0 - speechStartAt.current);
       }
       u.match = m;
-      u.heard = text.split(/\s+/).slice(-6).join(' ');
+      u.heard = heard;
+      bump();
+      if (lit) requestAnimationFrame(() => setTimeout(() => lat.current.add('paint', performance.now() - t0), 0));
+    },
+    onSpeechStart: () => { if (speechStartAt.current === null) speechStartAt.current = performance.now(); },
+    onResume: () => {
+      // Back from a lock: the student has been away, so the pause clock starts again and no hint is pushed at them.
+      const u = ui.current;
+      if (u.phase !== 'listening') return;
+      u.lastProgressAt = performance.now();
+      u.offer = false;
       bump();
     },
     onLevel: (level) => meterEl.current?.style.setProperty('--lvl', String(Math.min(1, level * 5))),
@@ -180,6 +241,8 @@ export function MemoriseLab() {
     },
   }, { meter });
   const liveOn = live.supported && !selfMark && !fallback.current;
+  // A phone that locks mid-lesson takes the microphone, so keep the screen awake while a lesson listens.
+  const awake = useWakeLock(view === 'lesson' && liveOn);
 
   const tele = (key: Feedback['tele']): Line => pick(TELE[key] as readonly Line[]);
 
@@ -238,6 +301,8 @@ export function MemoriseLab() {
     u.startedAt = performance.now();
     u.lastProgressAt = null;
     u.lastVoiceAt = null;
+    speechStartAt.current = null;
+    lastResultAt.current = null;
     live.start();
     bump();
   }
@@ -266,6 +331,10 @@ export function MemoriseLab() {
     const step = advance(s);
     if (!step) return endLesson();
     const u = (ui.current = newUi());
+    u.kind = step.t === 'say' ? 'speak' : 'tap';
+    u.switched = lastKind.current !== null && lastKind.current !== u.kind;
+    lastKind.current = u.kind;
+    u.n = ++screens.current;
     const a = A[step.a];
     if (step.t === 'meaning' || step.t === 'next' || step.t === 'start') {
       const i = step.i ?? 0;
@@ -292,6 +361,7 @@ export function MemoriseLab() {
   }
   function startLesson(L: Lesson) {
     fallback.current = false;
+    lastKind.current = null;
     ses.current = newSession(w, L);
     setView('lesson');
     nextStep();
@@ -473,6 +543,17 @@ export function MemoriseLab() {
               <button type="button" className="ml-btn ml-small" onClick={() => { w.day++; setSel(null); save(); bump(); }}>Skip to tomorrow (now day {w.day})</button>
               <button type="button" className="ml-btn ml-small" onClick={() => { world.current = freshWorld(); setSel(null); save(); bump(); }}>Start over</button>
             </div>
+            <p>How well this phone keeps up, from the lessons you have just done:</p>
+            <div className="ml-rowbtns">
+              <button type="button" className="ml-btn ml-small" data-testid="lab-report" onClick={() => {
+                const text = deviceReport({ userAgent: navigator.userAgent, recogniser: live.supported, meterOn: live.meterOn, wakeLock: awake.supported, wakeLockHeld: awake.held }, live.stats.current, lat.current);
+                setReport(text);
+                void navigator.clipboard?.writeText(text).catch(() => {});
+              }}>Show and copy the device report</button>
+              <button type="button" className="ml-btn ml-small" onClick={() => { lat.current.reset(); setReport(''); }}>Clear timings</button>
+            </div>
+            {report && <pre className="ml-report" data-testid="lab-report-text">{report}</pre>}
+            <p className="ml-en">Budget for now: a lit word on screen within {LATENCY_BUDGET.paintP90Ms} ms of the result in 9 of 10 tries, and the first word lit within {LATENCY_BUDGET.firstWordMedianMs / 1000} s of starting to speak. Measured so far: result to screen {budgetVerdict(lat.current).paint}, first word {budgetVerdict(lat.current).firstWord}.</p>
             <p>Jump to a step of answer {a.n}:</p>
             <div className="ml-rowbtns">{Ls.map((x, i) => <button key={i} type="button" className="ml-btn ml-small" onClick={() => startLesson(x)}>{lessonName(A, x)}</button>)}</div>
           </div>
@@ -670,10 +751,14 @@ export function MemoriseLab() {
         </div>
         <span className="ml-euros" aria-label={`${w.euros} euros`}>€{w.euros}</span>
       </div>
-      <div className="ml-head">{tag && <span className="ml-tag">{tag}</span>}<h1 data-testid="lab-title">{title}</h1></div>
+      <div className="ml-head">
+        <KindBadge kind={u.kind} />
+        <div className="ml-headtext">{tag && <span className="ml-tag">{tag}</span>}<h1 data-testid="lab-title">{title}</h1></div>
+      </div>
       {teleRow(line, res ? (fb?.ok ? JOY : SAD) : undefined, !res && hasCue ? () => hearAgain() : undefined, u.phase === 'listening')}
       <div className="ml-mid">{card}</div>
       <div className="ml-dock">{dock}</div>
+      {u.switched && <div className="ml-switch" key={u.n} data-kind={u.kind} data-testid="lab-switch" aria-hidden="true"><KindBadge kind={u.kind} big /></div>}
       <details className="ml-plan">
         <summary>Lesson plan</summary>
         <ol>{[step, ...s.queue].map((q, i) => <li key={i} data-now={i === 0 || undefined} data-added={!q.planned || undefined}>{describe(w, q)}</li>)}</ol>

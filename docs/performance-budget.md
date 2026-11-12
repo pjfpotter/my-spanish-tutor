@@ -27,6 +27,21 @@ Rules that are not numbers:
 - **Frame rate under CPU throttling,** headless Chromium, production build, full motion: 60 fps unthrottled; about 22 fps (idle) and 18 fps (speaking) at 4× throttle; about 13 fps and 12 fps at 6× throttle. Capping at 30 fps and 1.5 pixel ratio changed these only slightly.
 - **Read these numbers with care.** CPU throttling slows the page's JavaScript, but headless Chromium also rasterises the canvas in software, which a Chromebook's GPU normally does not. The JavaScript cost is small, so the low frame rates are most likely a headless artefact and a pessimistic upper bound. It is not proof the real device is fine.
 
+## Live listening keeps up on a phone (task 27.9)
+
+The memorise lab times itself while a student speaks and gives the result in its **device report** (Tester tools). Two numbers, both **provisional** until the reference Android phone has been measured and these are replaced with its results:
+
+| What | Budget | What it covers |
+|---|---|---|
+| Result to screen | 90th percentile at most 100 ms | From the recogniser's result reaching the app to the lit word being on screen. This part is ours. |
+| Speech start to first word lit | Median at most 1.5 s | From the browser noticing speech on a screen to the first word lighting. It includes saying that word, so it is a ceiling on the recogniser's own delay, which we do not control. |
+
+The limits are `LATENCY_BUDGET` in `lib/speech/latency.ts`. The level indicator covers whatever delay is left, and starts off on phones because some cannot share the microphone with the recogniser.
+
+What was done to keep the screen light: a result that repeats the last transcript is dropped without redrawing, so each interim result costs a redraw only when something changed. The matching itself (`lib/speech/live-match.ts`) is a small alignment of about ten words and was left as it is.
+
+Measured on the reference phone: **not yet**.
+
 ## Optional manual check (does not block ticking 18.6)
 
 Open `/lab/tele` on a real school Chromebook with calm mode off, and note whether the animation looks smooth while Tele speaks. If it stutters, the next steps in order are: cache the static world and body to an offscreen canvas, lower the frame cap to 20, then drop the antenna and picture effects when the device reports low memory.
