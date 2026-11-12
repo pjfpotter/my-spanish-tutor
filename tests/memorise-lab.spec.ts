@@ -78,7 +78,7 @@ test('a pause brings a hint and a way to move on, never a timeout', async ({ pag
   await expect(page.getByTestId('lab-fb')).toContainText('That works');
 });
 
-test('keeping going after a fudged bit still counts what came after', async ({ page }) => {
+test('keeping going after a fudged bit still counts what came after, and the student is sent back to the bit they missed', async ({ page }) => {
   await open(page);
   await page.locator('.ml-tools summary').click();
   await page.getByRole('button', { name: 'From memory', exact: true }).click();
@@ -87,10 +87,97 @@ test('keeping going after a fudged bit still counts what came after', async ({ p
   // The middle bit is mangled, the end is said.
   await hear(page, 'lo siento no puedo por que tango hacer los deberes');
   await expect(lit(page)).toHaveCount(8); // every word of the first and last bits, and the one word of the middle bit that was understood
-  await expect(page.getByTestId('lab-fb')).toContainText('You kept going', { timeout: 5000 });
+  // 27.8: the screen does not end. The missed bit is marked in place and the student is invited to say just it.
+  await expect(page.getByTestId('lab-here')).toBeVisible({ timeout: 5000 });
+  await expect(page.locator('.ml-tile').nth(1)).toHaveAttribute('data-here', 'true');
+  await expect(page.getByTestId('lab-listentext')).toHaveText('One bit left. Say the marked bit.');
+  await expect(page.getByTestId('lab-fb')).toHaveCount(0);
+  await expect(page.getByTestId('lab-hear-bit')).toBeVisible();
+
+  // Moving on instead still credits what was said and names the bit to tidy.
+  await page.getByTestId('lab-pass').click();
+  await expect(page.getByTestId('lab-fb')).toContainText('You kept going');
   await expect(page.getByTestId('lab-fb')).toContainText('porque tengo que');
   await page.getByTestId('lab-continue').click();
   await expect(page.locator('.ml-tag')).toHaveText('Fixing one bit');
+});
+
+test('27.8 saying the marked bit completes the screen, and does not count as a clean recall', async ({ page }) => {
+  await open(page);
+  await page.locator('.ml-tools summary').click();
+  await page.getByRole('button', { name: 'From memory', exact: true }).click();
+  await expect(page.getByTestId('lab-listen')).toBeVisible();
+  await hear(page, 'lo siento no puedo por que tango hacer los deberes');
+  await expect(page.getByTestId('lab-here')).toBeVisible({ timeout: 5000 });
+
+  // Only the words said after being sent back count for that bit, so the earlier mangled ones cannot.
+  await hear(page, 'lo siento no puedo por que tango hacer los deberes porque tengo que');
+  await expect(page.getByTestId('lab-fb')).toBeVisible({ timeout: 5000 });
+  await expect(page.getByTestId('lab-fb')).toContainText('That works'); // helped, not clean
+  await expect(page.getByTestId('lab-fb')).not.toContainText('You kept going');
+});
+
+const sentence1 = 'los fines de semana juego a los videojuegos y escucho música';
+
+test('27.5 a stall part way through a longer screen marks the next bit, with its hint and audio', async ({ page }) => {
+  await open(page);
+  await page.locator('.ml-row').nth(4).click();
+  await page.locator('.ml-tools summary').click();
+  await page.getByRole('button', { name: 'From memory', exact: true }).click();
+  await expect(page.getByTestId('lab-listen')).toBeVisible();
+  await expect(page.getByTestId('lab-here')).toHaveCount(0);
+
+  // The first three bits of seven are said, then nothing.
+  await hear(page, sentence1);
+  await expect(lit(page)).toHaveCount(11);
+  await expect(page.getByTestId('lab-here')).toBeVisible({ timeout: 6000 });
+  await expect(page.locator('.ml-tile').nth(3)).toHaveAttribute('data-here', 'true'); // "Me gusta montar en bici" is next
+  await expect(page.getByTestId('lab-hint')).toHaveText('Hint');
+  await expect(page.getByTestId('lab-hear-bit')).toBeVisible();
+  await expect(page.getByTestId('lab-listentext')).toHaveText('Say the marked bit next.');
+
+  // The hint is for that bit: it shows that bit's first word and nothing else.
+  await page.getByTestId('lab-hint').click();
+  await expect(page.locator('.ml-tile').nth(3).locator('[data-testid="lab-word"][data-s="plain"]')).toHaveCount(1);
+
+  // Saying the bit takes the marker away.
+  await hear(page, `${sentence1} me gusta montar en bici`);
+  await expect(page.getByTestId('lab-here')).toHaveCount(0);
+});
+
+test('27.5 the marked bit and its buttons still fit a small phone without scrolling', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 640 });
+  await open(page);
+  await page.locator('.ml-row').nth(4).click();
+  await page.locator('.ml-tools summary').click();
+  await page.getByRole('button', { name: 'From memory', exact: true }).click();
+  await expect(page.getByTestId('lab-listen')).toBeVisible();
+  await hear(page, sentence1);
+  await expect(page.getByTestId('lab-here')).toBeVisible({ timeout: 6000 });
+  await expect(page.getByTestId('lab-hear-bit')).toBeVisible();
+  const over = await page.evaluate(() => {
+    const mid = document.querySelector('.ml-mid')!;
+    return { page: document.documentElement.scrollHeight - innerHeight, card: mid.scrollHeight - mid.clientHeight, wide: document.documentElement.scrollWidth - innerWidth };
+  });
+  expect(over).toEqual({ page: 0, card: 0, wide: 0 });
+});
+
+test('27.7 a repeated word lights only at the student\'s place, even when the recogniser repeats itself', async ({ page }) => {
+  await open(page);
+  await page.locator('.ml-row').nth(4).click();
+  await page.locator('.ml-tools summary').click();
+  await page.getByRole('button', { name: 'From memory', exact: true }).click();
+  await expect(page.getByTestId('lab-listen')).toBeVisible();
+  const words = (n: number) => page.locator('.ml-tile').nth(n).locator('[data-testid="lab-word"][data-s="lit"]');
+
+  // "Me gusta" opens the fourth bit and the seventh. Beginning the fourth lights only the fourth.
+  await hear(page, `${sentence1} me gusta`);
+  await expect(words(3)).toHaveCount(2);
+  await expect(words(6)).toHaveCount(0);
+  // A recogniser that repeats the words it already gave does not light the seventh.
+  await hear(page, `${sentence1} me gusta montar en bici me gusta montar en bici`);
+  await expect(words(3)).toHaveCount(5);
+  await expect(words(6)).toHaveCount(0);
 });
 
 test('a lesson screen fits a small phone without scrolling', async ({ page }) => {

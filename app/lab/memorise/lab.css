@@ -103,6 +103,9 @@ body:has(.ml-lesson) .switches { display: none; }
 button.ml-tile { cursor: pointer; }
 .ml-sm { min-height: 2rem; font-size: 0.95rem; padding: 0.1rem 0.45rem; --dw: 0.33em; }
 .ml-ten { font-size: 0.9rem; line-height: 1.2; }
+.ml-tile[data-here] { outline: 4px solid var(--hyper-pink); outline-offset: 2px; border-style: dashed; }
+/* A pointing marker before the bit to say next, so the bit is marked by shape and not by colour alone. */
+.ml-here { display: inline-block; width: 0; height: 0; margin-right: 0.45rem; vertical-align: middle; border-style: solid; border-width: 0.45rem 0 0.45rem 0.75rem; border-color: transparent transparent transparent var(--black); }
 .ml-tile[data-miss] { background: var(--white); border-style: dashed; }
 .ml-tile[data-wrong] { animation: ml-shake 0.25s; }
 /* A word: plain, first letter and a dash, a dash, or lit once Tele has understood it. */
@@ -123,6 +126,8 @@ button.ml-tile { cursor: pointer; }
 .ml-dock { display: grid; gap: 0.35rem; align-content: end; min-height: 6rem; }
 .ml-quiet { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0 0.6rem; min-height: var(--tap-min); font-size: 0.92rem; text-align: center; }
 .ml-two { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+.ml-two[data-cols='3'] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.ml-two[data-cols='3'] .ml-btn { padding-inline: 0.4rem; }
 .ml-ask { display: grid; gap: 0.5rem; }
 .ml-ask p { font-weight: 700; font-size: 1.1rem; text-align: center; }
 .ml-ask .ml-btn { min-height: 3.5rem; font-size: 1.1rem; }

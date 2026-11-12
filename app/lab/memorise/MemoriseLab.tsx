@@ -7,7 +7,8 @@ import {
   type Feedback, type Finish, type Lesson, type SayOutcome, type SayStep, type Session, type Step, type TapStep, type World,
 } from '../../../lib/memorise/ladder';
 import { SOUND_KEY, soundOn } from '../../../lib/practice/sound';
-import { liveMatch, type LiveMatch } from '../../../lib/speech/live-match';
+import { firstUnsaid, liveMatch, type Focus, type LiveMatch } from '../../../lib/speech/live-match';
+import { tokenise } from '../../../lib/speech/score';
 import { LATENCY_BUDGET, LatencyLog, budgetVerdict, deviceReport } from '../../../lib/speech/latency';
 import { listenCall } from '../../../lib/speech/pause';
 import { clipUrls, findClip } from '../../../lib/tele/clips';
@@ -85,8 +86,14 @@ interface Ui {
   kind: Kind;
   /** The whole transcript last drawn, so a repeated interim result costs nothing. */
   raw: string;
+  /** The bit (index within this screen) marked as the one to say next, or null. Set when a student stalls part way (27.5) or is sent back to a missed bit (27.8). */
+  pointer: number | null;
+  /** The student reached the end with a bit missing and has been sent back to it, once. */
+  returning: boolean;
+  /** While returning: only this bit is matched, against words heard after the point the student was sent back. */
+  focus: Focus | null;
 }
-const newUi = (): Ui => ({ phase: 'cue', match: null, helped: false, shown: new Set(), offer: false, heard: '', fb: null, line: null, showQ: false, blocks: false, note: '', opts: [], right: '', picked: null, built: [], pool: [], wrong: null, errors: 0, startedAt: 0, lastProgressAt: null, lastVoiceAt: null, kind: 'speak', raw: '' });
+const newUi = (): Ui => ({ phase: 'cue', match: null, helped: false, shown: new Set(), offer: false, heard: '', fb: null, line: null, showQ: false, blocks: false, note: '', opts: [], right: '', picked: null, built: [], pool: [], wrong: null, errors: 0, startedAt: 0, lastProgressAt: null, lastVoiceAt: null, kind: 'speak', raw: '', pointer: null, returning: false, focus: null });
 
 const freshWorld = (): World => ({ answers: A, day: 1, euros: 0, states: A.map(freshState) });
 const pick = <T,>(list: readonly T[]): T => list[Math.floor(Math.random() * list.length)];
@@ -209,8 +216,15 @@ export function MemoriseLab() {
       // Interim results often repeat. If nothing the student can see has changed, there is nothing to draw.
       if (text === u.raw && u.match) return;
       u.raw = text;
-      const m = liveMatch(spanChunks(s), text, u.match);
+      const m = liveMatch(spanChunks(s), text, u.match, u.focus ?? undefined);
       const lit = m.matched > before;
+      if (u.focus && m.said[u.focus.chunk]) {
+        // The bit they were sent back to is said. If another is still missing, send them to that one next.
+        const more = firstUnsaid(m);
+        u.focus = more === null ? null : { chunk: more, after: tokenise(text).length };
+      }
+      if (u.returning) u.pointer = firstUnsaid(m);
+      else if (lit) u.pointer = null;
       if (lit) {
         u.lastProgressAt = t0;
         u.offer = false;
@@ -261,6 +275,30 @@ export function MemoriseLab() {
     bump();
     if (fb.auto) autoTimer.current = setTimeout(() => { if (ui.current === u) nextStep(); }, fb.auto);
   }
+  /** The student has reached the end with a bit missing: point at that bit and let them say it before the screen ends (27.8). */
+  function sendBack() {
+    const u = ui.current;
+    const m = u.match;
+    const at = m ? firstUnsaid(m) : null;
+    if (!m || at === null) return conclude();
+    u.returning = true;
+    u.helped = true; // being pointed back is help, so this is not a clean recall
+    u.focus = { chunk: at, after: tokenise(u.raw).length };
+    u.pointer = at;
+    u.offer = true;
+    u.lastProgressAt = performance.now();
+    bump();
+  }
+  /** The student has said some bits of a longer screen and stalled: mark the next bit to say (27.5). */
+  function markNext() {
+    const u = ui.current;
+    const s = ses.current?.cur;
+    if (!s || s.t !== 'say' || u.returning || !u.match || u.match.matched === 0 || u.match.complete || s.span.length < 3) return;
+    const at = firstUnsaid(u.match);
+    if (at === null) return;
+    u.pointer = at;
+    u.helped = true;
+  }
   function conclude() {
     const s = ses.current?.cur;
     const u = ui.current;
@@ -275,9 +313,12 @@ export function MemoriseLab() {
     const t = setInterval(() => {
       const u = ui.current;
       if (u.phase !== 'listening') return;
-      const call = listenCall({ now: performance.now(), startedAt: u.startedAt, lastProgressAt: u.lastProgressAt, lastVoiceAt: u.lastVoiceAt, complete: !!u.match?.complete, reachedEnd: !!u.match?.reachedEnd });
-      if (call.kind === 'finish') conclude();
-      else if (call.kind === 'offer' && !u.offer) { u.offer = true; bump(); }
+      // Once sent back to a missed bit, reaching the end again does not end the screen: saying that bit does.
+      const call = listenCall({ now: performance.now(), startedAt: u.startedAt, lastProgressAt: u.lastProgressAt, lastVoiceAt: u.lastVoiceAt, complete: !!u.match?.complete, reachedEnd: !!u.match?.reachedEnd && !u.returning });
+      if (call.kind === 'finish') {
+        if (call.why === 'trailed' && !u.returning && u.match && firstUnsaid(u.match) !== null) sendBack();
+        else conclude();
+      } else if (call.kind === 'offer' && !u.offer) { u.offer = true; markNext(); bump(); }
     }, 150);
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -303,6 +344,8 @@ export function MemoriseLab() {
     u.lastVoiceAt = null;
     speechStartAt.current = null;
     lastResultAt.current = null;
+    // A fresh recogniser session starts its transcript from nothing, so the point they were sent back from restarts too.
+    if (u.focus) u.focus.after = 0;
     live.start();
     bump();
   }
@@ -399,7 +442,10 @@ export function MemoriseLab() {
       return;
     }
     u.helped = true;
-    const next = (u.match ?? liveMatch(spanChunks(s), '')).next;
+    const m = u.match ?? liveMatch(spanChunks(s), '');
+    // With a bit marked, the hint is for that bit; otherwise it is the next word not yet lit.
+    const word = u.pointer !== null ? m.hit[u.pointer].indexOf(false) : -1;
+    const next = u.pointer !== null && word >= 0 ? { chunk: u.pointer, word } : m.next;
     if (next) u.shown.add(`${next.chunk}:${next.word}`);
     bump();
   }
@@ -423,6 +469,18 @@ export function MemoriseLab() {
     u.phase = 'cue';
     bump();
     void playCue(s, slow).then(() => { if (ui.current === u && u.phase === 'cue') beginListening(); });
+  }
+  /** Tele says just the marked bit, then listens again (27.5, 27.8). */
+  function hearBit() {
+    const u = ui.current;
+    const s = ses.current?.cur;
+    if (!s || s.t !== 'say' || u.pointer === null) return;
+    const text = A[s.a].chunks[s.span[u.pointer]].t;
+    live.stop();
+    u.helped = true;
+    u.phase = 'cue';
+    bump();
+    void voice.speak(text, true).then(() => { if (ui.current === u && u.phase === 'cue') beginListening(); });
   }
   function said() {
     const s = ses.current!.cur as SayStep;
@@ -617,6 +675,9 @@ export function MemoriseLab() {
     const chunk = a.chunks[ci];
     const words = chunk.t.split(' ');
     const lit = (k: number) => !!sayStep && u.match?.hit[c]?.[k] === true;
+    const here = !!sayStep && c >= 0 && u.pointer === c && !reveal;
+    // The marked bit shows even when nothing else is on screen, as blanks, so the student can see where they are.
+    if (here && m === 'ghost') m = 'blank';
     const visible = m !== 'ghost' || words.some((_, k) => lit(k) || u.shown.has(`${c}:${k}`));
     if (!visible) return null;
     const body = words.map((word, k) => {
@@ -630,12 +691,12 @@ export function MemoriseLab() {
       );
     });
     const cls = `ml-tile${o.small ? ' ml-sm' : ''}`;
-    const inner = <><span lang="es">{body}</span>{o.en && <span className="ml-ten">{chunk.en}</span>}</>;
+    const inner = <>{here && <span className="ml-here" aria-hidden="true" />}<span lang="es">{body}</span>{o.en && <span className="ml-ten">{chunk.en}</span>}</>;
     return (
       <li key={o.key ?? ci}>
         {o.onClick
-          ? <button type="button" className={cls} data-k={chunk.k} data-miss={o.miss || undefined} data-wrong={o.wrong || undefined} onClick={o.onClick}>{inner}</button>
-          : <span className={cls} data-k={chunk.k} data-miss={o.miss || undefined}>{inner}</span>}
+          ? <button type="button" className={cls} data-k={chunk.k} data-miss={o.miss || undefined} data-wrong={o.wrong || undefined} data-here={here || undefined} aria-current={here ? 'step' : undefined} data-testid={here ? 'lab-here' : undefined} onClick={o.onClick}>{inner}</button>
+          : <span className={cls} data-k={chunk.k} data-miss={o.miss || undefined} data-here={here || undefined} aria-current={here ? 'step' : undefined} data-testid={here ? 'lab-here' : undefined}>{inner}</span>}
       </li>
     );
   };
@@ -693,9 +754,10 @@ export function MemoriseLab() {
     const tap = live.state === 'needs-tap';
     dock = (
       <>
-        {u.offer && !tap && (
-          <div className="ml-two" data-testid="lab-offer">
-            <button type="button" className="ml-btn" onClick={hint} data-testid="lab-hint">{sayStep.r === 1 && !sayStep.read ? 'Hear it again' : 'Give me a hint'}</button>
+        {(u.offer || u.pointer !== null) && !tap && (
+          <div className="ml-two" data-testid="lab-offer" data-cols={u.pointer !== null ? 3 : 2}>
+            <button type="button" className="ml-btn" onClick={hint} data-testid="lab-hint" aria-label={u.pointer !== null ? 'Hint for the marked bit' : undefined}>{u.pointer !== null ? 'Hint' : sayStep.r === 1 && !sayStep.read ? 'Hear it again' : 'Give me a hint'}</button>
+            {u.pointer !== null && <button type="button" className="ml-btn" onClick={hearBit} data-testid="lab-hear-bit" aria-label="Hear the marked bit">Hear it</button>}
             <button type="button" className="ml-btn" onClick={conclude} data-testid="lab-pass">Move on</button>
           </div>
         )}
@@ -704,7 +766,7 @@ export function MemoriseLab() {
         ) : (
           <div className="ml-listen" ref={meterEl} data-testid="lab-listen" data-meter={live.meterOn || undefined} role="status">
             <span className="ml-bars" aria-hidden="true"><i /><i /><i /><i /><i /></span>
-            <span className="ml-listentext">{u.offer ? 'Take your time. Tele is still listening.' : 'Tele is listening. Say it out loud.'}</span>
+            <span className="ml-listentext" data-testid="lab-listentext">{u.returning && u.pointer !== null ? 'One bit left. Say the marked bit.' : u.pointer !== null ? 'Say the marked bit next.' : u.offer ? 'Take your time. Tele is still listening.' : 'Tele is listening. Say it out loud.'}</span>
             <span className="ml-heard" lang="es" data-testid="lab-heard">{u.heard}</span>
           </div>
         )}
