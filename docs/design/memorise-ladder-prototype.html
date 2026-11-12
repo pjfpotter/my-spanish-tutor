@@ -1,27 +1,25 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <title>Memorise Ladder</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Fredoka:wght@600&family=Pixelify+Sans:wght@500;700&family=VT323&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Fredoka:wght@600&family=Pixelify+Sans:wght@500&display=swap">
 <style>
 /*
  * Memorise Ladder: prototype of the memorise phase. One file, no build. Progress is kept in this browser only.
- * Look: docs/design-direction.md (Win98 chrome over a painted sky, chunk-kind pastels, Tele with one eye and no mouth).
- * Layout: one phone-sized app column that never scrolls during a lesson; on a wide screen a Notepad window of design notes sits beside it.
- * The memorable thing is the ladder: five rungs of help, and words that wipe out of the tiles as the student climbs.
- * Pink, lemon and cyan are decoration only. A chunk kind always has a symbol and a word as well as a colour.
+ * Look: docs/design-direction.md (painted sky, Win98 title bar and buttons, cut-out paper cards, chunk pastels, Tele with one eye and no mouth).
+ * Layout: one phone-sized column. Every lesson screen is one instruction, Tele, one card and one button, and never scrolls.
+ * The student sees two things only: five answers with a few steps each, and a progress bar inside a lesson.
+ * The five levels of help are the engine's business. The student just sees the words go.
  */
 :root {
   --sky-a:#4FA9F0; --sky-b:#9AD6FF; --sky-c:#DDF3FF;
   --chrome:#C0C0C0; --chrome-hi:#FFFFFF; --chrome-mid:#DFDFDF; --chrome-lo:#808080; --chrome-dk:#0A0A0A; --on-chrome:#000000;
-  --well:#FFFFFF; --well-ink:#000000; --muted:#404040; --ink:#0B2A4A;
-  --title-a:#000080; --title-b:#0A5CC0; --title-ink:#FFFFFF; --cream:#F4F4D0;
-  --soft-pink:#FF5FA8; --hyper-pink:#FF1FA9; --lemon:#FFEB00; --cyan:#00E5E5;
-  --k-opinion:#FFC7E3; --k-reason:#C4F0B8; --k-link:#FFE69A; --k-time:#B9DDFF; --k-detail:#DCCBFF; --k-other:#E6E6E6; --tile-ink:#000000;
+  --paper:#FFFFFF; --paper-ink:#000000; --muted:#404040; --ink:#0B2A4A; --edge:#0B2A4A; --shadow:rgba(11,42,74,.35);
+  --title-a:#000080; --title-b:#0A5CC0; --cream:#F4F4D0; --hyper-pink:#FF1FA9; --lemon:#FFEB00;
+  --k-opinion:#FFC7E3; --k-reason:#C4F0B8; --k-link:#FFE69A; --k-time:#B9DDFF; --k-detail:#DCCBFF; --k-other:#E6E6E6;
   --fb-ok:#C4F0B8; --fb-no:#FFD9B3; --prog:#0A5CC0; --screen:#0B2A4A; --screen-lit:#1D5A96;
   --focus:#0B2A4A; --focus-halo:#FFFFFF;
   --f-read:'Atkinson Hyperlegible','Segoe UI',system-ui,sans-serif;
   --f-shout:'Fredoka','Trebuchet MS',system-ui,sans-serif;
   --f-ui:'Pixelify Sans','Atkinson Hyperlegible',system-ui,sans-serif;
-  --f-status:'VT323','Courier New',monospace;
   --bevel-out:inset -1px -1px 0 var(--chrome-dk),inset 1px 1px 0 var(--chrome-hi),inset -2px -2px 0 var(--chrome-lo),inset 2px 2px 0 var(--chrome-mid);
   --bevel-in:inset 1px 1px 0 var(--chrome-lo),inset -1px -1px 0 var(--chrome-hi),inset 2px 2px 0 var(--chrome-dk);
   --tap:44px;
@@ -29,12 +27,12 @@
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --sky-a:#0A1030; --sky-b:#131B4D; --sky-c:#1F2D7A;
   --chrome:#2C2F4A; --chrome-hi:#6A70A0; --chrome-mid:#3A3E60; --chrome-lo:#15172B; --chrome-dk:#05060F; --on-chrome:#F4F4D0;
-  --well:#12142A; --well-ink:#F4F4D0; --muted:#C9C9AE; --ink:#F4F4D0; --prog:#6FB2FF;
+  --paper:#12142A; --paper-ink:#F4F4D0; --muted:#C9C9AE; --ink:#F4F4D0; --edge:#8A90C0; --shadow:rgba(0,0,0,.5); --prog:#6FB2FF;
   --focus:#FFEB00; --focus-halo:#05060F; color-scheme:dark;}}
 :root[data-theme="dark"]{
   --sky-a:#0A1030; --sky-b:#131B4D; --sky-c:#1F2D7A;
   --chrome:#2C2F4A; --chrome-hi:#6A70A0; --chrome-mid:#3A3E60; --chrome-lo:#15172B; --chrome-dk:#05060F; --on-chrome:#F4F4D0;
-  --well:#12142A; --well-ink:#F4F4D0; --muted:#C9C9AE; --ink:#F4F4D0; --prog:#6FB2FF;
+  --paper:#12142A; --paper-ink:#F4F4D0; --muted:#C9C9AE; --ink:#F4F4D0; --edge:#8A90C0; --shadow:rgba(0,0,0,.5); --prog:#6FB2FF;
   --focus:#FFEB00; --focus-halo:#05060F; color-scheme:dark;}
 
 *{box-sizing:border-box}
@@ -43,51 +41,50 @@ body{margin:0;background:linear-gradient(180deg,var(--sky-a) 0%,var(--sky-b) 60%
   font:400 17px/1.4 var(--f-read);font-variant-ligatures:none;-webkit-text-size-adjust:100%}
 button{font:inherit;color:inherit;touch-action:manipulation}
 h1,h2,h3,p,ol,ul{margin:0}
+ol,ul{padding:0;list-style:none}
 :focus-visible{outline:3px solid var(--focus);outline-offset:2px;box-shadow:0 0 0 6px var(--focus-halo)}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-/* ---------- Page layout ---------- */
+/* ---------- Page layout: the app alone; the designer's notes open on request ---------- */
 .stage{height:100%;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.phone{height:100%;max-width:27rem;margin:0 auto;min-width:0}
+.phone{height:100%;max-width:26rem;margin:0 auto;min-width:0}
 #app{height:100%}
 .notes{display:none}
+.stage .notesbtn{display:none}
 .stage.notes-open .phone{display:none}
 .stage.notes-open .notes{display:block;height:100%;overflow:auto;padding-block:12px 24px}
 @media (min-width:900px){
-  body{overflow:auto}
-  .stage{height:auto;display:grid;grid-template-columns:25rem minmax(0,1fr);gap:2rem;max-width:74rem;margin:0 auto;align-items:start}
-  .phone{position:sticky;top:1rem;margin:1rem 0;height:min(47rem,calc(100vh - 2rem));width:100%;background:linear-gradient(180deg,var(--sky-a),var(--sky-b) 60%,var(--sky-c));
-    border:3px solid var(--chrome-dk);box-shadow:6px 6px 0 rgba(5,6,15,.3);padding-inline:12px}
-  .notes,.stage.notes-open .notes{display:block;height:auto;overflow:visible;padding-block:1rem 3rem}
-  .stage.notes-open .phone{display:block}
+  .stage{height:auto;min-height:100%;display:grid;grid-template-columns:24rem;justify-content:center;gap:2rem;align-items:start}
+  .stage.notes-open{grid-template-columns:24rem minmax(0,44rem)}
+  .phone,.stage.notes-open .phone{display:block;position:sticky;top:1rem;margin:1rem 0;height:min(46rem,calc(100vh - 2rem));width:100%;
+    background:linear-gradient(180deg,var(--sky-a),var(--sky-b) 60%,var(--sky-c));border:3px solid var(--chrome-dk);box-shadow:6px 6px 0 var(--shadow);padding-inline:14px}
+  .stage.notes-open .notes{height:auto;overflow:visible;padding-block:3.6rem 3rem}
+  .stage .notesbtn{display:inline-flex;position:fixed;z-index:5;top:calc(.75rem + env(safe-area-inset-top,0px));right:calc(.75rem + env(safe-area-inset-right,0px))}
   .only-narrow{display:none!important}
 }
 
-/* ---------- Win98 materials ---------- */
-.win{background:var(--chrome);color:var(--on-chrome);box-shadow:var(--bevel-out);padding:3px}
-.titlebar{display:flex;align-items:center;gap:.5rem;min-height:1.75rem;padding:.15rem .5rem;background:linear-gradient(90deg,var(--title-a),var(--title-b));color:var(--title-ink);
-  font:500 1rem/1.2 var(--f-ui);text-shadow:1px 0 rgba(255,31,169,.7),-1px 0 rgba(0,229,229,.7)}
+/* ---------- Materials ---------- */
+.titlebar{display:flex;align-items:center;gap:.5rem;min-height:1.9rem;padding:.2rem .6rem;background:linear-gradient(90deg,var(--title-a),var(--title-b));color:#fff;
+  font:500 1.05rem/1.2 var(--f-ui);box-shadow:var(--bevel-out)}
 .titlebar .grow{flex:1;min-width:0}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;min-height:var(--tap);min-width:var(--tap);padding:.3rem .8rem;border:0;cursor:pointer;
+.titlebar .when{font:400 .9rem var(--f-read);color:var(--cream)}
+.paper{background:var(--paper);color:var(--paper-ink);border:2px solid var(--edge);box-shadow:4px 4px 0 var(--shadow)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;min-height:var(--tap);min-width:var(--tap);padding:.3rem .9rem;border:0;cursor:pointer;
   background:var(--chrome);color:var(--on-chrome);box-shadow:var(--bevel-out);font-weight:700;text-align:center}
 .btn:active{box-shadow:var(--bevel-in)}
-.btn[disabled]{opacity:.55;cursor:default}
 .btn.primary{background:var(--title-b);color:#fff}
+.btn.big{width:100%;min-height:3.5rem;font-size:1.2rem;display:grid;gap:0;justify-items:center}
+.btn.big small{font-weight:400;font-size:.88rem}
 .btn.small{min-height:2.3rem;padding:.15rem .6rem;font-size:.9rem;font-weight:400}
-.btn.sq{padding:0;width:var(--tap);font:700 1.1rem var(--f-read)}
-.status{font:400 1.15rem/1.1 var(--f-status);letter-spacing:.02em}
-.euros{font:700 1rem var(--f-read);background:var(--well);color:var(--well-ink);box-shadow:var(--bevel-in);padding:.2rem .5rem;min-height:2rem;display:inline-flex;align-items:center;font-variant-numeric:tabular-nums}
-.euros.bump{animation:bump .4s}
-@keyframes bump{40%{transform:scale(1.2)}}
+.link{background:none;border:0;padding:.2rem .4rem;min-height:var(--tap);cursor:pointer;color:var(--ink);text-decoration:underline;text-underline-offset:3px;font-size:.95rem}
+.euros{font:700 1rem var(--f-read);font-variant-numeric:tabular-nums;background:var(--paper);color:var(--paper-ink);border:2px solid var(--edge);padding:.1rem .5rem;white-space:nowrap}
 
-/* ---------- Tele ---------- */
-.telerow{display:grid;grid-template-columns:3.6rem minmax(0,1fr);gap:.5rem;align-items:center}
-.tele{width:3.6rem;display:block}
+/* ---------- Tele and what Tele says ---------- */
+.telerow{display:grid;grid-template-columns:4.2rem minmax(0,1fr);gap:.9rem;align-items:center}
+.tele{width:4.2rem;display:block}
 .tele .scr,.tele .lid{fill:var(--screen)}
 .tele.speaking .scr,.tele.speaking .lid{fill:var(--screen-lit)}
 .tele.speaking .tip{fill:var(--lemon)}
-.tele .lid{transition:transform .22s}
-.tele .pupil{transition:transform .22s}
+.tele .lid,.tele .pupil{transition:transform .22s}
 .tele[data-feel="idle"] .up{transform:translateY(-14px)} .tele[data-feel="idle"] .lo{transform:translateY(15px)}
 .tele[data-feel="listen"] .up{transform:translateY(-20px)} .tele[data-feel="listen"] .lo{transform:translateY(20px)} .tele[data-feel="listen"] .pupil{transform:scale(1.25)}
 .tele[data-feel="joy"] .up{transform:translateY(-15px)} .tele[data-feel="joy"] .lo{transform:translateY(-6px)}
@@ -96,249 +93,214 @@ h1,h2,h3,p,ol,ul{margin:0}
 .tele .ant{transform-origin:60px 22px}
 .tele[data-feel="joy"] .ant{animation:wig .3s 2}
 @keyframes wig{50%{transform:rotate(7deg)}}
-.cap{min-width:0;background:var(--well);color:var(--well-ink);box-shadow:var(--bevel-in);padding:.35rem .55rem;min-height:3.2rem;display:grid;align-content:center;gap:.1rem}
-.cap .es{font-size:1rem;line-height:1.25;font-weight:700}
-.cap .en{font-size:.85rem;line-height:1.25;color:var(--muted)}
-.cap .btn{justify-self:start}
+.bubble{position:relative;min-width:0;padding:.45rem .65rem;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.1rem .5rem;align-items:center;min-height:3.3rem}
+.bubble::before{content:"";position:absolute;left:-.62rem;top:50%;width:1rem;height:1rem;background:var(--paper);border-left:2px solid var(--edge);border-bottom:2px solid var(--edge);transform:translateY(-50%) rotate(45deg)}
+.bubble .es{font-weight:700;line-height:1.25;position:relative}
+.bubble .en{grid-column:1;font-size:.85rem;line-height:1.25;color:var(--muted);position:relative}
+.bubble .again{grid-column:2;grid-row:1 / span 2;position:relative}
+.again svg{width:1.2rem;height:1.2rem;display:block}
 
 /* ---------- Home ---------- */
-.home{height:100%;overflow:auto;display:grid;align-content:start;gap:.6rem;padding-block:.6rem 1rem}
-.home .titlebar .status{text-shadow:none;color:var(--cream)}
-.startbtn{width:100%;min-height:3.6rem;display:grid;gap:0;justify-items:center;padding:.4rem .8rem;font-size:1.15rem}
-.startbtn small{font-weight:400;font-size:.9rem}
-.lead{font-size:.95rem;background:var(--well);color:var(--well-ink);box-shadow:var(--bevel-in);padding:.45rem .6rem}
-.path{list-style:none;padding:0;display:grid;gap:.35rem}
-.ans{background:var(--chrome);color:var(--on-chrome);box-shadow:var(--bevel-out);padding:3px;min-width:0}
-.arow{width:100%;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:.5rem;min-height:var(--tap);padding:.2rem .5rem;border:0;background:transparent;cursor:pointer;text-align:left}
-.arow .nm{font:700 1rem var(--f-read)}
-.arow .st{font-size:.85rem;display:flex;align-items:center;gap:.35rem;white-space:nowrap}
-.arow .q{font-size:.9rem;min-width:0}
-.abody{display:grid;gap:.5rem;padding:.5rem;background:var(--well);color:var(--well-ink);box-shadow:var(--bevel-in);margin-top:2px}
-.abody .q{font-weight:700;line-height:1.3}
-.abody .qen{font-size:.85rem;color:var(--muted)}
-.nodes{display:flex;gap:.3rem;list-style:none;padding:0}
-.nodes li{flex:1;min-width:0}
-.node{width:100%;display:grid;justify-items:center;gap:.1rem;padding:.25rem .1rem;border:2px solid var(--well-ink);background:var(--well);color:var(--well-ink);font-size:.78rem;line-height:1.15;text-align:center;min-height:3.3rem}
-button.node{cursor:pointer}
-.node .ic{font:700 .95rem var(--f-read);display:grid;place-items:center;width:1.5rem;height:1.5rem;border:2px solid var(--well-ink)}
-.node[data-s="done"] .ic{background:var(--fb-ok);color:#000}
-.node[data-s="now"]{background:var(--lemon);color:#000;border-color:#000;box-shadow:3px 3px 0 var(--soft-pink)}
-.node[data-s="now"] .ic{background:#fff;border-color:#000}
-.node[data-s="todo"],.node[data-s="wait"]{border-style:dashed}
-.arow-foot{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;justify-content:space-between}
-.tools{font-size:.9rem}
-.tools summary{cursor:pointer;min-height:2.2rem;display:flex;align-items:center;padding:0 .5rem;font:500 .95rem var(--f-ui)}
-.tools .in{display:grid;gap:.4rem;padding:.4rem .5rem .6rem}
-.tools label{display:flex;gap:.5rem;align-items:center;min-height:2.2rem;cursor:pointer}
-.tools input{width:1.1rem;height:1.1rem}
-.rowbtns{display:flex;flex-wrap:wrap;gap:.4rem}
+.home{height:100%;overflow:auto;display:grid;align-content:start;gap:.8rem;padding-block:.7rem 1.2rem}
+.today{padding:.8rem;display:grid;gap:.6rem}
+.today .which{font-size:.88rem;color:var(--muted);display:flex;justify-content:space-between;gap:.5rem;align-items:center}
+.today h1{font-size:1.25rem;line-height:1.25;text-wrap:balance}
+.today .qen{font-size:.9rem;color:var(--muted)}
+.today .note{font-size:.95rem}
+.today .link{justify-self:center;color:var(--paper-ink)}
+.pips{display:inline-flex;gap:3px;vertical-align:middle}
+.pips i{width:.85rem;height:.85rem;border:2px solid currentColor;display:block}
+.pips i[data-s="done"]{background:currentColor}
+.pips i[data-s="now"]{background:var(--lemon);border-color:#000}
+.listhead{display:flex;justify-content:space-between;align-items:baseline;gap:.5rem;font-size:.95rem}
+.listhead h2{font-size:1rem}
+.list{display:grid;gap:.35rem}
+.row{width:100%;display:grid;grid-template-columns:1.6rem minmax(0,1fr) auto;gap:.5rem;align-items:center;text-align:left;min-height:3rem;padding:.35rem .6rem;cursor:pointer;
+  background:var(--paper);color:var(--paper-ink);border:2px solid var(--edge);font-size:.92rem;line-height:1.25}
+.row .n{font-weight:700;font-size:1.05rem}
+.row[aria-pressed="true"]{box-shadow:4px 4px 0 var(--hyper-pink);border-color:var(--paper-ink)}
+.row .tick{font-weight:700}
 
-/* ---------- Ladder ---------- */
-.lad{flex:none;display:block}
-.lad .rail,.lad .rung{stroke:currentColor;stroke-width:2.5;fill:none}
-.lad .mk{fill:var(--lemon);stroke:#000;stroke-width:1.5}
-.lad .mk.moved{animation:hop .5s}
-@keyframes hop{0%{transform:translateY(var(--from,0))}60%{transform:translateY(-2px)}100%{transform:none}}
-.bigladder{list-style:none;padding:0;display:grid;gap:2px;border-left:4px solid var(--well-ink);border-right:4px solid var(--well-ink);padding:2px 0}
-.bigladder li{display:grid;grid-template-columns:1.6rem minmax(0,1fr) auto;gap:.4rem;align-items:center;padding:.2rem .5rem;border-top:3px solid var(--well-ink);font-size:.92rem;min-height:2rem}
-.bigladder li .n{font:700 1rem var(--f-read)}
-.bigladder li[data-here]{background:var(--lemon);color:#000;font-weight:700}
-.bigladder li[data-below]{color:var(--muted)}
-.bigladder .you{font:700 .85rem var(--f-ui)}
-
-/* ---------- Lesson ---------- */
-.lesson{height:100%;overflow:hidden;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;gap:.45rem;padding-block:.5rem}
-.top{display:flex;align-items:center;gap:.4rem}
-.prog{flex:1;min-width:0;display:flex;gap:2px;height:1.5rem;padding:3px;background:var(--well);box-shadow:var(--bevel-in)}
-.prog i{flex:1;min-width:2px;background:transparent;outline:1px dotted var(--chrome-lo);outline-offset:-1px}
-.prog i.on{background:var(--prog);outline:0}
-.prog i.now{outline:2px solid var(--well-ink);outline-offset:-2px}
-.prog i.pop{animation:fill .3s steps(3)}
+/* ---------- Lesson: instruction, Tele, one card, one button ---------- */
+.lesson{height:100%;overflow:hidden;display:grid;grid-template-rows:auto auto auto minmax(0,1fr) auto;gap:.55rem;padding-block:.5rem .6rem}
+.top{display:flex;align-items:center;gap:.5rem}
+.top .x{width:var(--tap);padding:0;font-size:1.1rem}
+.prog{flex:1;min-width:0;display:flex;gap:2px;height:1.4rem;padding:3px;background:var(--paper);box-shadow:var(--bevel-in)}
+.prog i{flex:1;min-width:2px}
+.prog i.on{background:var(--prog)}
+.prog i.pop{animation:fill .35s steps(3)}
 @keyframes fill{from{background:var(--lemon)}}
-.card{min-height:0;overflow:auto;display:grid;align-content:start;gap:.5rem;padding:.55rem;background:var(--well);color:var(--well-ink);box-shadow:var(--bevel-in)}
-.cardhead{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:.5rem;align-items:center}
-.cardhead h2{font-size:1.1rem;line-height:1.2;text-wrap:balance}
-.cardhead .rl{font-size:.82rem;color:var(--muted);line-height:1.2}
-.tag{font:500 .8rem var(--f-ui);padding:.1rem .4rem;border:2px solid var(--well-ink);background:var(--cream);color:#000;white-space:nowrap}
-.strip{display:flex;gap:3px;height:.7rem}
-.strip i{min-width:6px;border:1.5px solid #000}
-.strip i[data-off]{opacity:.3;border-style:dashed}
-.meaning{font-size:.95rem;line-height:1.3;color:var(--muted)}
-.meaning.big{font-size:1.2rem;color:var(--well-ink);font-weight:700;padding:.6rem 0}
-.tiles{display:flex;flex-wrap:wrap;gap:.4rem;list-style:none;padding:0}
-.tile{position:relative;overflow:hidden;display:inline-grid;gap:.05rem;align-content:center;text-align:left;min-height:var(--tap);padding:.25rem .6rem;color:var(--tile-ink);
-  background:var(--k-other);border:2px solid #000;box-shadow:inset -2px -2px 0 rgba(0,0,0,.18),inset 2px 2px 0 rgba(255,255,255,.7);font-size:1.05rem;font-weight:700;line-height:1.25;max-width:100%}
+.head{display:grid;gap:.15rem}
+.head .tag{justify-self:start;font-size:.85rem;font-weight:700;padding:.05rem .45rem;background:var(--cream);color:#000;border:2px solid #000}
+.head h1{font-size:1.4rem;line-height:1.2;text-wrap:balance}
+.mid{min-height:0;overflow:auto;display:grid;align-content:start;gap:.7rem;padding:0 4px 4px 0}
+.work{padding:.8rem;display:grid;gap:.6rem}
+.work.tight{padding:.5rem;gap:.4rem}
+.work.tight .tiles{gap:.3rem}
+.meaning{font-size:.98rem;line-height:1.35;color:var(--muted)}
+.meaning.big{font-size:1.3rem;line-height:1.35;color:var(--paper-ink);font-weight:700}
+.tiles{display:flex;flex-wrap:wrap;gap:.45rem}
+.tile{position:relative;overflow:hidden;display:inline-grid;gap:.1rem;align-content:center;text-align:left;min-height:2.9rem;padding:.3rem .7rem;color:#000;
+  background:var(--k-other);border:2px solid #000;font-size:1.25rem;font-weight:700;line-height:1.25;max-width:100%}
 .tile[data-k="opinion"]{background:var(--k-opinion)} .tile[data-k="reason"]{background:var(--k-reason)} .tile[data-k="link"]{background:var(--k-link)}
 .tile[data-k="time"]{background:var(--k-time)} .tile[data-k="detail"]{background:var(--k-detail)}
 button.tile{cursor:pointer}
-.tile .kd{font:500 .7rem/1 var(--f-ui)}
-.tile .ten{font-size:.82rem;font-weight:400;line-height:1.2}
+.tile .ten{font-size:.9rem;font-weight:400;line-height:1.2}
 .tile .w{display:inline-flex;align-items:flex-end;white-space:nowrap}
-.tile .w i{display:inline-block;width:calc(var(--n) * var(--dw,.52em));height:3px;background:#000;margin:0 1px 4px 1px}
-.tile.sm{min-height:2.1rem;font-size:.95rem;padding:.15rem .5rem;--dw:.34em}
-.tile.sm .kd{display:none}
+.tile .w i{display:inline-block;width:calc(var(--n) * var(--dw,.5em));height:3px;background:#000;margin:0 1px 5px 1px}
+.tile.sm{min-height:2rem;font-size:.95rem;padding:.1rem .45rem;--dw:.33em}
 .tile[data-mark="miss"]{background:#fff;border-style:dashed}
+.tile[data-pick]{box-shadow:0 0 0 3px var(--paper),0 0 0 5px var(--paper-ink)}
 .tile[data-wrong]{animation:shake .25s}
 @keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
-.tile .mk{position:absolute;top:1px;right:3px;font:700 .8rem var(--f-ui)}
 .tile.wipe::after{content:"";position:absolute;top:0;bottom:0;width:10px;left:-12px;background:var(--hyper-pink);animation:sweep .4s steps(8) forwards}
 .tile.wipe .in{animation:reveal .4s steps(8)}
 .tile.back{animation:flash .5s steps(4)}
 @keyframes sweep{to{left:calc(100% + 2px)}}
 @keyframes reveal{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
 @keyframes flash{from{box-shadow:0 0 0 4px var(--lemon)}}
-.void{display:grid;place-items:center;text-align:center;gap:.3rem;min-height:7rem;border:2px dashed var(--muted);color:var(--muted);padding:1rem;font-size:.95rem}
-.void b{font:500 1.3rem var(--f-status);color:var(--well-ink);letter-spacing:.04em}
-.built{min-height:2.9rem;padding:.35rem;background:var(--cream);box-shadow:var(--bevel-in);display:flex;flex-wrap:wrap;gap:.3rem;align-content:flex-start}
-.opts{display:grid;gap:.4rem;list-style:none;padding:0}
-.opt{width:100%;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:.5rem;align-items:center;text-align:left;min-height:var(--tap);padding:.3rem .6rem;border:2px solid var(--well-ink);
-  background:var(--well);color:var(--well-ink);cursor:pointer;font-size:1rem}
-.opt .k{font:700 .85rem var(--f-read);border:2px solid var(--well-ink);width:1.4rem;height:1.4rem;display:grid;place-items:center}
+.empty{display:grid;place-items:center;text-align:center;min-height:6rem;border:2px dashed var(--muted);color:var(--muted);padding:1rem;font-size:1.05rem}
+.built{min-height:2.4rem;padding:.3rem;border:2px dashed var(--muted);align-content:flex-start}
+.opts{display:grid;gap:.5rem}
+.opt{width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.5rem;align-items:center;text-align:left;min-height:3rem;padding:.4rem .8rem;cursor:pointer;
+  background:var(--paper);color:var(--paper-ink);border:2px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);font-size:1.08rem}
 .opt[data-s="right"]{background:var(--fb-ok);color:#000;border-color:#000}
 .opt[data-s="wrong"]{background:var(--fb-no);color:#000;border-color:#000;text-decoration:line-through}
 .opt[disabled]{cursor:default}
-.hintnote{font-size:.82rem;color:var(--muted)}
 
-.dock{display:grid;gap:.4rem;align-content:end;min-height:6.6rem}
-.hints{display:flex;flex-wrap:wrap;gap:.35rem}
-.speak{width:100%;min-height:3.5rem;font-size:1.25rem}
-.speak .dot{width:.9rem;height:.9rem;border-radius:50%;background:var(--hyper-pink);box-shadow:0 0 0 2px #fff inset,0 0 0 1px #000}
-.speak.on{box-shadow:var(--bevel-in);animation:pulse 1s ease-in-out infinite}
-.speak.on .dot{border-radius:0}
-@keyframes pulse{50%{box-shadow:var(--bevel-in),0 0 0 4px var(--soft-pink)}}
-.ask{display:grid;gap:.4rem;padding:.5rem .6rem;background:var(--cream);color:#000;border:3px solid #000}
-.ask p{font-weight:700}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:.4rem}
-.fb{display:grid;gap:.3rem;padding:.5rem .65rem;color:#000;border:3px solid #000;background:var(--fb-ok);animation:fbin .14s ease-out}
+.dock{display:grid;gap:.25rem;align-content:end;min-height:6rem}
+.quiet{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:0 .6rem;min-height:var(--tap);font-size:.92rem;text-align:center}
+.ask{display:grid;gap:.5rem}
+.ask p{font-weight:700;font-size:1.1rem;text-align:center}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.two .btn{min-height:3.5rem;font-size:1.1rem}
+.fb{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.3rem .6rem;align-items:center;padding:.6rem .7rem;color:#000;border:3px solid #000;background:var(--fb-ok);min-height:4.4rem;animation:fbin .14s ease-out}
 .fb[data-ok="0"]{background:var(--fb-no)}
-.fb .fbtop{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
-.fb h3{display:flex;align-items:center;gap:.4rem;font:700 1.2rem var(--f-ui)}
-.fb .sym{display:inline-grid;place-items:center;width:1.5rem;height:1.5rem;border:2px solid #000;background:#fff;font-size:1rem}
-.fb p{font-size:.95rem;line-height:1.3}
-.fb .gain{font:700 .95rem var(--f-read)}
-.fb .btn{min-width:6rem;justify-self:end}
-.fb .fbrow{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+.fb h2{display:flex;align-items:center;gap:.45rem;font-size:1.2rem}
+.fb .sym{display:inline-grid;place-items:center;width:1.6rem;height:1.6rem;border:2px solid #000;background:#fff;font-size:1rem}
+.fb p{grid-column:1;font-size:.95rem;line-height:1.3}
+.fb .gain{font-weight:700}
+.fb .btn{grid-column:2;grid-row:1 / span 2;min-width:6rem;min-height:3rem}
 @keyframes fbin{from{transform:translateY(.6rem);opacity:.4}}
 
-/* ---------- Lesson complete ---------- */
-.done{height:100%;overflow:auto;display:grid;align-content:start;gap:.7rem;padding-block:.8rem 1rem}
-.shout{font:600 2.2rem/1.05 var(--f-shout);color:#fff;text-shadow:2px 2px 0 var(--title-a),4px 4px 0 var(--hyper-pink);text-wrap:balance}
-.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.4rem}
-.stat{background:var(--well);color:var(--well-ink);box-shadow:var(--bevel-in);padding:.4rem .5rem;display:grid;gap:.1rem}
-.stat b{font:700 1.6rem/1 var(--f-read);font-variant-numeric:tabular-nums}
-.stat span{font-size:.8rem;line-height:1.2}
-.panel{background:var(--well);color:var(--well-ink);box-shadow:var(--bevel-in);padding:.55rem .6rem;display:grid;gap:.45rem}
-.panel h3{font-size:1rem}
-.stack{display:grid;gap:.4rem}
+/* ---------- Lesson finished ---------- */
+.done{height:100%;overflow:auto;display:grid;align-content:start;gap:.9rem;padding-block:1.2rem}
+.shout{font:600 2.3rem/1.05 var(--f-shout);color:#fff;text-shadow:2px 2px 0 var(--title-a),4px 4px 0 var(--hyper-pink);text-wrap:balance}
+.sum{padding:.8rem;display:grid;gap:.6rem}
+.sum .q{font-weight:700;line-height:1.25}
+.steps{display:grid;gap:.25rem}
+.steps li{display:grid;grid-template-columns:1.6rem minmax(0,1fr) auto;gap:.5rem;align-items:center;min-height:2rem;font-size:.98rem}
+.steps .ic{display:grid;place-items:center;width:1.5rem;height:1.5rem;border:2px solid currentColor;font-weight:700;font-size:.9rem}
+.steps li[data-s="done"] .ic{background:var(--fb-ok);color:#000;border-color:#000}
+.steps li[data-s="now"]{font-weight:700}
+.steps li[data-s="now"] .ic{background:var(--lemon);color:#000;border-color:#000}
+.steps li[data-s="todo"],.steps li[data-s="wait"]{color:var(--muted)}
+.steps small{font-size:.82rem;font-weight:400}
+.earned{font-size:.95rem;border-top:2px solid var(--edge);padding-top:.5rem}
+.stack{display:grid;gap:.5rem}
 
-/* ---------- Notes (Notepad window) ---------- */
-.notes .win{max-width:46rem}
-.notes .body{background:var(--well);color:var(--well-ink);box-shadow:var(--bevel-in);padding:1rem 1.1rem 1.4rem;display:grid;gap:1rem}
+/* ---------- Designer's notes ---------- */
+.notes .sheet{padding:1.1rem 1.2rem 1.6rem;display:grid;gap:1rem}
 .notes h1{font:600 1.9rem/1.1 var(--f-shout);text-wrap:balance}
-.notes h2{font:700 1.2rem/1.2 var(--f-read);margin-top:.6rem;text-wrap:balance}
+.notes h2{font-size:1.2rem;line-height:1.2;margin-top:.6rem;text-wrap:balance}
 .notes p,.notes li{max-width:64ch;line-height:1.5}
-.notes ol,.notes ul{padding-left:1.3rem;display:grid;gap:.45rem}
-.notes .lede{font-size:1.08rem}
+.notes .prose ol,.notes .prose ul{padding-left:1.3rem;display:grid;gap:.45rem}
+.notes .prose ol{list-style:decimal}.notes .prose ul{list-style:disc}
 .notes .small{font-size:.88rem;color:var(--muted)}
 .tw{overflow-x:auto}
 .notes table{border-collapse:collapse;width:100%;min-width:30rem;font-size:.93rem}
-.notes th,.notes td{text-align:left;vertical-align:top;padding:.35rem .5rem;border-bottom:2px solid var(--well-ink)}
-.notes th{font:700 .95rem var(--f-ui)}
+.notes th,.notes td{text-align:left;vertical-align:top;padding:.35rem .5rem;border-bottom:2px solid var(--edge)}
 .notes td:first-child{white-space:nowrap;font-weight:700}
-.plan{border:3px solid var(--well-ink);padding:.6rem .7rem;display:grid;gap:.4rem;background:var(--cream);color:#000}
-.plan h2{margin:0}
-.plan ol{list-style:none;padding:0;display:grid;gap:.15rem;font-size:.92rem}
+.box{border:2px solid var(--edge);padding:.7rem .8rem;display:grid;gap:.5rem}
+.box h2{margin:0;font-size:1.05rem}
+.box label{display:flex;gap:.5rem;align-items:center;min-height:2.2rem;cursor:pointer}
+.box input{width:1.1rem;height:1.1rem}
+.rowbtns{display:flex;flex-wrap:wrap;gap:.4rem}
+.plan ol{display:grid;gap:.15rem;font-size:.92rem}
 .plan li{display:grid;grid-template-columns:1.4rem minmax(0,1fr);gap:.3rem;max-width:none;line-height:1.35}
-.plan li[data-now]{font-weight:700;background:var(--lemon)}
+.plan li[data-now]{font-weight:700}
 .plan li[data-added]{font-style:italic}
-.plan .small{color:#333}
 
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.tile.wipe::after{display:none}}
 :root[data-calm="1"] *{animation:none!important;transition:none!important}
 :root[data-calm="1"] .tile.wipe::after{display:none}
-:root[data-calm="1"] .titlebar,:root[data-calm="1"] .shout{text-shadow:none}
-:root[data-calm="1"] .shout{color:var(--ink)}
+:root[data-calm="1"] .shout{text-shadow:none;color:var(--ink)}
 </style>
 
 <div class="stage" id="stage">
+  <button class="btn small notesbtn" type="button" id="notesbtn" aria-expanded="false">Design notes</button>
   <main class="phone"><div id="app"></div></main>
 
   <aside class="notes" id="notes" aria-label="Design notes">
-    <div class="win">
-      <div class="titlebar"><span class="grow">Notas.txt</span><button class="btn small only-narrow" type="button" id="closenotes">Back to the app</button></div>
-      <div class="body">
-        <h1>Memorise Ladder</h1>
-        <p class="lede">The student starts with five signed-off answers they can't fully translate. They finish able to hear Tele ask a question in Spanish and say their answer with nothing on screen. Each answer climbs five rungs of help, in lessons of about two minutes.</p>
+    <div class="paper sheet">
+      <div class="rowbtns" style="justify-content:space-between;align-items:center"><h1>Memorise Ladder</h1><button class="btn small only-narrow" type="button" id="closenotes">Back to the app</button></div>
+      <p>The student starts with five signed-off answers they can't fully translate. They finish able to hear Tele ask a question in Spanish and say their answer with nothing on screen.</p>
 
-        <div class="plan" id="plan" aria-live="off"></div>
+      <div class="box" id="tester"></div>
+      <div class="box plan" id="plan"></div>
 
-        <h2>What the student does</h2>
-        <p>Memorizar.exe opens on five answers and one Start button. The app picks the lesson: a next-day check that is due comes first, then the answer already in progress, then the shortest answer not yet started. One answer goes all the way to the top before the next begins, so the first "I said it from memory" lands on day one.</p>
-        <p>Each answer is a short row of lessons.</p>
+      <div class="prose" style="display:grid;gap:1rem">
+        <h2>What the student sees</h2>
+        <p>Two things only: five answers with a few steps each, and a progress bar inside a lesson. Every lesson screen has one instruction, Tele, one card and one button. The levels of help are never shown as a meter. The student just sees the words go.</p>
+
+        <h2>The steps for one answer</h2>
         <ol>
-          <li><strong>Meet it</strong>, about 9 steps. For every bit: Tele says it, the words and the English are on screen, the student says it back. Between bits there are "what does this mean?" taps, then tapping the answer into order. It ends with the whole answer after Tele, then read out alone. The student leaves knowing what every bit means and how it sounds.</li>
-          <li><strong>Build it</strong>, about 9 steps. A long answer gets one Build per sentence. The words shrink to first letters. Bit 1 alone, bit 2 alone, bits 1 and 2 together, bit 3 alone, bits 1 to 3, and so on, so each new bit is hooked onto what is already there. It ends with the whole answer from empty blocks.</li>
-          <li><strong>Wipe it</strong>, about 8 steps. The whole answer every time, and Tele asks the real question before each go. First letters, empty blocks, English only, then nothing but the question, twice, with a quick tap task in between so the second go is a real recall.</li>
-          <li><strong>Lock it in</strong>, 3 steps, opens the next day. Cold: Tele asks, nothing on screen, no warm-up. Three clean answers across two days and the answer is marked memorised.</li>
+          <li><strong>Listen and repeat.</strong> For every bit: Tele says it, the words and the English are on screen, the student says it back. In between come "what does this mean?" taps and tapping the answer into order. It ends with the whole answer after Tele, then said alone.</li>
+          <li><strong>First letters.</strong> A long answer gets one of these per sentence. Bit 1 alone, bit 2 alone, bits 1 and 2 together, bit 3 alone, bits 1 to 3, so each new bit hooks onto what is already there. It ends with the whole answer from empty blocks.</li>
+          <li><strong>From memory.</strong> The whole answer every time, and Tele asks the real question before each go. First letters, empty blocks, English only, then nothing but the question, twice, with a tap task in between so the second go is a real recall.</li>
+          <li><strong>Next-day check.</strong> Opens the next day. Tele asks, nothing on screen, no warm-up. Three clean answers across two days and the answer is marked memorised.</li>
         </ol>
-        <p>Once two answers have reached the top, <strong>Shuffle</strong> appears: Tele asks those questions in a random order.</p>
+        <p>Once two answers have been said from memory, <strong>Mix-up</strong> appears: Tele asks those questions in a random order.</p>
 
-        <h2>One step, tap by tap</h2>
+        <h2>One screen, tap by tap</h2>
         <ol>
           <li>Tele speaks: the bit to copy, or the question.</li>
-          <li>The student taps Speak, says it out loud, and taps Done.</li>
-          <li>On a recall step the words come back so the answer can be checked.</li>
-          <li>The panel at the bottom says what happened and names at most one bit to fix. A progress block fills. A clean step moves on by itself after a second.</li>
+          <li>The student says it out loud.</li>
+          <li>On a copy screen they tap "I've said it" and move on. On a recall screen they tap "Check my answer", the words come back, and they tap Yes or "Missed a bit".</li>
+          <li>A clean screen moves on by itself. A slip names one bit to fix.</li>
         </ol>
 
-        <h2>The five rungs</h2>
+        <h2>The five levels of help</h2>
         <div class="tw"><table>
-          <thead><tr><th>Rung</th><th>On screen</th><th>What it trains</th></tr></thead>
+          <thead><tr><th>Level</th><th>On screen</th><th>What it trains</th></tr></thead>
           <tbody>
             <tr><td>5 Just the question</td><td>Nothing. Tele asks.</td><td>The test itself</td></tr>
             <tr><td>4 English only</td><td>The English sentence</td><td>Recall from meaning</td></tr>
-            <tr><td>3 Empty blocks</td><td>Coloured blocks, a dash per word, the English</td><td>Recall from shape and meaning</td></tr>
+            <tr><td>3 Empty blocks</td><td>Coloured blocks, a dash per letter, the English</td><td>Recall from shape and meaning</td></tr>
             <tr><td>2 First letters</td><td>The first letter of every word</td><td>Recall with a strong cue</td></tr>
             <tr><td>1 Listen and repeat</td><td>The words, the English and Tele's voice</td><td>Meaning and sound</td></tr>
           </tbody>
         </table></div>
 
-        <h2>How the ladder moves</h2>
+        <h2>How help goes up and down</h2>
         <ul>
-          <li><strong>A bit slips.</strong> The panel names that one bit. The next steps fix it: that bit alone one rung lower, then with the bit before it, then the same step again.</li>
-          <li><strong>The same step slips twice.</strong> Tele puts words back. The rest of the lesson drops a rung, and the next lesson starts from where this one ended. Nothing is taken away and nothing is called failing.</li>
-          <li><strong>Three clean first goes in a row.</strong> The rest of the lesson climbs a rung and repeated steps disappear, so the progress bar jumps.</li>
-          <li><strong>Peek.</strong> Tap a hidden bit to flash it. The step still passes. It just isn't counted as clean.</li>
-          <li><strong>"I know this one".</strong> Answer from the question alone before any lesson. Clean, and the answer skips straight to Lock it in.</li>
-          <li><strong>The next-day check slips twice.</strong> The answer steps back to Wipe it.</li>
+          <li><strong>A bit slips.</strong> The panel names that one bit. The next screens fix it: that bit alone with more help, then with the bit before it, then the same screen again.</li>
+          <li><strong>The same screen slips twice.</strong> Tele puts words back for the rest of the lesson, and the step comes round again another time. Nothing is taken away and nothing is called failing.</li>
+          <li><strong>Three clean first goes in a row.</strong> The rest of the lesson gives less help and repeated screens drop out, so the progress bar jumps.</li>
+          <li><strong>Peek.</strong> Tapping a hidden block flashes its words. The screen still passes. It just isn't counted as clean.</li>
+          <li><strong>"I already know this one".</strong> Answer from the question alone before any lesson. Clean, and the answer skips straight to the next-day check.</li>
+          <li><strong>The next-day check slips twice.</strong> The answer steps back to From memory.</li>
         </ul>
 
         <h2>Why it is built this way</h2>
         <ul>
-          <li><strong>Meaning before memory.</strong> Text that is understood is recalled better than text that is not, so every bit is met with its English before anything is hidden.</li>
-          <li><strong>Say it out loud.</strong> Saying words aloud beats reading them silently (the production effect, MacLeod and colleagues 2010). Every core step is spoken. Tapping is only the breather.</li>
-          <li><strong>Recall beats re-reading.</strong> Roediger and Karpicke 2006. Reading stops after the first lesson. From then on every step is a recall, with the check afterwards.</li>
-          <li><strong>Fade the cues.</strong> Vanishing cues (Glisky, Schacter and Tulving 1986) and diminishing-cues retrieval practice (Fiechter and Benjamin 2018). These are the five rungs.</li>
+          <li><strong>Meaning before memory.</strong> Text that is understood is recalled better, so every bit is met with its English before anything is hidden.</li>
+          <li><strong>Say it out loud.</strong> The production effect (MacLeod and colleagues 2010). Every core screen is spoken. Tapping is only the breather.</li>
+          <li><strong>Recall beats re-reading.</strong> Roediger and Karpicke 2006. Reading stops after the first step.</li>
+          <li><strong>Fade the cues.</strong> Vanishing cues (Glisky, Schacter and Tulving 1986) and diminishing-cues retrieval practice (Fiechter and Benjamin 2018).</li>
           <li><strong>Build long texts bit on bit.</strong> The progressive-part method: 1, 2, 1 and 2, 3, 1 to 3. Long answers go one sentence at a time and are then joined.</li>
-          <li><strong>Long texts break at the joins.</strong> "What comes next?" taps and the bit-with-its-neighbour fix train the links between bits.</li>
-          <li><strong>Practise the way you are tested.</strong> Transfer-appropriate processing (Morris, Bransford and Franks 1977). The real question in Tele's voice starts every whole-answer go, on every rung.</li>
-          <li><strong>Space it and sleep on it.</strong> Cepeda and colleagues 2006; successive relearning, Rawson and Dunlosky 2011. Tap tasks space the recalls inside a lesson, and Lock it in cannot open the same day.</li>
-          <li><strong>Mix the questions.</strong> Shuffle makes the student tell the questions apart, which a single-answer lesson never asks of them.</li>
+          <li><strong>Long texts break at the joins.</strong> "What comes next?" taps and the bit-with-its-neighbour fix train the links.</li>
+          <li><strong>Practise the way you are tested.</strong> Transfer-appropriate processing (Morris, Bransford and Franks 1977). The real question in Tele's voice starts every whole-answer go.</li>
+          <li><strong>Space it and sleep on it.</strong> Cepeda and colleagues 2006; Rawson and Dunlosky 2011. Tap tasks space the recalls, and the check cannot open the same day.</li>
+          <li><strong>Mix the questions.</strong> Mix-up makes the student tell the questions apart.</li>
         </ul>
         <p class="small">The sources are cited from memory. Check them before quoting them to a school.</p>
 
         <h2>Stand-ins in this prototype</h2>
         <ul>
-          <li><strong>Marking.</strong> The student taps whether they said it all. The real app uses the recogniser. In Chrome on a computer, Tester tools can switch on real listening.</li>
-          <li><strong>Voice.</strong> The five questions and two of Tele's reactions are the real Tele clips. The answer bits use the device's Spanish voice, because those clips are not built yet.</li>
-          <li><strong>Days.</strong> "Skip to tomorrow" in Tester tools stands in for a night's sleep.</li>
-        </ul>
-
-        <h2>What this changes in the current spec</h2>
-        <ul>
-          <li>The last prompt is the Spanish question. The English meaning becomes rung 4, not the finish.</li>
-          <li>Memorise becomes lessons with a visible end, in place of an open practice loop.</li>
-          <li>The kinds of support are renamed and reordered: listen and repeat, first letters, empty blocks, English only, just the question.</li>
+          <li><strong>Marking.</strong> The student marks themselves. The real app uses the recogniser, so "Check my answer" becomes a Speak button.</li>
+          <li><strong>Voice.</strong> The five questions and two of Tele's reactions are the real Tele clips. The answer bits use the device's Spanish voice.</li>
+          <li><strong>Days.</strong> "Skip to tomorrow" above stands in for a night's sleep.</li>
         </ul>
       </div>
     </div>
@@ -348,7 +310,6 @@ button.tile{cursor:pointer}
 <script>
 'use strict';
 /* ================= Content: one student's five signed-off answers ================= */
-const KIND = { opinion:['●','opinion'], reason:['◆','reason'], link:['▲','link'], time:['■','when'], detail:['✚','detail'], other:['○','bit'] };
 const C = (t, en, k, s = 0) => ({ t, en, k, s });
 const A = [
   { n:1, q:'¿Qué tipo de películas te gustan y por qué?', qen:'What type of films do you like, and why?', clip:'q1',
@@ -368,21 +329,19 @@ const A = [
     chunks:[ C('Los fines de semana','At the weekend','time',0), C('juego a los videojuegos','I play video games','detail',0), C('y escucho música.','and I listen to music.','link',0),
              C('Me gusta montar en bici','I like riding my bike','opinion',1), C('porque es divertido,','because it is fun,','reason',1), C('aunque a veces','although sometimes','link',1), C('me gusta salir con mis amigos.','I like going out with my friends.','detail',1) ] }
 ];
-const RUNG = [ null,
-  { name:'Listen and repeat', low:'listen and repeat' }, { name:'First letters', low:'first letters' }, { name:'Empty blocks', low:'empty blocks' },
-  { name:'English only', low:'English only' }, { name:'Just the question', low:'just the question' } ];
-const LNAME = { meet:'Meet it', build:'Build it', wipe:'Wipe it', lock:'Lock it in', mix:'Shuffle', probe:'Test me first' };
-const LSHORT = { meet:'Meet', build:'Build', wipe:'Wipe', lock:'Lock' };
+const KWORD = { opinion:'opinion', reason:'reason', link:'link', time:'when', detail:'detail', other:'bit' };
+const HELP = [ '', 'listen and repeat', 'first letters', 'empty blocks', 'English only', 'just the question' ];
+const LNAME = { meet:'Listen and repeat', build:'First letters', wipe:'From memory', lock:'Next-day check', mix:'Mix-up', probe:'Test me first' };
 /* Tele speaks only Spanish. English is the subtitle. Comforting, no jokes. */
 const TELE = {
   good:[ ['Muy bien.','Very good.'], ['Eso es.',"That's it."], ['Así.','Like that.'], ['Lo tienes.','You have it.'] ],
-  heard:[ ['Te oigo.','I hear you.'], ['Bien.','Good.'], ['Eso es.',"That's it."] ],
   top:['Muy bien. Sigue así.','Very good. Keep going.'],
   miss:['No pasa nada. Otra vez.',"It's fine. Again."],
   up:['Tres seguidas. Quito palabras.',"Three in a row. I'm taking words away."],
   down:['Te doy más ayuda.',"I'll give you more help."],
-  now:['Ahora tú.','Now you.'], listen:['Escucha. Luego tú.','Listen. Then you.'], next:['¿Qué sigue?','What comes next?'], order:['Ponlo en orden.','Put it in order.'],
+  echo:['Repite.','Say it after me.'], now:['Ahora tú.','Now you.'], mean:['¿Qué significa?','What does it mean?'], next:['¿Qué sigue?','What comes next?'], order:['Ponlo en orden.','Put it in order.'],
   hello:['Tus respuestas están listas. Vamos a guardarlas.',"Your answers are ready. Let's store them."],
+  back:['Otra vez tú. Me alegro.',"You again. I'm glad."],
   morning:['Buenos días. ¿Te acuerdas?','Good morning. Do you remember?'],
   rest:['Ya está por hoy. Vuelve mañana.',"That's it for today. Come back tomorrow."],
   all:['Todo está en ti.',"It's all in you."],
@@ -399,20 +358,21 @@ const pick = a => a[Math.floor(Math.random() * a.length)];
 const wait = ms => new Promise(r => setTimeout(r, ms));
 const bare = t => t.replace(/[.,]+$/, '');
 const calm = () => document.documentElement.dataset.calm === '1';
+const wide = () => window.matchMedia('(min-width:900px)').matches;
 
 /* ================= Saved state (this browser only) ================= */
 const KEY = 'memorise-ladder-v1';
-const fresh = () => ({ day:1, euros:0, sound:true, calm:false, unlock:false, mic:false, sel:null, ans:A.map(() => ({ stage:0, top:0, recalls:[], wipeDay:0, memorised:false })) });
+const fresh = () => ({ day:1, euros:0, sound:true, calm:false, mic:false, sel:null, ans:A.map(() => ({ stage:0, top:0, recalls:[], wipeDay:0, memorised:false })) });
 let G = fresh();
 try { const j = JSON.parse(localStorage.getItem(KEY) || 'null'); if (j && j.ans && j.ans.length === A.length) G = Object.assign(fresh(), j); } catch {}
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(G)); } catch {} };
 
-/* ================= Lessons and the step plan ================= */
+/* ================= Steps for an answer, and the screens inside a lesson ================= */
 const partsOf = ai => { const p = []; A[ai].chunks.forEach((c, i) => { (p[c.s] = p[c.s] || []).push(i); }); return p; };
 const lessonsOf = ai => [ { type:'meet', a:ai }, ...partsOf(ai).map((_, p) => ({ type:'build', a:ai, part:p })), { type:'wipe', a:ai }, { type:'lock', a:ai } ];
 const allOf = ai => range(A[ai].chunks.length);
 const words = ai => A[ai].chunks.reduce((n, c) => n + c.t.split(' ').length, 0);
-const lessonName = L => L.type === 'build' && partsOf(L.a).length > 1 ? `Build it, part ${L.part + 1}` : LNAME[L.type];
+const lessonName = L => L.type === 'build' && partsOf(L.a).length > 1 ? `First letters, part ${L.part + 1}` : LNAME[L.type];
 const S = (a, span, r, x = {}) => Object.assign({ t:'say', a, span, r, tries:0, planned:true }, x);
 const isWhole = s => s.span.length === A[s.a].chunks.length;
 
@@ -450,26 +410,26 @@ function plan(L) {
   return q;
 }
 const lockOpen = ai => G.day > G.ans[ai].wipeDay;
-function nodeState(ai, idx) {
+function stepState(ai, idx) {
   const st = G.ans[ai], Ls = lessonsOf(ai);
   if (st.memorised || idx < st.stage) return 'done';
   if (idx === st.stage) return Ls[idx].type === 'lock' && !lockOpen(ai) ? 'wait' : 'now';
   return 'todo';
 }
 const mixReady = () => G.ans.filter(s => s.top >= 5).length >= 2;
+/** The next step that can be done for one answer right now, or null (memorised, or waiting for tomorrow). */
+function nextFor(ai) { const st = G.ans[ai]; if (st.memorised) return null; const L = lessonsOf(ai)[st.stage]; return L.type === 'lock' && !lockOpen(ai) ? null : L; }
 /** What to do next: a due next-day check, then the answer in progress, then the shortest answer not started. */
 function recommended() {
-  const ids = range(A.length), cur = i => lessonsOf(i)[G.ans[i].stage];
-  const live = ids.filter(i => !G.ans[i].memorised);
-  const due = live.filter(i => cur(i).type === 'lock' && lockOpen(i));
-  if (due.length) return cur(due[0]);
-  const going = live.filter(i => G.ans[i].stage > 0 && cur(i).type !== 'lock');
-  if (going.length) return cur(going[0]);
-  const todo = live.filter(i => G.ans[i].stage === 0).sort((x, y) => words(x) - words(y));
-  if (todo.length) return cur(todo[0]);
-  return null;
+  const ids = range(A.length).filter(i => nextFor(i));
+  const due = ids.filter(i => nextFor(i).type === 'lock');
+  if (due.length) return nextFor(due[0]);
+  const going = ids.filter(i => G.ans[i].stage > 0);
+  if (going.length) return nextFor(going[0]);
+  const todo = ids.sort((x, y) => words(x) - words(y));
+  return todo.length ? nextFor(todo[0]) : null;
 }
-const mins = L => { const n = plan(L).length; return n <= 4 ? 'about 1 min' : `about ${Math.max(2, Math.round(n * 13 / 60))} min`; };
+const mins = L => { const n = plan(L).length; return n <= 4 ? 'about 1 min' : `about ${Math.max(2, Math.round(n * 12 / 60))} min`; };
 
 /* ================= Sound: Tele clips, device Spanish voice, sound effects ================= */
 const ACtor = window.AudioContext || window.webkitAudioContext;
@@ -478,12 +438,13 @@ const bufs = {};
 function unlock() { try { if (!ac && ACtor) ac = new ACtor(); if (ac && ac.state === 'suspended') ac.resume(); } catch {} }
 async function loadBuf(name) {
   if (name in bufs) return bufs[name];
+  if (!ac) return null;
   bufs[name] = null;
-  try { if (!ac) return null; const r = await fetch('audio/' + name + '.mp3'); if (!r.ok) throw 0; bufs[name] = await ac.decodeAudioData(await r.arrayBuffer()); } catch { bufs[name] = null; }
+  try { const r = await fetch('audio/' + name + '.mp3'); if (!r.ok) throw 0; bufs[name] = await ac.decodeAudioData(await r.arrayBuffer()); } catch { bufs[name] = null; }
   return bufs[name];
 }
 function playBuf(buf, vol) {
-  return new Promise(res => { try { const src = ac.createBufferSource(), g = ac.createGain(); g.gain.value = vol; src.buffer = buf; src.connect(g); g.connect(ac.destination); src.onended = () => res(src); src.start(); curSrc = vol === 1 ? src : curSrc; setTimeout(() => res(src), buf.duration * 1000 + 400); } catch { res(null); } });
+  return new Promise(res => { try { const src = ac.createBufferSource(), g = ac.createGain(); g.gain.value = vol; src.buffer = buf; src.connect(g); g.connect(ac.destination); src.onended = () => res(src); src.start(); if (vol === 1) curSrc = src; setTimeout(() => res(src), buf.duration * 1000 + 400); } catch { res(null); } });
 }
 async function sfx(name) { if (!G.sound || calm()) return; unlock(); const b = await loadBuf(name); if (b) playBuf(b, 0.5); }
 const findVoice = () => { try { const v = speechSynthesis.getVoices(); return v.find(x => /^es[-_]ES/i.test(x.lang)) || v.find(x => /^es/i.test(x.lang)) || null; } catch { return null; } };
@@ -520,7 +481,7 @@ let dict = null, heard = '', partial = '', micLive = false;
 try {
   if (window.claude && window.claude.use) {
     window.claude.use('tts').then(t => { ttsCap = t || null; }).catch(() => {});
-    window.claude.use('dictation').then(d => { if (!d) return; dict = d; d.onFinal(e => { heard += e.text; }); d.onPartial(e => { partial = e.text; }); if (!ses) render(); }).catch(() => {});
+    window.claude.use('dictation').then(d => { if (!d) return; dict = d; d.onFinal(e => { heard += e.text; }); d.onPartial(e => { partial = e.text; }); renderSide(); }).catch(() => {});
   }
 } catch {}
 const useMic = () => !!(dict && G.mic);
@@ -538,13 +499,12 @@ function judge(s, text) {
   return out;
 }
 
-/* ================= Session engine ================= */
-let ses = null, ui = {}, view = 'home', lastDone = null;
+/* ================= Lesson engine ================= */
+let ses = null, ui = {}, view = 'home', lastDone = null, nextUp = null;
 function earn(n) { G.euros += n; if (ses) ses.earned += n; }
 function startLesson(L) {
-  unlock(); stopSpeech();
-  const queue = plan(L);
-  ses = { lesson:L, queue, cur:null, done:0, streak:0, said:0, clean:0, fixes:0, got5:0, earned:0, startTop:L.a != null ? G.ans[L.a].top : 0, lastMode:{}, popped:false, probe:null };
+  unlock(); stopSpeech(); if (!wide()) toggleNotes(false);
+  ses = { lesson:L, queue:plan(L), cur:null, done:0, streak:0, said:0, got5:0, earned:0, lastMode:{}, popped:false, probe:null };
   view = 'lesson'; nextStep();
 }
 const total = () => ses.done + ses.queue.filter(q => q.planned).length + (ses.cur && ses.cur.planned && !ses.cur.counted ? 1 : 0);
@@ -567,7 +527,8 @@ function distract(own, k, right, get) {
   return pool.slice(0, k);
 }
 const spanText = s => s.span.map(i => A[s.a].chunks[i].t).join(' ');
-/** What Tele says when a step opens, or when the student asks to hear it again. */
+const hasCue = s => (s.t === 'say' && ((s.r === 1 && !s.read) || isWhole(s))) || s.t === 'meaning' || s.t === 'start';
+/** What Tele says when a screen opens, or when the student asks to hear it again. */
 function cue(slow) {
   const s = ses.cur, a = A[s.a];
   if (s.t === 'say') {
@@ -578,7 +539,7 @@ function cue(slow) {
   return Promise.resolve();
 }
 function lowerRest(ai, r, self) { ses.queue.forEach(q => { if (q !== self && q.t === 'say' && q.a === ai && q.planned && q.r >= r) q.r = Math.max(2, q.r - 1); }); }
-/** Three clean first goes: every spoken step still to come gives one rung less help, and steps that are now repeats drop out. */
+/** Three clean first goes: every spoken screen still to come gives one level less help, and screens that are now repeats drop out. */
 function boost() {
   let changed = false;
   ses.queue.forEach(q => { if (q.t === 'say' && q.planned && q.r >= 2 && q.r < (isWhole(q) ? 5 : 4)) { q.r++; changed = true; } });
@@ -595,38 +556,38 @@ function resolveSay(o) {
     const bit = `«${bare(c.t)}»`;
     if (ses.lesson.type === 'probe') {
       ses.probe = o.m; countDone(s);
-      fb = { ok:0, head:'Good to know', body:'That shows where to start. Nothing is lost.', btn:'Continue' };
+      fb = { ok:0, head:'Good to know', body:'That shows where to start.', btn:'Continue' };
     } else if (s.r === 1) {
-      if (s.tries < 2) { ses.queue.unshift(s); fb = { ok:0, head:'Nearly', body:`Listen to ${bit} once more, then say it with Tele.`, btn:'Again' }; }
-      else { countDone(s); fb = { ok:0, head:'Moving on', body:'That bit comes round again in the next lesson.', btn:'Continue' }; }
+      if (s.tries < 2) { ses.queue.unshift(s); fb = { ok:0, head:'Once more', body:`Listen to ${bit} again, then say it with Tele.`, btn:'Again' }; }
+      else { countDone(s); fb = { ok:0, head:'Moving on', body:'That bit comes round again later.', btn:'Continue' }; }
     } else if (!s.planned) {
-      if (s.tries < 2) { s.r = Math.max(1, s.r - 1); ses.queue.unshift(s); fb = { ok:0, head:'Nearly', body:`${bit} once more, with more help.`, btn:'Again' }; }
+      if (s.tries < 2) { s.r = Math.max(1, s.r - 1); ses.queue.unshift(s); fb = { ok:0, head:'Once more', body:`${bit} again, with more help.`, btn:'Again' }; }
       else fb = { ok:0, head:'Moving on', body:'That bit comes round again later.', btn:'Continue' };
     } else if (s.tries === 1) {
       const ins = [S(s.a, [o.m], s.r - 1, { planned:false, tag:'fix' })];
       if (s.span.length >= 3) ins.push(S(s.a, o.m > s.span[0] ? [o.m - 1, o.m] : [o.m, o.m + 1], Math.max(2, s.r - 1), { planned:false, tag:'fix' }));
-      s.tag = 'again'; ses.queue.unshift(...ins, s); ses.fixes++;
-      fb = { ok:0, head:'Nearly', body:s.span.length > 1 ? `One bit slipped: ${bit}. Fix just that, then try this again.` : `${bit} slipped. One go with more help, then back here.`, btn:'Fix it' };
+      s.tag = 'again'; ses.queue.unshift(...ins, s);
+      fb = { ok:0, head:'One bit to fix', body:`${bit}. Just that bit next, then this again.`, btn:'Fix it' };
     } else if (s.tries === 2) {
       lowerRest(s.a, s.r, s); s.r = Math.max(1, s.r - 1); if (whole) st.top = Math.min(st.top, Math.max(1, s.r - 1));
       ses.queue.unshift(S(s.a, [o.m], 1, { planned:false, tag:'fix' }), s);
       fb = { ok:0, head:'More help for now', body:'Tele puts some words back. They come off again when you are ready.', btn:'Continue', tele:TELE.down };
-    } else { countDone(s); fb = { ok:0, head:'Moving on', body:'This one comes back next lesson, starting with more help.', btn:'Continue' }; }
+    } else { countDone(s); fb = { ok:0, head:'Moving on', body:'This one comes back another time.', btn:'Continue' }; }
     fb.tele = fb.tele || TELE.miss; fb.clip = fb.tele === TELE.miss ? 'nopasa' : null; fb.feel = 'sad';
     sfx('miss1');
   } else {
     const clean = o.kind === 'clean'; countDone(s);
     if (whole) { const reached = clean ? s.r : s.r - 1; if (reached > st.top) st.top = reached; if (clean && s.r === 5) { st.recalls.push(G.day); ses.got5++; earn(2); } }
-    if (s.r >= 2) { if (clean) { ses.clean++; ses.streak = s.tries === 0 ? ses.streak + 1 : 0; } else ses.streak = 0; }
+    if (s.r >= 2) ses.streak = clean && s.tries === 0 ? ses.streak + 1 : 0;
     const gain = clean && s.r === 5 ? 3 : 1;
-    if (!clean) fb = { ok:1, head:'That works', body:'You had some help, so this one is not counted as clean yet.', btn:'Continue', tele:pick(TELE.heard) };
-    else if (s.r === 1) fb = { ok:1, head:'Heard you', body:'', auto:true, tele:pick(TELE.heard) };
-    else if (s.r === 5) fb = { ok:1, head:'From memory', body:'Nothing on screen, and you said it.', auto:true, tele:TELE.top, clip:'muybien' };
-    else fb = { ok:1, head:pick(['Got it','Clean','Spot on','That is it']), body:'', auto:true, tele:pick(TELE.good) };
+    if (!clean) fb = { ok:1, head:'That works', body:'You had a bit of help, so it comes round once more.', btn:'Continue', tele:pick(TELE.good) };
+    else if (s.r === 1) fb = { ok:1, head:pick(['Nice','Good','Lovely']), auto:650, tele:pick(TELE.good) };
+    else if (s.r === 5) fb = { ok:1, head:'From memory', body:'Nothing on screen, and you said it.', auto:1400, tele:TELE.top, clip:'muybien' };
+    else fb = { ok:1, head:pick(['Got it','Spot on','That is it','Yes']), auto:900, tele:pick(TELE.good) };
     fb.gain = gain; fb.feel = 'joy';
     if (ses.streak >= 3 && (ses.lesson.type === 'build' || ses.lesson.type === 'wipe')) {
       ses.streak = 0;
-      if (boost()) { fb = { ok:1, head:'Three in a row', body:'Tele takes more words away for the rest of this lesson.', btn:'Continue', tele:TELE.up, gain, feel:'joy' }; sfx('combo1'); }
+      if (boost()) { fb = { ok:1, head:'Three in a row', body:'Tele takes more words away now.', btn:'Continue', tele:TELE.up, gain, feel:'joy' }; sfx('combo1'); }
       else sfx('correct1');
     } else sfx(clean && s.r === 5 ? 'best' : pick(['correct1','correct2']));
   }
@@ -636,37 +597,37 @@ function resolveSay(o) {
 }
 function resolveTap(right, body) {
   const s = ses.cur; let fb;
-  if (right) { countDone(s); fb = { ok:1, head:pick(['Correct','Yes','That is it']), body:body || '', auto:true, tele:pick(TELE.good), feel:'joy' }; sfx(pick(['correct1','correct2'])); }
+  if (right) { countDone(s); fb = { ok:1, head:pick(['Correct','Yes','That is it']), body:body || '', auto:900, tele:pick(TELE.good), feel:'joy' }; sfx(pick(['correct1','correct2'])); }
   else {
     if (!s.tag) { s.tag = 'again'; ses.queue.splice(Math.min(2, ses.queue.length), 0, s); } else countDone(s);
-    fb = { ok:0, head:'Not yet', body:`It is: ${ui.right}`, btn:'Continue', tele:TELE.miss, feel:'sad' }; sfx('miss1');
+    fb = { ok:0, head:'Not quite', body:`It is: ${ui.right}`, btn:'Continue', tele:TELE.miss, feel:'sad' }; sfx('miss1');
   }
   ui.state = 'result'; ui.fb = fb; render(); autoGo(fb);
 }
-function autoGo(fb) { if (!fb.auto) return; const mine = ui; setTimeout(() => { if (ui === mine && view === 'lesson') nextStep(); }, 1100); }
+function autoGo(fb) { if (!fb.auto) return; const mine = ui; setTimeout(() => { if (ui === mine && view === 'lesson') nextStep(); }, fb.auto); }
 
 function finishLesson() {
   const L = ses.lesson, type = L.type, st = L.a != null ? G.ans[L.a] : null, Ls = L.a != null ? lessonsOf(L.a) : [];
   const idx = t => Ls.findIndex(x => x.type === t);
   const mem = s => s.recalls.length >= 3 && new Set(s.recalls).size >= 2;
   let shout, line, tele = TELE.end[type];
-  if (type === 'meet') { st.stage = Math.max(st.stage, 1); st.top = Math.max(st.top, 1); shout = 'Met it'; line = 'You know what every bit means and how it sounds.'; }
-  else if (type === 'build') { st.stage = Math.max(st.stage, Ls.findIndex(x => x.type === 'build' && x.part === L.part) + 1); shout = 'Built'; line = st.top >= 3 ? 'The words are gone and you still said it.' : 'It is going in. The next lesson picks up from here.'; }
+  if (type === 'meet') { st.stage = Math.max(st.stage, 1); st.top = Math.max(st.top, 1); shout = 'Good start'; line = 'You know what every bit means and how it sounds.'; }
+  else if (type === 'build') { st.stage = Math.max(st.stage, Ls.findIndex(x => x.type === 'build' && x.part === L.part) + 1); shout = 'Getting there'; line = st.top >= 3 ? 'The letters went and you still said it.' : 'It is going in.'; }
   else if (type === 'wipe') {
-    if (ses.got5) { st.stage = idx('lock'); st.wipeDay = G.day; shout = 'Wiped'; line = 'Nothing on screen, and you answered Tele.'; }
-    else { st.stage = idx('wipe'); shout = 'Good work'; line = `You reached rung ${st.top}. Next time starts from there.`; tele = TELE.end.build; }
+    if (ses.got5) { st.stage = idx('lock'); st.wipeDay = G.day; shout = 'From memory'; line = 'Nothing on screen, and you answered Tele.'; }
+    else { st.stage = idx('wipe'); shout = 'Nearly there'; line = 'Not quite from memory yet. This step comes round once more, and it will be quicker.'; tele = TELE.end.build; }
   } else if (type === 'lock') {
     if (ses.got5 && mem(st)) { st.memorised = true; st.stage = Ls.length; shout = 'Memorised'; line = 'Three clean answers across two days. This one is yours.'; }
-    else if (ses.got5) { st.wipeDay = G.day; shout = 'Still there'; line = 'One more check tomorrow locks it in.'; }
-    else { st.stage = idx('wipe'); shout = 'It slipped a bit'; line = 'That is normal after a night. Wipe it once more and it comes back faster.'; tele = TELE.end.soft; }
+    else if (ses.got5) { st.wipeDay = G.day; shout = 'Still there'; line = 'One more check tomorrow and it is locked in.'; }
+    else { st.stage = idx('wipe'); shout = 'It slipped a bit'; line = 'That is normal after a night. One more go at "From memory" and it comes back faster.'; tele = TELE.end.soft; }
   } else if (type === 'probe') {
     if (ses.probe == null && ses.got5) { st.stage = idx('lock'); st.wipeDay = G.day; st.top = 5; shout = 'You do know it'; line = 'The lessons are skipped. It comes back tomorrow for a check.'; }
-    else if (ses.probe > 0) { st.stage = 1; st.top = Math.max(st.top, 1); shout = 'Good to know'; line = 'You have the start. Build it is next.'; }
-    else { shout = 'Good to know'; line = 'Meet it is the place to start.'; }
-  } else { A.forEach((_, i) => { const s = G.ans[i]; if (!s.memorised && mem(s) && lessonsOf(i)[s.stage].type === 'lock') { s.memorised = true; s.stage = lessonsOf(i).length; } }); shout = 'Shuffled'; line = 'Any question, any order.'; }
+    else if (ses.probe > 0) { st.stage = 1; st.top = Math.max(st.top, 1); shout = 'Good to know'; line = 'You have the start of it. "First letters" is next.'; }
+    else { shout = 'Good to know'; line = '"Listen and repeat" is the place to start.'; }
+  } else { A.forEach((_, i) => { const s = G.ans[i]; if (!s.memorised && mem(s) && lessonsOf(i)[s.stage].type === 'lock') { s.memorised = true; s.stage = lessonsOf(i).length; } }); shout = 'All mixed up'; line = 'Any question, any order.'; }
   earn(5);
-  lastDone = { L, shout, line, tele, said:ses.said, clean:ses.clean, earned:ses.earned, from:ses.startTop, to:st ? st.top : 0 };
-  ses = null; view = 'done'; save(); render();
+  lastDone = { L, shout, line, tele, said:ses.said, earned:ses.earned };
+  ses = null; view = 'done'; G.sel = null; save(); render();
   sfx('complete');
 }
 
@@ -684,34 +645,27 @@ function teleSVG(feel) {
     <path d="M52 97 l8 10 l8 -10" fill="#EFE8CC" stroke="#0B2A4A" stroke-width="2.5"/><circle cx="60" cy="114" r="2.6" fill="#F4F4D0" stroke="#0B2A4A" stroke-width="1.5"/>
   </svg>`;
 }
-function ladderSVG(pos, w = 22, moved = false) {
-  const y = r => 38 - r * 7;
-  return `<svg class="lad" width="${w}" height="${Math.round(w * 44 / 24)}" viewBox="0 0 24 44" aria-hidden="true"><path class="rail" d="M5 2 V42 M19 2 V42"/>${[1,2,3,4,5].map(r => `<path class="rung" d="M5 ${y(r)} H19"/>`).join('')}
-    <rect class="mk${moved ? ' moved' : ''}" x="7.500" y="${(pos ? y(pos) : 40) - 3.500}" width="9" height="7"/></svg>`;
+const SPEAKER = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9h4l5-4v14l-5-4H3z" fill="currentColor"/><path d="M15.500 8.500a5 5 0 0 1 0 7M18 6a8.500 8.500 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
+function teleRow(feel, es, en, again) {
+  return `<div class="telerow">${teleSVG(feel)}<div class="bubble paper" aria-live="polite"><p class="es" lang="es">${esc(es)}</p>${en ? `<p class="en">${esc(en)}</p>` : ''}${again ? `<button class="btn again" type="button" data-act="hear" aria-label="Hear it again">${SPEAKER}</button>` : ''}</div></div>`;
 }
-function bigLadder(pos, from) {
-  return `<ol class="bigladder" aria-label="The five rungs, top first">${[5,4,3,2,1].map(r => `<li${r === pos ? ' data-here' : ''}${r < pos ? ' data-below' : ''}><span class="n">${r}</span><span>${RUNG[r].name}</span>${r === pos ? '<span class="you">you are here</span>' : r === from && from !== pos ? '<span class="small">started here</span>' : ''}</li>`).join('')}</ol>`;
+function pipsHTML(ai) {
+  const Ls = lessonsOf(ai), done = Ls.filter((_, i) => stepState(ai, i) === 'done').length;
+  return `<span class="pips" role="img" aria-label="${done} of ${Ls.length} steps done">${Ls.map((_, i) => `<i data-s="${stepState(ai, i)}"></i>`).join('')}</span>`;
 }
-function capHTML(es, en, extra = '') { return `<div class="cap" aria-live="polite">${es ? `<p class="es" lang="es">${esc(es)}</p>` : ''}${en ? `<p class="en">${esc(en)}</p>` : ''}${extra}</div>`; }
-
 function tileHTML(ai, i, mode, o = {}) {
-  const c = A[ai].chunks[i], [sym, word] = KIND[c.k], ws = c.t.split(' ');
+  const c = A[ai].chunks[i], ws = c.t.split(' ');
   let inner, label;
   if (mode === 'full') { inner = esc(c.t); label = c.t; }
   else {
     inner = ws.map(w => { const m = w.match(/^(.+?)([.,]*)$/), core = m[1], rest = mode === 'letters' ? core.length - 1 : core.length;
       return `<span class="w">${mode === 'letters' ? esc(core[0]) : ''}${rest > 0 ? `<i style="--n:${rest}"></i>` : ''}${esc(m[2])}</span>`; }).join(' ');
-    label = mode === 'letters' ? `${word}, ${ws.length} words, first letters ${ws.map(w => w[0]).join(' ')}` : `${word}, ${ws.length} hidden words`;
+    label = mode === 'letters' ? `${KWORD[c.k]}, ${ws.length} words, first letters ${ws.map(w => w[0]).join(' ')}` : `${KWORD[c.k]}, ${ws.length} hidden words`;
   }
-  const mark = o.mark === 'ok' ? '<span class="mk" aria-hidden="true">✓</span><span class="sr"> said</span>' : o.mark === 'miss' ? '<span class="mk" aria-hidden="true">✗</span><span class="sr"> slipped</span>' : '';
   const tag = o.act ? 'button type="button"' : 'span', end = o.act ? 'button' : 'span';
   const cls = ['tile', o.sm ? 'sm' : '', o.anim || ''].filter(Boolean).join(' ');
-  return `<li><${tag} class="${cls}" data-k="${c.k}"${o.act ? ` data-act="${o.act}" data-i="${i}"` : ''}${o.mark ? ` data-mark="${o.mark}"` : ''}${o.wrong ? ' data-wrong' : ''} aria-label="${esc(label)}${o.act === 'peek' ? '. Tap to peek.' : ''}">
-    <span class="kd" aria-hidden="true">${sym} ${word}</span><span class="in"${mode === 'full' ? ' lang="es"' : ''}>${inner}</span>${o.en ? `<span class="ten">${esc(c.en)}</span>` : ''}${mark}</${end}></li>`;
-}
-function stripHTML(ai, span) {
-  const cs = A[ai].chunks, a = span[0] + 1, b = span[span.length - 1] + 1;
-  return `<div class="strip" role="img" aria-label="${span.length === cs.length ? `All ${cs.length} bits of your answer` : a === b ? `Bit ${a} of ${cs.length}` : `Bits ${a} to ${b} of ${cs.length}`}">${cs.map((c, i) => `<i style="flex:${c.t.split(' ').length};background:var(--k-${c.k})"${span.includes(i) ? '' : ' data-off'}></i>`).join('')}</div>`;
+  return `<li><${tag} class="${cls}" data-k="${c.k}"${o.act ? ` data-act="${o.act}" data-i="${i}"` : ''}${o.act === 'pickmiss' ? ' data-pick' : ''}${o.mark ? ` data-mark="${o.mark}"` : ''}${o.wrong ? ' data-wrong' : ''} aria-label="${esc(label)}${o.act === 'peek' ? '. Tap to peek.' : ''}${o.mark === 'miss' ? ', missed' : ''}">
+    <span class="in"${mode === 'full' ? ' lang="es"' : ''}>${inner}</span>${o.en ? `<span class="ten">${esc(c.en)}</span>` : ''}</${end}></li>`;
 }
 
 function render() {
@@ -719,234 +673,208 @@ function render() {
   if (view === 'lesson' && ses) app.innerHTML = lessonHTML();
   else if (view === 'done' && lastDone) app.innerHTML = doneHTML();
   else { view = 'home'; app.innerHTML = homeHTML(); }
-  renderPlan();
+  renderSide();
   const f = $('[data-focus]', app); if (f) { try { f.focus({ preventScroll:true }); } catch {} }
 }
 
-/* ---------- Home ---------- */
+/* ---------- Home: what to do now, then the five answers ---------- */
 function homeHTML() {
   const rec = recommended(), memo = G.ans.filter(s => s.memorised).length;
-  const anyDue = range(A.length).some(i => !G.ans[i].memorised && lessonsOf(i)[G.ans[i].stage].type === 'lock' && lockOpen(i));
-  const started = G.ans.some(s => s.stage > 0 || s.top > 0);
-  const line = memo === A.length ? TELE.all : anyDue ? TELE.morning : !rec ? TELE.rest : started ? TELE.now : TELE.hello;
   if (G.sel == null || G.sel >= A.length) G.sel = rec ? rec.a : 0;
-  const days = Math.max(0, 9 - G.day);
+  const ai = G.sel, a = A[ai], st = G.ans[ai], Ls = lessonsOf(ai), L = nextFor(ai);
+  const started = G.ans.some(s => s.stage > 0 || s.top > 0);
+  const due = rec && rec.type === 'lock';
+  const line = memo === A.length ? TELE.all : due ? TELE.morning : !rec ? TELE.rest : started ? TELE.back : TELE.hello;
   let h = `<div class="home">
-    <div class="win"><div class="titlebar"><span class="grow">Memorizar.exe</span><span class="status">${days} days to the test</span></div></div>
-    <div class="telerow">${teleSVG('idle')}${capHTML(line[0], line[1])}</div>`;
-  if (rec) h += `<button class="btn primary startbtn" type="button" data-act="start" data-focus>Start: Pregunta ${A[rec.a].n}, ${esc(lessonName(rec))}<small>${mins(rec)}</small></button>`;
-  else if (mixReady()) h += `<button class="btn primary startbtn" type="button" data-act="mix" data-focus>Start: Shuffle<small>Tele asks any question</small></button>`;
-  else h += `<p class="lead">Nothing more to do today. The next-day checks open tomorrow.</p>`;
-  if (!started) h += `<p class="lead">Each answer climbs five rungs, from repeating after Tele to answering with nothing on screen. The shortest answer goes first.</p>`;
-  h += `<div class="rowbtns" style="justify-content:space-between"><span class="euros" aria-label="${G.euros} euros">€${G.euros}</span><span class="status" style="align-self:center">Day ${G.day}. Memorised ${memo} of ${A.length}</span></div><ol class="path">`;
-  A.forEach((a, ai) => {
-    const st = G.ans[ai], Ls = lessonsOf(ai), open = G.sel === ai;
-    const cur = Ls[st.stage], label = st.memorised ? 'memorised' : st.top ? `rung ${st.top} of 5` : 'not started';
-    h += `<li class="ans"><button class="arow" type="button" data-act="sel" data-i="${ai}" aria-expanded="${open}"><span class="nm">Pregunta ${a.n}</span><span class="q" lang="es">${open ? '' : esc(a.q)}</span><span class="st">${ladderSVG(st.top, 14)}${label}</span></button>`;
-    if (open) {
-      h += `<div class="abody"><div><p class="q" lang="es">${esc(a.q)}</p><p class="qen">${esc(a.qen)}</p></div><ol class="nodes">`;
-      Ls.forEach((L, idx) => {
-        const s = nodeState(ai, idx), can = s === 'now' || G.unlock, ic = s === 'done' ? '✓' : s === 'now' ? '▶' : s === 'wait' ? 'z' : idx + 1;
-        const nm = L.type === 'build' && partsOf(ai).length > 1 ? `Build ${L.part + 1}` : LSHORT[L.type];
-        const sub = s === 'done' ? 'done' : s === 'now' ? 'next' : s === 'wait' ? 'tomorrow' : '';
-        h += `<li><${can ? `button type="button" data-act="node" data-a="${ai}" data-idx="${idx}"` : 'div'} class="node" data-s="${s}"><span class="ic" aria-hidden="true">${ic}</span><span>${nm}${sub ? `<br><small>${sub}</small>` : ''}</span></${can ? 'button' : 'div'}></li>`;
-      });
-      h += `</ol>`;
-      if (st.memorised) h += `<p class="hintnote">Memorised. It will turn up in Shuffle.</p>`;
-      else if (cur.type === 'lock' && !lockOpen(ai)) h += `<p class="hintnote">Lock it in opens tomorrow. A night's sleep is part of learning it.</p>`;
-      else if (st.stage === 0 && st.top === 0) h += `<div class="arow-foot"><span class="hintnote">Think you already know it?</span><button class="btn small" type="button" data-act="probe" data-i="${ai}">I know this one</button></div>`;
-      h += `</div>`;
-    }
-    h += `</li>`;
+    <div class="titlebar"><span class="grow">Memorizar.exe</span><span class="when">${Math.max(0, 9 - G.day)} days to the test</span></div>
+    ${teleRow('idle', line[0], line[1])}
+    <section class="paper today" aria-label="Up next">
+      <p class="which"><span>Answer ${a.n} of ${A.length}</span><span class="euros" aria-label="${G.euros} euros">€${G.euros}</span></p>
+      <div><h1 lang="es">${esc(a.q)}</h1><p class="qen">${esc(a.qen)}</p></div>`;
+  if (L) {
+    h += `<p class="note">${pipsHTML(ai)} &nbsp;Step ${st.stage + 1} of ${Ls.length}</p>
+      <button class="btn primary big" type="button" data-act="start" data-focus>${esc(lessonName(L))}<small>Start, ${mins(L)}</small></button>`;
+    if (st.stage === 0 && st.top === 0) h += `<button class="link" type="button" data-act="probe">I already know this one</button>`;
+  } else if (st.memorised) h += `<p class="note">${pipsHTML(ai)} &nbsp;<strong>Memorised.</strong> Pick another answer below.</p>`;
+  else h += `<p class="note">${pipsHTML(ai)} &nbsp;The last step opens <strong>tomorrow</strong>. A night's sleep is part of learning it.</p>${rec ? `<button class="btn primary big" type="button" data-act="rec" data-focus>Go to answer ${A[rec.a].n}<small>${esc(lessonName(rec))}</small></button>` : ''}`;
+  h += `</section>
+    <div class="listhead"><h2>Your five answers</h2><span>${memo} memorised</span></div>
+    <ol class="list">`;
+  A.forEach((x, i) => {
+    h += `<li><button class="row" type="button" data-act="sel" data-i="${i}" aria-pressed="${i === ai}"><span class="n">${x.n}</span><span lang="es">${esc(x.q)}</span>${G.ans[i].memorised ? '<span class="tick">✓ done</span>' : pipsHTML(i)}</button></li>`;
   });
-  if (mixReady() && rec) h += `<li class="ans"><button class="arow" type="button" data-act="mix"><span class="nm">Shuffle</span><span class="q">Tele asks any question you have wiped</span><span class="st">▶</span></button></li>`;
-  h += `</ol>
-    <details class="win tools"><summary>Tester tools</summary><div class="in">
-      <div class="rowbtns"><button class="btn small" type="button" data-act="tomorrow">Skip to tomorrow</button><button class="btn small" type="button" data-act="reset">Start over</button></div>
-      <label><input type="checkbox" id="t-unlock" data-opt="unlock"${G.unlock ? ' checked' : ''}> Open every lesson</label>
-      <label><input type="checkbox" id="t-sound" data-opt="sound"${G.sound ? ' checked' : ''}> Sound and Tele's voice</label>
-      <label><input type="checkbox" id="t-calm" data-opt="calm"${G.calm ? ' checked' : ''}> Calm mode: no motion</label>
-      ${dict ? `<label><input type="checkbox" id="t-mic" data-opt="mic"${G.mic ? ' checked' : ''}> Real listening in place of marking yourself</label>` : ''}
-      <p class="hintnote">Progress is kept in this browser only. No audio is stored.</p>
-    </div></details>
-    <button class="btn small only-narrow" type="button" data-act="notes">Read the design notes</button>
-  </div>`;
+  if (mixReady()) h += `<li><button class="row" type="button" data-act="mix"><span class="n">?</span><span><strong>Mix-up.</strong> Tele asks any question you know.</span><span class="tick">Start</span></button></li>`;
+  h += `</ol><button class="link only-narrow" type="button" data-act="notes">Design notes and tester tools</button></div>`;
   return h;
 }
 
 /* ---------- Lesson ---------- */
+function titleFor(s, vr) {
+  if (s.t === 'meaning') return 'What does this mean?';
+  if (s.t === 'next') return 'What comes next?';
+  if (s.t === 'start') return 'How does your answer start?';
+  if (s.t === 'order') return 'Tap your answer into order';
+  if (s.r === 1) return s.read ? 'Now say it without Tele' : s.span.length > 2 ? 'Listen to all of it, then say it' : 'Listen, then say it out loud';
+  return vr === 2 ? 'Say it from the first letters' : vr === 3 ? 'Say it. The letters are gone' : vr === 4 ? 'Say it in Spanish' : 'Tele asks. You answer';
+}
 function lessonHTML() {
   const s = ses.cur, a = A[s.a], T = total(), res = ui.state === 'result', fb = ui.fb;
-  const reveal = ['mark', 'pickmiss', 'result'].includes(ui.state);
+  const reveal = s.t === 'say' && ['mark', 'pickmiss', 'result'].includes(ui.state);
   const vr = s.t === 'say' ? (ui.hint === 'blocks' ? 3 : s.r) : 0;
-  const feel = res ? fb.feel : ui.state === 'listening' ? 'listen' : 'idle';
-  // Progress: one block per planned step, the Win98 way.
-  let blocks = ''; for (let i = 0; i < T; i++) blocks += `<i class="${i < ses.done ? 'on' : ''}${i === ses.done && !res ? ' now' : ''}${i === ses.done - 1 && ses.popped ? ' pop' : ''}"></i>`;
+  let blocks = ''; for (let i = 0; i < T; i++) blocks += `<i class="${i < ses.done ? 'on' : ''}${i === ses.done - 1 && ses.popped ? ' pop' : ''}"></i>`;
   ses.popped = false;
-  let h = `<div class="lesson"><div class="top"><button class="btn sq" type="button" data-act="exit" aria-label="Leave this lesson">✕</button>
-    <div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="${T}" aria-valuenow="${ses.done}" aria-label="Lesson progress, ${ses.done} of ${T} steps">${blocks}</div>
-    <button class="btn sq" type="button" data-act="sound" aria-pressed="${G.sound}" aria-label="Sound">${G.sound ? '♪' : '–'}</button><span class="euros" aria-label="${G.euros} euros">€${G.euros}</span></div>`;
+  const tag = s.tag === 'fix' ? 'Fixing one bit' : s.tag === 'again' ? 'Second go' : s.cold ? 'First go today' : '';
+  let h = `<div class="lesson"><div class="top"><button class="btn x" type="button" data-act="exit" aria-label="Leave this lesson">✕</button>
+    <div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="${T}" aria-valuenow="${ses.done}" aria-label="Lesson progress, ${ses.done} of ${T} done">${blocks}</div>
+    <span class="euros" aria-label="${G.euros} euros">€${G.euros}</span></div>
+    <div class="head">${tag ? `<span class="tag">${tag}</span>` : ''}<h1>${titleFor(s, vr)}</h1></div>`;
 
-  // Tele and the caption
-  let cap;
-  if (res) cap = capHTML(fb.tele[0], fb.tele[1]);
+  // Tele is the speaker: the bit to copy is heard, the question is heard and shown.
+  let line, en = '';
+  if (res) { line = fb.tele[0]; en = fb.tele[1]; }
   else if (s.t === 'say') {
-    if (s.r === 1 && !s.read) cap = s.span.length <= 2 ? capHTML(spanText(s), s.span.map(i => a.chunks[i].en).join(' ')) : capHTML(TELE.listen[0], TELE.listen[1]);
-    else if (isWhole(s)) cap = s.r === 5 && !ui.showQ ? capHTML('', '', `<p class="es">Tele asks the question.</p><button class="btn small" type="button" data-act="showq">Show the question</button>`) : capHTML(a.q, s.r === 5 ? '' : a.qen);
-    else cap = capHTML(TELE.now[0], TELE.now[1]);
-  } else if (s.t === 'meaning') cap = capHTML(a.chunks[s.i].t, '');
-  else if (s.t === 'start') cap = capHTML(a.q, '');
-  else cap = capHTML(TELE[s.t][0], TELE[s.t][1]);
-  h += `<div class="telerow">${teleSVG(feel)}${cap}</div>`;
+    if (s.r === 1 && !s.read) [line, en] = TELE.echo;
+    else if (isWhole(s)) { if (s.r === 5 && !ui.showQ) line = '¿ … ?'; else { line = a.q; en = s.r === 5 ? '' : a.qen; } }
+    else [line, en] = TELE.now;
+  } else if (s.t === 'meaning') [line, en] = TELE.mean;
+  else if (s.t === 'start') line = a.q;
+  else [line, en] = TELE[s.t];
+  h += teleRow(res ? fb.feel : ui.state === 'listening' ? 'listen' : 'idle', line, en, !res && hasCue(s));
 
-  // The task card
-  h += `<section class="card" aria-label="Task">`;
+  h += `<div class="mid">`;
   if (s.t === 'say') {
-    const title = s.r === 1 ? (s.read ? 'Now read it out, without Tele' : s.span.length > 2 ? 'All of it, after Tele' : 'Repeat after Tele') : vr === 2 ? 'Say it from the first letters' : vr === 3 ? 'Say it. The words are gone' : vr === 4 ? 'Say it in Spanish' : 'Answer Tele';
-    const moved = !ui.entered && ses.lastRung != null && ses.lastRung !== s.r;
-    const tag = s.tag === 'fix' ? 'Fixing one bit' : s.tag === 'again' ? 'Second go' : s.cold ? 'Cold check' : '';
-    h += `<div class="cardhead">${ladderSVG(s.r, 22, moved)}<div><h2>${title}</h2><p class="rl">Rung ${s.r} of 5: ${RUNG[s.r].low}</p></div>${tag ? `<span class="tag">${tag}</span>` : ''}</div>`;
-    const perTileEn = s.span.length <= 2;
-    if (reveal || vr <= 3) h += stripHTML(s.a, s.span);
+    const few = s.span.length <= 2, spanEn = isWhole(s) ? a.en : s.span.map(i => a.chunks[i].en).join(' ');
     if (!reveal && vr === 5) {
-      h += `<div class="void"><b>NOTHING ON SCREEN</b><span>Tele asks. You answer.</span></div>`;
-      if (ui.hint === 'first') h += `<ol class="tiles">${tileHTML(s.a, s.span[0], 'full')}</ol>`;
+      h += `<div class="paper work"><div class="empty">Nothing on screen this time.</div>${ui.hint === 'first' ? `<ol class="tiles">${tileHTML(s.a, s.span[0], 'full')}</ol>` : ''}</div>`;
     } else if (!reveal && vr === 4) {
-      h += `<p class="meaning big">${esc(isWhole(s) ? a.en : s.span.map(i => a.chunks[i].en).join(' '))}</p>`;
+      h += `<div class="paper work"><p class="meaning big">${esc(spanEn)}</p></div>`;
     } else {
-      if (!perTileEn && !reveal && (vr === 3 || (vr === 1 && s.span.length <= 4))) h += `<p class="meaning">${esc(isWhole(s) ? a.en : s.span.map(i => a.chunks[i].en).join(' '))}</p>`;
       const order = { full:0, letters:1, blank:2 };
-      h += `<ol class="tiles">` + s.span.map(i => {
+      // The English for a group of bits: always for three or four bits, and for a long answer only once the letters have gone.
+      const showEn = !few && !reveal && (s.span.length <= 4 || vr === 3);
+      h += `<div class="paper work${s.span.length > 4 ? ' tight' : ''}"><ol class="tiles">` + s.span.map(i => {
         const mode = reveal || ui.peek[i] || vr <= 1 ? 'full' : vr === 2 ? 'letters' : 'blank', key = s.a + ':' + i, prev = ses.lastMode[key];
         let anim = ''; if (!ui.entered && !reveal && prev != null && prev !== mode) anim = order[mode] > order[prev] ? 'wipe' : 'back';
         if (!reveal && !ui.peek[i]) ses.lastMode[key] = mode;
         const act = ui.state === 'pickmiss' ? 'pickmiss' : ui.state === 'ready' && mode !== 'full' ? 'peek' : null;
-        const mark = res && ui.missed === i ? 'miss' : res && ui.marks ? (ui.marks[i] ? 'ok' : 'miss') : null;
-        return tileHTML(s.a, i, mode, { en:perTileEn && (reveal || vr <= 3), sm:s.span.length > 3, act, mark, anim });
-      }).join('') + `</ol>`;
+        return tileHTML(s.a, i, mode, { en:few, sm:s.span.length > 3, act, mark:res && ui.missed === i ? 'miss' : null, anim });
+      }).join('') + `</ol>${showEn ? `<p class="meaning">${esc(spanEn)}</p>` : ''}</div>`;
     }
-    if (ui.note) h += `<p class="hintnote" role="status">${esc(ui.note)}</p>`;
-    ses.lastRung = s.r;
-  } else if (s.t === 'meaning' || s.t === 'next' || s.t === 'start') {
-    const title = s.t === 'meaning' ? 'What does this mean?' : s.t === 'next' ? 'What comes next?' : 'Tele asks. How does your answer start?';
-    h += `<div class="cardhead"><span></span><h2>${title}</h2><span class="tag">${s.tag === 'again' ? 'One more look' : 'Quick tap'}</span></div>`;
+    if (ui.note) h += `<p role="status">${esc(ui.note)}</p>`;
+  } else if (s.t === 'order') {
+    h += `<div class="paper work${a.chunks.length > 4 ? ' tight' : ''}"><ol class="tiles built" aria-label="Your answer so far">${ui.built.map(i => tileHTML(s.a, i, 'full', { sm:true })).join('')}</ol>
+      <ol class="tiles">${ui.pool.filter(i => !ui.built.includes(i)).map(i => tileHTML(s.a, i, 'full', { sm:true, act:res ? null : 'ord', wrong:ui.wrong === i })).join('')}</ol></div>`;
+  } else {
     if (s.t !== 'start') h += `<ol class="tiles">${tileHTML(s.a, s.i, 'full')}</ol>`;
     h += `<ol class="opts">` + ui.opts.map((o, k) => {
       const st = res ? (o === ui.right ? 'right' : k === ui.picked ? 'wrong' : '') : '';
-      return `<li><button class="opt" type="button" data-act="opt" data-i="${k}"${st ? ` data-s="${st}"` : ''}${res ? ' disabled' : ''}${s.t !== 'meaning' ? ' lang="es"' : ''}><span class="k" aria-hidden="true">${k + 1}</span><span>${esc(o)}</span><span aria-hidden="true">${st === 'right' ? '✓' : st === 'wrong' ? '✗' : ''}</span></button></li>`; }).join('') + `</ol>`;
-  } else if (s.t === 'order') {
-    h += `<div class="cardhead"><span></span><h2>Tap your answer into order</h2><span class="tag">Quick tap</span></div>
-      <ol class="tiles built" aria-label="Your answer so far">${ui.built.map(i => tileHTML(s.a, i, 'full', { sm:true })).join('')}</ol>
-      <ol class="tiles">${ui.pool.filter(i => !ui.built.includes(i)).map(i => tileHTML(s.a, i, 'full', { sm:true, act:res ? null : 'ord', wrong:ui.wrong === i })).join('')}</ol>`;
+      return `<li><button class="opt" type="button" data-act="opt" data-i="${k}"${st ? ` data-s="${st}"` : ''}${res ? ' disabled' : ''}${s.t !== 'meaning' ? ' lang="es"' : ''}><span>${esc(o)}</span><span aria-hidden="true">${st === 'right' ? '✓' : st === 'wrong' ? '✗' : ''}</span></button></li>`; }).join('') + `</ol>`;
   }
-  h += `</section>`;
+  h += `</div>`;
 
-  // The dock: hints and the Speak button, or the feedback panel. Always in the same place.
+  // The dock: one main button, or the result. Always in the same place.
   h += `<div class="dock">`;
+  const lk = (act, label) => `<button class="link" type="button" data-act="${act}">${label}</button>`;
   if (res) {
-    h += `<div class="fb" data-ok="${fb.ok}" role="status"><div class="fbtop"><h3><span class="sym" aria-hidden="true">${fb.ok ? '✓' : '~'}</span>${esc(fb.head)}</h3>${fb.gain ? `<span class="gain">+€${fb.gain}</span>` : ''}</div>
-      <div class="fbrow"><p>${esc(fb.body || '')}</p><button class="btn primary" type="button" data-act="go" data-focus>${fb.btn || 'Continue'}</button></div></div>`;
+    h += `<div class="fb" data-ok="${fb.ok}" role="status"><h2><span class="sym" aria-hidden="true">${fb.ok ? '✓' : '↻'}</span>${esc(fb.head)}${fb.gain ? ` <span class="gain">+€${fb.gain}</span>` : ''}</h2>
+      ${fb.body ? `<p>${esc(fb.body)}</p>` : ''}${fb.auto ? '' : `<button class="btn primary" type="button" data-act="go" data-focus>${fb.btn || 'Continue'}</button>`}</div>`;
   } else if (s.t === 'say') {
     if (ui.state === 'ready') {
-      const hb = (act, label) => `<button class="btn small" type="button" data-act="${act}">${label}</button>`;
-      let hints = '';
-      if (s.r === 1 && !s.read) hints = hb('hear', 'Hear again') + hb('slow', 'Slowly');
-      else if (vr === 5) hints = hb('hear', 'Ask again') + hb('slow', 'Slowly') + (ui.hint ? '' : hb('first', 'First words'));
-      else if (s.r === 4 && !ui.hint) hints = hb('blocks', 'Show the blocks');
-      else if (s.r >= 2 || s.read) hints = hb('model', 'Hear the answer') + (s.read ? '' : '<span class="hintnote" style="align-self:center">or tap a bit to peek</span>');
-      h += `<div class="hints">${hints}</div><button class="btn speak" type="button" data-act="speak" data-focus><span class="dot" aria-hidden="true"></span>Speak</button>`;
-    } else if (ui.state === 'listening') {
-      h += `<p class="hintnote" role="status">${useMic() ? 'Listening.' : 'Say it out loud.'} Tap Done when you have finished.</p><button class="btn speak on" type="button" data-act="done" data-focus><span class="dot" aria-hidden="true"></span>Done</button>`;
-    } else if (ui.state === 'judging') {
-      h += `<p class="hintnote" role="status">Checking what Tele heard.</p>`;
-    } else if (ui.state === 'mark') {
-      h += `<div class="ask"><p>Check it. Did you say all of it?</p><div class="two"><button class="btn primary" type="button" data-act="yes" data-focus>Yes, all of it</button><button class="btn" type="button" data-act="no">Not quite</button></div></div>`;
-    } else if (ui.state === 'pickmiss') {
-      h += `<div class="ask"><p>Tap the first bit that slipped.</p></div>`;
-    }
-  } else h += `<p class="hintnote">${s.t === 'order' ? 'Tap the bits in the order you say them.' : 'Tap an answer, or press 1, 2 or 3.'}</p>${s.t === 'meaning' ? `<div class="hints"><button class="btn small" type="button" data-act="hear">Hear again</button></div>` : ''}`;
+      let q = '';
+      if (s.r === 1 && !s.read) q = lk('slow', 'Play it slower');
+      else if (vr === 5) q = (ui.showQ ? '' : lk('showq', 'Read the question')) + (ui.hint ? '' : lk('first', 'Give me the first words'));
+      else if (s.r === 4 && !ui.hint) q = lk('blocks', 'Show me the blocks');
+      else if (s.read) q = lk('model', 'Hear it first');
+      else if (s.r >= 2) q = `<span>Stuck? Tap a block to peek.</span>`;
+      h += `<div class="quiet">${q}</div>`;
+      if (useMic()) h += `<button class="btn primary big" type="button" data-act="speak" data-focus>Speak</button>`;
+      else h += `<button class="btn primary big" type="button" data-act="said" data-focus>${s.r === 1 ? "I've said it" : 'Check my answer'}</button>`;
+    } else if (ui.state === 'listening') h += `<div class="quiet" role="status">Tele is listening.</div><button class="btn primary big" type="button" data-act="done" data-focus>Done</button>`;
+    else if (ui.state === 'judging') h += `<div class="quiet" role="status">Checking what Tele heard.</div>`;
+    else if (ui.state === 'mark') h += `<div class="ask"><p>Did you say all of it?</p><div class="two"><button class="btn primary" type="button" data-act="yes" data-focus>Yes</button><button class="btn" type="button" data-act="no">Missed a bit</button></div></div>`;
+    else if (ui.state === 'pickmiss') h += `<div class="ask"><p>Tap the first bit you missed.</p></div>`;
+  } else h += `<div class="quiet">${s.t === 'order' ? 'Tap the bits in the order you say them.' : ''}</div>`;
   h += `</div></div>`;
   ui.entered = true;
   return h;
 }
 
-/* ---------- Lesson complete ---------- */
+/* ---------- Lesson finished ---------- */
 function doneHTML() {
-  const d = lastDone, L = d.L, hasA = L.a != null, st = hasA ? G.ans[L.a] : null;
-  let next = null, nextNote = '';
-  if (hasA && !st.memorised) { const n = lessonsOf(L.a)[st.stage]; if (n.type !== 'lock' || lockOpen(L.a)) next = n; else nextNote = 'Lock it in opens tomorrow. Sleep does the next bit.'; }
-  const rec = next || recommended();
-  let h = `<div class="done"><p class="shout">${esc(d.shout)}</p>
-    <div class="telerow">${teleSVG('joy')}${capHTML(d.tele[0], d.tele[1])}</div>
-    <p class="lead">${esc(d.line)}</p>
-    <div class="stats"><div class="stat"><b>${d.said}</b><span>said out loud</span></div><div class="stat"><b>${L.type === 'meet' ? A[L.a].chunks.length : d.clean}</b><span>${L.type === 'meet' ? 'bits met' : 'clean recalls'}</span></div><div class="stat"><b>€${d.earned}</b><span>earned</span></div></div>`;
-  if (hasA) h += `<div class="panel"><h3>Pregunta ${A[L.a].n} on the ladder${d.to > d.from ? `: up ${d.to - d.from} ${d.to - d.from === 1 ? 'rung' : 'rungs'}` : ''}</h3>${bigLadder(d.to, d.from)}</div>`;
-  if (nextNote) h += `<p class="lead">${nextNote}</p>`;
-  h += `<div class="stack">`;
-  if (rec) h += `<button class="btn primary startbtn" type="button" data-act="nextlesson" data-focus>${next ? 'Next' : 'Start'}: ${next ? '' : `Pregunta ${A[rec.a].n}, `}${esc(lessonName(rec))}<small>${mins(rec)}</small></button>`;
-  h += `<button class="btn" type="button" data-act="home"${rec ? '' : ' data-focus'}>${rec ? 'Stop here' : 'Back to my answers'}</button></div></div>`;
-  doneHTML.next = rec;
+  const d = lastDone, L = d.L, hasA = L.a != null;
+  const same = hasA ? nextFor(L.a) : null; nextUp = same || recommended();
+  let h = `<div class="done"><p class="shout">${esc(d.shout)}</p>${teleRow('joy', d.tele[0], d.tele[1])}<section class="paper sum"><p>${esc(d.line)}</p>`;
+  if (hasA) {
+    h += `<p class="q" lang="es">${esc(A[L.a].q)}</p><ol class="steps">` + lessonsOf(L.a).map((x, i) => {
+      const s = stepState(L.a, i);
+      return `<li data-s="${s}"><span class="ic" aria-hidden="true">${s === 'done' ? '✓' : i + 1}</span><span>${esc(lessonName(x))}</span><small>${s === 'done' ? 'done' : s === 'now' ? 'next' : s === 'wait' ? 'opens tomorrow' : ''}</small></li>`; }).join('') + `</ol>`;
+  }
+  h += `<p class="earned"><strong>+€${d.earned}</strong> for saying it out loud ${d.said} ${d.said === 1 ? 'time' : 'times'}.</p></section><div class="stack">`;
+  if (nextUp) h += `<button class="btn primary big" type="button" data-act="nextlesson" data-focus>${same ? 'Keep going' : `Next: answer ${A[nextUp.a].n}`}<small>${esc(lessonName(nextUp))}, ${mins(nextUp)}</small></button>`;
+  h += `<button class="btn" type="button" data-act="home"${nextUp ? '' : ' data-focus'}>${nextUp ? 'Stop here' : 'Back to my answers'}</button></div></div>`;
   return h;
 }
 
-/* ---------- The live lesson plan in the notes window ---------- */
+/* ---------- The designer's side: tester tools and the live lesson plan ---------- */
 function describe(q) {
   const n = A[q.a].chunks.length;
-  if (q.t === 'say') { const a = q.span[0] + 1, b = q.span[q.span.length - 1] + 1; return `Say ${q.span.length === n ? 'the whole answer' : a === b ? `bit ${a}` : `bits ${a} to ${b}`}: ${q.read ? 'read it out' : RUNG[q.r].low}${q.tag === 'fix' ? ' (added to fix a slip)' : q.tag === 'again' ? ' (second go)' : ''}`; }
+  if (q.t === 'say') { const a = q.span[0] + 1, b = q.span[q.span.length - 1] + 1; return `Say ${q.span.length === n ? 'the whole answer' : a === b ? `bit ${a}` : `bits ${a} to ${b}`}: ${q.read ? 'words on screen, no Tele' : HELP[q.r]}${q.tag === 'fix' ? ' (added to fix a slip)' : q.tag === 'again' ? ' (second go)' : ''}`; }
   return { meaning:`Tap: what bit ${q.i + 1} means`, next:`Tap: what comes after bit ${q.i + 1}`, start:'Tap: how the answer starts', order:'Tap the answer into order' }[q.t] + (q.tag === 'again' ? ' (back after a miss)' : '');
 }
-function renderPlan() {
-  const el = $('#plan'); if (!el) return;
-  if (!ses) { el.innerHTML = `<h2>This lesson's plan, live</h2><p class="small">Start a lesson and the steps appear here. Slip on a step, or get three clean in a row, and watch the plan change.</p>`; return; }
+function renderSide() {
+  const t = $('#tester'), p = $('#plan'); if (!t || !p) return;
+  const ai = G.sel == null ? 0 : G.sel;
+  t.innerHTML = `<h2>Tester tools</h2>
+    <div class="rowbtns"><button class="btn small" type="button" data-act="tomorrow">Skip to tomorrow (now day ${G.day})</button><button class="btn small" type="button" data-act="reset">Start over</button></div>
+    <p class="small">Jump straight to a step of answer ${A[ai].n}:</p>
+    <div class="rowbtns">${lessonsOf(ai).map((L, i) => `<button class="btn small" type="button" data-act="jump" data-i="${i}">${esc(lessonName(L))}</button>`).join('')}</div>
+    <label><input type="checkbox" id="t-sound" data-opt="sound"${G.sound ? ' checked' : ''}> Sound and Tele's voice</label>
+    <label><input type="checkbox" id="t-calm" data-opt="calm"${G.calm ? ' checked' : ''}> Calm mode: no motion</label>
+    ${dict ? `<label><input type="checkbox" id="t-mic" data-opt="mic"${G.mic ? ' checked' : ''}> Real listening in place of self-marking</label>` : ''}`;
+  if (!ses) { p.innerHTML = `<h2>The lesson plan, live</h2><p class="small">Start a lesson and its screens are listed here. Slip on one, or get three clean in a row, and watch the plan change.</p>`; return; }
   const L = ses.lesson, cur = ses.cur;
-  el.innerHTML = `<h2>${L.a != null ? `Pregunta ${A[L.a].n}: ` : ''}${esc(lessonName(L))}, live</h2><p class="small">${ses.done} of ${total()} steps done. Clean streak: ${ses.streak}.</p><ol>` +
-    (cur && ui.state !== 'result' || cur && !cur.counted && ses.queue[0] !== cur ? `<li data-now><span>▶</span><span>${esc(describe(cur))}</span></li>` : '') +
+  p.innerHTML = `<h2>${L.a != null ? `Answer ${A[L.a].n}: ` : ''}${esc(lessonName(L))}, live</h2><p class="small">${ses.done} of ${total()} done. Clean streak: ${ses.streak}.</p><ol>` +
+    (cur && !cur.counted && ses.queue[0] !== cur ? `<li data-now><span>▶</span><span>${esc(describe(cur))}</span></li>` : '') +
     ses.queue.map(q => `<li${q.planned ? '' : ' data-added'}><span>${q.planned ? '·' : '+'}</span><span>${esc(describe(q))}</span></li>`).join('') + `</ol>`;
 }
 
 /* ================= Events ================= */
 function onSpeak() {
-  stopSpeech(); ui.state = 'listening'; ui.note = ''; heard = ''; partial = ''; micLive = false;
-  if (useMic()) {
-    micLive = true;
-    dict.start({ language:'es' }).catch(() => { micLive = false; G.mic = false; save(); ui.note = 'Real listening is not available here, so you mark yourself.'; if (ui.state === 'listening') render(); });
-  }
+  stopSpeech(); ui.state = 'listening'; ui.note = ''; heard = ''; partial = ''; micLive = true;
+  dict.start({ language:'es' }).catch(() => { micLive = false; G.mic = false; save(); ui.state = 'ready'; ui.note = 'Real listening is not available here, so mark yourself.'; render(); });
   render();
 }
 function onDone() {
-  const s = ses.cur;
-  if (micLive) {
-    ui.state = 'judging'; render(); const mine = ui;
-    const fin = () => { if (ui !== mine) return; const text = (heard + ' ' + partial).trim();
-      if (!norm(text).length) { ui.state = 'ready'; ui.note = 'Tele did not catch that. Nothing is marked. Have another go.'; return render(); }
-      const m = judge(s, text), lost = s.span.find(i => !m[i]); ui.marks = m;
-      resolveSay(lost == null ? { kind:ui.helped ? 'helped' : 'clean' } : { kind:'miss', m:lost }); };
-    dict.stop().then(fin, fin); return;
-  }
-  if (s.r === 1) return resolveSay({ kind:'clean' });
-  ui.state = 'mark'; render();
+  const s = ses.cur; ui.state = 'judging'; render(); const mine = ui;
+  const fin = () => { if (ui !== mine) return; micLive = false; const text = (heard + ' ' + partial).trim();
+    if (!norm(text).length) { ui.state = 'ready'; ui.note = 'Tele did not catch that. Nothing is marked. Have another go.'; return render(); }
+    const m = judge(s, text), lost = s.span.find(i => !m[i]);
+    resolveSay(lost == null ? { kind:ui.helped ? 'helped' : 'clean' } : { kind:'miss', m:lost }); };
+  dict.stop().then(fin, fin);
 }
-function goHome() { stopSpeech(); if (micLive && dict) { try { dict.stop().catch(() => {}); } catch {} } ses = null; view = 'home'; save(); render(); }
+function goHome() { stopSpeech(); if (micLive && dict) { try { dict.stop().catch(() => {}); } catch {} } micLive = false; ses = null; view = 'home'; save(); render(); }
+function toggleNotes(open) { const st = $('#stage'); st.classList.toggle('notes-open', open); const on = st.classList.contains('notes-open'); $('#notesbtn').setAttribute('aria-expanded', String(on)); $('#notesbtn').textContent = on ? 'Hide design notes' : 'Design notes'; }
 document.addEventListener('click', e => {
   const t = e.target.closest('[data-act]'); if (!t) return;
   unlock();
   const act = t.dataset.act, i = t.dataset.i != null ? +t.dataset.i : null, s = ses && ses.cur;
-  if (act === 'start') { const r = recommended(); if (r) startLesson(r); }
+  if (act === 'start') { const L = nextFor(G.sel); if (L) startLesson(L); }
+  else if (act === 'rec') { const r = recommended(); if (r) { G.sel = r.a; render(); } }
   else if (act === 'mix') startLesson({ type:'mix', a:null });
-  else if (act === 'probe') startLesson({ type:'probe', a:i });
-  else if (act === 'node') startLesson(lessonsOf(+t.dataset.a)[+t.dataset.idx]);
-  else if (act === 'sel') { G.sel = i; sfx('tap1'); render(); const b = $(`[data-act="sel"][data-i="${i}"]`); if (b) b.focus(); }
-  else if (act === 'nextlesson') { const n = doneHTML.next; if (n) startLesson(n); }
+  else if (act === 'probe') startLesson({ type:'probe', a:G.sel });
+  else if (act === 'jump') startLesson(lessonsOf(G.sel == null ? 0 : G.sel)[i]);
+  else if (act === 'sel') { G.sel = i; sfx('tap1'); render(); const home = $('.home'); if (home) home.scrollTop = 0; }
+  else if (act === 'nextlesson') { if (nextUp) startLesson(nextUp); }
   else if (act === 'home' || act === 'exit') goHome();
-  else if (act === 'notes') { $('#stage').classList.add('notes-open'); $('#closenotes').focus(); }
-  else if (act === 'tomorrow') { G.day++; G.sel = null; save(); render(); }
-  else if (act === 'reset') { stopSpeech(); const keep = { sound:G.sound, calm:G.calm, mic:G.mic }; G = Object.assign(fresh(), keep); lastDone = null; save(); render(); }
-  else if (act === 'sound') { G.sound = !G.sound; if (!G.sound) stopSpeech(); save(); render(); }
+  else if (act === 'notes') { toggleNotes(true); $('#closenotes').focus(); }
+  else if (act === 'tomorrow') { G.day++; G.sel = null; save(); if (!ses) { view = 'home'; render(); } else renderSide(); }
+  else if (act === 'reset') { stopSpeech(); const keep = { sound:G.sound, calm:G.calm, mic:G.mic }; G = Object.assign(fresh(), keep); lastDone = null; ses = null; view = 'home'; save(); render(); }
   else if (!s) return;
+  else if (act === 'said') { stopSpeech(); if (s.r === 1) resolveSay({ kind:'clean' }); else { ui.state = 'mark'; render(); } }
   else if (act === 'speak') onSpeak();
   else if (act === 'done') onDone();
   else if (act === 'yes') resolveSay({ kind:ui.helped ? 'helped' : 'clean' });
-  else if (act === 'no') { if (s.span.length === 1) resolveSay({ kind:'miss', m:s.span[0] }); else { ui.state = 'pickmiss'; render(); const b = $('[data-act="pickmiss"]'); if (b) b.focus(); } }
+  else if (act === 'no') { if (s.span.length === 1) resolveSay({ kind:'miss', m:s.span[0] }); else { ui.state = 'pickmiss'; render(); const b = $('[data-act="pickmiss"]'); if (b) b.focus({ preventScroll:true }); } }
   else if (act === 'pickmiss') resolveSay({ kind:'miss', m:i });
   else if (act === 'go') nextStep();
   else if (act === 'hear') cue(false);
@@ -957,20 +885,21 @@ document.addEventListener('click', e => {
   else if (act === 'peek') { ui.helped = true; ui.peek[i] = true; render(); const mine = ui; setTimeout(() => { if (ui === mine && ui.state === 'ready') { ui.peek[i] = false; render(); } }, 1600); }
   else if (act === 'opt') { if (ui.state !== 'ready') return; ui.picked = i; resolveTap(ui.opts[i] === ui.right); }
   else if (act === 'ord') {
-    if (i === ui.built.length) { ui.built.push(i); sfx('tap1'); if (ui.built.length === A[s.a].chunks.length) { ui.right = ''; return resolveTap(true, ui.errors ? 'In order. The joins are the part to watch.' : 'In order, first time.'); } render(); }
-    else { ui.errors++; ui.wrong = i; render(); const mine = ui; setTimeout(() => { if (ui === mine) { ui.wrong = null; } }, 300); }
+    if (i === ui.built.length) { ui.built.push(i); sfx('tap1'); if (ui.built.length === A[s.a].chunks.length) { ui.right = ''; return resolveTap(true, ui.errors ? '' : 'In order, first time.'); } render(); }
+    else { ui.errors++; ui.wrong = i; render(); const mine = ui; setTimeout(() => { if (ui === mine) ui.wrong = null; }, 300); }
   }
 });
 document.addEventListener('change', e => {
   const o = e.target.dataset && e.target.dataset.opt; if (!o) return;
   G[o] = e.target.checked; if (o === 'calm') document.documentElement.dataset.calm = G.calm ? '1' : '0'; if (o === 'sound' && !G.sound) stopSpeech();
-  save(); if (o === 'unlock') { render(); const d = $('.tools'); if (d) d.open = true; const b = $('#t-unlock'); if (b) b.focus(); }
+  save(); if (o === 'mic' && view === 'lesson') render();
 });
 document.addEventListener('keydown', e => {
   if (view !== 'lesson' || !ses || ui.state !== 'ready' || !ui.opts) return;
   const k = +e.key; if (k >= 1 && k <= ui.opts.length) { ui.picked = k - 1; resolveTap(ui.opts[k - 1] === ui.right); }
 });
-$('#closenotes').addEventListener('click', () => { $('#stage').classList.remove('notes-open'); render(); });
+$('#notesbtn').addEventListener('click', () => toggleNotes());
+$('#closenotes').addEventListener('click', () => { toggleNotes(false); render(); });
 
 document.documentElement.dataset.calm = G.calm ? '1' : '0';
 try { if ('speechSynthesis' in window) speechSynthesis.getVoices(); } catch {}
