@@ -8,7 +8,9 @@ import { expect, test, type Page } from '@playwright/test';
 async function open(page: Page) {
   await page.addInitScript(() => {
     const w = window as unknown as Record<string, any>;
-    try { localStorage.setItem('sound', 'off'); } catch { /* no storage */ }
+    // The level meter is on by default on desktop, and the fake microphone beeps every second or so, which would
+    // keep restarting the quiet period these tests wait for. These tests are about the recogniser, so no meter.
+    try { localStorage.setItem('sound', 'off'); localStorage.setItem('memorise-lab-v1', JSON.stringify({ meter: false })); } catch { /* no storage */ }
     class FakeRecogniser {
       onstart: (() => void) | null = null;
       onresult: ((e: unknown) => void) | null = null;
