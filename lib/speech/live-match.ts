@@ -23,8 +23,15 @@ export interface LiveMatch {
   next: { chunk: number; word: number } | null;
 }
 
-/** The share of a chunk's words that must be understood for the chunk to count as said. */
+/**
+ * The one rule for when a bit counts as said, used everywhere (task 27.13, decided 12 Nov 2026): most of its words
+ * were understood, and a long word one letter out counts as understood. A recognition failure is never held
+ * against the student, so one slipped word in a longer bit does not make them say the bit again.
+ */
 export const CHUNK_SAID = 0.7;
+
+/** Whether `understood` words out of `total` is enough for the bit to count as said. */
+export const chunkIsSaid = (understood: number, total: number): boolean => total > 0 && understood / total >= CHUNK_SAID;
 
 function editDistance(a: string, b: string): number {
   const row = Array.from({ length: b.length + 1 }, (_, j) => j);
@@ -79,7 +86,7 @@ export function liveMatch(chunks: readonly string[], transcript: string, prev?: 
     else j++;
   }
 
-  const said = hit.map((ws) => ws.length > 0 && ws.filter(Boolean).length / ws.length >= CHUNK_SAID);
+  const said = hit.map((ws) => chunkIsSaid(ws.filter(Boolean).length, ws.length));
   let next: LiveMatch['next'] = null;
   for (let c = 0; c < hit.length && !next; c++) {
     const w = hit[c].indexOf(false);

@@ -11,10 +11,11 @@
 export type LatencyKind = 'first-word' | 'paint' | 'gap';
 
 /**
- * Provisional budgets, to be replaced from a run on the reference Android phone (docs/performance-budget.md).
- * `paint` is ours and is a hard limit; `first-word` depends on the recogniser and the network.
+ * The budgets, set on 12 Nov 2026 from a run on the reference Android phone (docs/performance-budget.md).
+ * `paint` is ours and is a hard limit; `first-word` depends on the recogniser and the network, so it is set
+ * just above what that phone measured and the level indicator covers the rest.
  */
-export const LATENCY_BUDGET = { paintP90Ms: 100, firstWordMedianMs: 1500 } as const;
+export const LATENCY_BUDGET = { paintP90Ms: 100, firstWordMedianMs: 2500 } as const;
 
 export interface Summary { n: number; median: number; p90: number; max: number }
 
@@ -80,7 +81,7 @@ export function deviceReport(facts: DeviceFacts, stats: LiveStats, log: LatencyL
     '### Memorise lab run',
     `- Browser: ${facts.userAgent}`,
     `- Built-in recogniser present: ${facts.recogniser ? 'yes' : 'no'}`,
-    `- Words lit while speaking (interim results seen): ${stats.interims > 0 ? `yes, ${stats.interims} interim and ${stats.finals} final results` : 'no'}`,
+    `- Results while speaking: ${stats.interims} still being revised (interim), ${stats.finals} settled (final)`,
     `- First result after the microphone opened: ${stats.firstResultMs === null ? 'none' : `${stats.firstResultMs} ms`}`,
     `- Recogniser sessions opened: ${stats.sessions}`,
     `- Errors: ${stats.errors.length ? stats.errors.join(', ') : 'none'}`,

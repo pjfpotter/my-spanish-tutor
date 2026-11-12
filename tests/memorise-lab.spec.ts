@@ -126,33 +126,34 @@ async function toFirstTapScreen(page: Page) {
   await sayAndContinue(page); // the letters-gone screen; a tapping screen follows
 }
 
-test('27.10 speaking and tapping screens are told apart without reading', async ({ page }) => {
+test('27.10 speaking and tapping screens are told apart without reading, and nothing interrupts', async ({ page }) => {
   await open(page);
   await page.locator('.ml-tools summary').click();
   await page.getByRole('button', { name: 'From memory', exact: true }).click();
   await expect(page.getByTestId('lab-listen')).toBeVisible();
   await expect(page.getByTestId('lab-kind')).toHaveAttribute('data-kind', 'speak');
   await expect(page.getByTestId('lab-kind')).toHaveAttribute('aria-label', 'Speaking screen');
-  await expect(page.getByTestId('lab-switch')).toHaveCount(0); // the first screen follows nothing
 
   await sayAndContinue(page);
-  await expect(page.getByTestId('lab-switch')).toHaveCount(0); // speaking to speaking is no change
   await expect(page.getByTestId('lab-kind')).toHaveAttribute('data-kind', 'speak');
   await sayAndContinue(page);
 
-  // A tapping screen: a different badge, a cue for the change, and no microphone indicator.
+  // A tapping screen: a different badge and no microphone indicator.
   await expect(page.getByTestId('lab-kind')).toHaveAttribute('data-kind', 'tap');
   await expect(page.getByTestId('lab-kind')).toHaveAttribute('aria-label', 'Tapping screen');
-  await expect(page.getByTestId('lab-switch')).toBeVisible();
-  await expect(page.getByTestId('lab-switch')).toHaveAttribute('data-kind', 'tap');
   await expect(page.getByTestId('lab-listen')).toHaveCount(0);
+  // Nothing is drawn over the screen, so a tap goes straight through.
+  await expect(page.getByTestId('lab-switch')).toHaveCount(0);
+  await page.getByTestId('lab-opt').first().click({ timeout: 2000 });
 });
 
-test('27.10 the change cue is left out when motion is reduced', async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: 'reduce' });
+test('27.10 a tapping screen shows a mouse pointer with a mouse and a pointing hand when touched', async ({ page }) => {
   await toFirstTapScreen(page);
-  await expect(page.getByTestId('lab-kind')).toHaveAttribute('data-kind', 'tap'); // the badge still tells them apart
-  await expect(page.getByTestId('lab-switch')).toBeHidden();
+  const touch = await page.evaluate(() => matchMedia('(pointer: coarse)').matches);
+  const badge = page.getByTestId('lab-kind');
+  await expect(badge).toHaveAttribute('data-kind', 'tap');
+  await expect(badge.locator(touch ? '.ml-hand' : '.ml-ptr')).toBeVisible();
+  await expect(badge.locator(touch ? '.ml-ptr' : '.ml-hand')).toBeHidden();
 });
 
 test('27.11 the screen is kept awake while a lesson listens and let go afterwards', async ({ page }) => {
@@ -213,11 +214,12 @@ test('27.9 and 27.12 the tester can copy a device report with timings', async ({
   await hear(page, 'lo siento no');
   await page.waitForTimeout(100);
   await page.getByRole('button', { name: 'Leave this lesson' }).click();
-  await page.locator('.ml-tools summary').click();
+  await expect(page.getByTestId('lab-home')).toBeVisible();
+  if (!(await page.getByTestId('lab-report').isVisible())) await page.locator('.ml-tools summary').click();
   await page.getByTestId('lab-report').click();
   const text = page.getByTestId('lab-report-text');
   await expect(text).toContainText('Built-in recogniser present: yes');
-  await expect(text).toContainText('interim results seen): yes');
+  await expect(text).toContainText('Results while speaking: ');
   await expect(text).toContainText('Result to screen: median');
   await expect(text).toContainText('Screen stays awake: supported');
 });

@@ -61,7 +61,7 @@ describe('budget verdict and device report', () => {
     const stats = { ...freshStats(), sessions: 2, interims: 14, finals: 3, firstResultMs: 640, resumes: 1, errors: ['no-speech'] };
     const text = deviceReport(facts, stats, log);
     expect(text).toContain('Browser: Test Browser');
-    expect(text).toContain('interim results seen): yes, 14 interim and 3 final');
+    expect(text).toContain('Results while speaking: 14 still being revised (interim), 3 settled (final)');
     expect(text).toContain('First result after the microphone opened: 640 ms');
     expect(text).toContain('Errors: no-speech');
     expect(text).toContain('Screen stays awake: supported and held');
@@ -72,7 +72,7 @@ describe('budget verdict and device report', () => {
   it('says plainly when nothing was heard', () => {
     const text = deviceReport({ ...facts, recogniser: false, wakeLock: false, wakeLockHeld: false }, freshStats(), new LatencyLog());
     expect(text).toContain('recogniser present: no');
-    expect(text).toContain('(interim results seen): no');
+    expect(text).toContain('Results while speaking: 0 still being revised (interim), 0 settled (final)');
     expect(text).toContain('First result after the microphone opened: none');
     expect(text).toContain('Screen stays awake: not supported');
   });

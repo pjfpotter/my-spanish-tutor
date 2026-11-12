@@ -27,25 +27,30 @@ type Mode = 'full' | 'letters' | 'blank' | 'ghost';
 type Kind = 'speak' | 'tap';
 
 /**
- * Tells the two kinds of screen apart without words (task 27.10): a round badge with a microphone for speaking,
- * a square badge with a pointer for tapping. Shape and picture carry it, never colour alone.
+ * Tells the two kinds of screen apart without words (task 27.10), and without interrupting anything: a quiet badge
+ * beside the instruction. A round microphone for speaking. For tapping, a square badge with a mouse pointer where
+ * the device has a mouse and a pointing hand where it is touched, chosen in CSS by the device's main pointer.
+ * Shape and picture carry it, never colour alone.
  */
-function KindBadge({ kind, big }: { kind: Kind; big?: boolean }) {
+function KindBadge({ kind }: { kind: Kind }) {
+  const stroke = { fill: 'none', stroke: 'currentColor', strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
   return (
-    <span className={`ml-kind${big ? ' ml-kind-big' : ''}`} data-kind={kind} data-testid={big ? undefined : 'lab-kind'} role={big ? undefined : 'img'} aria-label={big ? undefined : kind === 'speak' ? 'Speaking screen' : 'Tapping screen'} aria-hidden={big || undefined}>
-      <svg viewBox="0 0 24 24" width="100%" height="100%" fill="currentColor" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" focusable="false">
-        {kind === 'speak' ? (
-          <>
-            <rect x="9" y="3" width="6" height="11" rx="3" stroke="none" />
-            <path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7" fill="none" strokeWidth="2" />
-          </>
-        ) : (
-          <>
-            <path d="M8 4l9 7.2-4.2.9 2.4 4.6-2 1-2.4-4.6L8 16z" strokeWidth="1" />
-            <path d="M16.5 4.5a5 5 0 0 1 2.6 3M18.8 2.2a8 8 0 0 1 3.4 4.4" fill="none" strokeWidth="1.6" />
-          </>
-        )}
-      </svg>
+    <span className="ml-kind" data-kind={kind} data-testid="lab-kind" role="img" aria-label={kind === 'speak' ? 'Speaking screen' : 'Tapping screen'}>
+      {kind === 'speak' ? (
+        <svg viewBox="0 0 24 24" width="100%" height="100%" focusable="false">
+          <rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor" />
+          <path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7" strokeWidth="2" {...stroke} />
+        </svg>
+      ) : (
+        <>
+          <svg className="ml-ptr" viewBox="0 0 24 24" width="100%" height="100%" focusable="false">
+            <path d="M6 3l12 9.5-5.2 1 3 5.8-2.6 1.3-3-5.8L6 18z" fill="currentColor" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" />
+          </svg>
+          <svg className="ml-hand" viewBox="0 0 24 24" width="100%" height="100%" focusable="false">
+            <path d="M9 11.5V5.2a1.7 1.7 0 0 1 3.4 0v5.3m0 0a1.5 1.5 0 0 1 3 .2m0 0a1.5 1.5 0 0 1 3 .6v4.2a5.5 5.5 0 0 1-5.5 5.5h-1.1a5.5 5.5 0 0 1-4.3-2.1l-3-3.8a1.5 1.5 0 0 1 2.3-1.9L9 14.5" strokeWidth="1.8" {...stroke} />
+          </svg>
+        </>
+      )}
     </span>
   );
 }
@@ -76,15 +81,12 @@ interface Ui {
   startedAt: number;
   lastProgressAt: number | null;
   lastVoiceAt: number | null;
-  /** Which kind of screen this is, and whether it follows the other kind (so the change is signalled). */
+  /** Which kind of screen this is. */
   kind: Kind;
-  switched: boolean;
   /** The whole transcript last drawn, so a repeated interim result costs nothing. */
   raw: string;
-  /** Counts screens, so each one is a fresh element and its switch cue plays once. */
-  n: number;
 }
-const newUi = (): Ui => ({ phase: 'cue', match: null, helped: false, shown: new Set(), offer: false, heard: '', fb: null, line: null, showQ: false, blocks: false, note: '', opts: [], right: '', picked: null, built: [], pool: [], wrong: null, errors: 0, startedAt: 0, lastProgressAt: null, lastVoiceAt: null, kind: 'speak', switched: false, raw: '', n: 0 });
+const newUi = (): Ui => ({ phase: 'cue', match: null, helped: false, shown: new Set(), offer: false, heard: '', fb: null, line: null, showQ: false, blocks: false, note: '', opts: [], right: '', picked: null, built: [], pool: [], wrong: null, errors: 0, startedAt: 0, lastProgressAt: null, lastVoiceAt: null, kind: 'speak', raw: '' });
 
 const freshWorld = (): World => ({ answers: A, day: 1, euros: 0, states: A.map(freshState) });
 const pick = <T,>(list: readonly T[]): T => list[Math.floor(Math.random() * list.length)];
@@ -168,8 +170,6 @@ export function MemoriseLab() {
   const lat = useRef(new LatencyLog());
   const speechStartAt = useRef<number | null>(null);
   const lastResultAt = useRef<number | null>(null);
-  const lastKind = useRef<Kind | null>(null);
-  const screens = useRef(0);
   const [report, setReport] = useState('');
   const sfx = useSfx();
   const voice = useVoice();
@@ -332,9 +332,6 @@ export function MemoriseLab() {
     if (!step) return endLesson();
     const u = (ui.current = newUi());
     u.kind = step.t === 'say' ? 'speak' : 'tap';
-    u.switched = lastKind.current !== null && lastKind.current !== u.kind;
-    lastKind.current = u.kind;
-    u.n = ++screens.current;
     const a = A[step.a];
     if (step.t === 'meaning' || step.t === 'next' || step.t === 'start') {
       const i = step.i ?? 0;
@@ -361,7 +358,6 @@ export function MemoriseLab() {
   }
   function startLesson(L: Lesson) {
     fallback.current = false;
-    lastKind.current = null;
     ses.current = newSession(w, L);
     setView('lesson');
     nextStep();
@@ -553,7 +549,7 @@ export function MemoriseLab() {
               <button type="button" className="ml-btn ml-small" onClick={() => { lat.current.reset(); setReport(''); }}>Clear timings</button>
             </div>
             {report && <pre className="ml-report" data-testid="lab-report-text">{report}</pre>}
-            <p className="ml-en">Budget for now: a lit word on screen within {LATENCY_BUDGET.paintP90Ms} ms of the result in 9 of 10 tries, and the first word lit within {LATENCY_BUDGET.firstWordMedianMs / 1000} s of starting to speak. Measured so far: result to screen {budgetVerdict(lat.current).paint}, first word {budgetVerdict(lat.current).firstWord}.</p>
+            <p className="ml-en">Budget: a lit word on screen within {LATENCY_BUDGET.paintP90Ms} ms of the result in 9 of 10 tries, and the first word lit within {LATENCY_BUDGET.firstWordMedianMs / 1000} s of starting to speak. Measured so far: result to screen {budgetVerdict(lat.current).paint}, first word {budgetVerdict(lat.current).firstWord}.</p>
             <p>Jump to a step of answer {a.n}:</p>
             <div className="ml-rowbtns">{Ls.map((x, i) => <button key={i} type="button" className="ml-btn ml-small" onClick={() => startLesson(x)}>{lessonName(A, x)}</button>)}</div>
           </div>
@@ -758,7 +754,6 @@ export function MemoriseLab() {
       {teleRow(line, res ? (fb?.ok ? JOY : SAD) : undefined, !res && hasCue ? () => hearAgain() : undefined, u.phase === 'listening')}
       <div className="ml-mid">{card}</div>
       <div className="ml-dock">{dock}</div>
-      {u.switched && <div className="ml-switch" key={u.n} data-kind={u.kind} data-testid="lab-switch" aria-hidden="true"><KindBadge kind={u.kind} big /></div>}
       <details className="ml-plan">
         <summary>Lesson plan</summary>
         <ol>{[step, ...s.queue].map((q, i) => <li key={i} data-now={i === 0 || undefined} data-added={!q.planned || undefined}>{describe(w, q)}</li>)}</ol>

@@ -120,6 +120,9 @@ Greenfield. Deploy preview builds on each branch, one production deployment for 
 ### D22. Live listening on devices that use the server recogniser
 Decided 12 Nov 2026 (task 27.12), to be confirmed by the owner. A device goes onto the browser recogniser first: the lab's device report (`/lab/memorise`, Tester tools) shows whether it sends interim results, and a device that does is verified in `docs/device-matrix.md`. Only a device that does not stays on the server recogniser, and there live listening is the level indicator plus marking at the end: the indicator moves with the voice from the microphone alone, the screen ends by itself once the voice has been heard and then stopped for about a second and a half, the clip held in memory goes to the transcribe route, and the words light together when the answer comes back, within the two-second rule. Nothing lights while speaking on that path, and the student is not asked to mark themselves unless there is no microphone at all. It is not built until a verified-failing device needs it: no device is known to be in that position yet, so building it now would be speculation.
 
+### D23. One rule for when a bit counts as said
+Decided 12 Nov 2026 (task 27.13). A bit counts as said when at least 70% of its words were understood, and a long word one letter out counts as understood. This replaces the stricter every-word rule in `lib/practice/chunk-said.ts`, so live listening in the lab and the practice screens agree. It follows the product rule that a recognition failure is never held against the student: one slipped word in a longer bit does not send them back to say it again. A one-word bit still has to be understood, and a short word one letter out does not count. The rule lives in `lib/speech/live-match.ts` (`CHUNK_SAID`, `chunkIsSaid`).
+
 ## Open Questions
 
 - ElevenLabs: which plan, whether its licence covers school and under-18 use, whether word timestamps and a speed setting are available, (task 4.1). A second voice for rotation is deferred, by decision (see docs/voice-decision.md).
@@ -128,7 +131,6 @@ Decided 12 Nov 2026 (task 27.12), to be confirmed by the owner. A device goes on
 - Writing flow details still open: euro naming confirmation, value-formula weights, size and timing of the all-five bonus, how pruning treats earned progress, whether to build outwards from the main verb phrase, the analysis animation (docs/writing-flow-options.md, section 8).
 - Challenge mode: what the multi-screen flow is. Needs a design pass (go back to the design tool).
 - Spoken translation into English as the comprehension check: data-protection and recogniser accuracy (question-comprehension spec).
-- Whether the lab's rule that a bit counts as said at 70% of its words, with long words allowed one letter out, replaces the stricter every-word rule used elsewhere.
 - Game modes for memorise (Blooket-style) and automatise (time-shrinking): proposals first, nothing built.
 - Teacher review of generated model answers before publish; the teacher-facing setup page, photo scan and edit screening are stretch.
 - How extension questions are surfaced to higher-ability students without accounts (optional stretch for all, as specified).

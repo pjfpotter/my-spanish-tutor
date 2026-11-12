@@ -29,18 +29,16 @@ Rules that are not numbers:
 
 ## Live listening keeps up on a phone (task 27.9)
 
-The memorise lab times itself while a student speaks and gives the result in its **device report** (Tester tools). Two numbers, both **provisional** until the reference Android phone has been measured and these are replaced with its results:
+The memorise lab times itself while a student speaks and gives the result in its **device report** (Tester tools). Two numbers, set on 12 Nov 2026 from a run on the reference phone (Android 10, Chrome 156, level meter off, 75 results):
 
-| What | Budget | What it covers |
-|---|---|---|
-| Result to screen | 90th percentile at most 100 ms | From the recogniser's result reaching the app to the lit word being on screen. This part is ours. |
-| Speech start to first word lit | Median at most 1.5 s | From the browser noticing speech on a screen to the first word lighting. It includes saying that word, so it is a ceiling on the recogniser's own delay, which we do not control. |
+| What | Budget | Measured | What it covers |
+|---|---|---|---|
+| Result to screen | 90th percentile at most 100 ms | median 13 ms, 90th 20 ms, worst 25 ms | From the recogniser's result reaching the app to the lit word being on screen. This part is ours. |
+| Speech start to first word lit | Median at most 2.5 s | median 2.1 s, 90th 3.5 s, worst 6.9 s (14 screens) | From the browser noticing speech on a screen to the first word lighting. It includes saying that word and the recogniser's own delay, which we do not control. |
 
-The limits are `LATENCY_BUDGET` in `lib/speech/latency.ts`. The level indicator covers whatever delay is left, and starts off on phones because some cannot share the microphone with the recogniser.
+The first result also took 1.8 s to arrive after the microphone opened, on the first screen of the run. The owner found the lab "very smooth" at these numbers, which is why the second budget was set just above them and not at the 1.5 s first guessed. The limits are `LATENCY_BUDGET` in `lib/speech/latency.ts`.
 
-What was done to keep the screen light: a result that repeats the last transcript is dropped without redrawing, so each interim result costs a redraw only when something changed. The matching itself (`lib/speech/live-match.ts`) is a small alignment of about ten words and was left as it is.
-
-Measured on the reference phone: **not yet**.
+What was done to keep the screen light: a result that repeats the last transcript is dropped without redrawing, so each interim result costs a redraw only when something changed. The matching itself (`lib/speech/live-match.ts`) is a small alignment of about ten words. Our share is now under a frame, so the remaining delay is the recogniser's. The level indicator is the cover for it; it starts off on phones because some cannot share the microphone with the recogniser, and the Tester tools switch turns it on to see whether this phone can.
 
 ## Optional manual check (does not block ticking 18.6)
 

@@ -14,9 +14,22 @@ describe('chunks said', () => {
   it('marks every chunk said when every word was understood', () => {
     expect(saidChunks(pieces, scoreAttempt(script, script)).map((c) => c.said)).toEqual([true, true, true]);
   });
-  it('a chunk counts only if all of its words were understood', () => {
+  it('a chunk with too few of its words understood is not said', () => {
     const heard = 'me gustan las películas de acción porque son';
     expect(saidChunks(pieces, scoreAttempt(script, heard)).map((c) => c.said)).toEqual([true, true, false]);
+  });
+  it('one slipped word in a longer chunk still counts as said (the one rule, task 27.13)', () => {
+    const heard = 'me gustan las xxxxx de acción porque son divertidas'; // 4 of 5 words in the first chunk
+    expect(saidChunks(pieces, scoreAttempt(script, heard)).map((c) => c.said)).toEqual([true, true, true]);
+  });
+  it('a long word one letter out counts as understood, a short word does not', () => {
+    expect(saidChunks([{ text: 'una película', kind: 'other' }], scoreAttempt('una película', 'una pelicula')).map((c) => c.said)).toEqual([true]);
+    expect(saidChunks([{ text: 'mi tío', kind: 'other' }], scoreAttempt('mi tío', 'mi tia')).map((c) => c.said)).toEqual([false]);
+    expect(saidChunks([{ text: 'divertidas', kind: 'other' }], scoreAttempt('divertidas', 'divertida')).map((c) => c.said)).toEqual([true]);
+  });
+  it('a one-word chunk has to be understood', () => {
+    expect(saidChunks([{ text: 'acción', kind: 'other' }], scoreAttempt('acción', 'accion')).map((c) => c.said)).toEqual([true]);
+    expect(saidChunks([{ text: 'acción', kind: 'other' }], scoreAttempt('acción', '')).map((c) => c.said)).toEqual([false]);
   });
   it('shows only the chunks said, in order, when the student stops partway', () => {
     expect(saidChunks(pieces, scoreAttempt(script, 'me gustan las películas de')).map((c) => c.said)).toEqual([true, false, false]);
