@@ -233,6 +233,24 @@ Note: task 7.x level work (names, thresholds) is superseded by 26.1a. Tasks 10.4
   - [x] 26.1e Pay answer value through memorising and automatising (engagement-rewards) and rename the currency to euros once confirmed
 - [ ] 26.2 Challenge mode flow design (multi-screen), possibly through the design tool
 
+## 27. Memorise ladder and live listening
+
+Built as a lab at `/lab/memorise` on sample answers. The memorise phase is unchanged until 27.4. Feedback behind 27.5 to 27.11: `docs/user-testing-notes.md`.
+
+- [x] 27.1 Prototype the memorise ladder (five levels of help, lessons with a progress bar, one thing per screen) and record it in docs/design/memorise-ladder-prototype.html
+- [x] 27.2 Implement the lesson engine (plans, a fix for a slipped bit, more help after two slips, less after three clean, keep-going, next-day check) in lib/memorise/ladder.ts; verify by unit tests including a run that always ends
+- [x] 27.3 Implement live listening (words light as understood, ends by itself, hint after a pause with no timeout, later words count after a slip) in lib/speech/live-match.ts, lib/speech/pause.ts and app/components/useLiveSpeech.ts, with the lab screen; verify by unit tests and Playwright with a stand-in recogniser
+- [ ] 27.4 Move the ladder and live listening into the memorise phase with the student's own confirmed answers and chunks: store lesson progress and recalls per profile, reconcile with the mastery rule and scaffold state already stored (lib/memorise/fade.ts, lib/practice/scaffold.ts), pay euros through the existing ledger, replace the lab's device voice with built clips for answer bits, and update tests/memorise.spec.ts; verify the journey test passes
+- [ ] 27.5 When a student has said some bits of a longer screen and stalls, mark the next bit to say and offer that bit's hint and audio directly; verify with a stand-in recogniser that the marker moves to the first unsaid bit
+- [ ] 27.6 Offer pronunciation support (slow audio and syllables, reusing the word practice from task 5.4) when the same word stays unlit on three attempts in a lesson; verify by unit test on the repeat counter and Playwright for the offer
+- [ ] 27.7 Make live matching aware of position so a repeated word lights only at the student's place in the sentence; verify with an answer that repeats "me gusta"
+- [ ] 27.8 When the end is reached with a bit missing, direct the student back to that bit in place and let saying it complete the screen; verify with a stand-in recogniser
+- [ ] 27.9 Measure speech-to-highlight delay on a real Android phone, set a budget in docs/performance-budget.md and docs/device-matrix.md, and reduce it (fewer renders per interim result, lighter matching); verify against the budget on the phone
+- [ ] 27.10 Signal speaking screens and tapping screens apart with little or no text, with a short transition when the kind changes that respects reduced motion and calm mode; verify with a student that the change is understood unprompted
+- [ ] 27.11 Keep the screen awake while a lesson listens and resume listening after a screen lock or return from the background, without dropping to self-marking; verify on a real Android phone
+- [ ] 27.12 Decide what live listening is on devices that use the server recogniser, and record the browser recogniser results for Android, iPhone and Chromebook in docs/device-matrix.md using the lab
+- [ ] 27.13 Decide whether a bit counts as said at 70% of its words with long words one letter out (the lab) or at every word (lib/practice/chunk-said.ts), and use one rule everywhere
+
 ## Workflow follow-up
 
 - Review the artifacts, then start implementation with the apply workflow.
