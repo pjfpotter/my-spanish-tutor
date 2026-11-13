@@ -1,12 +1,14 @@
 // @ts-nocheck
 /*
- * Tele's canvas renderer, ported from the validated sketch in docs/design/tele-sketch.html
- * (task 18.2). The drawing code below the "ported" marker is kept as close to the sketch as
- * possible on purpose, so the look Dolores signed off does not drift. It is untyped (ts-nocheck)
- * for that reason; the public API at the bottom is typed in tele-renderer.ts.
+ * Tele's canvas renderer. The look is the 2026-11-12 redesign (docs/design/tele-react/): a 1970s
+ * television with one realistic eye, rabbit-ear antennae, a stripy turtleneck and a patchwork
+ * corduroy jacket, standing in a painted room with drifting clouds, a lone door and a mushroom.
+ * The drawing code is kept as close to the designer's engine as possible so the signed-off look
+ * does not drift. It is untyped (ts-nocheck) for that reason; the public API at the bottom is typed
+ * in tele-renderer.ts. The designer's clip player is not used: the app's own playback drives this.
  *
- * Tele has no mouth. Inputs: feelings (eye, antennae, picture, world), loudness (screen and
- * antenna glow while speaking) and a question flag (raised brows at the end of a question).
+ * Tele has no mouth. Inputs: feelings (eye, antennae, picture, world), loudness (screen, speaker
+ * and antenna glow while speaking), a question flag (raised brows and a tilt) and the jacket.
  */
 import { EMOTIONS as EMOS, faceFromFeelings as faceFromEmo, neutral as zero } from './feelings';
 
@@ -15,12 +17,18 @@ export const TELE_MAX_FPS = 30;
 const MAX_FPS = TELE_MAX_FPS;
 export const TELE_MAX_DPR = 1.5;
 const MAX_DPR = TELE_MAX_DPR;
+/** The stage is 400 by 360 drawing units; the canvas keeps that shape. */
+export const TELE_STAGE = { w: 400, h: 360 } as const;
+/** Sprites are WebP, served from public/tele/ (about 330 KB in all, see docs/performance-budget.md). */
+export const TELE_SPRITE_BASE = '/tele/';
 
-export function createTeleDrawing(cv, isCalm) {
+export function createTeleDrawing(cv, isCalm, options = {}) {
+const base = options.spriteBase ?? TELE_SPRITE_BASE;
 const clamp = (v,a,b) => v<a?a:v>b?b:v, clamp01 = v => clamp(v,0,1), lerp = (a,b,t) => a+(b-a)*t;
 const rng = seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
-/* ---------- ported from the sketch: drawing assets ---------- */
-const g = cv.getContext('2d');
+
+/* ---------- drawing assets, made once ---------- */
+let g = cv.getContext('2d');
 function makeIris(){
   const N = 256, c = document.createElement('canvas'); c.width = c.height = N;
   const x = c.getContext('2d'), r = N/2, rnd = rng(7);
@@ -76,92 +84,130 @@ const rr = (x,y,w,h,r) => { g.beginPath(); g.roundRect ? g.roundRect(x,y,w,h,r) 
 /* ---------- state ---------- */
 const S = {emo:zero(), target:zero(), blinkNext:0, blinkT:-1, gaze:{x:0,y:0,tx:0,ty:0,next:0},
   emph:0, amp:0, ampTarget:0, last:0, power:0, flash:0, ant:{w:0,v:0}, knob:0, knobT:0, vol:0,
-  tear:{on:false,y:0,v:0,s:0,wait:0}, look:null, speaking:false, question:false, blinkF:1};
-/* ---------- world + body ---------- */
+  tear:{on:false,y:0,v:0,s:0,wait:0}, look:null, speaking:false, question:false, blinkF:1, jacket:true};
+
+/* ---------- sprites cut from the atlas ---------- */
+const META = {"tv": {"x": 104, "y": 97, "w": 474, "h": 306}, "screen": {"x": 137, "y": 128, "w": 273, "h": 222}, "sweater": {"x": 93, "y": 440, "w": 378, "h": 404}, "hand_sw_l": {"x": 102, "y": 850, "w": 76, "h": 112}, "hand_sw_r": {"x": 389, "y": 850, "w": 75, "h": 112}, "jacket_l": {"x": 510, "y": 432, "w": 221, "h": 538}, "jacket_r": {"x": 747, "y": 443, "w": 187, "h": 490}, "hand_j_l": {"x": 523, "y": 844, "w": 67, "h": 115}, "hand_j_r": {"x": 865, "y": 843, "w": 70, "h": 119}};
+const IMG = {}, KNOB = {};
+const loadImg = src => new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
+function makeKnob(ax, ay, r){ // a round crop of one of the set's own dials, so it can turn
+  const m = META.tv, d = Math.ceil(r*2)+4, c = document.createElement('canvas'); c.width = c.height = d;
+  const x = c.getContext('2d'); x.beginPath(); x.arc(d/2, d/2, r, 0, 7); x.clip();
+  x.drawImage(IMG.tv, d/2-(ax-m.x), d/2-(ay-m.y));
+  return {c, d, sx:ax-m.x, sy:ay-m.y};
+}
+['tv','screen','sweater','jacket_l','jacket_r','hand_sw_l','hand_sw_r','hand_j_l','hand_j_r'].forEach(n => loadImg(base+n+'.webp').then(im => {
+  IMG[n] = im;
+  if (n==='tv' && im){ KNOB.a = makeKnob(487, 266.5, 23); KNOB.b = makeKnob(487, 321.5, 23.5); }
+}));
+loadImg(base+'clouds.webp').then(im => { IMG.clouds = im; });
+['door','mushroom'].forEach(n => loadImg(base+n+'.webp').then(im => { IMG[n] = im; }));
+
+/* ---------- world ---------- */
+const WH = 360, FH = 292, VPY = 244;
+function drawClouds(now){
+  const im = IMG.clouds; if (!im) return;
+  const t = isCalm() ? 0 : now;
+  g.save(); g.beginPath(); g.rect(0,0,400,FH+4); g.clip();
+  // two copies of the cloud sheet turn about a point just above the floor, the nearer one a little faster
+  [{size:1040, w:.010, a:.92, p:0}, {size:1400, w:.016, a:.5, p:2.3}].forEach(L => {
+    const w = L.size, h = L.size*im.height/im.width;
+    g.save(); g.globalAlpha = L.a; g.translate(200, FH-20); g.rotate(L.p + t*L.w);
+    g.drawImage(im, -w/2, -h/2, w, h); g.restore();
+  });
+  g.restore();
+}
 function drawWorld(f, now){
   const em = S.emo;
-  let gr = g.createLinearGradient(0,0,0,300);
+  let gr = g.createLinearGradient(0,0,0,FH);
   gr.addColorStop(0, moodColor(HX, em, 0)); gr.addColorStop(1, moodColor(HX, em, 1));
-  g.fillStyle = gr; g.fillRect(0,0,400,430);
+  g.fillStyle = gr; g.fillRect(0,0,400,WH);
   const joy = em.joy||0;
   if (joy > .05){ // rainbow
     const bands = ['#ff6b6b','#ffb36b','#ffe66b','#7be38a','#6bb8ff','#a88bff'];
     g.save(); g.globalAlpha = Math.min(.7, joy*.8); g.lineWidth = 7;
-    bands.forEach((c,i) => { g.strokeStyle = c; g.beginPath(); g.arc(200, 330, 250-i*7, Math.PI*1.08, Math.PI*1.92); g.stroke(); });
+    bands.forEach((c,i) => { g.strokeStyle = c; g.beginPath(); g.arc(200, FH+60, 330-i*7, Math.PI*1.08, Math.PI*1.92); g.stroke(); });
     g.restore();
   }
-  for (const c of CLOUDS){
-    const x = isCalm() ? c.x : ((c.x + now*c.v) % 480) - 40;
-    g.save(); g.translate(x, c.y); g.scale(c.s, c.s);
-    g.fillStyle = 'rgba(255,255,255,.92)';
-    [[0,0,22],[20,-10,26],[44,-2,20],[24,8,22],[60,6,14]].forEach(([cx,cy,r]) => { g.beginPath(); g.arc(cx,cy,r,0,7); g.fill(); });
-    g.fillStyle = 'rgba(160,180,210,.25)'; g.beginPath(); g.ellipse(30,18,40,7,0,0,7); g.fill();
-    g.restore();
-  }
+  drawClouds(now);
   // checkerboard floor running to a vanishing point
-  const H = 292, vpy = 228, fc = moodColor(FX, em);
-  g.fillStyle = '#f3ead6'; g.fillRect(0,H,400,138);
-  const ys = []; for (let inv = (H-vpy)/(430-vpy)*0+1/((H-vpy)/(430-vpy)), k=0; k<12; k++){ const s = 1/Math.max(.9, inv - k*.42); ys.push(vpy + s*(430-vpy)); }
+  const H = FH, vpy = VPY, fc = moodColor(FX, em);
+  g.fillStyle = '#f3ead6'; g.fillRect(0,H,400,WH-H);
+  const ys = []; for (let inv = 1/((H-vpy)/(WH-vpy)), k=0; k<12; k++){ const s = 1/Math.max(.9, inv - k*.3); ys.push(vpy + s*(WH-vpy)); }
   ys.unshift(H);
   g.fillStyle = fc;
   for (let r=0; r<ys.length-1; r++){
-    const y0 = ys[r], y1 = Math.min(430, ys[r+1]); if (y0 >= 430) break;
-    const s0 = (y0-vpy)/(430-vpy), s1 = (y1-vpy)/(430-vpy);
+    const y0 = ys[r], y1 = Math.min(WH, ys[r+1]); if (y0 >= WH) break;
+    const s0 = (y0-vpy)/(WH-vpy), s1 = (y1-vpy)/(WH-vpy);
     for (let u=-9; u<9; u++){ if ((u+r)&1) continue;
       g.beginPath(); g.moveTo(200+u*58*s0, y0); g.lineTo(200+(u+1)*58*s0, y0); g.lineTo(200+(u+1)*58*s1, y1); g.lineTo(200+u*58*s1, y1); g.closePath(); g.fill(); }
   }
   gr = g.createLinearGradient(0,H,0,H+40); gr.addColorStop(0,'rgba(255,255,255,.55)'); gr.addColorStop(1,'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0,H,400,40);
-  // a door standing alone in the room
-  g.fillStyle = 'rgba(0,0,0,.12)'; g.beginPath(); g.ellipse(84,293,18,3,0,0,7); g.fill();
-  g.fillStyle = '#fbf7ee'; g.fillRect(70,244,26,49);
-  gr = g.createLinearGradient(74,248,92,292); gr.addColorStop(0,'#fff6c8'); gr.addColorStop(1,'#ffd98a'); g.fillStyle = gr; g.fillRect(74,248,18,45);
-  g.fillStyle = '#d8cdb8'; g.beginPath(); g.moveTo(74,248); g.lineTo(64,252); g.lineTo(64,296); g.lineTo(74,293); g.closePath(); g.fill();
-  // a small mushroom that watches too
-  g.fillStyle = '#fff'; g.fillRect(334,286,8,14);
-  g.fillStyle = '#e0473d'; g.beginPath(); g.ellipse(338,287,15,10,0,Math.PI,0); g.fill();
-  g.fillStyle = '#fff'; [[330,282],[344,281],[338,278]].forEach(([x,y]) => { g.beginPath(); g.arc(x,y,1.8,0,7); g.fill(); });
-  g.fillStyle = '#fff'; g.beginPath(); g.ellipse(338,293,3.2,2.6*Math.max(.15,S.blinkF??1),0,0,7); g.fill();
-  g.fillStyle = '#1b1b2a'; g.beginPath(); g.arc(338+S.gaze.x*.15, 293, 1.4, 0, 7); g.fill();
+  // a yellow door onto a garden, and a mushroom with a watching eye
+  const d = IMG.door, m = IMG.mushroom;
+  if (d){ const w = 50, h = w*d.height/d.width; g.fillStyle = 'rgba(0,0,0,.12)'; g.beginPath(); g.ellipse(63, H+1, 27, 3, 0, 0, 7); g.fill(); g.drawImage(d, 38, H-h, w, h); }  // on the horizon, partly hidden behind Tele
+  if (m){
+    const w = 62, h = w*m.height/m.width, x = 318, y = H+36-h;  // brought forward onto the floor
+    g.fillStyle = 'rgba(0,0,0,.16)'; g.beginPath(); g.ellipse(x+w/2, H+37, 27, 4.5, 0, 0, 7); g.fill();
+    g.drawImage(m, x, y, w, h);
+    const bl = 1-Math.max(.15, S.blinkF??1), k = w/m.width;  // eyelid, in the cap's red
+    if (bl > .02){ g.fillStyle = '#b5342b'; g.beginPath(); g.ellipse(x+100*k, y+55*k, 44*k, 21*k*bl*1.1, 0, 0, 7); g.fill(); }
+  }
   // fear dims the world and makes it flicker
   const dark = (em.fear||0)*.35 + (em.sadness||0)*.12;
-  if (dark > .01){ g.fillStyle = `rgba(6,8,20,${clamp01(dark*(isCalm() ? 1 : .85+Math.random()*.3))})`; g.fillRect(0,0,400,430); }
+  if (dark > .01){ g.fillStyle = `rgba(6,8,20,${clamp01(dark*(isCalm() ? 1 : .85+Math.random()*.3))})`; g.fillRect(0,0,400,WH); }
 }
+
+/* ---------- body: stripy turtleneck, with the patchwork jacket over it ---------- */
+const BODY = {s:.5, x:200, y:245, ax:282, ay:440, jx:728, jsx:.96, jdy:8, hup:5};
+function spr(n, x, y, w, h){ const im = IMG[n]; if (im) g.drawImage(im, x, y, w, h); }
 function drawBody(breath){
+  const B = BODY, s = B.s;
   g.save(); g.translate(0, breath*.3);
-  g.fillStyle = 'rgba(0,0,0,.18)'; g.beginPath(); g.ellipse(200,338,96,14,0,0,7); g.fill();
-  let gr = g.createLinearGradient(0,330,0,430); gr.addColorStop(0,'#f7b6cf'); gr.addColorStop(1,'#d9819f');
-  g.fillStyle = gr;
-  g.beginPath(); g.moveTo(14,430); g.bezierCurveTo(20,398,40,374,92,360); g.bezierCurveTo(128,350,164,342,200,342); g.bezierCurveTo(236,342,272,350,308,360); g.bezierCurveTo(360,374,380,398,386,430); g.closePath(); g.fill();
-  g.strokeStyle = '#a9557a'; g.lineWidth = 1.5; g.stroke();
-  g.strokeStyle = 'rgba(169,85,122,.6)'; g.lineWidth = 1.5; [[88,362,104,430],[312,362,296,430]].forEach(([a,b,c,d]) => { g.beginPath(); g.moveTo(a,b); g.quadraticCurveTo((a+c)/2+(a<200?8:-8),(b+d)/2,c,d); g.stroke(); });
-  g.fillStyle = '#3a2a35'; g.beginPath(); g.ellipse(200,343,34,8,0,0,7); g.fill();
-  g.fillStyle = '#fdf6e9'; g.strokeStyle = '#b9a98f'; g.lineWidth = 1;
-  g.beginPath(); g.moveTo(166,340); g.lineTo(200,376); g.lineTo(184,338); g.closePath(); g.fill(); g.stroke();
-  g.beginPath(); g.moveTo(234,340); g.lineTo(200,376); g.lineTo(216,338); g.closePath(); g.fill(); g.stroke();
-  g.strokeStyle = '#b8607f'; g.lineWidth = 2; g.beginPath(); g.moveTo(200,376); g.lineTo(200,430); g.stroke();
-  g.fillStyle = '#fff4c2'; [394,416].forEach(y => { g.beginPath(); g.arc(207,y,3.5,0,7); g.fill(); });
-  // patches: a heart and a star, stitched on
-  g.fillStyle = '#e8414f'; g.beginPath(); g.moveTo(112,410); g.bezierCurveTo(92,396,98,380,112,388); g.bezierCurveTo(126,380,132,396,112,410); g.fill();
-  g.setLineDash([2,2]); g.strokeStyle = '#fff'; g.lineWidth = 1; g.stroke(); g.setLineDash([]);
-  g.fillStyle = '#ffd84a'; g.beginPath(); for (let i=0; i<10; i++){ const a = -Math.PI/2 + i*Math.PI/5, r = i%2 ? 6 : 14; g.lineTo(292+Math.cos(a)*r, 400+Math.sin(a)*r); } g.closePath(); g.fill();
-  g.strokeStyle = '#c99a00'; g.stroke();
-  // a coiled cable from the TV down into the collar
-  g.strokeStyle = '#2b2d33'; g.lineWidth = 3; g.beginPath(); g.moveTo(226,300);
-  for (let i=0; i<=24; i++){ const t = i/24; g.lineTo(226+t*8+Math.sin(t*Math.PI*10)*4, 300+t*40); } g.stroke();
+  g.fillStyle = 'rgba(30,20,50,.18)'; g.beginPath(); g.ellipse(200, 522, 84, 7, 0, 0, 7); g.fill();
+  const put = n => { const m = META[n]; spr(n, B.x+(m.x-B.ax)*s, B.y+(m.y-B.ay)*s, m.w*s, m.h*s); };
+  const hand = (n, jacket) => { const m = META[n]; if (jacket) spr(n, B.x+(m.x-B.jx)*B.jsx*s, B.y+(m.y-B.ay+B.jdy)*s - B.hup, m.w*B.jsx*s, m.h*s); else spr(n, B.x+(m.x-B.ax)*s, B.y+(m.y-B.ay)*s - B.hup, m.w*s, m.h*s); };
+  if (S.jacket){ hand('hand_j_l', 1); hand('hand_j_r', 1); } else { hand('hand_sw_l'); hand('hand_sw_r'); }  // hands first, so the cuffs cover their tops
+  put('sweater');
+  if (S.jacket) for (const n of ['jacket_l','jacket_r']){ const m = META[n]; spr(n, B.x+(m.x-B.jx)*B.jsx*s, B.y+(m.y-B.ay+B.jdy)*s, m.w*B.jsx*s, m.h*s); }
   g.restore();
 }
 
 /* ---------- the TV ---------- */
-const SX = 104, SY = 115, SW = 192, SH = 142;
+const SX = 104, SY = 115, SW = 192, SH = 142;  // the eye is designed inside this box
+const OX = SX-16, OY = SY-16, OW = SW+32, OH = SH+32;  // overlays cover a little more, so any screen shape is filled
+const TVS = .64, TV = {x:62, y:70};  // scale and top-left of the TV sprite on the stage
 function bez(p0,p1,p2,p3,t){ const u = 1-t; return {x:u*u*u*p0.x+3*u*u*t*p1.x+3*u*t*t*p2.x+t*t*t*p3.x, y:u*u*u*p0.y+3*u*u*t*p1.y+3*u*t*t*p2.y+t*t*t*p3.y,
   dx:3*u*u*(p1.x-p0.x)+6*u*t*(p2.x-p1.x)+3*t*t*(p3.x-p2.x), dy:3*u*u*(p1.y-p0.y)+6*u*t*(p2.y-p1.y)+3*t*t*(p3.y-p2.y)}; }
-function drawTV(f, blinkF, now){
-  const amp = S.amp;
-  // antennae
-  const base = {x:200, y:80};
+const SCR = document.createElement('canvas');
+function renderScreen(f, blinkF, now, sc, hw, hh){
+  const pw = Math.max(2, Math.round(hw*sc)), ph = Math.max(2, Math.round(hh*sc));
+  if (SCR.width !== pw || SCR.height !== ph){ SCR.width = pw; SCR.height = ph; }
+  const main = g; g = SCR.getContext('2d');
+  g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,pw,ph);
+  const k = Math.min(hw/SW, hh/SH)*sc;
+  g.setTransform(k,0,0,k, pw/2-(SX+SW/2)*k, ph/2-(SY+SH/2)*k);
+  drawScreen(f, blinkF, now);
+  g.setTransform(1,0,0,1,0,0); g.globalCompositeOperation = 'destination-in'; g.drawImage(IMG.screen, 0, 0, pw, ph); g.globalCompositeOperation = 'source-over';
+  g = main;
+}
+function drawKnob(K, deg){
+  if (!K) return;
+  const s = K.d*TVS;
+  g.save(); g.translate(TV.x+K.sx*TVS, TV.y+K.sy*TVS); g.rotate(deg*Math.PI/180); g.drawImage(K.c, -s/2, -s/2, s, s); g.restore();
+}
+function drawTV(f, blinkF, now, sc){
+  const amp = S.amp, T = META.tv, Sc = META.screen, k = TVS;
+  const tw = T.w*k, th = T.h*k;
+  // the set's shadow on the collar
+  g.save(); g.translate(TV.x+tw/2, TV.y+th+2); g.scale(1,.1);
+  let sh = g.createRadialGradient(0,0,6,0,0,tw*.46); sh.addColorStop(0,'rgba(20,10,30,.45)'); sh.addColorStop(1,'rgba(20,10,30,0)');
+  g.fillStyle = sh; g.beginPath(); g.arc(0,0,tw*.46,0,7); g.fill(); g.restore();
+  // rabbit ears, behind the set
+  const base = {x:TV.x+(270-T.x)*k, y:TV.y+5};
   const a0 = (f.antenna >= 0 ? 30-14*f.antenna : 30-46*f.antenna) * Math.PI/180;
   for (const s of [-1,1]){
-    const ang = s*a0 + S.ant.w*Math.PI/180, L = 86 - Math.max(0,-f.antenna)*8;
+    const ang = s*a0 + S.ant.w*Math.PI/180, L = 80 - Math.max(0,-f.antenna)*8;
     const tip = {x:base.x+Math.sin(ang)*L, y:base.y-Math.cos(ang)*L};
     const bendX = Math.max(0,-f.antenna)*s*10, bendY = Math.max(0,-f.antenna)*12;
     g.strokeStyle = '#9aa1ad'; g.lineWidth = 3.2; g.lineCap = 'round';
@@ -171,53 +217,32 @@ function drawTV(f, blinkF, now){
     const bg = g.createRadialGradient(tip.x-1.5,tip.y-1.5,.5,tip.x,tip.y,5.5); bg.addColorStop(0,'#ffffff'); bg.addColorStop(1, amp > .05 ? '#ffd86a' : '#8e95a2');
     g.fillStyle = bg; g.beginPath(); g.arc(tip.x,tip.y,5.5,0,7); g.fill();
   }
-  // wood top and side
-  let gr = g.createLinearGradient(80,80,338,92); gr.addColorStop(0,'#94603a'); gr.addColorStop(1,'#6d4427');
-  g.fillStyle = gr; g.beginPath(); g.moveTo(80,92); g.lineTo(320,92); g.lineTo(338,80); g.lineTo(98,80); g.closePath(); g.fill();
-  gr = g.createLinearGradient(320,0,338,0); gr.addColorStop(0,'#7a4c2c'); gr.addColorStop(1,'#5a3820');
-  g.fillStyle = gr; g.beginPath(); g.moveTo(320,92); g.lineTo(338,80); g.lineTo(338,290); g.lineTo(320,304); g.closePath(); g.fill();
-  g.strokeStyle = 'rgba(60,34,16,.45)'; g.lineWidth = 1;
-  for (let i=0; i<6; i++){ g.beginPath(); g.moveTo(323+i*2.4, 92-i*1.6+4); g.bezierCurveTo(326+i*2.4,160,321+i*2.4,220,324+i*2.4,300-i*2); g.stroke(); }
-  g.fillStyle = '#5b5f68'; g.beginPath(); g.ellipse(200,82,16,6,0,Math.PI,0); g.fill();
-  // cream front
-  gr = g.createLinearGradient(0,92,0,304); gr.addColorStop(0,'#f2e8cf'); gr.addColorStop(1,'#d4c29c');
-  g.fillStyle = gr; rr(78,92,244,212,16); g.fill(); g.strokeStyle = '#9c8a66'; g.lineWidth = 1.5; g.stroke();
-  // bezel
-  gr = g.createLinearGradient(0,106,0,266); gr.addColorStop(0,'#3a3a40'); gr.addColorStop(1,'#1f1f23');
-  g.fillStyle = gr; rr(94,106,212,160,26); g.fill();
-  // screen
-  g.save(); rr(SX,SY,SW,SH,28); g.clip();
-  drawScreen(f, blinkF, now);
-  g.restore();
-  // glass: curved reflection and edge shade
-  g.save(); rr(SX,SY,SW,SH,28); g.clip();
-  gr = g.createLinearGradient(SX,SY,SX+SW*.6,SY+SH*.6); gr.addColorStop(0,'rgba(255,255,255,.22)'); gr.addColorStop(.35,'rgba(255,255,255,.04)'); gr.addColorStop(1,'rgba(255,255,255,0)');
-  g.fillStyle = gr; g.beginPath(); g.ellipse(SX+40, SY+24, 90, 34, -.35, 0, 7); g.fill();
-  g.restore();
-  g.strokeStyle = '#0d0d10'; g.lineWidth = 2.5; rr(SX,SY,SW,SH,28); g.stroke();
-  if (amp > .02){ g.save(); g.globalCompositeOperation = 'lighter'; g.strokeStyle = `rgba(170,210,255,${.35*amp})`; g.lineWidth = 6; rr(SX-2,SY-2,SW+4,SH+4,30); g.stroke(); g.restore(); }
-  // speaker grille that hums with the voice
-  const jig = isCalm() ? 0 : Math.sin(now*70)*amp*.8;
-  for (let i=0; i<6; i++){ g.fillStyle = amp > .05 ? `rgb(${lerp(91,255,amp*.8)|0},${lerp(82,214,amp*.8)|0},${lerp(64,120,amp*.8)|0})` : '#5b5240'; rr(104+jig, 273+i*4, 74, 2.2, 1); g.fill(); }
-  // power LED, brand, knobs
-  const on = S.speaking;
-  g.fillStyle = on ? `rgba(255,${60+amp*80|0},48,1)` : '#6a1f1b'; g.beginPath(); g.arc(194,284,3.2,0,7); g.fill();
-  if (on){ g.fillStyle = `rgba(255,80,60,${.25+.4*amp})`; g.beginPath(); g.arc(194,284,7,0,7); g.fill(); }
-  g.fillStyle = '#6b5a3c'; g.font = '15px VT323, monospace'; g.textAlign = 'left'; g.fillText('TELE', 204, 289);
-  [[252, S.knob], [286, -130 + 260*S.vol]].forEach(([x, deg]) => {
-    const kg = g.createRadialGradient(x-3,281,1,x,284,11); kg.addColorStop(0,'#6a6970'); kg.addColorStop(1,'#2a292e');
-    g.fillStyle = kg; g.beginPath(); g.arc(x,284,11,0,7); g.fill();
-    const a = deg*Math.PI/180; g.strokeStyle = '#f2e8cf'; g.lineWidth = 2; g.beginPath(); g.moveTo(x,284); g.lineTo(x+Math.sin(a)*8, 284-Math.cos(a)*8); g.stroke();
-  });
+  g.fillStyle = '#4a4e57'; g.beginPath(); g.ellipse(base.x, base.y+1, 14, 5, 0, Math.PI, 0); g.fill();
+  if (!IMG.tv || !IMG.screen) return;
+  // the picture, seen through the glass
+  const hw = Sc.w*k, hh = Sc.h*k;
+  renderScreen(f, blinkF, now, sc, hw, hh);
+  g.drawImage(SCR, TV.x+(Sc.x-T.x)*k, TV.y+(Sc.y-T.y)*k, hw, hh);
+  // the casing
+  g.drawImage(IMG.tv, TV.x, TV.y, tw, th);
+  // dials turn: the upper one changes channel, the lower one is the volume
+  drawKnob(KNOB.a, S.knob); drawKnob(KNOB.b, -130 + 260*S.vol);
+  // the speaker grille warms with the voice
+  if (amp > .02){ g.save(); g.globalCompositeOperation = 'lighter'; g.fillStyle = `rgba(255,170,80,${.34*amp})`; g.fillRect(TV.x+333*k, TV.y+19*k, 75*k, 121*k); g.restore(); }
+  // power light
+  const lx = TV.x+352*k, ly = TV.y+257*k, on = S.speaking;
+  if (on){ g.fillStyle = `rgba(255,80,60,${.25+.4*amp})`; g.beginPath(); g.arc(lx,ly,6,0,7); g.fill(); }
+  g.fillStyle = on ? `rgba(255,${60+amp*80|0},48,1)` : '#6a1f1b'; g.beginPath(); g.arc(lx,ly,2.3,0,7); g.fill();
 }
 function drawScreen(f, blinkF, now){
+  const SX = OX, SY = OY, SW = OW, SH = OH;  // overlays and the power-on line cover the whole off-screen picture
   const em = S.emo;
   const jx = isCalm() ? 0 : (Math.random()-.5)*f.jitter*3.2, jy = isCalm() ? 0 : (Math.random()-.5)*f.jitter*1.6;
   g.save(); g.translate(jx, jy);
   // skin
   let gr = g.createRadialGradient(205,178,10,205,186,170);
   gr.addColorStop(0,'#f4d8c8'); gr.addColorStop(.55,'#e2b39d'); gr.addColorStop(1,'#b47e6b');
-  g.fillStyle = gr; g.fillRect(SX-10,SY-10,SW+20,SH+20);
+  g.fillStyle = gr; g.fillRect(SX,SY,SW,SH);
   gr = g.createRadialGradient(205,184,26,205,184,104); gr.addColorStop(0,'rgba(140,80,70,.2)'); gr.addColorStop(1,'rgba(140,80,70,0)');
   g.fillStyle = gr; g.fillRect(SX,SY,SW,SH);
   gr = g.createRadialGradient(222,150,4,222,150,60); gr.addColorStop(0,'rgba(255,240,230,.35)'); gr.addColorStop(1,'rgba(255,240,230,0)');
@@ -318,9 +343,9 @@ function drawScreen(f, blinkF, now){
   for (const e of EMOS){ const w = em[e]||0; if (w < .03) continue; g.globalAlpha = Math.min(.85, w*.7); g.fillStyle = TINT[e]; g.fillRect(SX,SY,SW,SH); }
   g.restore();
   if (em.fear > .05){ g.fillStyle = `rgba(5,5,15,${.3*em.fear})`; g.fillRect(SX,SY,SW,SH); }
-  if (f.roll > .05){ const y = SY + (isCalm() ? SH*.3 : (now*38) % (SH+40)) - 20; g.fillStyle = `rgba(0,0,0,${.22*f.roll})`; g.fillRect(SX, y, SW, 22); g.fillStyle = `rgba(255,255,255,${.08*f.roll})`; g.fillRect(SX, y+22, SW, 4); }
+  if (f.roll > .05){ const y = SY + ((now*38) % (SH+40)) - 20; g.fillStyle = `rgba(0,0,0,${.22*f.roll})`; g.fillRect(SX, y, SW, 22); g.fillStyle = `rgba(255,255,255,${.08*f.roll})`; g.fillRect(SX, y+22, SW, 4); }
   const st = clamp01(.035 + .14*clamp01(f.static) + S.flash*.9 + (S.power < 1 ? (1-S.power)*.5 : 0));
-  g.save(); g.globalAlpha = st; g.imageSmoothingEnabled = false; g.drawImage(NOISE[isCalm() ? 0 : (now*24|0)%4], SX, SY, SW, SH); g.restore();
+  g.save(); g.globalAlpha = st; g.imageSmoothingEnabled = false; g.drawImage(NOISE[(now*24|0)%4], SX, SY, SW, SH); g.restore();
   g.fillStyle = SCAN; g.globalAlpha = .22; g.fillRect(SX,SY,SW,SH); g.globalAlpha = 1;
   if (S.amp > .02){ g.save(); g.globalCompositeOperation = 'lighter'; g.fillStyle = `rgba(150,190,255,${.1*S.amp})`; g.fillRect(SX,SY,SW,SH); g.restore(); }
   let gr2 = g.createRadialGradient(200,186,60,200,186,150); gr2.addColorStop(0,'rgba(0,0,0,0)'); gr2.addColorStop(1,'rgba(0,0,0,.55)');
@@ -332,7 +357,7 @@ function drawScreen(f, blinkF, now){
     for (let k=0; k<2+Math.random()*3; k++){
       const yy = SY + Math.random()*SH, p = m.transformPoint({x:SX, y:yy}), p2 = m.transformPoint({x:SX+SW, y:yy});
       const bh = (2+Math.random()*7)*m.d, shift = (Math.random()-.5)*16*m.a*f.glitch;
-      g.drawImage(cv, p.x, p.y, p2.x-p.x, bh, p.x+shift, p.y, p2.x-p.x, bh);
+      g.drawImage(g.canvas, p.x, p.y, p2.x-p.x, bh, p.x+shift, p.y, p2.x-p.x, bh);
       g.fillStyle = `rgba(255,40,60,${.18*f.glitch})`; g.fillRect(p.x, p.y, p2.x-p.x, Math.max(1,bh*.25));
     }
     g.restore();
@@ -343,16 +368,24 @@ function drawScreen(f, blinkF, now){
     g.fillStyle = '#050505'; g.fillRect(SX,SY,SW,cy-half-SY); g.fillRect(SX,cy+half,SW,SY+SH-cy-half);
     g.fillStyle = `rgba(255,255,255,${(1-S.power)*.9})`; g.fillRect(SX, cy-1.5, SW, 3);
   }
+  // glass: a curved highlight, and a halo round the edge that brightens with the voice
+  gr = g.createLinearGradient(SX, SY, SX+SW*.6, SY+SH*.6); gr.addColorStop(0,'rgba(255,255,255,.2)'); gr.addColorStop(.4,'rgba(255,255,255,.04)'); gr.addColorStop(1,'rgba(255,255,255,0)');
+  g.fillStyle = gr; g.beginPath(); g.ellipse(SX+62, SY+38, 92, 34, -.35, 0, 7); g.fill();
+  if (S.amp > .02){ g.save(); g.globalCompositeOperation = 'lighter'; gr = g.createRadialGradient(200,186,48,200,186,128); gr.addColorStop(0,'rgba(120,170,255,0)'); gr.addColorStop(1,`rgba(120,170,255,${.5*S.amp})`); g.fillStyle = gr; g.fillRect(SX,SY,SW,SH); g.restore(); }
 }
 
-/* ---------- frame loop (adapted from the sketch: inputs are set from outside, not from a timeline) ---------- */
+
+/* ---------- frame loop (inputs are set from outside, not from a clip) ---------- */
+let dead = false;
 function resize(){
   const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR), w = cv.clientWidth, h = cv.clientHeight;
-  if (!w || !h) return;
+  if (!w || !h) return false;
   const W = Math.round(w*dpr), H = Math.round(h*dpr);
   if (cv.width !== W || cv.height !== H){ cv.width = W; cv.height = H; }
+  return true;
 }
 function frame(ms){
+  if (dead) return;
   const now = ms/1000, dt = S.last ? Math.min(.05, now-S.last) : .016; S.last = now;
   const calm = isCalm();
   const emoT = S.target, q = S.question;
@@ -389,15 +422,14 @@ function frame(ms){
   } else if (T.on){ T.v += 60*dt; T.y += T.v*dt; if (T.y > 80) T.on = false; }
   const breath = calm ? 0 : Math.sin(now*2*Math.PI/4.4)*1.4;
 
-  resize();
+  if (!resize()) return;
   const sc = cv.width/400;
-  g.setTransform(sc,0,0,sc,0,0);
+  g.setTransform(sc,0,0,sc,0,0); g.imageSmoothingQuality = 'high';
   drawWorld(f, now);
   drawBody(breath);
   g.save();
-  g.translate(200, 330 + f.drop*8 + breath - S.emph*2); g.rotate(f.tilt*5*Math.PI/180); g.translate(-200, -330);
-  g.fillStyle = '#34363d'; g.fillRect(184,296,32,44);
-  drawTV(f, blinkF, now);
+  g.translate(200, 266 + f.drop*8 + breath - S.emph*2); g.rotate(f.tilt*5*Math.PI/180); g.translate(-200, -266);
+  drawTV(f, blinkF, now, sc);
   g.restore();
 }
 
@@ -409,14 +441,17 @@ const loop = (ms) => {
   if (ms - lastDraw >= 1000 / MAX_FPS - 2){ lastDraw = ms; frame(ms); }
 };
 return {
-  start(){ if (!raf) raf = requestAnimationFrame(loop); },
+  start(){ dead = false; if (!raf) raf = requestAnimationFrame(loop); },
   stop(){ cancelAnimationFrame(raf); raf = 0; S.last = 0; },
   renderOnce(){ frame(performance.now()); },
   setFeelings(v){ for (const e of EMOS) S.target[e] = clamp01(Number(v && v[e]) || 0); },
   setLoudness(n){ S.ampTarget = clamp01(Number(n) || 0); },
   setSpeaking(b){ S.speaking = !!b; },
   setQuestion(b){ S.question = !!b; },
-  emphasise(){ S.emph = 1; },
+  setJacket(on){ S.jacket = !!on; },
+  emphasise(){ S.emph = 1; S.ant.v += 35; },
+  /** The dial turns and the picture flashes, like changing channel. */
+  channelChange(){ S.flash = 1; S.knobT += 45; },
   lookAt(x, y, ms){ S.look = {x, y, until: performance.now()/1000 + ms/1000}; },
   /** For tests: the settled feelings the picture is showing. */
   current(){ return { ...S.emo }; },

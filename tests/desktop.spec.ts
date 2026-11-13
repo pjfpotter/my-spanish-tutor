@@ -17,7 +17,7 @@ test('shows Tele, the countdown, the five question files and the four phases in 
 
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'My Spanish Tutor' })).toBeVisible();
-  await expect(page.getByRole('img', { name: /Tele, a cream television/ })).toBeVisible();
+  await expect(page.getByRole('img', { name: /Tele, a 1970s television/ })).toBeVisible();
   await expect(page.getByTestId('days-to-test')).toContainText(`${daysUntil(SEED_COURSE.testDate)} day`);
   await expect(page.getByTestId('question-file')).toHaveCount(5);
   await expect(page.getByTestId('question-file').first()).toContainText('Question1.txt');

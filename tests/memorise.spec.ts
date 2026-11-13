@@ -1,292 +1,169 @@
 import { expect, test, type Page } from '@playwright/test';
-import { SEED_COURSE, simplestSeedAnswer } from '../lib/course/seed';
-import { signUp, skipWarmups, unlockMemorise } from './helpers';
+import { simplestSeedAnswer } from '../lib/course/seed';
+import { expectFits, signUp, unlockAutomate, unlockMemorise } from './helpers';
 
-// Tasks 8.1 to 8.4 and 5.3 to 5.5: say a confirmed answer from memory. The transcription call is stubbed
-// (these tests cost nothing) and the fake microphone supplies the audio. Nothing here calls a model.
+// Task 27.4: the memorise ladder with live listening, on the student's own confirmed answers, saved to the server.
+// A stand-in recogniser is spoken through, so nothing here needs a microphone, and nothing calls a model.
+// The screen as it was before the ladder is at /phases/memorise/classic and has its own spec.
 
-const ROCK = (n: number) => simplestSeedAnswer(n);
-const SHOWING_OFF_1 = SEED_COURSE.modelAnswers.filter((a) => a.questionPosition === 1).sort((a, b) => b.text.length - a.text.length)[0].text;
+const PHONE = { width: 360, height: 640 };
 
 test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => localStorage.getItem('calm') ?? localStorage.setItem('calm', 'on'));
+  await page.setViewportSize(PHONE);
+  await page.addInitScript(() => {
+    const w = window as unknown as Record<string, any>;
+    // No meter (the fake microphone would keep restarting the quiet period), sound off, calm on.
+    try { localStorage.setItem('sound', 'off'); localStorage.setItem('calm', 'on'); localStorage.setItem('memorise-prefs-v1', JSON.stringify({ meter: false })); } catch { /* no storage */ }
+    class FakeRecogniser {
+      onstart: (() => void) | null = null;
+      onresult: ((e: unknown) => void) | null = null;
+      onend: (() => void) | null = null;
+      constructor() { w.__rec = this; }
+      start() { setTimeout(() => this.onstart?.(), 0); }
+      stop() { this.onend?.(); }
+      abort() {}
+    }
+    w.SpeechRecognition = w.webkitSpeechRecognition = FakeRecogniser;
+    w.__hear = (text: string) => w.__rec?.onresult?.({ results: [Object.assign([{ transcript: text }], { isFinal: false })] });
+  });
 });
 
-/** What the stubbed recogniser will hear next. */
-function hear(page: Page) {
-  const heard = { text: '', confidence: 0.9 };
-  void page.route('**/api/transcribe', (r) => r.fulfill({ json: { status: 'ok', text: heard.text, confidence: heard.confidence } }));
-  return heard;
+/** The words of the answer the home screen offers first, as a recogniser would hand them back: no capitals, no punctuation. */
+async function offered(page: Page): Promise<string> {
+  const n = Number((await page.locator('.ml-which span').first().innerText()).match(/Answer (\d)/)![1]);
+  return simplestSeedAnswer(n).toLowerCase().replace(/[.,;¿?¡!]/g, '');
+}
+const hear = (page: Page, text: string) => page.evaluate((t) => (window as unknown as { __hear: (t: string) => void }).__hear(t), text);
+
+/** A student with five confirmed answers and nothing memorised yet. */
+async function ready(page: Page) {
+  await signUp(page);
+  await unlockMemorise(page);
+  await page.goto('/phases/memorise');
+  await expect(page.getByTestId('lab-home')).toBeVisible();
 }
 
-async function speak(page: Page) {
-  await page.getByRole('button', { name: /Start speaking|Try again/ }).first().click();
-  await expect(page.getByTestId('listening')).toBeVisible();
-  await page.waitForTimeout(400); // let the fake microphone record something
-  await page.getByRole('button', { name: 'Done' }).click();
-}
-
-const recallCalls = (page: Page) => {
-  const sent: Record<string, unknown>[] = [];
-  const replies: Record<string, any>[] = [];
-  page.on('request', (r) => r.url().endsWith('/api/recall') && sent.push(r.postDataJSON()));
-  page.on('response', async (res) => res.url().endsWith('/api/recall') && res.ok() && replies.push(await res.json().catch(() => null)));
-  return { sent, replies };
+const saves = (page: Page) => {
+  const sent: Record<string, any>[] = [];
+  page.on('request', (r) => r.url().endsWith('/api/memorise') && r.method() === 'POST' && sent.push(r.postDataJSON()));
+  return sent;
 };
 
-test('memorise stays locked until the answers are confirmed and the questions mastered, then opens', async ({ page }) => {
+test('memorise stays locked until the answers are confirmed and the questions mastered, then opens on the student\'s own answers', async ({ page }) => {
   await signUp(page);
   await page.goto('/phases/memorise');
   await expect(page).toHaveURL('/');
   await unlockMemorise(page);
   await page.goto('/phases/memorise');
   await expect(page).toHaveURL('/phases/memorise');
-  await skipWarmups(page);
-  await expect(page.getByTestId('english-prompt')).toHaveText(SEED_COURSE.questions[0].english);
-  await expect(page.getByTestId('best')).toContainText('No personal best yet');
+  await expect(page.getByTestId('lab-home')).toBeVisible();
+  await expect(page.getByTestId('ml-memorised')).toHaveText('0 of 5 memorised');
+  await expect(page.getByTestId('ml-countdown')).toContainText('to the test');
+  await expect(page.locator('.ml-row')).toHaveCount(5);
+  // No tester tools for a student: no skipping a day, no starting over.
+  await expect(page.getByRole('button', { name: /Skip to tomorrow|Start over/ })).toHaveCount(0);
 });
 
-test('an attempt shows its accuracy within two seconds of the end of speech, and calls no model (8.1)', async ({ page }) => {
-  const modelCalls: string[] = [];
-  page.on('request', (r) => /openai|anthropic|elevenlabs/.test(r.url()) && modelCalls.push(r.url()));
-  await signUp(page);
-  await unlockMemorise(page);
-  const heard = hear(page);
-  heard.text = ROCK(1);
-  await page.goto('/phases/memorise');
-  await skipWarmups(page);
-
-  await page.getByRole('button', { name: 'Start speaking' }).click();
-  await expect(page.getByTestId('listening')).toBeVisible();
-  await page.waitForTimeout(400);
-  const t0 = Date.now();
-  await page.getByRole('button', { name: 'Done' }).click();
-  await expect(page.getByTestId('accuracy')).toHaveText('100%', { timeout: 2000 });
-  expect(Date.now() - t0).toBeLessThan(2000);
-  await expect(page.getByTestId('best')).toHaveText('Your best: 100%');
-  expect(modelCalls).toEqual([]);
-});
-
-test('the prompt gives less of the script after two good attempts in a row, and the first reads do not count toward mastery (8.2, 8.3, 8.4)', async ({ page }) => {
-  test.setTimeout(90_000);
-  await signUp(page);
-  await unlockMemorise(page);
-  const heard = hear(page);
-  const recall = recallCalls(page);
-  heard.text = ROCK(1);
-  await page.goto('/phases/memorise');
-  await skipWarmups(page);
-
-  await expect(page.getByTestId('support')).toHaveText('Showing: whole script');
-  await expect(page.locator('[data-testid="prompt"] .gap')).toHaveCount(0);
-  await speak(page);
-  await expect(page.getByTestId('accuracy')).toHaveText('100%');
-  await page.getByRole('button', { name: 'Say it again' }).click();
-  await speak(page);
-  await expect(page.getByTestId('accuracy')).toHaveText('100%');
-
-  // Reading the whole script is not remembering: it earned effort coins but no mastery.
-  await expect.poll(() => recall.replies.length).toBe(2);
-  expect(recall.replies.every((r) => r.mastery.qualifyingSuccesses === 0 && r.coinsAwarded > 0)).toBe(true);
-  expect(recall.sent.every((s) => s.level === 0)).toBe(true);
-
-  // Now some words dim out. The prompt says so in words as well.
-  await page.getByRole('button', { name: 'Say it again' }).click();
-  await expect(page.getByTestId('support')).toHaveText('Showing: a gapped script');
-  const dimmed = await page.locator('[data-testid="prompt"] .gap').count();
-  expect(dimmed).toBeGreaterThan(0);
-  // And the level carries over to the next visit.
-  await page.reload();
-  await skipWarmups(page);
-  await expect(page.getByTestId('support')).toHaveText('Showing: a gapped script');
-});
-
-test('three good recalls in one session leave the answer in progress, and a later session memorises it (8.3)', async ({ page }) => {
-  test.setTimeout(90_000);
-  await signUp(page);
-  const ids = await unlockMemorise(page);
-  const heard = hear(page);
-  const recall = recallCalls(page);
-  heard.text = ROCK(1);
-  await page.goto('/phases/memorise');
-  await skipWarmups(page);
-
-  for (let i = 0; i < 5; i++) {
-    if (i) await page.getByRole('button', { name: 'Say it again' }).click();
-    await speak(page);
-    await expect(page.getByTestId('accuracy')).toBeVisible();
+test('a lesson is taught from the student\'s own answer, listens, saves numbers only and pays euros (27.4)', async ({ page }) => {
+  const sent = saves(page);
+  await ready(page);
+  const spoken = await offered(page);
+  await page.getByTestId('lab-start').click();
+  await expect(page.getByTestId('lab-title')).toContainText(/Listen/);
+  // The first bit on screen is the first bit of the student's own answer.
+  await expect(page.locator('.ml-tile').first()).toContainText(new RegExp(spoken.split(' ')[0], 'i'));
+  await expect(page.getByTestId('lab-listen')).toBeVisible();
+  await hear(page, spoken.split(' ').slice(0, 2).join(' '));
+  await expect.poll(() => page.locator('[data-testid="lab-word"][data-s="lit"]').count()).toBeGreaterThan(0);
+  // Leaving part way keeps what was done: the progress and the euros are sent.
+  await page.getByRole('button', { name: 'Leave this lesson' }).click();
+  await expect(page.getByTestId('lab-home')).toBeVisible();
+  await expect.poll(() => sent.length).toBeGreaterThan(0);
+  for (const body of sent) {
+    expect(Object.keys(body).sort()).toEqual(['answers', 'earned', 'recalls']);
+    expect(JSON.stringify(body)).not.toMatch(/transcript|audio|text/i);
   }
-  await expect.poll(() => recall.replies.length).toBe(5);
-  const last = recall.replies[4];
-  expect(last.mastery.qualifyingSuccesses).toBe(3); // the two whole-script reads did not count
-  expect(last.mastered).toBe(false); // one session is not enough
-  await expect(page.getByTestId('memorised-count')).toHaveText('0 of 5 answers memorised');
+});
 
-  // A later session confirms it.
-  const later = await page.request.post('/api/recall', { data: { itemId: ids[0], sessionId: crypto.randomUUID(), accuracy: 90, level: 2 } });
-  expect((await later.json()).mastered).toBe(true);
+test('"I already know this one": a clean answer from memory is recorded as a recall and the next-day check waits for tomorrow (27.4)', async ({ page }) => {
+  const sent = saves(page);
+  await ready(page);
+  const spoken = await offered(page);
+  const n = Number((await page.locator('.ml-which span').first().innerText()).match(/Answer (\d)/)![1]);
+  const before = await page.locator('.ml-which .ml-euros').innerText();
+  await page.getByRole('button', { name: 'I already know this one' }).click();
+  await expect(page.getByTestId('lab-listen')).toBeVisible();
+  await hear(page, spoken);
+  await expect(page.getByTestId('lab-fb')).toBeVisible(); // a clean answer from memory moves on by itself
+  await expect(page.getByTestId('lab-shout')).toHaveText('You do know it', { timeout: 8000 });
+  await expect.poll(() => sent.some((b) => b.recalls.length > 0)).toBe(true);
+  const recall = sent.flatMap((b) => b.recalls)[0];
+  expect(recall).toMatchObject({ level: 4 });
+  expect(recall.accuracy).toBeGreaterThanOrEqual(80);
+
+  // It is remembered: the answer is waiting for the next-day check, and the euros are in the balance.
   await page.reload();
-  await expect(page.getByTestId('memorised-count')).toHaveText('1 of 5 answers memorised');
+  await expect(page.getByTestId('lab-home')).toBeVisible();
+  await page.locator('.ml-row').nth(n - 1).click();
+  await expect(page.locator('.ml-today')).toContainText('opens tomorrow');
+  await expect(page.locator('.ml-which .ml-euros')).not.toHaveText(before); // effort was paid, and the balance is the server's
 });
 
-test('feedback leads with what was right and names one thing to fix, with a tip only when one fits (8.3, 5.3)', async ({ page }) => {
+test('an answer the mastery record counts as memorised is shown as memorised (27.4)', async ({ page }) => {
   await signUp(page);
-  await unlockMemorise(page);
-  const heard = hear(page);
+  await unlockAutomate(page); // three clean recalls across two sessions for every answer, through the app's own route
   await page.goto('/phases/memorise');
-  await skipWarmups(page);
-
-  // A missed word with no matching confusion: a plain pointer, no tip.
-  heard.text = 'Me gustan las películas de acción porque son';
-  await speak(page);
-  await expect(page.getByTestId('strongest')).toContainText('Me gustan las películas de acción porque son');
-  await expect(page.getByTestId('fix')).toContainText('divertidas');
-  await expect(page.getByTestId('fix')).toContainText('Tap it to hear it slowly');
-  await expect(page.getByTestId('fix')).not.toContainText('may');
-  await expect(page.getByTestId('fix')).toHaveCount(1);
-
-  // me heard as mi: the one-line tip.
-  await page.getByRole('button', { name: 'Say it again' }).click();
-  heard.text = 'mi gustan las películas de acción porque son divertidas';
-  await speak(page);
-  await expect(page.getByTestId('fix')).toContainText('“me” sounds like English “may”');
-  await expect(page.locator('body')).not.toContainText(/fail|incorrect/i);
+  await expect(page.getByTestId('ml-memorised')).toHaveText('5 of 5 memorised');
+  await expect(page.locator('.ml-row strong', { hasText: 'done' })).toHaveCount(5);
 });
 
-test('a missed word shows its syllables, plays slowly, and can be repeated (5.4)', async ({ page }) => {
+test('help and a pause never penalise: a hint is offered after a pause and nothing is lost (27.4)', async ({ page }) => {
+  await ready(page);
+  await page.getByTestId('lab-start').click();
+  await expect(page.getByTestId('lab-listen')).toBeVisible();
+  await expect(page.getByTestId('lab-offer')).toBeVisible({ timeout: 6000 });
+  await expect(page.getByTestId('lab-lesson')).toHaveAttribute('data-phase', 'listening');
+});
+
+test('a save that fails is said so and sent again with the next answer, and the screen carries on (27.4)', async ({ page }) => {
+  let fail = true;
+  await page.route('**/api/memorise', (r) => (fail ? r.abort() : r.continue()));
+  await ready(page);
+  await page.getByTestId('lab-start').click();
+  await page.getByRole('button', { name: 'Leave this lesson' }).click();
+  await expect(page.getByTestId('ml-save-failed')).toBeVisible();
+  await expect(page.getByTestId('lab-home')).toBeVisible();
+  fail = false;
+  await page.getByTestId('lab-start').click();
+  await page.getByRole('button', { name: 'Leave this lesson' }).click();
+  await expect(page.getByTestId('ml-save-failed')).toHaveCount(0);
+});
+
+test('the home, a lesson and its result fit 360 by 640 with no scrolling (27.4)', async ({ page }) => {
+  await ready(page);
+  await expectFits(page, 'memorise home');
+  const spoken = await offered(page);
+  await page.getByTestId('lab-start').click();
+  await expectFits(page, 'a spoken screen');
+  await hear(page, spoken.split(' ').slice(0, 2).join(' '));
+  await expectFits(page, 'a spoken screen with words lit');
+});
+
+test('the section exit goes back to the desktop and keeps progress (27.4, 19.3)', async ({ page }) => {
+  await ready(page);
+  await page.getByTestId('section-exit').click();
+  await expect(page).toHaveURL('/');
+});
+
+test('listening falls back to checking your own answer when the microphone cannot be used, and nothing is marked against the student (27.4)', async ({ page }) => {
   await page.addInitScript(() => {
-    const spoken: { text: string; rate: number; lang: string }[] = [];
-    (window as any).__spoken = spoken;
-    Object.defineProperty(window.speechSynthesis, 'speak', { value: (u: SpeechSynthesisUtterance) => spoken.push({ text: u.text, rate: u.rate, lang: u.lang }) });
+    const w = window as unknown as Record<string, any>;
+    w.SpeechRecognition = w.webkitSpeechRecognition = undefined;
+    try { localStorage.setItem('memorise-prefs-v1', JSON.stringify({ meter: false, selfMark: true })); } catch { /* no storage */ }
   });
-  await signUp(page);
-  await unlockMemorise(page);
-  const heard = hear(page);
-  await page.goto('/phases/memorise');
-  await skipWarmups(page);
-  await page.evaluate(() => ((window as any).__spoken.length = 0)); // a warm-up that plays a chunk when it opens is not what this test is about
-  heard.text = 'Me gustan las películas de acción porque son';
-  await speak(page);
-
-  await page.getByRole('button', { name: /divertidas, missed/ }).click();
-  await expect(page.getByTestId('syllables')).toHaveText('di-ver-ti-das');
-  await expect(page.getByTestId('word-practice')).toContainText('The loud part is ti.');
-  await expect(page.getByTestId('word-practice')).toHaveAttribute('data-audio-source', 'voice');
-  const spoken = await page.evaluate(() => (window as any).__spoken);
-  expect(spoken).toHaveLength(1); // only the word, once
-  expect(spoken[0]).toMatchObject({ text: 'divertidas', lang: 'es-ES' });
-  expect(spoken[0].rate).toBeCloseTo(0.7, 2); // slow
-
-  // Repeat it: a clear attempt is "Got it", an unclear word asks for another go. Neither touches the score or mastery.
-  heard.text = 'otra';
-  await page.getByRole('button', { name: 'Say the word' }).click();
-  await expect(page.getByTestId('listening')).toBeVisible();
-  await page.waitForTimeout(400);
-  await page.getByRole('button', { name: 'Done' }).click();
-  await expect(page.getByTestId('word-again')).toBeVisible();
-  heard.text = 'divertidas';
-  await page.getByRole('button', { name: 'Say the word' }).click();
-  await expect(page.getByTestId('listening')).toBeVisible();
-  await page.waitForTimeout(400);
-  await page.getByRole('button', { name: 'Done' }).click();
-  await expect(page.getByTestId('word-got')).toBeVisible();
-});
-
-test('with no voice on the device, the syllables still show and the student carries on (5.4)', async ({ page }) => {
-  await page.addInitScript(() => Object.defineProperty(window, 'speechSynthesis', { value: undefined, configurable: true }));
-  await signUp(page);
-  await unlockMemorise(page);
-  const heard = hear(page);
-  await page.goto('/phases/memorise');
-  await skipWarmups(page);
-  heard.text = 'Me gustan las películas de acción porque son';
-  await speak(page);
-  await page.getByRole('button', { name: /divertidas, missed/ }).click();
-  await expect(page.getByTestId('syllables')).toHaveText('di-ver-ti-das');
-  await expect(page.getByTestId('word-practice')).toHaveAttribute('data-audio-source', 'silent');
-});
-
-test('a noisy or unclear recording is not scored, saved or counted, and a retry is offered (5.5)', async ({ page }) => {
-  await signUp(page);
-  await unlockMemorise(page);
-  const heard = hear(page);
-  const recall = recallCalls(page);
-  await page.goto('/phases/memorise');
-  await skipWarmups(page);
-
-  // Low confidence: the recogniser is guessing.
-  heard.text = 'brr mmm';
-  heard.confidence = 0.1;
-  await speak(page);
-  await expect(page.getByTestId('unclear')).toContainText('could not hear that clearly');
-  await expect(page.getByTestId('unclear')).toContainText('not scored');
-  await expect(page.getByTestId('accuracy')).toHaveCount(0);
-
-  // Nothing heard at all.
-  heard.text = '';
-  heard.confidence = 0.9;
-  await speak(page);
-  await expect(page.getByTestId('unclear')).toBeVisible();
-
-  expect(recall.sent).toEqual([]); // nothing was logged
-  await expect(page.getByTestId('best')).toContainText('No personal best yet');
-
-  // Retry works and is scored normally.
-  heard.text = ROCK(1);
-  await speak(page);
-  await expect(page.getByTestId('accuracy')).toHaveText('100%');
-  await expect(page.getByTestId('unclear')).toHaveCount(0);
-  expect(recall.sent).toHaveLength(1);
-});
-
-test('a sentence missed three times in a row is isolated for short practice, then the whole answer returns (8.2)', async ({ page }) => {
-  test.setTimeout(90_000);
-  await signUp(page);
-  await unlockMemorise(page, { 1: SHOWING_OFF_1 });
-  const heard = hear(page);
-  const sentences = SHOWING_OFF_1.split(/(?<=[.!?])\s+/);
-  await page.goto('/phases/memorise');
-  await skipWarmups(page);
-
-  // Say every sentence except the second, three attempts running.
-  heard.text = sentences.filter((_, i) => i !== 1).join(' ');
-  for (let i = 0; i < 3; i++) {
-    if (i) await page.getByRole('button', { name: 'Say it again' }).click();
-    await speak(page);
-    await expect(page.getByTestId('accuracy')).toBeVisible();
-  }
-  await expect(page.getByTestId('drill-note')).toContainText('keep tripping on one sentence');
-  await page.getByRole('button', { name: 'Next', exact: true }).click();
-
-  // Just that sentence, with all its words showing.
-  await expect(page.getByTestId('drill-banner')).toBeVisible();
-  await expect(page.getByTestId('prompt')).toHaveText(sentences[1].replace(/\s+/g, ' ') + ' ');
-  heard.text = sentences[1];
-  await speak(page);
-  await expect(page.getByTestId('accuracy')).toHaveText('100%');
-  await page.getByRole('button', { name: 'Say it again' }).click();
-  await speak(page);
-  await expect(page.getByTestId('drill-note')).toHaveText('Good. Now the whole answer again.');
-
-  // Back to the whole answer, on the same question.
-  await page.getByRole('button', { name: 'Next', exact: true }).click();
-  await expect(page.getByTestId('drill-banner')).toHaveCount(0);
-  await expect(page.getByTestId('english-prompt')).toHaveText(SEED_COURSE.questions[0].english);
-  await expect(page.getByTestId('prompt')).toContainText(sentences[0].split(' ')[0]);
-});
-
-test('when listening fails the student can carry on without speaking, unscored (19.1)', async ({ page }) => {
-  const recall = recallCalls(page);
-  await signUp(page);
-  await unlockMemorise(page);
-  await page.route('**/api/transcribe', (r) => r.fulfill({ status: 503, json: { status: 'unavailable', reason: 'not_configured' } }));
-  await page.goto('/phases/memorise');
-  await skipWarmups(page);
-  await speak(page);
-  await expect(page.getByTestId('unavailable')).toContainText('not your fault');
-  await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
-  await page.getByTestId('continue-without-speaking').click();
-  await expect(page.getByTestId('unavailable')).toHaveCount(0);
-  await expect(page.getByTestId('english-prompt')).toBeVisible();
-  expect(recall.sent).toHaveLength(0); // nothing was scored or saved
+  await ready(page);
+  await page.getByTestId('lab-start').click();
+  await expect(page.getByTestId('lab-said')).toBeVisible();
+  await page.getByTestId('lab-said').click();
+  await expect(page.getByTestId('lab-fb')).toBeVisible();
 });

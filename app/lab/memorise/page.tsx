@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import { MemoriseLab } from './MemoriseLab';
+import { MemoriseLadder } from '../../components/memorise/MemoriseLadder';
+import { LAB_ANSWERS } from './content';
 
 export const metadata: Metadata = { title: 'Memorise lab', robots: { index: false } };
 
@@ -8,5 +9,5 @@ export const metadata: Metadata = { title: 'Memorise lab', robots: { index: fals
  * progress in the browser only, so it needs no profile and no database. The memorise phase itself is unchanged.
  */
 export default function MemoriseLabPage() {
-  return <MemoriseLab />;
+  return <MemoriseLadder answers={LAB_ANSWERS} variant="lab" />;
 }

@@ -18,6 +18,15 @@ export function findClip(text: string, speed = 1, clips: readonly BuiltClip[] = 
   return clips.find((c) => c.text === text && c.speed === speed)?.slot ?? null;
 }
 
+/** Writing that is the same to the ear: no capitals, no edge punctuation, one space between words. */
+const bare = (t: string) => t.toLowerCase().replace(/^[\s.,;:!?¡¿"“”]+|[\s.,;:!?¡¿"“”]+$/g, '').replace(/\s+/g, ' ');
+
+/** The built clip for one bit of a student's answer. A bit is a course chunk, so it is found however it was capitalised or punctuated. */
+export function findBitClip(text: string, speed = 1, clips: readonly BuiltClip[] = BUILT_CLIPS): string | null {
+  const want = bare(text);
+  return clips.find((c) => c.speed === speed && bare(c.text) === want)?.slot ?? null;
+}
+
 export const clipUrls = (slot: string) => ({ audio: `/audio/clips/${slot}.mp3`, json: `/audio/clips/${slot}.json` });
 
 /** Loads and checks a clip's timeline. Throws a plain message if it is missing or malformed. */

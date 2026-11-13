@@ -122,7 +122,7 @@ test('a confirmed answer unlocks memorising for that answer alone, while the oth
 
   await page.goto('/phases/memorise');
   await expect(page).toHaveURL('/phases/memorise');
-  await expect(page.getByText('0 of 1 answers memorised')).toBeVisible(); // only the confirmed answer is there to practise
+  await expect(page.getByTestId('ml-memorised')).toHaveText('0 of 1 memorised'); // only the confirmed answer is there to practise
 });
 
 test('confirming the last of the five pays a bonus once, and says so', async ({ page }) => {
@@ -163,7 +163,7 @@ test('an answer that will not stick gets a shorter version, which the student ma
     const r = await page.request.post('/api/recall', { data: { itemId: q5, sessionId: session, accuracy: 30, level: 0 } });
     expect(r.ok()).toBe(true);
   }
-  await page.goto('/phases/memorise');
+  await page.goto('/phases/memorise/classic');
   await page.getByRole('button', { name: /I know this one/ }).click();
   await expect(page.getByTestId('stalled')).toContainText('hard to hold');
   await page.getByRole('link', { name: 'Try a shorter version' }).click();

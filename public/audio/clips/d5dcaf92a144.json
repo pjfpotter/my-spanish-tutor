@@ -1,0 +1,52 @@
+{
+ "id": "d5dcaf92a144",
+ "text": "pero",
+ "en": "but",
+ "end": 0.705,
+ "words": [
+  {
+   "text": "pero",
+   "t0": 0
+  }
+ ],
+ "envelope": [
+  0,
+  0,
+  0,
+  0.08,
+  0.38,
+  0.76,
+  0.96,
+  0.96,
+  0.82,
+  0.6,
+  0.44,
+  0.39,
+  0.32,
+  0.2,
+  0.12,
+  0.09,
+  0.06,
+  0.04,
+  0.03,
+  0.02,
+  0.01,
+  0.01,
+  0,
+  0
+ ],
+ "envelopeHop": 0.03,
+ "feelings": [
+  {
+   "t0": 0,
+   "feelings": {}
+  }
+ ],
+ "source": {
+  "provider": "elevenlabs",
+  "voiceId": "01EL79JZueiJl1jDb743",
+  "model": "eleven_v4",
+  "speed": 1,
+  "hash": "74908113293b"
+ }
+}

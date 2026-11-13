@@ -55,7 +55,7 @@ describe('every paid service has a cap and a fallback (task 14.1)', () => {
     const synth = { synthesise: vi.fn() };
     const specs = [1, 2, 3].map((n) => ({ slot: `s${n}`, label: `clip ${n}`, text: 'Hola', en: 'Hi', speed: 1, feelings: [] }));
     const report = await buildClips(specs as never, { provider: 'x', voiceId: 'v', model: 'm' }, {
-      synth: synth as never, decoder: { decode: vi.fn() } as never, store: { read: vi.fn(), write: vi.fn() } as never, route: createCostRouter(store, SERVICE_LIMITS),
+      synth: synth as never, decoder: { decode: vi.fn() } as never, store: { read: vi.fn(), readMp3: vi.fn(), write: vi.fn() } as never, stretcher: { process: vi.fn() }, route: createCostRouter(store, SERVICE_LIMITS),
     });
     expect(synth.synthesise).not.toHaveBeenCalled();
     expect(report.built).toEqual([]);

@@ -11,15 +11,17 @@ export interface TeleProps {
   speaking?: boolean;
   /** Raised brows, for the end of a question. */
   question?: boolean;
+  /** The patchwork corduroy jacket over the stripy turtleneck. On by default. */
+  jacket?: boolean;
   className?: string;
 }
 
 /**
- * Tele: an old television with one large eye and no mouth. Feelings show in the eye, antennae,
+ * Tele: a 1970s television with one realistic eye and no mouth, in a stripy turtleneck. Feelings show in the eye, antennae,
  * picture and world. The canvas is decorative-with-a-name: callers show the feeling in words
  * beside it, so nothing is carried by the picture alone.
  */
-export function Tele({ feelings, loudness = 0, speaking = false, question = false, className }: TeleProps) {
+export function Tele({ feelings, loudness = 0, speaking = false, question = false, jacket = true, className }: TeleProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const tele = useRef<TeleRenderer | null>(null);
 
@@ -39,14 +41,15 @@ export function Tele({ feelings, loudness = 0, speaking = false, question = fals
   useEffect(() => tele.current?.setLoudness(loudness), [loudness]);
   useEffect(() => tele.current?.setSpeaking(speaking), [speaking]);
   useEffect(() => tele.current?.setQuestion(question), [question]);
+  useEffect(() => tele.current?.setJacket(jacket), [jacket]);
 
   return (
     <canvas
       ref={canvasRef}
       className={className}
-      style={{ display: 'block', width: '100%', aspectRatio: '400 / 430', borderRadius: 18 }}
+      style={{ display: 'block', width: '100%', aspectRatio: '400 / 360', borderRadius: 18 }}
       role="img"
-      aria-label="Tele, a cream television with a wooden top, rabbit-ear antennae and one large eye on its screen, wearing a pink cardigan"
+      aria-label={`Tele, a 1970s television with rabbit-ear antennae and one realistic eye on its screen, wearing a stripy turtleneck${jacket ? ' and a patchwork corduroy jacket' : ''}`}
     />
   );
 }

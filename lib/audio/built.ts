@@ -11,9 +11,79 @@ export default [
     "speed": 0.7
   },
   {
+    "slot": "03054dfacf40",
+    "text": "Después",
+    "speed": 1
+  },
+  {
+    "slot": "031b62b0cd96",
+    "text": "unos vaqueros",
+    "speed": 1
+  },
+  {
+    "slot": "04ba3a8c8ae1",
+    "text": "unos vaqueros",
+    "speed": 0.7
+  },
+  {
+    "slot": "052f0f6b8030",
+    "text": "ciencia ficción",
+    "speed": 0.7
+  },
+  {
+    "slot": "072d9c592c99",
+    "text": "estar cómodo",
+    "speed": 0.7
+  },
+  {
+    "slot": "0736d4c04dcd",
+    "text": "hacer los deberes",
+    "speed": 1
+  },
+  {
+    "slot": "075490167e4b",
+    "text": "estar guay",
+    "speed": 0.7
+  },
+  {
+    "slot": "07d54d55cdc0",
+    "text": "Una tele no come pizza. Qué pena.",
+    "speed": 1
+  },
+  {
     "slot": "07f46858c963",
     "text": "Has llegado. Aquí estás a salvo.",
     "speed": 1
+  },
+  {
+    "slot": "08abfeee471c",
+    "text": "¡Vale, claro!",
+    "speed": 1
+  },
+  {
+    "slot": "0a5e69e39104",
+    "text": "porque quiero",
+    "speed": 1
+  },
+  {
+    "slot": "0b043b3c0b4c",
+    "text": "ayudar en casa",
+    "speed": 1
+  },
+  {
+    "slot": "0b164b49314c",
+    "text": "Voy a llevar",
+    "speed": 0.7
+  },
+  {
+    "slot": "0b23e03b6c6a",
+    "text": "Repite.",
+    "speed": 1
+  },
+  {
+    "slot": "0ba528794368",
+    "text": "unos vaqueros negros",
+    "speed": 0.7
   },
   {
     "slot": "0c44bc73c59f",
@@ -21,8 +91,63 @@ export default [
     "speed": 1
   },
   {
+    "slot": "0e10b55c6d59",
+    "text": "¿Qué sigue?",
+    "speed": 1
+  },
+  {
+    "slot": "0e2b236de446",
+    "text": "porque son muy divertidas,",
+    "speed": 1
+  },
+  {
+    "slot": "0e580c743bfe",
+    "text": "escuchar música",
+    "speed": 0.7
+  },
+  {
+    "slot": "0f2a6da4d4e0",
+    "text": "me gustaría llevar",
+    "speed": 1
+  },
+  {
+    "slot": "0f2fb98fbcdd",
+    "text": "No me gustan las películas de",
+    "speed": 0.7
+  },
+  {
+    "slot": "0f637b9c7462",
+    "text": "con mis amigos",
+    "speed": 1
+  },
+  {
+    "slot": "1144e5a492ba",
+    "text": "Te doy más ayuda.",
+    "speed": 1
+  },
+  {
+    "slot": "11a20a460fc7",
+    "text": "salir con mis amigos",
+    "speed": 0.7
+  },
+  {
     "slot": "11fb5d5f4bb9",
     "text": "Ya conoces este lugar.",
+    "speed": 1
+  },
+  {
+    "slot": "1377d702822b",
+    "text": "Los fines de semana",
+    "speed": 1
+  },
+  {
+    "slot": "13b3394d1a18",
+    "text": "con mis amigos",
+    "speed": 0.7
+  },
+  {
+    "slot": "13d040fedea8",
+    "text": "Muy bien.",
     "speed": 1
   },
   {
@@ -31,8 +156,78 @@ export default [
     "speed": 1
   },
   {
+    "slot": "14b2d1b7ae7f",
+    "text": "Sigue ahí. Es tuyo.",
+    "speed": 1
+  },
+  {
+    "slot": "14f36b262363",
+    "text": "A mis padres les encantan las películas de",
+    "speed": 1
+  },
+  {
+    "slot": "154725032dd4",
+    "text": "¿Te gustaría ir",
+    "speed": 0.7
+  },
+  {
+    "slot": "15c723f7de05",
+    "text": "llevo",
+    "speed": 1
+  },
+  {
+    "slot": "1623791a659d",
+    "text": "Primero",
+    "speed": 1
+  },
+  {
+    "slot": "16e61bab5b89",
+    "text": "porque es divertido,",
+    "speed": 0.7
+  },
+  {
+    "slot": "189816ea552b",
+    "text": "el sábado",
+    "speed": 1
+  },
+  {
+    "slot": "19f706797d41",
+    "text": "al centro comercial",
+    "speed": 1
+  },
+  {
+    "slot": "1b5bad8c067c",
+    "text": "A veces",
+    "speed": 1
+  },
+  {
+    "slot": "1b6241bdbf9d",
+    "text": "aunque a veces",
+    "speed": 1
+  },
+  {
     "slot": "1cf776b9dacc",
     "text": "¿Qué vas a llevar para la fiesta?",
+    "speed": 0.7
+  },
+  {
+    "slot": "1d257dde483a",
+    "text": "monto en bici",
+    "speed": 0.7
+  },
+  {
+    "slot": "1d7f14dcd3fa",
+    "text": "emocionantes",
+    "speed": 0.7
+  },
+  {
+    "slot": "1fff9b707168",
+    "text": "hacer los deberes.",
+    "speed": 0.7
+  },
+  {
+    "slot": "2005121f7ba2",
+    "text": "al parque",
     "speed": 0.7
   },
   {
@@ -41,9 +236,54 @@ export default [
     "speed": 1
   },
   {
+    "slot": "213504e76429",
+    "text": "porque tengo que",
+    "speed": 0.7
+  },
+  {
     "slot": "216a245397d2",
     "text": "Claro. Te lo digo otra vez.",
     "speed": 1
+  },
+  {
+    "slot": "21d562d0a344",
+    "text": "estar cómodo",
+    "speed": 1
+  },
+  {
+    "slot": "2350601e79cb",
+    "text": "Así.",
+    "speed": 1
+  },
+  {
+    "slot": "23507290827c",
+    "text": "Me gusta",
+    "speed": 1
+  },
+  {
+    "slot": "23e8910f9c4d",
+    "text": "aunque",
+    "speed": 1
+  },
+  {
+    "slot": "2617065d7153",
+    "text": "a la playa",
+    "speed": 1
+  },
+  {
+    "slot": "26aff7bdedb7",
+    "text": "El año pasado fui",
+    "speed": 1
+  },
+  {
+    "slot": "27800bc52056",
+    "text": "Cuidado con mi antena. Es sensible.",
+    "speed": 1
+  },
+  {
+    "slot": "2809adaa0c3b",
+    "text": "Normalmente llevo",
+    "speed": 0.7
   },
   {
     "slot": "29975bf76f59",
@@ -56,8 +296,23 @@ export default [
     "speed": 1
   },
   {
+    "slot": "2a38c3f6b898",
+    "text": "y escucho música.",
+    "speed": 1
+  },
+  {
     "slot": "2d6b6de7723e",
     "text": "Ya pasó. Lo hiciste. Descansa.",
+    "speed": 1
+  },
+  {
+    "slot": "2e2f1c3febf4",
+    "text": "Ya sabes qué dice.",
+    "speed": 1
+  },
+  {
+    "slot": "2f518a6eba9b",
+    "text": "montar en bici",
     "speed": 1
   },
   {
@@ -66,14 +321,44 @@ export default [
     "speed": 1.2
   },
   {
+    "slot": "34252cfe1ad3",
+    "text": "esta tarde",
+    "speed": 0.7
+  },
+  {
     "slot": "362c7a024a09",
     "text": "Esta habitación también es tuya.",
+    "speed": 1
+  },
+  {
+    "slot": "36b5da59e888",
+    "text": "ir al dentista",
+    "speed": 0.7
+  },
+  {
+    "slot": "36d6fc357de7",
+    "text": "negros",
+    "speed": 0.7
+  },
+  {
+    "slot": "376e2ad2c9d4",
+    "text": "bastante graciosas",
+    "speed": 0.7
+  },
+  {
+    "slot": "37ce5013e321",
+    "text": "Siempre",
     "speed": 1
   },
   {
     "slot": "37d222bc8795",
     "text": "Mira, esta ya la sabes.",
     "speed": 1
+  },
+  {
+    "slot": "38345ec7ceb7",
+    "text": "divertidas",
+    "speed": 0.7
   },
   {
     "slot": "38a1465c18a5",
@@ -91,6 +376,11 @@ export default [
     "speed": 1
   },
   {
+    "slot": "3b7fb28ff46a",
+    "text": "porque quiero estar guay.",
+    "speed": 0.7
+  },
+  {
     "slot": "3c0e7865150c",
     "text": "Casi. Escucha otra vez.",
     "speed": 1
@@ -101,13 +391,53 @@ export default [
     "speed": 1
   },
   {
+    "slot": "3ee048ce7161",
+    "text": "hacer los deberes.",
+    "speed": 1
+  },
+  {
+    "slot": "3f168f742071",
+    "text": "graciosas",
+    "speed": 1
+  },
+  {
+    "slot": "40c32f692050",
+    "text": "Ahora tú.",
+    "speed": 1
+  },
+  {
+    "slot": "4140a9dea49f",
+    "text": "Me encantan",
+    "speed": 1
+  },
+  {
     "slot": "417bbf3d7e38",
     "text": "Lo entiendo. No tiene que gustarte. Solo un poco.",
     "speed": 1
   },
   {
+    "slot": "41f7e1210ed4",
+    "text": "a las cuatro y media",
+    "speed": 0.7
+  },
+  {
     "slot": "42407617cb73",
     "text": "¡Hola! Soy Tele. Vivo en la tele.",
+    "speed": 1
+  },
+  {
+    "slot": "439293d95530",
+    "text": "cómodas",
+    "speed": 1
+  },
+  {
+    "slot": "44703610414b",
+    "text": "a veces",
+    "speed": 0.7
+  },
+  {
+    "slot": "449d74d29453",
+    "text": "porque quiero estar guay.",
     "speed": 1
   },
   {
@@ -116,9 +446,34 @@ export default [
     "speed": 1
   },
   {
+    "slot": "462f15d8183f",
+    "text": "me gusta",
+    "speed": 0.7
+  },
+  {
+    "slot": "46a4f0b8609b",
+    "text": "las películas de miedo",
+    "speed": 0.7
+  },
+  {
+    "slot": "48dafb585668",
+    "text": "y",
+    "speed": 1
+  },
+  {
     "slot": "4a025c1dbf0b",
     "text": "Eso suena bien.",
     "speed": 1
+  },
+  {
+    "slot": "4ae1f8a529cb",
+    "text": "Normalmente llevo",
+    "speed": 1
+  },
+  {
+    "slot": "4b239b00d2b0",
+    "text": "Después",
+    "speed": 0.7
   },
   {
     "slot": "4beae9b9030e",
@@ -126,8 +481,38 @@ export default [
     "speed": 1
   },
   {
+    "slot": "4ca72b25bbec",
+    "text": "a la playa",
+    "speed": 0.7
+  },
+  {
+    "slot": "4ccacea22397",
+    "text": "Me gusta montar en bici",
+    "speed": 1
+  },
+  {
+    "slot": "4ed422bb60f1",
+    "text": "Tengo un solo ojo y lo veo todo.",
+    "speed": 1
+  },
+  {
     "slot": "4fa1cdcf1b59",
     "text": "Primero una fácil. Después, las demás.",
+    "speed": 1
+  },
+  {
+    "slot": "506e44e1613b",
+    "text": "Ya sé dónde estás.",
+    "speed": 1
+  },
+  {
+    "slot": "50a449d01060",
+    "text": "Lo tienes.",
+    "speed": 1
+  },
+  {
+    "slot": "513bc61af623",
+    "text": "monto en bici",
     "speed": 1
   },
   {
@@ -141,8 +526,23 @@ export default [
     "speed": 1
   },
   {
+    "slot": "5336d6c46a15",
+    "text": "a mis padres les encantan las películas de",
+    "speed": 0.7
+  },
+  {
+    "slot": "5422342fd840",
+    "text": "muy divertidas",
+    "speed": 1
+  },
+  {
     "slot": "5609db9df6f1",
     "text": "Hay mucho ruido. Prueba otra vez.",
+    "speed": 1
+  },
+  {
+    "slot": "567d4891ff35",
+    "text": "escucho música",
     "speed": 1
   },
   {
@@ -151,13 +551,68 @@ export default [
     "speed": 1
   },
   {
+    "slot": "576e8415e60d",
+    "text": "Me gustan las películas de",
+    "speed": 0.7
+  },
+  {
     "slot": "5c955ddc91c2",
     "text": "Mi antena brilla. Es por ti.",
     "speed": 1
   },
   {
+    "slot": "5dbd2bc5ab56",
+    "text": "Cuando salgo con mis amigos, llevo",
+    "speed": 0.7
+  },
+  {
     "slot": "5ec459b3352a",
     "text": "Lo sé. A veces las luces parpadean. Pasa.",
+    "speed": 1
+  },
+  {
+    "slot": "5eead0d605aa",
+    "text": "una chaqueta",
+    "speed": 1
+  },
+  {
+    "slot": "5f21d8f6a3d9",
+    "text": "blanca",
+    "speed": 1
+  },
+  {
+    "slot": "5f81e72a398e",
+    "text": "Lo siento, no puedo",
+    "speed": 0.7
+  },
+  {
+    "slot": "5f9ff22cf950",
+    "text": "Eso es.",
+    "speed": 1
+  },
+  {
+    "slot": "5ffe5f9ed11d",
+    "text": "salgo con mis amigos",
+    "speed": 1
+  },
+  {
+    "slot": "6155b6ad1c1d",
+    "text": "graciosas",
+    "speed": 0.7
+  },
+  {
+    "slot": "6232b233a96f",
+    "text": "al parque",
+    "speed": 1
+  },
+  {
+    "slot": "62344849ad06",
+    "text": "ir al dentista",
+    "speed": 1
+  },
+  {
+    "slot": "623d9540a171",
+    "text": "a las cuatro y media",
     "speed": 1
   },
   {
@@ -171,13 +626,58 @@ export default [
     "speed": 0.7
   },
   {
+    "slot": "64fe13ddbad7",
+    "text": "el sábado",
+    "speed": 0.7
+  },
+  {
     "slot": "659dbf743155",
     "text": "¿Qué vas a llevar para la fiesta?",
     "speed": 1
   },
   {
+    "slot": "660bb092967a",
+    "text": "En mi tiempo libre",
+    "speed": 0.7
+  },
+  {
+    "slot": "6623196f7977",
+    "text": "divertido",
+    "speed": 1
+  },
+  {
+    "slot": "6627a2cd441c",
+    "text": "una sudadera",
+    "speed": 0.7
+  },
+  {
+    "slot": "67600ccd052b",
+    "text": "aunque",
+    "speed": 0.7
+  },
+  {
+    "slot": "67e269703b02",
+    "text": "Me hacen reír",
+    "speed": 0.7
+  },
+  {
     "slot": "693a5344eace",
     "text": "Hoy es el día. Ya conoces las preguntas.",
+    "speed": 1
+  },
+  {
+    "slot": "69e0f50120b9",
+    "text": "montar en bici",
+    "speed": 0.7
+  },
+  {
+    "slot": "6a4dbd2cbffb",
+    "text": "miedo",
+    "speed": 0.7
+  },
+  {
+    "slot": "6aa53bf1c848",
+    "text": "porque es",
     "speed": 1
   },
   {
@@ -186,13 +686,123 @@ export default [
     "speed": 1.2
   },
   {
+    "slot": "6b9159a3dce0",
+    "text": "Me encantan las películas de",
+    "speed": 0.7
+  },
+  {
+    "slot": "6e5f042a915c",
+    "text": "Prefiero las películas de",
+    "speed": 1
+  },
+  {
+    "slot": "6e9349893781",
+    "text": "además",
+    "speed": 1
+  },
+  {
+    "slot": "6f3e0a6d979b",
+    "text": "A veces",
+    "speed": 0.7
+  },
+  {
+    "slot": "724ce5ff44f6",
+    "text": "no me gustan las películas de",
+    "speed": 1
+  },
+  {
+    "slot": "74ac79a622e5",
+    "text": "me gustan las películas de",
+    "speed": 1
+  },
+  {
+    "slot": "75052ea32a6a",
+    "text": "Ponlo en orden.",
+    "speed": 1
+  },
+  {
+    "slot": "751565226001",
+    "text": "acción",
+    "speed": 0.7
+  },
+  {
+    "slot": "77458fb241c7",
+    "text": "bastante graciosas",
+    "speed": 1
+  },
+  {
+    "slot": "781500cdf58a",
+    "text": "acción",
+    "speed": 1
+  },
+  {
+    "slot": "78c26d174f04",
+    "text": "Cuando era pequeño, veía dibujos animados",
+    "speed": 1
+  },
+  {
+    "slot": "78f3e67ee86d",
+    "text": "salir con mis amigos",
+    "speed": 1
+  },
+  {
+    "slot": "7900eb3b2230",
+    "text": "El año pasado fui",
+    "speed": 0.7
+  },
+  {
+    "slot": "791a3ba017e8",
+    "text": "a mis padres les encantan las películas de",
+    "speed": 1
+  },
+  {
     "slot": "7970bac13c77",
     "text": "ropa",
     "speed": 0.7
   },
   {
+    "slot": "7b90cb51a3cd",
+    "text": "ciencia ficción",
+    "speed": 1
+  },
+  {
     "slot": "7bf728277c04",
     "text": "películas",
+    "speed": 1
+  },
+  {
+    "slot": "7c28abdc7af2",
+    "text": "¡Vale, claro!",
+    "speed": 0.7
+  },
+  {
+    "slot": "7d11f4bea703",
+    "text": "pero",
+    "speed": 0.7
+  },
+  {
+    "slot": "7d7777629e71",
+    "text": "jugar a los videojuegos",
+    "speed": 0.7
+  },
+  {
+    "slot": "7e226074ea62",
+    "text": "porque es",
+    "speed": 0.7
+  },
+  {
+    "slot": "7ecfc66cf5ee",
+    "text": "porque son",
+    "speed": 0.7
+  },
+  {
+    "slot": "7fa5f37d0d8e",
+    "text": "He visto muchas películas este año",
+    "speed": 1
+  },
+  {
+    "slot": "7fb6f5f70694",
+    "text": "me gusta salir con mis amigos.",
     "speed": 1
   },
   {
@@ -206,9 +816,44 @@ export default [
     "speed": 1
   },
   {
+    "slot": "81ac2859653d",
+    "text": "aunque me dan miedo.",
+    "speed": 1
+  },
+  {
+    "slot": "81b83442bbaa",
+    "text": "porque quiero",
+    "speed": 0.7
+  },
+  {
     "slot": "81cae602b0f9",
     "text": "Con calma. La pregunta no se va.",
     "speed": 1
+  },
+  {
+    "slot": "83fdf454c77f",
+    "text": "para la fiesta",
+    "speed": 1
+  },
+  {
+    "slot": "84a118485a9e",
+    "text": "unas zapatillas",
+    "speed": 1
+  },
+  {
+    "slot": "84e608208ef2",
+    "text": "Lo siento, no puedo",
+    "speed": 1
+  },
+  {
+    "slot": "853ef659b9b5",
+    "text": "divertidas",
+    "speed": 1
+  },
+  {
+    "slot": "859376f849e9",
+    "text": "y una camiseta blanca",
+    "speed": 0.7
   },
   {
     "slot": "86b7c871791a",
@@ -216,13 +861,88 @@ export default [
     "speed": 0.7
   },
   {
+    "slot": "87090fe9f032",
+    "text": "miedo",
+    "speed": 1
+  },
+  {
+    "slot": "876c9dcde28f",
+    "text": "aunque a veces",
+    "speed": 0.7
+  },
+  {
+    "slot": "882a892dec44",
+    "text": "Voy a llevar",
+    "speed": 1
+  },
+  {
     "slot": "88583b879a77",
     "text": "No te he oído bien. No es culpa tuya.",
     "speed": 1
   },
   {
+    "slot": "88b40756eaf5",
+    "text": "Me encantan",
+    "speed": 0.7
+  },
+  {
+    "slot": "891f0d94f8dd",
+    "text": "me gusta",
+    "speed": 1
+  },
+  {
+    "slot": "89510c7f1b2e",
+    "text": "Me dan miedo",
+    "speed": 1
+  },
+  {
+    "slot": "897fef0d7d37",
+    "text": "Siempre",
+    "speed": 0.7
+  },
+  {
+    "slot": "8b0c85582093",
+    "text": "¿Te gustaría ir",
+    "speed": 1
+  },
+  {
+    "slot": "8ba159054698",
+    "text": "Cuando salgo con mis amigos, llevo",
+    "speed": 1
+  },
+  {
+    "slot": "8ca58d47017d",
+    "text": "una sudadera",
+    "speed": 1
+  },
+  {
+    "slot": "8cdd78836f4d",
+    "text": "además",
+    "speed": 0.7
+  },
+  {
+    "slot": "8df374f17d26",
+    "text": "al centro comercial",
+    "speed": 0.7
+  },
+  {
     "slot": "8e362580c4be",
     "text": "Ya queda poco. Estoy contigo.",
+    "speed": 1
+  },
+  {
+    "slot": "8e96e1307d7a",
+    "text": "muy divertidas",
+    "speed": 0.7
+  },
+  {
+    "slot": "8ec36a6dbd5a",
+    "text": "Los fines de semana",
+    "speed": 0.7
+  },
+  {
+    "slot": "8edfdff56fd1",
+    "text": "porque son",
     "speed": 1
   },
   {
@@ -231,13 +951,88 @@ export default [
     "speed": 1.2
   },
   {
+    "slot": "8fad6dbb89bb",
+    "text": "escucho música",
+    "speed": 0.7
+  },
+  {
+    "slot": "91809478a569",
+    "text": "Primero",
+    "speed": 0.7
+  },
+  {
+    "slot": "91bef921e261",
+    "text": "divertido",
+    "speed": 0.7
+  },
+  {
+    "slot": "932eb2399404",
+    "text": "Tus respuestas están listas. Vamos a guardarlas.",
+    "speed": 1
+  },
+  {
+    "slot": "9437e77e3aa7",
+    "text": "dibujos animados",
+    "speed": 0.7
+  },
+  {
+    "slot": "965984fd6eae",
+    "text": "Me hacen reír",
+    "speed": 1
+  },
+  {
+    "slot": "97da374b3009",
+    "text": "emocionantes",
+    "speed": 1
+  },
+  {
+    "slot": "98ccd35143d6",
+    "text": "aunque me dan miedo.",
+    "speed": 0.7
+  },
+  {
     "slot": "98f1cd548f62",
     "text": "Apago la luz. Vuelve cuando quieras.",
     "speed": 1
   },
   {
+    "slot": "997182901601",
+    "text": "estar guay",
+    "speed": 1
+  },
+  {
+    "slot": "99e46adb75f7",
+    "text": "porque quiero estar cómodo.",
+    "speed": 1
+  },
+  {
     "slot": "9a6ab97e8b8a",
     "text": "¿Te gustaría ir al cine este sábado?",
+    "speed": 0.7
+  },
+  {
+    "slot": "9b0d2eaba3ad",
+    "text": "¿Cambio de canal? No, aquí mando yo.",
+    "speed": 1
+  },
+  {
+    "slot": "9be443c0f972",
+    "text": "Soy una tele muy guay. Lo sé.",
+    "speed": 1
+  },
+  {
+    "slot": "9bee1f6521b3",
+    "text": "ayudar en casa",
+    "speed": 0.7
+  },
+  {
+    "slot": "9c1751e21a2f",
+    "text": "escuchar música",
+    "speed": 1
+  },
+  {
+    "slot": "9dc92c7d3d19",
+    "text": "blanca",
     "speed": 0.7
   },
   {
@@ -251,6 +1046,21 @@ export default [
     "speed": 1
   },
   {
+    "slot": "9f81a62d575c",
+    "text": "me dan miedo",
+    "speed": 0.7
+  },
+  {
+    "slot": "9fe74a3b610f",
+    "text": "aburridas",
+    "speed": 0.7
+  },
+  {
+    "slot": "a0808df3ed7c",
+    "text": "me gustaría llevar",
+    "speed": 0.7
+  },
+  {
     "slot": "a0cf57e18f3f",
     "text": "Respira conmigo. Despacio.",
     "speed": 1
@@ -261,9 +1071,29 @@ export default [
     "speed": 0.7
   },
   {
+    "slot": "a583da2817e8",
+    "text": "Me gustan las películas de",
+    "speed": 1
+  },
+  {
+    "slot": "a59dcd9216f1",
+    "text": "una camiseta blanca",
+    "speed": 0.7
+  },
+  {
+    "slot": "a60e5e4c4223",
+    "text": "una chaqueta",
+    "speed": 0.7
+  },
+  {
     "slot": "a6449a9ca7b5",
     "text": "tiempo libre",
     "speed": 1
+  },
+  {
+    "slot": "a7587fd0cb26",
+    "text": "para la fiesta",
+    "speed": 0.7
   },
   {
     "slot": "a7a60e9c889f",
@@ -271,14 +1101,59 @@ export default [
     "speed": 1
   },
   {
+    "slot": "a8a09321d2a9",
+    "text": "Te pregunto y respondes.",
+    "speed": 1
+  },
+  {
+    "slot": "a8fc13dc9097",
+    "text": "No me gustan las películas de",
+    "speed": 1
+  },
+  {
+    "slot": "a90789e809a0",
+    "text": "Buenos días. ¿Te acuerdas?",
+    "speed": 1
+  },
+  {
+    "slot": "a999c97e01ff",
+    "text": "una camiseta",
+    "speed": 0.7
+  },
+  {
     "slot": "a9da98c85bec",
     "text": "Está bien. Empezamos con algo pequeño.",
     "speed": 1
   },
   {
+    "slot": "abeaff39347b",
+    "text": "¿Qué significa?",
+    "speed": 1
+  },
+  {
+    "slot": "adfad2670e33",
+    "text": "amor",
+    "speed": 1
+  },
+  {
+    "slot": "ae90444ea83c",
+    "text": "porque quiero estar cómodo.",
+    "speed": 0.7
+  },
+  {
+    "slot": "ae966d8b89c7",
+    "text": "de moda",
+    "speed": 0.7
+  },
+  {
     "slot": "af260d81c610",
     "text": "fiesta",
     "speed": 1
+  },
+  {
+    "slot": "afa18e7a0a46",
+    "text": "cómodas",
+    "speed": 0.7
   },
   {
     "slot": "b08b58dce3ed",
@@ -301,9 +1176,54 @@ export default [
     "speed": 1
   },
   {
+    "slot": "b2938af15eae",
+    "text": "aburridas",
+    "speed": 1
+  },
+  {
+    "slot": "b3ae31085599",
+    "text": "¡Qué lástima!",
+    "speed": 0.7
+  },
+  {
+    "slot": "b4ad3a999310",
+    "text": "Tres seguidas. Quito palabras.",
+    "speed": 1
+  },
+  {
     "slot": "b5d6b58e6a25",
     "text": "Te veo. Estás bien.",
     "speed": 1
+  },
+  {
+    "slot": "b5dcc706480f",
+    "text": "salgo con mis amigos",
+    "speed": 0.7
+  },
+  {
+    "slot": "b62fa6801d25",
+    "text": "azul",
+    "speed": 1
+  },
+  {
+    "slot": "b64e4bd43c32",
+    "text": "a veces",
+    "speed": 1
+  },
+  {
+    "slot": "b71265ca7bd3",
+    "text": "esta tarde",
+    "speed": 1
+  },
+  {
+    "slot": "b7207995b316",
+    "text": "porque es divertido,",
+    "speed": 1
+  },
+  {
+    "slot": "b756a3ad321d",
+    "text": "Me gustaría ir",
+    "speed": 0.7
   },
   {
     "slot": "b93295963f63",
@@ -311,8 +1231,23 @@ export default [
     "speed": 0.7
   },
   {
+    "slot": "b9c47da626af",
+    "text": "una camiseta blanca",
+    "speed": 1
+  },
+  {
     "slot": "ba03e0946f53",
     "text": "¿Qué ropa llevas normalmente cuando sales con tus amigos?",
+    "speed": 0.7
+  },
+  {
+    "slot": "ba0b502d924e",
+    "text": "de moda",
+    "speed": 1
+  },
+  {
+    "slot": "bb24f22b1f8b",
+    "text": "juego a los videojuegos",
     "speed": 0.7
   },
   {
@@ -326,6 +1261,56 @@ export default [
     "speed": 1
   },
   {
+    "slot": "bf1a2146f316",
+    "text": "dibujos animados",
+    "speed": 1
+  },
+  {
+    "slot": "bf4ab585c9e3",
+    "text": "al cine",
+    "speed": 1
+  },
+  {
+    "slot": "c10d7fcfdc2b",
+    "text": "azul",
+    "speed": 0.7
+  },
+  {
+    "slot": "c2499d2a4a9c",
+    "text": "jugar a los videojuegos",
+    "speed": 1
+  },
+  {
+    "slot": "c297a15db291",
+    "text": "y escucho música.",
+    "speed": 0.7
+  },
+  {
+    "slot": "c3d789906a7f",
+    "text": "Todo está en ti.",
+    "speed": 1
+  },
+  {
+    "slot": "c462b1ad67e4",
+    "text": "amor",
+    "speed": 0.7
+  },
+  {
+    "slot": "c57eab868948",
+    "text": "A mis padres les encantan las películas de",
+    "speed": 0.7
+  },
+  {
+    "slot": "c5958e265040",
+    "text": "juego a los videojuegos",
+    "speed": 1
+  },
+  {
+    "slot": "c6dea330ee4b",
+    "text": "¡Qué lástima!",
+    "speed": 1
+  },
+  {
     "slot": "c7f5bcb5e3fb",
     "text": "¿Qué ropa llevas normalmente cuando sales con tus amigos?",
     "speed": 1.2
@@ -334,6 +1319,41 @@ export default [
     "slot": "c876527e966a",
     "text": "¿Te gustaría ir al cine este sábado?",
     "speed": 1.2
+  },
+  {
+    "slot": "cc3f990643e5",
+    "text": "no me gustan las películas de",
+    "speed": 0.7
+  },
+  {
+    "slot": "cd52f55b4de7",
+    "text": "me gusta salir con mis amigos.",
+    "speed": 0.7
+  },
+  {
+    "slot": "cd91a9e45722",
+    "text": "porque son muy divertidas,",
+    "speed": 0.7
+  },
+  {
+    "slot": "d02a1b3e73d8",
+    "text": "Mi cárdigan rosa es perfecto.",
+    "speed": 1
+  },
+  {
+    "slot": "d1b7a5e3dfee",
+    "text": "y",
+    "speed": 0.7
+  },
+  {
+    "slot": "d1f3e066e382",
+    "text": "porque tengo que",
+    "speed": 1
+  },
+  {
+    "slot": "d529142b12f9",
+    "text": "Un bostezo de tele es muy largo.",
+    "speed": 1
   },
   {
     "slot": "d553c0b9ce12",
@@ -346,8 +1366,53 @@ export default [
     "speed": 1
   },
   {
+    "slot": "d5dcaf92a144",
+    "text": "pero",
+    "speed": 1
+  },
+  {
     "slot": "d9b590fe7b2d",
     "text": "Cada día, la imagen está más clara.",
+    "speed": 1
+  },
+  {
+    "slot": "dd4a1cd02261",
+    "text": "me gustan las películas de",
+    "speed": 0.7
+  },
+  {
+    "slot": "dd5325f93d57",
+    "text": "No pasa nada. Mañana vuelve.",
+    "speed": 1
+  },
+  {
+    "slot": "dfefdbb0a766",
+    "text": "hacer los deberes",
+    "speed": 0.7
+  },
+  {
+    "slot": "e1c6b7a12488",
+    "text": "Me encantan las películas de",
+    "speed": 1
+  },
+  {
+    "slot": "e26a3a46d89d",
+    "text": "a la bolera",
+    "speed": 1
+  },
+  {
+    "slot": "e40b358899e9",
+    "text": "Ya casi es tuyo.",
+    "speed": 1
+  },
+  {
+    "slot": "e4435d3b57d4",
+    "text": "Ya no queda nada en la pantalla.",
+    "speed": 1
+  },
+  {
+    "slot": "e4644c61f359",
+    "text": "Ya está por hoy. Vuelve mañana.",
     "speed": 1
   },
   {
@@ -356,13 +1421,68 @@ export default [
     "speed": 1
   },
   {
+    "slot": "e6d3c6b3ae11",
+    "text": "unas zapatillas",
+    "speed": 0.7
+  },
+  {
+    "slot": "e836ad8364c3",
+    "text": "Me dan miedo",
+    "speed": 0.7
+  },
+  {
+    "slot": "ea618655e5f7",
+    "text": "llevo",
+    "speed": 0.7
+  },
+  {
     "slot": "ea9873a136e2",
     "text": "Ahora respondes más rápido. Lo noto.",
     "speed": 1
   },
   {
+    "slot": "ea9934fcaf36",
+    "text": "En mi tiempo libre",
+    "speed": 1
+  },
+  {
+    "slot": "eae8c2503c76",
+    "text": "a la bolera",
+    "speed": 0.7
+  },
+  {
+    "slot": "eb03314746ae",
+    "text": "He visto muchas películas este año",
+    "speed": 0.7
+  },
+  {
+    "slot": "eb1e874adcfe",
+    "text": "las películas de miedo",
+    "speed": 1
+  },
+  {
+    "slot": "ec38a8a17e6e",
+    "text": "Me gusta montar en bici",
+    "speed": 0.7
+  },
+  {
     "slot": "ef8b7c014293",
     "text": "Hoy has ido mejor que ayer.",
+    "speed": 1
+  },
+  {
+    "slot": "efc55466819b",
+    "text": "me dan miedo",
+    "speed": 1
+  },
+  {
+    "slot": "f13c95a85fb5",
+    "text": "Cuando era pequeño, veía dibujos animados",
+    "speed": 0.7
+  },
+  {
+    "slot": "f16a5f180aa0",
+    "text": "una camiseta",
     "speed": 1
   },
   {
@@ -376,9 +1496,49 @@ export default [
     "speed": 1
   },
   {
+    "slot": "f5b40c9fa55c",
+    "text": "Me gusta",
+    "speed": 0.7
+  },
+  {
     "slot": "f6cc9dd8bb67",
     "text": "Sigo aquí. Te esperaba.",
     "speed": 1
+  },
+  {
+    "slot": "f7565dcd6262",
+    "text": "negros",
+    "speed": 1
+  },
+  {
+    "slot": "f7e52f547a74",
+    "text": "y una camiseta blanca",
+    "speed": 1
+  },
+  {
+    "slot": "fa20ba4f3838",
+    "text": "unos vaqueros negros",
+    "speed": 1
+  },
+  {
+    "slot": "fc38437198ee",
+    "text": "Me gustaría ir",
+    "speed": 1
+  },
+  {
+    "slot": "fd0e7e1429d0",
+    "text": "Prefiero las películas de",
+    "speed": 0.7
+  },
+  {
+    "slot": "fe86048bd4a3",
+    "text": "Los lunes son un programa muy malo.",
+    "speed": 1
+  },
+  {
+    "slot": "fe9f61f9bfee",
+    "text": "al cine",
+    "speed": 0.7
   },
   {
     "slot": "ff851199d176",

@@ -1,0 +1,18 @@
+{
+  "audio": "/clips/hola.mp3",
+  "words": [
+    { "text": "¡Qué",      "start": 0.10, "end": 0.35, "stress": false },
+    { "text": "bonito!",   "start": 0.35, "end": 0.95, "stress": true, "ex": true },
+    { "text": "Un",        "start": 1.25, "end": 1.40 },
+    { "text": "arcoíris",  "start": 1.40, "end": 2.10, "stress": true },
+    { "text": "en",        "start": 2.10, "end": 2.25 },
+    { "text": "el",        "start": 2.25, "end": 2.40 },
+    { "text": "pasillo",   "start": 2.40, "end": 3.05, "stress": true }
+  ],
+  "feelings": [
+    { "t": 0.0,  "joy": 0.8, "surprise": 0.4 },
+    { "t": 1.25, "joy": 0.9 },
+    { "t": 3.2,  "joy": 0.3, "sadness": 0.2 }
+  ],
+  "questions": []
+}

@@ -130,3 +130,7 @@ When a student reaches the end of a screen with a bit missing, the app SHALL dir
 #### Scenario: Back to the gap
 - **WHEN** a student finishes the last bit with an earlier bit unsaid
 - **THEN** that bit is marked and the student is invited to say just it, and saying it completes the screen
+
+#### Scenario: Not a clean recall
+- **WHEN** a student says the marked bit after being sent back to it
+- **THEN** the screen passes as helped, not as a clean recall, because they were pointed to the bit

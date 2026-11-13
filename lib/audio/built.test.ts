@@ -4,14 +4,18 @@ import { describe, expect, it } from 'vitest';
 import { SEED_COURSE } from '../course/seed';
 import { parseClipFile } from '../tele/clip';
 import { findClip } from '../tele/clips';
+import { CHEEKY_POOL } from '../tele/cheeky';
 import { PHRASE_BANK } from '../tele/phrase-bank';
+import { LAB_ANSWERS } from '../../app/lab/memorise/content';
+import { teleLines } from '../memorise/tele-lines';
+import { bitsFor } from './bits';
 import { planClips, slotFor, SPEEDS } from './manifest';
 
 // Tasks 4.4 and 12.2: every clip the app needs exists, with audio and a complete timeline (word times,
 // a loudness envelope and a feeling track). If a question or a line is edited and not rebuilt, this fails.
 const dir = path.join(import.meta.dirname, '../../public/audio/clips');
 const specs = planClips(SEED_COURSE.questions, PHRASE_BANK);
-const timeline = (slot: string) => parseClipFile(JSON.parse(readFileSync(path.join(dir, `${slot}.json`), 'utf8')));
+const timeline = (slot: string, bit = false) => parseClipFile(JSON.parse(readFileSync(path.join(dir, `${slot}.json`), 'utf8')), { allowNoSubtitle: bit });
 
 describe('every planned clip is built', () => {
   it('plans five questions at three speeds, their key words at two, and every phrase-bank line', () => {
@@ -22,7 +26,7 @@ describe('every planned clip is built', () => {
   it.each(specs.map((s) => [s.label, s] as const))('%s has audio and a valid timeline', (_label, spec) => {
     expect(existsSync(path.join(dir, `${spec.slot}.mp3`)), 'audio file').toBe(true);
     expect(findClip(spec.text, spec.speed), 'listed in the built index').toBe(spec.slot);
-    const clip = timeline(spec.slot);
+    const clip = timeline(spec.slot, spec.kind === 'bit');
     expect(clip.text).toBe(spec.text);
     expect(clip.en).toBe(spec.en);
     expect(clip.words.length).toBeGreaterThan(0);
@@ -48,7 +52,8 @@ describe('every planned clip is built', () => {
   });
 
   it('has no unused clips lying around (an edited question must not leave an old clip behind)', () => {
-    const wanted = new Set(specs.map((s) => s.slot));
+    const bits = bitsFor(SEED_COURSE, LAB_ANSWERS.flatMap((a) => a.chunks.map((c) => ({ t: c.t, en: c.en }))));
+    const wanted = new Set(planClips(SEED_COURSE.questions, [...PHRASE_BANK, ...CHEEKY_POOL], bits, teleLines()).map((s) => s.slot));
     const onDisk = existsSync(dir) ? (readFileSync(path.join(dir, '..', '..', '..', 'lib/audio/built.ts'), 'utf8').match(/"slot": "([0-9a-f]{12})"/g) ?? []) : [];
     for (const m of onDisk) expect(wanted.has(m.slice(-13, -1)), m).toBe(true);
   });

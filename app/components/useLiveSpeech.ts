@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { levelOf } from '../../lib/automate/onset';
+import { freshStats, type LiveStats } from '../../lib/speech/latency';
 
 export type LiveState =
   | 'idle'
@@ -23,6 +24,10 @@ export interface LiveHandlers {
   onLevel?: (level: number) => void;
   /** The student's voice is being heard right now (from the meter, or from the recogniser's own events). */
   onVoice?: () => void;
+  /** The browser's own voice detection says speech has begun (not the level meter). Used to time the recogniser. */
+  onSpeechStart?: () => void;
+  /** Listening came back after the screen locked or the app went to the background. */
+  onResume?: () => void;
 }
 
 type Recogniser = {
@@ -33,6 +38,8 @@ type Recogniser = {
 };
 
 const VOICE_LEVEL = 0.04;
+/** An error this soon after the page was hidden is the lock or the background taking the microphone, not a fault. */
+const HIDDEN_GRACE_MS = 3000;
 
 /**
  * Listens and reports words while the student is still speaking, so the screen can show it is hearing them.
@@ -55,6 +62,12 @@ export function useLiveSpeech(handlers: LiveHandlers, opts: { lang?: string; met
   const active = useRef(false);
   const granted = useRef(false);
   const mic = useRef<{ stream: MediaStream; ctx: AudioContext; timer: ReturnType<typeof setInterval> } | null>(null);
+  const stats = useRef<LiveStats>(freshStats());
+  /** Listening was paused because the page was hidden, and should carry on when it is back. */
+  const suspended = useRef(false);
+  const hiddenAt = useRef(-Infinity);
+  /** Opens a fresh recogniser session for the current `start()`, keeping the words heard so far. */
+  const reopen = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     const w = window as any;
@@ -97,6 +110,8 @@ export function useLiveSpeech(handlers: LiveHandlers, opts: { lang?: string; met
 
   const stop = useCallback(() => {
     active.current = false;
+    suspended.current = false;
+    reopen.current = null;
     run.current++;
     const r = rec.current;
     rec.current = null;
@@ -113,13 +128,19 @@ export function useLiveSpeech(handlers: LiveHandlers, opts: { lang?: string; met
     if (!Ctor) return setState('unsupported');
     stop();
     active.current = true;
-    const mine = ++run.current;
+    const first = ++run.current;
+    stats.current = freshStats();
+    const startedAt = performance.now();
     if (wantMeter) void openMeter();
     else closeMeter();
     let settled = ''; // final words from sessions the browser has already ended
 
-    const open = () => {
+    /** The page is hidden, or an error came just after it was: wait for the student to come back. */
+    const hiddenNow = () => document.visibilityState === 'hidden' || performance.now() - hiddenAt.current < HIDDEN_GRACE_MS;
+
+    const open = (mine: number) => {
       if (mine !== run.current || !active.current) return;
+      stats.current.sessions++;
       const r: Recogniser = new Ctor();
       r.lang = lang;
       r.continuous = true;
@@ -131,7 +152,11 @@ export function useLiveSpeech(handlers: LiveHandlers, opts: { lang?: string; met
         granted.current = true;
         setState('listening');
       };
-      r.onsoundstart = r.onspeechstart = () => mine === run.current && h.current.onVoice?.();
+      r.onsoundstart = r.onspeechstart = () => {
+        if (mine !== run.current) return;
+        h.current.onVoice?.();
+        h.current.onSpeechStart?.();
+      };
       r.onresult = (e) => {
         if (mine !== run.current) return;
         let fin = '';
@@ -141,12 +166,21 @@ export function useLiveSpeech(handlers: LiveHandlers, opts: { lang?: string; met
           if (res.isFinal) fin += ` ${res[0].transcript}`;
           else interim += ` ${res[0].transcript}`;
         }
+        if (stats.current.firstResultMs === null) stats.current.firstResultMs = Math.round(performance.now() - startedAt);
+        if (interim.trim()) stats.current.interims++;
+        else stats.current.finals++;
         finals = fin;
         h.current.onVoice?.();
         h.current.onTranscript(`${settled}${fin}${interim}`.trim());
       };
       r.onerror = (e) => {
         if (mine !== run.current) return;
+        if (!stats.current.errors.includes(e.error)) stats.current.errors.push(e.error);
+        // A lock or the background takes the microphone away and the browser reports it as an error. Not a fault.
+        if (hiddenNow() && e.error !== 'no-speech') {
+          suspended.current = true;
+          return;
+        }
         if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
           active.current = false;
           setState(granted.current ? 'needs-tap' : 'denied');
@@ -159,7 +193,11 @@ export function useLiveSpeech(handlers: LiveHandlers, opts: { lang?: string; met
       r.onend = () => {
         if (mine !== run.current || !active.current) return;
         settled += finals;
-        open();
+        if (hiddenNow()) {
+          suspended.current = true;
+          return;
+        }
+        open(mine);
       };
       rec.current = r;
       try {
@@ -169,14 +207,47 @@ export function useLiveSpeech(handlers: LiveHandlers, opts: { lang?: string; met
         setState('needs-tap');
       }
     };
+    reopen.current = () => {
+      if (!active.current) return;
+      const mine = ++run.current;
+      if (rec.current) {
+        const old = rec.current;
+        old.onresult = old.onerror = old.onend = old.onstart = old.onsoundstart = old.onspeechstart = null;
+        try { old.abort(); } catch { /* already stopped */ }
+        rec.current = null;
+      }
+      if (wantMeter) {
+        closeMeter();
+        void openMeter();
+      }
+      open(mine);
+    };
     setState('starting');
-    open();
+    open(first);
   }, [closeMeter, lang, openMeter, stop, wantMeter]);
+
+  // A phone that locks or goes to the background takes the microphone. Come back to the same screen listening.
+  useEffect(() => {
+    const change = () => {
+      if (document.visibilityState === 'hidden') {
+        hiddenAt.current = performance.now();
+        if (active.current) suspended.current = true;
+        return;
+      }
+      if (!suspended.current || !active.current) return;
+      suspended.current = false;
+      stats.current.resumes++;
+      reopen.current?.();
+      h.current.onResume?.();
+    };
+    document.addEventListener('visibilitychange', change);
+    return () => document.removeEventListener('visibilitychange', change);
+  }, []);
 
   /** Clears a denied or unavailable state so the student can try again. */
   const retry = useCallback(() => setState(supported ? 'idle' : 'unsupported'), [supported]);
 
   useEffect(() => () => { stop(); closeMeter(); }, [stop, closeMeter]);
 
-  return { state, supported, meterOn, start, stop, retry, release: closeMeter };
+  return { state, supported, meterOn, start, stop, retry, release: closeMeter, stats };
 }

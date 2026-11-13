@@ -14,6 +14,10 @@ export interface TeleRenderer {
   setQuestion(isQuestion: boolean): void;
   /** A small start, for a stressed word. */
   emphasise(): void;
+  /** Wear the patchwork corduroy jacket over the stripy turtleneck. */
+  setJacket(on: boolean): void;
+  /** The dial turns and the picture flashes, like changing channel. */
+  channelChange(): void;
   lookAt(x: number, y: number, ms: number): void;
   current(): Required<Feelings>;
 }

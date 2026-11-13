@@ -25,7 +25,7 @@ A Windows 98-style desktop pasted over a lost world: painted sky, an endless pla
 
 ## Character: Tele
 
-An old CRT television with one large eye, in a pink cardigan, broadcasting Castilian Spanish. It has **no mouth**.
+A 1970s television with one realistic eye, rabbit-ear antennae and turning dials, in a striped turtleneck and a patchwork corduroy jacket, standing in a painted room (checkerboard floor, drifting clouds, a lone door, a mushroom with an eye), broadcasting Castilian Spanish. It has **no mouth**. Redesigned by the owner on 12 Nov 2026; the source package is `docs/design/tele-react/`.
 
 - Feelings live in the eye (lids, brow, pupil, gaze, tears), the antennae, the picture (tint, static, glitch) and the world (sky colour, rainbow, darkness).
 - Six feelings (joy, sadness, anger, fear, surprise, disgust) are recipes that add together, so any two blend.
@@ -33,7 +33,8 @@ An old CRT television with one large eye, in a pink cardigan, broadcasting Casti
 - **Feelings are baked at build time** per phrase-bank line (a feeling track beside the audio). A rule-based word list is the fallback. There is no runtime language-model call and no open chat.
 - Tele speaks only Spanish. English appears only as subtitles in the caption window.
 - Voice: the ElevenLabs character voice. The "Dream TV voice" effect (slowed, echo) is an optional setting, not a default requirement.
-- The first sketch is procedural canvas code. Whether v1 keeps it or rebuilds Tele as layered SVG via `docs/art-pipeline.md` is open (see conflicts register).
+- v1 keeps canvas drawing (decided at M1): the eye and effects are procedural and the television, body, door, mushroom and clouds are WebP sprites in `public/tele/`. `lib/tele/draw.ts` is the port. The jacket is on by default and can be turned off.
+- The stage is 400 by 360 units. Calm mode and reduced motion stop clouds, glances, breathing and glitches.
 - Original character only. No copyrighted characters.
 
 ## Colour tokens
@@ -178,5 +179,11 @@ A design rule from the first test user, built at `/lab/memorise` and not yet in 
 - **A pause is not a failure and there is no clock.** After about three seconds without a new word, "Give me a hint" and "Move on" appear and Tele keeps listening for as long as the student needs. A hint shows the next word; it still has to be said.
 - **Keep going.** A skipped or mangled bit does not stop the words after it from counting. A student who reaches the end with one bit missing passes the screen and only tidies that bit.
 - **Tele speaks first, then the microphone opens,** so Tele's own voice is never taken for the student's.
+- **Speaking and tapping screens look different at a glance, without interrupting.** A quiet badge sits beside the instruction and stays put. Speaking: a round pink badge with a microphone. Tapping: a square cream badge with a mouse pointer on a device with a mouse, or a pointing hand on a touch device (chosen by the device's main pointer in CSS). Shape and picture carry the difference, not the colour, and the badge has a spoken label ("Speaking screen", "Tapping screen"). A first version flashed a large icon over the card when the kind changed; testers found it interrupted the flow and did not read it, so it was removed (12 Nov 2026). Nothing animates or covers the card when the kind changes. The microphone indicator is only ever on speaking screens.
+- **The screen stays awake while a lesson listens,** and if the phone locks anyway, listening picks up on the same screen when the student comes back. An error that arrives just after the page is hidden is read as the lock, not as a broken microphone, so the lesson never drops to self-marking for that. The pause clock starts again on return so no hint is pushed at the student.
+- **Tester tools have a device report:** timings and recogniser facts to paste into `docs/device-matrix.md` (no audio, no words). Budget in `docs/performance-budget.md`.
+- **A stall on a longer screen marks the next bit.** After a pause, with three or more bits on the screen and some already said, the next bit to say gets a pointer (a small arrow and a thick dashed outline, so it is not colour alone). The buttons become Hint, Hear it and Move on, and Hint and Hear it are for that bit only. At the levels where nothing is on screen the marked bit shows as blanks so the student can see where they are. Being pointed to a bit counts as help.
+- **Reaching the end with a bit missing does not end the screen.** Once the last bit is said and the student goes quiet, the missed bit is marked, the line says "One bit left. Say the marked bit.", and saying just that bit finishes the screen as helped, not clean. Only words said after being sent back count for it. Move on still gives the "kept going" credit and names the bit to tidy.
+- **A repeated word lights only at the student's place.** Matching prefers unbroken runs of words, and a word that occurs more than once only lights near the student's place (the rest of the bit they are on and the next one) unless a run of three words shows they have jumped ahead. This also stops a recogniser that repeats earlier words from lighting a second "me gusta" further on.
 - Logic: `lib/speech/live-match.ts`, `lib/speech/pause.ts`, `lib/memorise/ladder.ts`. Microphone: `app/components/useLiveSpeech.ts`.
 - Open: this needs the browser's built-in recogniser with interim results, which `docs/device-matrix.md` still lists as unverified on every device. Where it is missing the lab falls back to the student checking their own answer. Some phones cannot share the microphone between the recogniser and the level meter, so the meter is a switch in the lab's tester tools and starts off on phones.

@@ -47,7 +47,7 @@ async function openMemorise(page: Page, seed = 1) {
   await page.addInitScript(seeded(seed));
   await signUp(page);
   await unlockMemorise(page);
-  await page.goto('/phases/memorise');
+  await page.goto('/phases/memorise/classic');
 }
 
 test('every warm-up task, the feedback panel and the spoken step fit 360 by 640 with no scrolling (20.1)', async ({ page }) => {
@@ -272,7 +272,7 @@ test.describe('the spoken prompt gives a different kind of support at each level
         expect(r.ok()).toBe(true);
       }
     }
-    await page.goto('/phases/memorise');
+    await page.goto('/phases/memorise/classic');
     await skipWarmups(page);
   }
 
@@ -401,7 +401,7 @@ test.describe('chunk-by-chunk build-up and cause tags (21.5)', () => {
     await page.route('**/api/transcribe', (r) => r.fulfill({ json: { status: 'ok', text: heard, confidence: 0.9 } }));
     const recalls: Record<string, unknown>[] = [];
     page.on('request', (r) => r.url().endsWith('/api/recall') && recalls.push(r.postDataJSON()));
-    await page.goto('/phases/memorise');
+    await page.goto('/phases/memorise/classic');
     await skipWarmups(page);
     const english = (await page.getByTestId('english-prompt').textContent())!;
     const pieces = answerPieces(answerFor(english), SEED_COURSE.chunks);
@@ -447,7 +447,7 @@ test.describe('chunk-by-chunk build-up and cause tags (21.5)', () => {
     const sent: Record<string, any>[] = [];
     page.on('request', (r) => r.url().endsWith('/api/recall') && sent.push(r.postDataJSON()));
     await page.route('**/api/transcribe', (r) => r.fulfill({ json: { status: 'ok', text: 'me gustan', confidence: 0.9 } }));
-    await page.goto('/phases/memorise');
+    await page.goto('/phases/memorise/classic');
     await skipWarmups(page);
     // The answer with the live tag comes first, and shows a gapped script, not English only.
     await expect(page.getByTestId('support')).toHaveText('Showing: a gapped script');

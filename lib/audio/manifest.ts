@@ -15,7 +15,7 @@ export interface ClipSpec {
   speed: number;
   /** A baked feeling for tutor lines; questions have none and use the rule-based track. */
   feelings: Feelings | null;
-  kind: 'question' | 'line';
+  kind: 'question' | 'line' | 'bit';
   /** Human label for bills and logs. */
   label: string;
 }
@@ -25,8 +25,8 @@ export const slotFor = (text: string, speed: number) =>
   createHash('sha1').update(JSON.stringify({ text, speed })).digest('hex').slice(0, 12);
 
 /** What marks a stored clip as out of date: change the text, voice, model or speed and it differs. */
-export const sourceHash = (text: string, voiceId: string, model: string, speed: number) =>
-  createHash('sha1').update(JSON.stringify({ text, voiceId, model, speed })).digest('hex').slice(0, 12);
+export const sourceHash = (text: string, voiceId: string, model: string, speed: number, tag?: string, how?: string) =>
+  createHash('sha1').update(JSON.stringify({ text, voiceId, model, speed, ...(tag ? { tag } : {}), ...(how ? { how } : {}) })).digest('hex').slice(0, 12);
 
 export interface QuestionLike {
   position: number;
@@ -36,8 +36,18 @@ export interface QuestionLike {
   keyWord?: { spanish: string; english: string };
 }
 
-/** Every clip the app needs: each question at three speeds, each key word at two, each phrase-bank line at normal speed. */
-export function planClips(questions: QuestionLike[], bank: PhraseLine[]): ClipSpec[] {
+/** A course chunk: one bit of an answer the memorise ladder teaches and says aloud (task 27.4). */
+export interface ChunkLike {
+  spanish: string;
+  english: string;
+}
+
+/**
+ * Every clip the app needs: each question at three speeds, each key word at two, each phrase-bank line at normal speed,
+ * and each course chunk at slow and normal speed. A student's answer is made of the course's chunks, so Tele says a bit,
+ * or a whole answer bit by bit, from clips built ahead of time and never from a clip made for one student.
+ */
+export function planClips(questions: QuestionLike[], bank: PhraseLine[], chunks: ChunkLike[] = [], lessonLines: { es: string; en: string }[] = []): ClipSpec[] {
   const specs: ClipSpec[] = [];
   for (const q of questions) {
     for (const [name, speed] of Object.entries(SPEEDS) as [SpeedName, number][]) {
@@ -61,6 +71,21 @@ export function planClips(questions: QuestionLike[], bank: PhraseLine[]): ClipSp
       slot: slotFor(l.es, SPEEDS.normal), text: l.es, en: l.en, speed: SPEEDS.normal, feelings: l.feelings,
       kind: 'line', label: `line ${l.id}`,
     });
+  }
+  // Tele's fixed lines in the memorise lessons ("Muy bien.", "Repite."), at normal speed, in the same voice as everything else.
+  for (const l of lessonLines) {
+    specs.push({
+      slot: slotFor(l.es, SPEEDS.normal), text: l.es, en: l.en, speed: SPEEDS.normal, feelings: null,
+      kind: 'line', label: `lesson line`,
+    });
+  }
+  for (const c of chunks) {
+    for (const name of ['slow', 'normal'] as const) {
+      specs.push({
+        slot: slotFor(c.spanish, SPEEDS[name]), text: c.spanish, en: c.english, speed: SPEEDS[name], feelings: null,
+        kind: 'bit', label: `bit "${c.spanish.slice(0, 20)}" (${name})`,
+      });
+    }
   }
   // The same text at the same speed is one clip, however many places want it.
   return [...new Map(specs.map((s) => [s.slot, s])).values()];
