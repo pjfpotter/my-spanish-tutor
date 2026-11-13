@@ -5,7 +5,9 @@
 //   npm run build-audio -- --yes --force rebuilds even unchanged clips (this costs money again)
 //   npm run build-audio -- --yes --limit=3  builds only the first three that are missing, for a listening test
 //
-// Clips are written as 64 kbps mono MP3 (mp3_44100_64). A full build (no --only, no --limit) that finishes with no failures
+// ElevenLabs is asked once per text, for the natural voice, with no speed setting (v4 ignores it). The slow and fast clips
+// are that clip stretched here with ffmpeg (needs ffmpeg with the rubberband filter), free. Every clip is written as
+// 64 kbps mono MP3, encoded once from the 128 kbps original. A full build (no --only, no --limit) that finishes with no failures
 // also removes every file in the clips folder that no current clip wants: old voices, old text, anything left over.
 // The dry run says how many it would remove.
 //   npm run build-audio -- --only=lines, --only=questions or --only=bits
@@ -22,7 +24,8 @@ import { buildClips, planBuild, TTS_SERVICE } from '../lib/audio/build.ts';
 import { planClips } from '../lib/audio/manifest.ts';
 import { CHEEKY_POOL } from '../lib/tele/cheeky.ts';
 import { SEED_COURSE } from '../lib/course/seed.ts';
-import { answerPieces } from '../lib/practice/tasks.ts';
+import { bitsFor } from '../lib/audio/bits.ts';
+import { ffmpegStretcher } from '../lib/audio/ffmpeg.ts';
 import { LAB_ANSWERS } from '../app/lab/memorise/content.ts';
 import { PHRASE_BANK } from '../lib/tele/phrase-bank.ts';
 import { createCostRouter } from '../lib/cost-router/router.ts';
@@ -57,6 +60,10 @@ const store = {
     const p = path.join(dir, `${slot}.json`);
     return existsSync(p) && existsSync(path.join(dir, `${slot}.mp3`)) ? JSON.parse(await readFile(p, 'utf8')) : null;
   },
+  async readMp3(slot) {
+    const p = path.join(dir, `${slot}.mp3`);
+    return existsSync(p) ? readFile(p) : null;
+  },
   async write(slot, mp3, clip) {
     await mkdir(dir, { recursive: true });
     await writeFile(path.join(dir, `${slot}.mp3`), mp3);
@@ -64,12 +71,10 @@ const store = {
   },
 };
 
-// Bits Tele can say: the course chunks, plus the pieces of the model answers that match no chunk (plain bits such as
-// "llevo"), plus the memorise lab's sample bits, so the lab sounds like the real phase.
-const bits = new Map(SEED_COURSE.chunks.map((c) => [c.spanish, c.english]));
-for (const m of SEED_COURSE.modelAnswers) for (const p of answerPieces(m.text, SEED_COURSE.chunks)) if (!bits.has(p.text)) bits.set(p.text, p.english);
-for (const a of LAB_ANSWERS) for (const c of a.chunks) if (!bits.has(c.t)) bits.set(c.t, c.en);
-let specs = planClips(SEED_COURSE.questions, [...PHRASE_BANK, ...CHEEKY_POOL], [...bits].map(([spanish, english]) => ({ spanish, english })));
+// Bits Tele can say in the memorise ladder: the course chunks, the pieces of the model answers that match no chunk, and
+// the memorise lab's sample bits, so the lab sounds like the real phase.
+const bits = bitsFor(SEED_COURSE, LAB_ANSWERS.flatMap((a) => a.chunks.map((c) => ({ t: c.t, en: c.en }))));
+let specs = planClips(SEED_COURSE.questions, [...PHRASE_BANK, ...CHEEKY_POOL], bits);
 if (only === 'lines') specs = specs.filter((s) => s.kind === 'line');
 if (only === 'questions') specs = specs.filter((s) => s.kind === 'question');
 if (only === 'bits') specs = specs.filter((s) => s.kind === 'bit');
@@ -98,11 +103,11 @@ if (!yes) {
 }
 
 const synth = {
-  async synthesise(text, speed) {
-    const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/with-timestamps?output_format=mp3_44100_64`, {
+  async synthesise(text) {
+    const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/with-timestamps?output_format=mp3_44100_128`, {
       method: 'POST',
       headers: { 'xi-api-key': key, 'content-type': 'application/json' },
-      body: JSON.stringify({ text, model_id: voice.model, voice_settings: { speed } }),
+      body: JSON.stringify({ text, model_id: voice.model }),
     });
     if (!res.ok) throw new Error(`ElevenLabs returned ${res.status}: ${(await res.text()).slice(0, 200)}`);
     const j = await res.json();
@@ -131,7 +136,7 @@ if (process.env.DATABASE_URL) {
 }
 const route = createCostRouter(costStore, SERVICE_LIMITS);
 
-const report = await buildClips(plan.toBuild, voice, { synth, decoder, store, route }).finally(() => pool?.end());
+const report = await buildClips(plan.toBuild, voice, { synth, decoder, store, route, stretcher: ffmpegStretcher }).finally(() => pool?.end());
 mpg.free();
 if (!report.failed.length) await prune();
 else console.log('Some clips failed, so nothing was removed.');

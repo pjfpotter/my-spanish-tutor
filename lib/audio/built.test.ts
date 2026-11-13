@@ -5,6 +5,8 @@ import { SEED_COURSE } from '../course/seed';
 import { parseClipFile } from '../tele/clip';
 import { findClip } from '../tele/clips';
 import { PHRASE_BANK } from '../tele/phrase-bank';
+import { LAB_ANSWERS } from '../../app/lab/memorise/content';
+import { bitsFor } from './bits';
 import { planClips, slotFor, SPEEDS } from './manifest';
 
 // Tasks 4.4 and 12.2: every clip the app needs exists, with audio and a complete timeline (word times,
@@ -48,7 +50,8 @@ describe('every planned clip is built', () => {
   });
 
   it('has no unused clips lying around (an edited question must not leave an old clip behind)', () => {
-    const wanted = new Set(specs.map((s) => s.slot));
+    const bits = bitsFor(SEED_COURSE, LAB_ANSWERS.flatMap((a) => a.chunks.map((c) => ({ t: c.t, en: c.en }))));
+    const wanted = new Set(planClips(SEED_COURSE.questions, PHRASE_BANK, bits).map((s) => s.slot));
     const onDisk = existsSync(dir) ? (readFileSync(path.join(dir, '..', '..', '..', 'lib/audio/built.ts'), 'utf8').match(/"slot": "([0-9a-f]{12})"/g) ?? []) : [];
     for (const m of onDisk) expect(wanted.has(m.slice(-13, -1)), m).toBe(true);
   });
