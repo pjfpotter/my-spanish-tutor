@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Wipe the Script</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Fredoka:wght@500;600&family=Pixelify+Sans:wght@500;700&family=VT323&display=swap">
+<style>
+/*
+ * Wipe the Script: prototype of the memorise stage. One file, no build, no server, nothing is saved.
+ * Look: docs/design-direction.md (Win98 windows over a candy sky, chunk-kind pastels, Tele with one eye and no mouth).
+ * The memorable thing is the wipe: each chunk of the student's own answer loses its words in five steps until only an empty outline is left.
+ * Pink, lemon and cyan are decoration only. Meaning is never carried by colour alone (every kind has a symbol and a word).
+ */
+:root {
+  --sky-a:#DDF3FF; --sky-b:#9AD6FF; --sky-c:#4FA9F0;
+  --face:#C0C0C0; --face-2:#DADADA; --tray:#E4ECF3; --well:#FFFFFF;
+  --bev-hi:#FFFFFF; --bev-lo:#808080; --bev-dk:#0B2A4A;
+  --ink:#0B2A4A; --ink-2:#2A4560; --cream:#F4F4D0;
+  --title-a:#000080; --title-b:#0A5CC0; --soft-pink:#FF5FA8; --hyper-pink:#FF1FA9; --lemon:#FFEB00;
+  --focus:#000080; --good:#C4F0B8; --warm:#FFD9B3; --bad:#8A1020;
+  --kind-opinion:#FFC7E3; --kind-reason:#C4F0B8; --kind-link:#FFE69A; --kind-time:#B9DDFF; --kind-detail:#DCCBFF; --kind-other:#E6E6E6;
+  --screen:#0B2A4A;
+  --font-read:'Atkinson Hyperlegible',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-shout:'Fredoka','Trebuchet MS',system-ui,sans-serif;
+  --font-ui:'Pixelify Sans','Courier New',monospace;
+  --font-mono:'VT323','Courier New',monospace;
+  --bevel-out:inset -1px -1px var(--bev-dk),inset 1px 1px var(--bev-hi),inset -2px -2px var(--bev-lo),inset 2px 2px var(--face-2);
+  --bevel-in:inset 1px 1px var(--bev-lo),inset -1px -1px var(--bev-hi),inset 2px 2px var(--bev-dk);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --sky-a:#1F2D7A; --sky-b:#131B4D; --sky-c:#0A1030; --face:#2C2F4A; --face-2:#3A3E60; --tray:#1B1E36; --well:#12142A;
+  --bev-hi:#6A70A0; --bev-lo:#15172B; --bev-dk:#05060F; --ink:#F4F4D0; --ink-2:#CFCFAE; --focus:#FFEB00; --bad:#FF9AA8; color-scheme:dark;}}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--sky-c) 0%,var(--sky-b) 45%,var(--sky-a) 100%) fixed var(--sky-b);color:var(--ink);
+  font:400 17px/1.45 var(--font-read);font-variant-ligatures:none;padding:12px max(14px,env(safe-area-inset-right)) 28px max(14px,env(safe-area-inset-left))}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+[hidden]{display:none!important}
+.app{max-width:520px;margin:0 auto;display:grid;gap:12px}
+.win{background:var(--face);box-shadow:var(--bevel-out),4px 4px 0 rgba(5,6,15,.28);padding:3px;min-width:0}
+.win-title{display:flex;align-items:center;gap:8px;padding:3px 8px;min-height:28px;background:linear-gradient(90deg,var(--title-a),var(--title-b));color:var(--cream);
+  font:500 15px/1.2 var(--font-ui);text-shadow:1px 0 rgba(255,31,169,.75),-1px 0 rgba(0,229,229,.75)}
+.win-title .grow{flex:1;min-width:0}
+.win-body{padding:10px 12px 12px;min-width:0}
+.head{display:flex;align-items:center;gap:10px}
+.logo{font:600 26px/1 var(--font-shout);color:#fff;text-shadow:2px 2px 0 var(--title-a),3px 3px 0 var(--soft-pink);margin:0}
+.euros{margin-left:auto;font:700 18px var(--font-ui);background:var(--well);color:var(--ink);box-shadow:var(--bevel-in);padding:2px 10px;min-height:32px;display:inline-flex;align-items:center}
+.euros.bump{animation:bump .4s}
+@keyframes bump{40%{transform:scale(1.18)}}
+
+/* Tele */
+.tele-row{display:grid;grid-template-columns:84px 1fr;gap:10px;align-items:center}
+.tele{width:84px;height:84px;display:block}
+.tele .scr{fill:var(--screen);transition:fill .2s}
+.tele.speaking .scr{animation:glow .5s ease-in-out infinite alternate}
+@keyframes glow{from{fill:#0B2A4A}to{fill:#1d5a96}}
+.tele .lid{fill:var(--screen);transition:transform .25s}
+.tele .pupil{transition:r .2s,transform .25s}
+.tele[data-feel="idle"] .up{transform:translateY(-13px)} .tele[data-feel="idle"] .lo{transform:translateY(14px)}
+.tele[data-feel="listen"] .up{transform:translateY(-18px)} .tele[data-feel="listen"] .lo{transform:translateY(18px)} .tele[data-feel="listen"] .pupil{r:11}
+.tele[data-feel="joy"] .up{transform:translateY(-12px)} .tele[data-feel="joy"] .lo{transform:translateY(-8px)}
+.tele[data-feel="sad"] .up{transform:translateY(-4px)} .tele[data-feel="sad"] .lo{transform:translateY(14px)} .tele[data-feel="sad"] .pupil{transform:translateY(3px)}
+.tele[data-feel="surprise"] .up{transform:translateY(-18px)} .tele[data-feel="surprise"] .lo{transform:translateY(18px)} .tele[data-feel="surprise"] .pupil{r:6}
+.tele .ant{transform-origin:60px 24px}
+.tele[data-feel="joy"] .ant{animation:wig .35s 2}
+@keyframes wig{50%{transform:rotate(6deg)}}
+.caption{background:var(--title-a);color:var(--cream);font:400 20px/1.25 var(--font-mono);padding:6px 10px;min-height:58px;letter-spacing:.02em}
+.caption .en{display:block;font:400 14px/1.3 var(--font-read);opacity:.9;margin-top:2px;letter-spacing:0}
+
+/* The script */
+.prompt{margin:0 0 8px;font-size:15px;color:var(--ink-2)}
+.prompt b{display:block;color:var(--ink);font-size:18px;line-height:1.3}
+.meter{display:flex;align-items:center;gap:10px;margin:6px 0 10px;font:500 14px var(--font-ui)}
+.bar{flex:1;height:16px;background:var(--well);box-shadow:var(--bevel-in);position:relative;overflow:hidden}
+.bar i{position:absolute;inset:2px auto 2px 2px;background:repeating-linear-gradient(90deg,var(--title-b) 0 6px,#2a7ae0 6px 8px);transition:width .5s steps(10)}
+.script{background:var(--well);box-shadow:var(--bevel-in);padding:12px 10px 8px;display:grid;gap:10px;color:#000}
+.sent{display:flex;flex-wrap:wrap;gap:8px 8px;align-items:stretch}
+.tile{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:5px;text-align:left;min-height:46px;padding:7px 12px;border:0;border-top:5px solid var(--kd,#808080);
+  background:var(--kc,#e6e6e6);color:#000;box-shadow:var(--bevel-out);font-weight:700;font-size:18px;line-height:1.2;cursor:default}
+.tile[data-k=opinion]{--kc:var(--kind-opinion);--kd:#d2399a} .tile[data-k=reason]{--kc:var(--kind-reason);--kd:#3d9a22}
+.tile[data-k=link]{--kc:var(--kind-link);--kd:#c79a00} .tile[data-k=time]{--kc:var(--kind-time);--kd:#2a79d0}
+.tile[data-k=detail]{--kc:var(--kind-detail);--kd:#7a55d8} .tile[data-k=other]{--kc:var(--kind-other);--kd:#707070}
+.tile.peekable{cursor:pointer}
+.tile .w{display:inline-flex;align-items:flex-end;gap:1px;margin-right:2px}
+.tile .w b{font-weight:700}
+.tile .w i{display:inline-block;height:3px;background:#000;margin-bottom:5px;opacity:.65}
+.tile .sym{font:500 14px var(--font-ui)}
+.tile .mark{position:absolute;top:0;right:3px;font:700 14px var(--font-ui)}
+.tile.s3{font-size:15px}
+.tile.s4{background:transparent;box-shadow:none;border-top-style:solid;outline:2px dashed var(--bev-lo);outline-offset:-2px;color:var(--ink-2);min-width:calc(var(--n,1) * 2.8ch + 24px)}
+.tile.lead{background:var(--face);border-top-color:var(--bev-lo);font-weight:400;font-size:16px;color:var(--ink)}
+.tile.lead .sym{margin-right:2px}
+.tile.focus-start{box-shadow:var(--bevel-out),0 0 0 3px var(--soft-pink)}
+.tile.echo{box-shadow:var(--bevel-out),0 0 0 3px var(--lemon)}
+.tile.wipe::after{content:"";position:absolute;top:0;bottom:0;width:10px;left:-12px;background:var(--soft-pink);animation:sweep .38s steps(8) forwards}
+.tile.wipe .in{animation:reveal .38s steps(8)}
+@keyframes sweep{to{left:calc(100% + 2px)}}
+@keyframes reveal{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+.legend{margin:8px 0 0;font-size:14px;color:var(--ink-2);min-height:21px}
+.status{margin:10px 0 0;font-size:16px;min-height:24px}
+.status strong{font-weight:700}
+
+/* Controls */
+.btn{background:var(--face);box-shadow:var(--bevel-out);border:0;min-height:46px;padding:8px 14px;cursor:pointer;font-weight:700;color:var(--ink)}
+.btn:active,.btn[aria-pressed="true"]{box-shadow:var(--bevel-in)}
+.btn[disabled]{opacity:.55;cursor:not-allowed}
+.btn.primary{background:var(--title-b);color:#fff}
+.btn.speak{width:100%;min-height:58px;font-size:20px;display:flex;align-items:center;justify-content:center;gap:10px}
+.btn.speak .dot{width:14px;height:14px;border-radius:50%;background:var(--soft-pink);box-shadow:0 0 0 2px #fff inset}
+.btn.speak.on{animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:var(--bevel-in),0 0 0 4px var(--soft-pink)}}
+.btn.small{min-height:40px;padding:4px 10px;font-size:15px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.row.two{display:grid;grid-template-columns:1fr 1fr}
+.actions{display:grid;gap:8px;margin-top:10px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--well);color:var(--ink);box-shadow:var(--bevel-in);border:0;padding:4px 10px;min-height:40px;cursor:pointer;font-weight:700}
+.chip[aria-pressed="true"]{background:var(--warm);color:#000;box-shadow:var(--bevel-out)}
+.dock{position:sticky;bottom:0;margin:10px -12px -12px;padding:10px 12px;border-top:3px solid var(--bev-dk);background:var(--good);color:#000}
+.dock.warm{background:var(--warm)}
+.dock h3{margin:0;font:700 18px var(--font-read);display:flex;align-items:center;gap:8px}
+.dock .sq{display:inline-grid;place-items:center;width:24px;height:24px;background:#fff;box-shadow:var(--bevel-in);font:700 15px var(--font-ui)}
+.dock p{margin:4px 0 8px;font-size:16px}
+.dock .row{margin-top:2px}
+.big{font:600 28px/1.1 var(--font-shout);margin:0;text-shadow:2px 2px 0 var(--soft-pink)}
+.won{text-align:center;display:grid;gap:8px;padding:6px 0}
+.proto summary{cursor:pointer;font:500 15px var(--font-ui);min-height:36px;display:flex;align-items:center;padding:0 6px}
+.proto .ctl{display:grid;gap:10px;padding:6px 8px 8px}
+.proto fieldset{border:0;padding:0;margin:0;display:grid;gap:2px}
+.proto legend{font:500 14px var(--font-ui);padding:0;margin-bottom:2px}
+.proto label{display:flex;gap:8px;align-items:center;min-height:34px;font-size:15px;cursor:pointer}
+.proto input{width:18px;height:18px}
+.note{font-size:14px;color:var(--ink-2);margin:0}
+@media (prefers-reduced-motion:reduce){.tile.wipe::after{display:none}.tile.wipe .in,.btn.speak.on,.euros.bump,.tele.speaking .scr,.tele .ant{animation:none!important}.bar i{transition:none}}
+:root[data-calm="1"] .tile.wipe::after{display:none}
+:root[data-calm="1"] .tile.wipe .in,:root[data-calm="1"] .btn.speak.on,:root[data-calm="1"] .euros.bump,:root[data-calm="1"] .tele.speaking .scr,:root[data-calm="1"] .tele .ant{animation:none!important}
+:root[data-calm="1"] .win-title,:root[data-calm="1"] .logo,:root[data-calm="1"] .big{text-shadow:none}
+</style></head>
+<body>
+<div class="app">
+  <div class="head"><h1 class="logo">Wipe the Script</h1><span class="euros" id="euros" aria-live="polite">€0</span></div>
+
+  <section class="win" aria-label="Tele">
+    <div class="win-title"><span class="grow">Tele.exe</span></div>
+    <div class="win-body tele-row">
+      <svg class="tele" id="tele" data-feel="idle" viewBox="0 0 120 120" role="img" aria-label="Tele, a television with one large eye">
+        <defs><clipPath id="eyeclip"><ellipse cx="60" cy="55" rx="24" ry="17"/></clipPath></defs>
+        <g class="ant"><path d="M45 24 L33 6 M75 24 L89 6" stroke="#0B2A4A" stroke-width="3" fill="none"/><circle cx="33" cy="6" r="4" fill="#FF5FA8" stroke="#0B2A4A" stroke-width="2"/><circle cx="89" cy="6" r="4" fill="#FF5FA8" stroke="#0B2A4A" stroke-width="2"/></g>
+        <rect x="12" y="22" width="96" height="72" rx="11" fill="#E8E2C8" stroke="#0B2A4A" stroke-width="3"/>
+        <rect class="scr" x="20" y="30" width="80" height="54" rx="8"/>
+        <g clip-path="url(#eyeclip)"><ellipse cx="60" cy="55" rx="24" ry="17" fill="#fff"/>
+          <circle class="pupil" cx="60" cy="55" r="9" fill="#0B2A4A"/><circle cx="63" cy="52" r="2.5" fill="#fff"/>
+          <rect class="lid up" x="34" y="36" width="52" height="19"/><rect class="lid lo" x="34" y="55" width="52" height="19"/></g>
+        <path d="M12 96 h96 v14 q0 8 -8 8 h-80 q-8 0 -8 -8z" fill="#FF5FA8" stroke="#0B2A4A" stroke-width="3"/>
+        <circle cx="48" cy="106" r="3" fill="#F4F4D0"/><circle cx="72" cy="106" r="3" fill="#F4F4D0"/>
+      </svg>
+      <div class="caption" id="caption" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="win" aria-label="Your answer">
+    <div class="win-title"><span class="grow" id="wtitle">Pregunta 1</span><span id="daytag"></span></div>
+    <div class="win-body" id="main"></div>
+  </section>
+
+  <details class="win proto">
+    <summary>Prototype controls</summary>
+    <div class="ctl">
+      <fieldset><legend>Who is practising</legend>
+        <label><input type="radio" name="preset" value="start" checked> Just starting: one short sentence</label>
+        <label><input type="radio" name="preset" value="mid"> Middle: one good complex sentence</label>
+        <label><input type="radio" name="preset" value="high"> Aiming high: a short paragraph</label>
+      </fieldset>
+      <fieldset><legend>Microphone</legend>
+        <label><input type="radio" name="mic" value="real"> Real: Spanish speech recognition (Chrome, over https or localhost)</label>
+        <label><input type="radio" name="mic" value="pretend"> Pretend: you say it out loud, then tap what you missed</label>
+      </fieldset>
+      <label><input type="checkbox" id="sound" checked> Sound and Tele's voice</label>
+      <label><input type="checkbox" id="subs" checked> English subtitles</label>
+      <label><input type="checkbox" id="calm"> Calm mode (no motion)</label>
+      <div class="row"><button class="btn small" id="restart" type="button">Start over</button><button class="btn small" id="tomorrow" type="button">Jump to tomorrow's cold test</button></div>
+      <p class="note">Nothing here is saved and no audio leaves your browser tab, apart from whatever your browser's own speech recogniser does in Real mode.</p>
+    </div>
+  </details>
+</div>
+
+<script>
+'use strict';
+/* ---------- Content: three students, three lengths ---------- */
+const TEXTS = {
+  start: { need: 2, question: '¿Qué películas te gustan?', english: 'I like horror films.',
+    chunks: [ {t:'Me gustan',k:'opinion',s:0,en:'I like'}, {t:'las películas de miedo',k:'detail',s:0,en:'horror films'} ] },
+  mid: { need: 1, question: '¿Qué vas a hacer el fin de semana?', english: "On Saturday I'm going to the cinema because I love horror films.",
+    chunks: [ {t:'El sábado',k:'time',s:0,en:'On Saturday'}, {t:'voy a ir al cine',k:'other',s:0,en:"I'm going to the cinema"},
+              {t:'porque me encantan',k:'reason',s:0,en:'because I love'}, {t:'las películas de miedo',k:'detail',s:0,en:'horror films'} ] },
+  high: { need: 1, question: '¿Qué tipo de películas te gustan?', english: 'I like horror films because they are exciting. On Saturday I am going to the cinema with my friends, although my mum prefers comedies.',
+    chunks: [ {t:'Me gustan las películas de miedo',k:'opinion',s:0,en:'I like horror films'}, {t:'porque son emocionantes',k:'reason',s:0,en:'because they are exciting'},
+              {t:'El sábado',k:'time',s:1,en:'On Saturday'}, {t:'voy a ir al cine',k:'other',s:1,en:"I'm going to the cinema"}, {t:'con mis amigos',k:'detail',s:1,en:'with my friends'},
+              {t:'aunque mi madre',k:'link',s:1,en:'although my mum'}, {t:'prefiere las comedias',k:'detail',s:1,en:'prefers comedies'} ] }
+};
+const KIND = { opinion:['●','opinion'], reason:['◆','reason'], link:['▲','link'], time:['■','when'], detail:['✚','detail'], other:['○','bit'] };
+/* Tele speaks only Spanish. English is a subtitle. Comforting first, no jokes. */
+const LINES = {
+  hello:[ 'Hola. Estoy aquí.', 'Hello. I am here.' ],
+  blind:[ 'Pruébalo. No pasa nada.', "Have a go. It's fine." ],
+  placed:[ 'Ya sé dónde estás.', 'Now I know where you are.' ],
+  echo:[ 'Repite.', 'Say it after me.' ],
+  yourturn:[ 'Ahora tú.', 'Now you.' ],
+  listen:[ 'Te escucho.', "I'm listening." ],
+  good:[ ['Muy bien.','Very good.'], ['Eso es.','That is it.'], ['Así, así.','Just like that.'] ],
+  miss:[ 'No pasa nada. Otra vez.', "It's fine. Again." ],
+  unclear:[ 'No te he oído bien. Otra vez.', "I didn't hear you well. Again." ],
+  bold:[ '¡Qué valiente!', 'How brave!' ],
+  won:[ 'Ya no queda nada en la pantalla. Todo está en ti.', "There's nothing left on the screen. It's all in you." ],
+  cold:[ 'Buenos días. ¿Te acuerdas?', 'Good morning. Do you remember?' ],
+  memorised:[ 'Dos días. Sigue ahí. Es tuyo.', 'Two days. It is still there. It is yours.' ]
+};
+
+/* ---------- State ---------- */
+let S = null, lastDisp = [], voiceOn = true, stopListen = null, speakToken = 0;
+const $ = s => document.querySelector(s);
+const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const opts = { mic: SR ? 'real' : 'pretend', sound: true, subs: true, preset: 'start' };
+
+function newGame(preset) {
+  const T = TEXTS[preset];
+  S = { preset, T, chunks: T.chunks.map(c => ({ ...c, step: 0, good: 0, echoed: false, res: null, peek: false })),
+        f: T.chunks.length - 1, phase: 'intro', boost: false, euros: S ? S.euros : 0, clean: 0, day: 1, cold: false,
+        listening: false, self: null, panel: null, note: '', busy: false };
+  S.euros = 0; lastDisp = [];
+  render(); tele('hello'); setFeel('idle');
+}
+const n = () => S.chunks.length;
+const inSpan = i => i >= S.f;
+const dispStep = i => {
+  const c = S.chunks[i];
+  if (['intro','blind','examiner','won'].includes(S.phase)) return 4;
+  if (c.peek) return 0;
+  return S.boost && S.phase === 'turn' && inSpan(i) ? Math.min(4, c.step + 1) : c.step;
+};
+const ink = () => 1 - S.chunks.reduce((a, c) => a + c.step, 0) / (4 * n());
+
+/* ---------- Tele: voice, captions, feelings ---------- */
+let feelTimer;
+function setFeel(f, ms) { $('#tele').dataset.feel = f; clearTimeout(feelTimer); if (ms) feelTimer = setTimeout(() => setFeel(S && S.listening ? 'listen' : 'idle'), ms); }
+function caption(es, en) { $('#caption').innerHTML = es ? `${esc(es)}${opts.subs && en ? `<span class="en">${esc(en)}</span>` : ''}` : ''; }
+function speakEs(text, rate = 0.9) {
+  const my = ++speakToken;
+  return new Promise(res => {
+    if (!opts.sound || !('speechSynthesis' in window)) return setTimeout(res, Math.min(2500, 500 + text.length * 40));
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text); u.lang = 'es-ES'; u.rate = rate;
+    const v = speechSynthesis.getVoices().find(v => /^es[-_]ES/i.test(v.lang)) || speechSynthesis.getVoices().find(v => /^es/i.test(v.lang));
+    if (v) u.voice = v;
+    $('#tele').classList.add('speaking');
+    const done = () => { if (my === speakToken) $('#tele').classList.remove('speaking'); res(); };
+    u.onend = done; u.onerror = done;
+    speechSynthesis.speak(u);
+    setTimeout(done, 12000);
+  });
+}
+function tele(key, pick) {
+  let l = LINES[key]; if (Array.isArray(l[0])) l = l[pick ?? Math.floor(Math.random() * l.length)];
+  caption(l[0], l[1]); return speakEs(l[0]);
+}
+function say(es, en) { caption(es, en); return speakEs(es); }
+let ac; function blip(freqs, dur = 0.09) {
+  if (!opts.sound) return;
+  try { ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    freqs.forEach((f, i) => { const o = ac.createOscillator(), g = ac.createGain(); o.type = 'triangle'; o.frequency.value = f; g.gain.value = 0.05;
+      o.connect(g); g.connect(ac.destination); const t = ac.currentTime + i * dur; o.start(t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur * 1.6); o.stop(t + dur * 1.7); });
+  } catch {}
+}
+function earn(x) { if (x <= 0) return; S.euros += x; const e = $('#euros'); e.textContent = '€' + S.euros; e.classList.remove('bump'); void e.offsetWidth; e.classList.add('bump'); }
+
+/* ---------- Speaking and judging ---------- */
+const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean);
+/** Aligns what was heard with what was expected; a chunk counts if most of its words were understood. A failure to recognise is never held against the student. */
+function judge(idx, heardText) {
+  const exp = [], owner = [];
+  idx.forEach(i => norm(S.chunks[i].t).forEach(w => { exp.push(w); owner.push(i); }));
+  const got = norm(heardText);
+  const L = Array.from({ length: exp.length + 1 }, () => new Array(got.length + 1).fill(0));
+  for (let a = 1; a <= exp.length; a++) for (let b = 1; b <= got.length; b++)
+    L[a][b] = exp[a - 1] === got[b - 1] ? L[a - 1][b - 1] + 1 : Math.max(L[a - 1][b], L[a][b - 1]);
+  const hit = new Array(exp.length).fill(false); let a = exp.length, b = got.length;
+  while (a > 0 && b > 0) { if (exp[a - 1] === got[b - 1]) { hit[a - 1] = true; a--; b--; } else if (L[a - 1][b] >= L[a][b - 1]) a--; else b--; }
+  const out = {};
+  idx.forEach(i => { const ws = owner.map((o, k) => o === i ? k : -1).filter(k => k >= 0); out[i] = ws.filter(k => hit[k]).length / ws.length >= 0.7; });
+  return out;
+}
+function listenReal() {
+  return new Promise(res => {
+    const r = new SR(); r.lang = 'es-ES'; r.interimResults = false; r.maxAlternatives = 1; let done = false;
+    r.onresult = e => { done = true; res({ ok: true, text: e.results[0][0].transcript }); };
+    r.onerror = e => { if (!done) { done = true; res({ ok: false, err: e.error }); } };
+    r.onend = () => { if (!done) { done = true; res({ ok: false, err: 'nospeech' }); } };
+    stopListen = () => r.stop();
+    try { r.start(); } catch { res({ ok: false, err: 'start' }); }
+  });
+}
+/** Resolves to {said, matched} or null when nothing clear was heard. `idx` null means only "did they speak?". */
+async function capture(idx) {
+  speechSynthesis && speechSynthesis.cancel(); $('#tele').classList.remove('speaking');
+  S.listening = true; setFeel('listen'); render();
+  if (opts.mic === 'real' && SR) {
+    const r = await listenReal(); S.listening = false; stopListen = null;
+    if (!r.ok) {
+      if (r.err === 'not-allowed' || r.err === 'service-not-allowed' || r.err === 'start') {
+        opts.mic = 'pretend'; document.querySelector('input[name=mic][value=pretend]').checked = true;
+        S.note = 'The browser would not let me listen, so this switched to Pretend mode.';
+      } else { S.note = 'Not marked: I could not hear that clearly.'; setFeel('idle'); tele('unclear'); render(); return null; }
+    } else return { said: true, matched: idx ? judge(idx, r.text) : {} };
+  }
+  // Pretend: they said it aloud. For a scored turn they tap the bits they missed.
+  S.listening = false; setFeel('idle');
+  if (!idx) { render(); return { said: true, matched: {} }; }
+  return new Promise(res => { S.self = { idx, missed: new Set(), res }; render(); });
+}
+
+/* ---------- Flow ---------- */
+async function onSpeak() {
+  if (S.busy) return;
+  if (S.listening) { stopListen && stopListen(); return; }
+  S.note = ''; S.busy = true;
+  const ph = S.phase;
+  if (ph === 'blind' || ph === 'intro') {
+    S.phase = 'blind'; const all = S.chunks.map((_, i) => i);
+    const r = await capture(all); S.busy = false; if (!r) return render();
+    place(r.matched);
+  } else if (ph === 'echo') {
+    const r = await capture(null); S.busy = false; if (!r) return render();
+    S.chunks[S.f].echoed = true; earn(1); blip([660, 880]); setFeel('joy', 900);
+    S.phase = 'turn'; enterTurn(true);
+  } else if (ph === 'turn') {
+    const span = S.chunks.map((_, i) => i).filter(inSpan);
+    const r = await capture(span); S.busy = false; if (!r) return render();
+    applyTurn(span, r.matched);
+  } else if (ph === 'examiner') {
+    const all = S.chunks.map((_, i) => i);
+    const r = await capture(all); S.busy = false; if (!r) return render();
+    applyExaminer(r.matched);
+  }
+}
+function confirmSelf() {
+  const s = S.self; if (!s) return; S.self = null;
+  const m = {}; s.idx.forEach(i => m[i] = !s.missed.has(i)); s.res({ said: true, matched: m });
+}
+function place(matched) {
+  // The blind go decides where to start: bits they already know begin wiped to the empty-slots step, and the chain starts at the first unbroken run from the end.
+  S.chunks.forEach((c, i) => { if (matched[i]) { c.step = 2; c.echoed = true; } });
+  let f = n() - 1; if (matched[n() - 1]) { f = n() - 1; while (f > 0 && matched[f - 1]) f--; }
+  S.f = f; S.phase = 'turn';
+  const known = S.chunks.filter(c => c.step === 2).length;
+  S.note = known ? `You already had ${known} of ${n()} bits. Those start half-wiped.` : 'We start from the end. The last bit first.';
+  earn(1); blip([523, 659, 784]); setFeel('joy', 1200); tele('placed'); lastDisp = []; render();
+  setTimeout(() => enterTurn(false), 1300);
+}
+function enterTurn(quiet) {
+  S.boost = false; S.panel = null; S.chunks.forEach(c => { c.res = null; c.peek = false; });
+  const c = S.chunks[S.f];
+  S.phase = (c.echoed || c.step >= 2) ? 'turn' : 'echo';
+  render();
+  if (S.phase === 'echo') { say(c.t, c.en); return; }
+  const lead = S.chunks.slice(0, S.f);
+  if (lead.length && !quiet) { say(lead.map(c => c.t).join(' '), lead.map(c => c.en).join(', ')).then(() => { if (S.phase === 'turn' && !S.listening) tele('yourturn'); }); }
+  else if (!quiet) tele('yourturn');
+}
+function applyTurn(span, matched) {
+  const peeked = span.some(i => S.chunks[i].peek);
+  const bold = S.boost; let adv = 0;
+  span.forEach(i => {
+    const c = S.chunks[i]; c.res = matched[i] ? 'ok' : 'miss';
+    if (matched[i]) {
+      if (c.peek) return;                       // a peek holds the chunk where it is: no step forward, nothing lost
+      c.good++;
+      if (bold || c.good >= S.T.need) { if (c.step < 4) { c.step++; adv++; } c.good = 0; }
+    } else if (!bold) { c.good = 0; c.step = Math.max(0, c.step - 1); } // a miss gives a little help back
+  });
+  const allOk = span.every(i => matched[i]);
+  const clean = allOk && !peeked;
+  S.clean = clean ? S.clean + 1 : 0;
+  let gain = adv + (clean ? 1 : 0); if (bold && clean) gain += 2;
+  earn(gain);
+  S.boost = false; S.chunks.forEach(c => c.peek = false);
+  // The chain grows when every chunk the student says has reached the empty-slots step.
+  let grew = false;
+  if (S.f > 0 && span.every(i => S.chunks[i].step >= 2)) { S.f--; grew = true; }
+  const first = span.find(i => !matched[i]);
+  let head, body, warm = false, extra = '';
+  if (clean) { head = ['Clean run', '✓']; body = S.clean > 1 ? `${S.clean} clean runs in a row.` : 'No peeks, nothing missed.'; blip([523, 659, 784]); setFeel('joy', 1400); tele('good'); }
+  else if (allOk) { head = ['That works', '✓']; body = 'You peeked, so this one held its place. No harm done.'; blip([523, 659]); setFeel('joy', 1000); tele('good'); }
+  else { head = ['Nearly', '~']; warm = true; body = `One thing: “${S.chunks[first].t}”. It came back a step to help you.`; extra = 'hear'; blip([330, 262]); setFeel('sad', 1400); tele('miss'); }
+  if (grew) body += ` Tele says less now. You say from “${S.chunks[S.f].t}”.`;
+  if (bold && clean) body += ' Brave pays: +€2.';
+  S.panel = { head, body, warm, extra, hearIdx: first };
+  S.phase = 'result';
+  if (S.chunks.every(c => c.step === 4) && S.f === 0) S.panel.next = 'examiner';
+  render();
+}
+function proceed() {
+  if (S.panel && S.panel.next === 'examiner') return startExaminer();
+  S.panel = null; enterTurn(false);
+}
+function startExaminer() {
+  S.panel = null; S.phase = 'examiner'; S.boost = false; S.chunks.forEach(c => { c.res = null; });
+  render(); say(S.T.question, 'Tele asks the question. Your answer is not on the screen.');
+}
+function applyExaminer(matched) {
+  const ok = Object.values(matched).filter(Boolean).length / n() >= 0.8;
+  S.chunks.forEach((c, i) => { c.res = matched[i] ? 'ok' : 'miss'; });
+  if (ok) {
+    const win = S.cold ? 25 : 10; earn(win); S.phase = 'won'; blip([523, 659, 784, 1046], 0.12); setFeel('joy', 3000);
+    S.chunks.forEach(c => c.res = null); render(); tele(S.cold ? 'memorised' : 'won');
+  } else {
+    S.chunks.forEach((c, i) => { if (!matched[i]) c.step = S.cold ? 2 : 3; c.res = null; });
+    S.f = 0; S.phase = 'result';
+    const first = S.chunks.findIndex((_, i) => !matched[i]);
+    S.panel = { head: ['Nearly', '~'], warm: true, body: `One thing: “${S.chunks[first].t}”. Those bits come back a step, then we try the question again.`, extra: 'hear', hearIdx: first };
+    blip([330, 262]); setFeel('sad', 1400); tele('miss'); render();
+  }
+}
+function tomorrow() {
+  speechSynthesis && speechSynthesis.cancel();
+  S.day = 2; S.cold = true; S.chunks.forEach(c => { c.step = 4; c.res = null; c.good = 0; }); S.f = 0; S.boost = false; S.panel = null; S.note = '';
+  S.phase = 'examiner'; lastDisp = []; render();
+  tele('cold').then(() => say(S.T.question, 'Tele asks the question. Nothing is on the screen.'));
+}
+function peek(i) {
+  if (S.phase !== 'turn' || S.listening || !inSpan(i) || S.chunks[i].step < 1 || S.chunks[i].peek) return;
+  S.chunks[i].peek = true; render();
+  setTimeout(() => { if (S) { S.chunks[i].peek = false; render(); } }, 1600);
+}
+function hearSpan() {
+  const idx = S.phase === 'examiner' ? null : (S.phase === 'echo' ? [S.f] : S.chunks.map((_, i) => i).filter(inSpan));
+  if (!idx) return say(S.T.question, 'Tele asks the question again.');
+  const t = idx.map(i => S.chunks[i].t).join(' '); say(t, idx.map(i => S.chunks[i].en).join(', '));
+}
+
+/* ---------- Render ---------- */
+function tileHtml(i, d) {
+  const c = S.chunks[i], [sym, word] = KIND[c.k], lead = i < S.f && ['turn','echo','result'].includes(S.phase);
+  const wipe = !lead && lastDisp[i] !== undefined && lastDisp[i] !== d;
+  let cls = 'tile', body, label;
+  if (lead) { cls += ' lead'; body = `<span class="sym" aria-hidden="true">♪</span>${esc(c.t)}`; label = `Tele says: ${c.t}`; }
+  else if (d === 0) { body = esc(c.t); label = c.t; }
+  else if (d === 1) { body = c.t.split(' ').map(w => `<span class="w"><b>${esc(w[0])}</b><i style="width:${Math.max(1, w.length - 1) * 0.55}ch"></i></span>`).join(' '); label = `${word} bit, first letters only`; }
+  else if (d === 2) { body = c.t.split(' ').map(w => `<span class="w"><i style="width:${w.length * 0.62}ch"></i></span>`).join(' '); label = `${word} bit, ${c.t.split(' ').length} hidden words`; }
+  else if (d === 3) { body = `<span class="sym">${sym} ${word}</span>`; label = `${word} bit, nothing shown`; }
+  else { body = ''; label = `${word} bit, wiped`; }
+  cls += ` s${d}`;
+  const canPeek = S.phase === 'turn' && !S.listening && inSpan(i) && c.step >= 1 && !c.peek;
+  if (canPeek) cls += ' peekable';
+  if (wipe) cls += ' wipe';
+  if (S.phase === 'echo' && i === S.f) cls += ' echo';
+  const mark = !lead && c.res === 'ok' ? '<span class="mark" aria-hidden="true">✓</span><span class="sr"> (said)</span>' : !lead && c.res === 'miss' ? '<span class="mark" aria-hidden="true">✗</span><span class="sr"> (come back to)</span>' : '';
+  const tag = canPeek ? 'button type="button"' : 'div';
+  const close = canPeek ? 'button' : 'div';
+  return `<${tag} class="${cls}" data-i="${i}" data-k="${c.k}" lang="es" style="--n:${c.t.split(' ').length}" aria-label="${esc(label)}${canPeek ? '. Tap to peek.' : ''}"><span class="in">${body}</span>${mark}</${close}>`;
+}
+function render() {
+  if (!S) return;
+  const ph = S.phase, T = S.T;
+  $('#daytag').textContent = S.cold ? 'Day 2' : 'Day 1';
+  let h = `<p class="prompt">Say your answer to:<b lang="en">${esc(T.english)}</b></p>`;
+  h += `<div class="meter"><span>Script left</span><div class="bar" role="img" aria-label="${Math.round(ink() * 100)} percent of the script left"><i style="width:calc(${(ink() * 100).toFixed(0)}% - 4px)"></i></div><span>${Math.round(ink() * 100)}%</span></div>`;
+  const d = S.chunks.map((_, i) => dispStep(i));
+  const sentIds = [...new Set(S.chunks.map(c => c.s))];
+  h += `<div class="script" role="group" aria-label="Your script">` + sentIds.map(s => `<div class="sent">${S.chunks.map((c, i) => c.s === s ? tileHtml(i, d[i]) : '').join('')}</div>`).join('') + `</div>`;
+  lastDisp = d;
+
+  // One line of legend: what the student is doing now
+  let legend = '', status = '';
+  if (ph === 'intro') status = `<strong>Have a go first.</strong> Say your answer however you can. Nothing is marked against you.`;
+  else if (ph === 'blind') status = `<strong>Have a go.</strong> Say all of it.`;
+  else if (ph === 'echo') status = `<strong>Say it after Tele.</strong> Just this bit.`;
+  else if (ph === 'turn') legend = S.f > 0 ? `♪ Tele says the grey bits. You say from the first coloured bit to the end.` : `You say all of it. Tap a hidden bit to peek.`;
+  else if (ph === 'examiner') status = `<strong>${S.cold ? 'Cold test.' : 'Last step.'}</strong> Tele asks the question. Your answer is not on the screen.`;
+  if (S.note) status += (status ? '<br>' : '') + esc(S.note);
+  h += `<p class="legend">${legend}</p><p class="status" role="status">${status}</p>`;
+
+  // Actions
+  let act = '';
+  if (S.self) {
+    act = `<p class="status"><strong>Tap any bit you missed.</strong></p><div class="chips">` + S.self.idx.map(i => {
+      const [sym, word] = KIND[S.chunks[i].k]; const m = S.self.missed.has(i);
+      return `<button type="button" class="chip" data-miss="${i}" aria-pressed="${m}">${sym} ${word}${m ? ' ✗' : ' ✓'}</button>`; }).join('') + `</div><button type="button" class="btn primary" id="selfdone">Done</button>`;
+  } else if (ph === 'result' || ph === 'won') {
+    act = '';
+  } else {
+    const label = S.listening ? 'Listening… tap when you are done' : ph === 'echo' ? 'Say it' : ph === 'examiner' ? 'Answer' : ph === 'intro' ? 'Have a go' : 'Speak';
+    act = `<button type="button" class="btn speak ${S.listening ? 'on' : ''}" id="speak"><span class="dot" aria-hidden="true"></span>${label}</button>`;
+    const sub = [];
+    if (!S.listening && ph !== 'intro') sub.push(`<button type="button" class="btn small" id="hear">${ph === 'examiner' ? 'Ask me again' : 'Hear it'}</button>`);
+    if (!S.listening && ph === 'turn') sub.push(`<button type="button" class="btn small" id="boost" aria-pressed="${S.boost}">Hide more${S.boost ? ': on' : ''}</button>`);
+    if (!S.listening && ph === 'intro') sub.push(`<button type="button" class="btn small" id="skipblind">Start from the beginning</button>`);
+    if (sub.length) act += `<div class="row two">${sub.join('')}</div>`;
+    if (!S.listening && ph === 'turn' && S.boost) act += `<p class="note">Everything fades one more step. Say it cleanly for +€2. Miss and nothing is lost.</p>`;
+  }
+  h += `<div class="actions">${act}</div>`;
+
+  if (ph === 'result' && S.panel) {
+    const p = S.panel;
+    h += `<div class="dock ${p.warm ? 'warm' : ''}" data-testid="panel"><h3><span class="sq" aria-hidden="true">${p.head[1]}</span>${esc(p.head[0])}</h3><p>${esc(p.body)}</p>
+      <div class="row">${p.extra === 'hear' ? `<button type="button" class="btn" id="hearbit">Hear that bit</button>` : ''}<button type="button" class="btn primary" id="go">${p.next === 'examiner' ? 'Ask me the question' : 'Next'}</button></div></div>`;
+  }
+  if (ph === 'won') {
+    h += `<div class="won"><p class="big">${S.cold ? 'Memorised.' : 'Script wiped.'}</p>
+      <p>${S.cold ? 'You said it cold, two days running. It is yours now.' : 'Nothing left on the screen. Come back tomorrow: the cold test pays the most.'}</p>
+      <div class="row">${S.cold ? '' : `<button type="button" class="btn primary" id="tmr">Jump to tomorrow</button>`}<button type="button" class="btn" id="again">Start over</button></div></div>`;
+  }
+  $('#main').innerHTML = h;
+  $('#euros').textContent = '€' + S.euros;
+  const focusEl = $('#go') || $('#speak') || $('#selfdone') || $('#tmr');
+  if (focusEl && !S.keepFocus) { try { focusEl.focus({ preventScroll: true }); } catch {} }
+}
+
+/* ---------- Events ---------- */
+document.addEventListener('click', e => {
+  const t = e.target.closest('button'); if (!t || !S) return;
+  if (t.id === 'speak') onSpeak();
+  else if (t.id === 'skipblind') { S.phase = 'turn'; S.f = n() - 1; S.note = 'We start from the end. The last bit first.'; lastDisp = []; enterTurn(false); }
+  else if (t.id === 'hear' || t.id === 'hearbit') {
+    if (t.id === 'hearbit') { const c = S.chunks[S.panel.hearIdx]; say(c.t, c.en); } else hearSpan();
+  }
+  else if (t.id === 'boost') { S.boost = !S.boost; if (S.boost) { blip([440, 554]); tele('bold'); } render(); }
+  else if (t.id === 'go') proceed();
+  else if (t.id === 'selfdone') confirmSelf();
+  else if (t.id === 'tmr') tomorrow();
+  else if (t.id === 'again') newGame(opts.preset);
+  else if (t.dataset.miss !== undefined) { const i = +t.dataset.miss; S.self.missed.has(i) ? S.self.missed.delete(i) : S.self.missed.add(i); S.keepFocus = true; render(); S.keepFocus = false; const b = document.querySelector(`[data-miss="${i}"]`); b && b.focus(); }
+  else if (t.classList.contains('tile')) peek(+t.dataset.i);
+});
+document.querySelectorAll('input[name=preset]').forEach(r => r.addEventListener('change', e => { opts.preset = e.target.value; speechSynthesis && speechSynthesis.cancel(); newGame(opts.preset); }));
+document.querySelectorAll('input[name=mic]').forEach(r => r.addEventListener('change', e => { opts.mic = e.target.value; }));
+$('#sound').addEventListener('change', e => { opts.sound = e.target.checked; if (!opts.sound) speechSynthesis && speechSynthesis.cancel(); });
+$('#subs').addEventListener('change', e => { opts.subs = e.target.checked; });
+$('#calm').addEventListener('change', e => { document.documentElement.dataset.calm = e.target.checked ? '1' : '0'; });
+$('#restart').addEventListener('click', () => { speechSynthesis && speechSynthesis.cancel(); newGame(opts.preset); });
+$('#tomorrow').addEventListener('click', () => { if (S.phase !== 'intro') tomorrow(); });
+
+document.querySelector(`input[name=mic][value=${opts.mic}]`).checked = true;
+if ('speechSynthesis' in window) speechSynthesis.getVoices();
+newGame(opts.preset);
+</script>
+</body></html>

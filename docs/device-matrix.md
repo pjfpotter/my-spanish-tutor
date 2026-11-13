@@ -28,7 +28,7 @@ The lab at `/lab/memorise` checks more than the spike does: whether words light 
 3. Back on the home screen open **Tester tools** and press **Show and copy the device report**.
 4. Paste the block under **Results** below, name the device and microphone, and set that row's status.
 
-Move a device to **Verified** and **Browser recognition** (and add it to `VERIFIED_BROWSER_DEVICES` in `lib/speech/path.ts`, which makes the whole app use the browser recogniser there) only after the `/spike/speech` run passes and, in the lab, words lit while speaking, the report shows no errors, the first word lit within the budget in `docs/performance-budget.md`, and listening resumed after the lock. A device that fails stays on the server fallback; what live listening means there is decided in design D22.
+Move a device to **Verified** and **Browser recognition** (and add it to `VERIFIED_BROWSER_DEVICES` in `lib/speech/path.ts`, which makes the whole app use the browser recogniser there) only after the `/spike/speech` run passes and, in the lab, words lit while speaking, the report shows no errors, the first word lit within the budget in `docs/performance-budget.md`, and listening resumed after the lock. A device that fails stays on the server fallback; what live listening means there is decided in design D25.
 
 ## Results
 
