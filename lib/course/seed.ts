@@ -1,4 +1,4 @@
-import { assessAnswer } from '../coach/rubric';
+import { assessAnswer } from '../coach/rubric.ts';
 import goingOut from './calibration/going-out.json' with { type: 'json' };
 import type { Calibration, Chunk, Course, FeatureTag, ModelAnswer } from './schema';
 

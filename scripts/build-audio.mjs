@@ -3,7 +3,7 @@
 //   npm run build-audio                  DRY RUN (the default): lists what is missing and what it would cost. Spends nothing.
 //   npm run build-audio -- --yes         builds only the missing or out-of-date clips, through the cost router
 //   npm run build-audio -- --yes --force rebuilds even unchanged clips (this costs money again)
-//   npm run build-audio -- --only=lines  or --only=questions
+//   npm run build-audio -- --only=lines, --only=questions or --only=bits
 //
 // Clips are stored in public/audio/clips/<slot>.mp3 and .json, where the slot is a hash of the text and
 // speed. A clip is skipped when its stored source hash (text, voice, model, speed) matches, so a rerun
@@ -49,9 +49,10 @@ const store = {
   },
 };
 
-let specs = planClips(SEED_COURSE.questions, [...PHRASE_BANK, ...CHEEKY_POOL]);
+let specs = planClips(SEED_COURSE.questions, [...PHRASE_BANK, ...CHEEKY_POOL], SEED_COURSE.chunks);
 if (only === 'lines') specs = specs.filter((s) => s.kind === 'line');
 if (only === 'questions') specs = specs.filter((s) => s.kind === 'question');
+if (only === 'bits') specs = specs.filter((s) => s.kind === 'bit');
 
 const plan = await planBuild(specs, voice, store, force);
 console.log(`Clips wanted: ${specs.length}. Already built and up to date: ${plan.upToDate.length}. To build: ${plan.toBuild.length}.`);

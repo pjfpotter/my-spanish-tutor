@@ -1,27 +1,31 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import {
   advance, describe, finish, freshState, isWhole, lessonName, lessonsOf, mixReady, newSession, nextFor, outcomeOf, plan, recommended,
   resolveSay, resolveTap, shuffle, stepState, total,
-  type Feedback, type Finish, type Lesson, type SayOutcome, type SayStep, type Session, type Step, type TapStep, type World,
+  type AnswerState, type Feedback, type Finish, type LadderAnswer, type Lesson, type SayOutcome, type SayStep, type Session, type Step, type TapStep, type World,
 } from '../../../lib/memorise/ladder';
+import type { LadderStart, LessonRecall } from '../../../lib/memorise/ladder-store';
+import { DEFAULT_MEMORISE } from '../../../lib/memorise/fade';
 import { SOUND_KEY, soundOn } from '../../../lib/practice/sound';
 import { firstUnsaid, liveMatch, type Focus, type LiveMatch } from '../../../lib/speech/live-match';
 import { tokenise } from '../../../lib/speech/score';
 import { LATENCY_BUDGET, LatencyLog, budgetVerdict, deviceReport } from '../../../lib/speech/latency';
 import { listenCall } from '../../../lib/speech/pause';
-import { clipUrls, findClip } from '../../../lib/tele/clips';
+import { clipUrls, findBitClip, findClip } from '../../../lib/tele/clips';
 import type { Feelings } from '../../../lib/tele/feelings';
 import { Tele } from '../../components/Tele';
 import { useLiveSpeech } from '../../components/useLiveSpeech';
 import { useSfx } from '../../components/useSfx';
 import { useWakeLock } from '../../components/useWakeLock';
-import { LAB_ANSWERS, TELE } from './content';
-import './lab.css';
+import { TELE } from '../../../lib/memorise/tele-lines';
+import './ladder.css';
 
 const KEY = 'memorise-lab-v1';
-const A = LAB_ANSWERS;
+/** The real phase keeps only the student's two settings in the browser; their progress is saved to the server. */
+const PREFS_KEY = 'memorise-prefs-v1';
 type Line = readonly [string, string];
 type Mode = 'full' | 'letters' | 'blank' | 'ghost';
 /** A screen the student speaks to, or one they tap. */
@@ -95,7 +99,7 @@ interface Ui {
 }
 const newUi = (): Ui => ({ phase: 'cue', match: null, helped: false, shown: new Set(), offer: false, heard: '', fb: null, line: null, showQ: false, blocks: false, note: '', opts: [], right: '', picked: null, built: [], pool: [], wrong: null, errors: 0, startedAt: 0, lastProgressAt: null, lastVoiceAt: null, kind: 'speak', raw: '', pointer: null, returning: false, focus: null });
 
-const freshWorld = (): World => ({ answers: A, day: 1, euros: 0, states: A.map(freshState) });
+const freshWorld = (A: readonly LadderAnswer[]): World => ({ answers: A, day: 1, euros: 0, states: A.map(freshState) });
 const pick = <T,>(list: readonly T[]): T => list[Math.floor(Math.random() * list.length)];
 const mins = (w: World, L: Lesson) => { const n = plan(w, L).length; return n <= 4 ? 'about 1 min' : `about ${Math.max(2, Math.round((n * 12) / 60))} min`; };
 const readSound = () => { try { return soundOn(localStorage.getItem(SOUND_KEY)); } catch { return true; } };
@@ -103,7 +107,11 @@ const isPhone = () => typeof navigator !== 'undefined' && /Android|iPhone|iPad|i
 const JOY: Feelings = { joy: 0.8 };
 const SAD: Feelings = { sadness: 0.4 };
 
-/** Tele's voice for the lab: a built clip when there is one, otherwise the device's Spanish voice, otherwise a short wait. */
+/**
+ * Tele's voice: a built clip when there is one (the answer's bits are course chunks, built ahead of time), otherwise the
+ * device's Spanish voice, otherwise a short wait. Given several bits it says them one after the other, so a whole
+ * answer is its bits in order and needs no clip of its own.
+ */
 function useVoice() {
   const [speaking, setSpeaking] = useState(false);
   const token = useRef(0);
@@ -115,13 +123,13 @@ function useVoice() {
     try { window.speechSynthesis?.cancel(); } catch { /* no voice on this device */ }
     setSpeaking(false);
   }, []);
-  const speak = useCallback(async (text: string, slow = false) => {
+  const speak = useCallback(async (text: string | readonly string[], slow = false) => {
     stop();
     const mine = token.current;
     if (!readSound()) return;
     setSpeaking(true);
-    try {
-      const slot = findClip(text, slow ? 0.7 : 1);
+    const one = async (t: string) => {
+      const slot = findClip(t, slow ? 0.7 : 1) ?? findBitClip(t, slow ? 0.7 : 1) ?? (slow ? findClip(t, 1) ?? findBitClip(t, 1) : null);
       if (slot) {
         await new Promise<void>((res) => {
           const a = new Audio(clipUrls(slot).audio);
@@ -134,18 +142,24 @@ function useVoice() {
       const synth = typeof window !== 'undefined' ? window.speechSynthesis : undefined;
       if (synth && typeof SpeechSynthesisUtterance !== 'undefined') {
         await new Promise<void>((res) => {
-          const u = new SpeechSynthesisUtterance(text);
+          const u = new SpeechSynthesisUtterance(t);
           u.lang = 'es-ES';
           const v = synth.getVoices().find((x) => /^es[-_]ES/i.test(x.lang)) ?? synth.getVoices().find((x) => /^es/i.test(x.lang));
           if (v) u.voice = v;
           u.rate = slow ? 0.6 : 0.9;
           u.onend = u.onerror = () => res();
           synth.speak(u);
-          setTimeout(res, 2500 + text.length * 130);
+          setTimeout(res, 2500 + t.length * 130);
         });
         return;
       }
-      await new Promise((res) => setTimeout(res, 400 + text.length * 40));
+      await new Promise((res) => setTimeout(res, 400 + t.length * 40));
+    };
+    try {
+      for (const t of typeof text === 'string' ? [text] : text) {
+        if (mine !== token.current) return;
+        await one(t);
+      }
     } finally {
       if (mine === token.current) setSpeaking(false);
     }
@@ -159,9 +173,39 @@ function useVoice() {
  * a level meter moves with the voice, words light as they are understood, and the screen moves on by itself when
  * the answer has been said. A pause is met with the offer of a hint, never a clock. Open at /lab/memorise.
  */
-export function MemoriseLab() {
+/**
+ * One whole-answer go as numbers. The score is the share of words understood. Rules, not a model, and a recognition
+ * failure is never held against the student: a clean go (every bit said) is at least the mastery bar. Only a clean go
+ * with nothing on screen counts toward memorising (level 4); a go with help, or at a rung above the bottom, is
+ * recorded as help-assisted (level 0) so it is effort, never a mark against the student.
+ */
+export function recallOf(answer: LadderAnswer, step: SayStep, o: SayOutcome, match: LiveMatch | null, helped: boolean): LessonRecall {
+  const total = answer.chunks.reduce((n, c) => n + c.t.split(' ').length, 0);
+  const understood = match ? Math.round((100 * match.matched) / Math.max(1, total)) : o.kind === 'clean' ? 100 : o.kind === 'miss' ? 40 : 80;
+  const missedWords = match ? match.hit.flat().flatMap((h, i) => (h ? [] : [i])) : [];
+  const counts = o.kind === 'clean' && step.r === 5 && !helped;
+  if (counts) return { itemId: answer.id!, accuracy: Math.max(understood, DEFAULT_MEMORISE.threshold), level: 4, missedWords };
+  if (o.kind === 'miss') return { itemId: answer.id!, accuracy: Math.min(understood, DEFAULT_MEMORISE.threshold - 1), level: step.r === 5 ? 4 : 0, missedWords };
+  return { itemId: answer.id!, accuracy: Math.max(understood, DEFAULT_MEMORISE.threshold), level: 0, missedWords };
+}
+
+export interface SaveBody { answers: { itemId: string; stage: number; top: number; wipeDay: number; recalls: number[] }[]; recalls: LessonRecall[]; earned: number }
+export interface SaveReply { paid: number; euros: number; memorised: string[] }
+
+export function MemoriseLadder({ answers: A, variant, start, save: saveRemote }: {
+  answers: LadderAnswer[];
+  /** `lab` keeps progress in this browser and shows the tester tools; `real` is the memorise phase, saved to the server. */
+  variant: 'lab' | 'real';
+  start?: Pick<LadderStart, 'day' | 'euros' | 'states' | 'testDays'>;
+  /** Real phase: saves progress and pays what was earned. Resolves null if the save could not be made. */
+  save?: (body: SaveBody) => Promise<SaveReply | null>;
+}) {
+  const real = variant === 'real';
   const [, bump] = useReducer((n: number) => n + 1, 0);
-  const world = useRef<World>(freshWorld());
+  const world = useRef<World>(start ? { answers: A, day: start.day, euros: start.euros, states: start.states } : freshWorld(A));
+  const recallLog = useRef<LessonRecall[]>([]);
+  const sentEarned = useRef(0);
+  const queue = useRef<Promise<unknown>>(Promise.resolve());
   const ses = useRef<Session | null>(null);
   const ui = useRef<Ui>(newUi());
   const [view, setView] = useState<'home' | 'lesson' | 'done'>('home');
@@ -185,15 +229,49 @@ export function MemoriseLab() {
   // ---- Saved progress: this browser only ---------------------------------------------------------------
   const save = useCallback((extra: { selfMark?: boolean; meter?: boolean } = {}) => {
     try {
-      const old = JSON.parse(localStorage.getItem(KEY) ?? '{}');
-      localStorage.setItem(KEY, JSON.stringify({ ...old, day: world.current.day, euros: world.current.euros, states: world.current.states, ...extra }));
+      const old = JSON.parse(localStorage.getItem(real ? PREFS_KEY : KEY) ?? '{}');
+      const progress = real ? {} : { day: world.current.day, euros: world.current.euros, states: world.current.states };
+      localStorage.setItem(real ? PREFS_KEY : KEY, JSON.stringify({ ...old, ...progress, ...extra }));
     } catch { /* storage is a convenience only */ }
-  }, []);
+  }, [real]);
+  /**
+   * Real phase: sends where each answer is, the whole-answer attempts since the last send, and the euros earned since
+   * then. Sends run one at a time. If one fails the attempts go back on the list and are sent with the next.
+   */
+  const flush = useCallback((earnedTotal: number) => {
+    if (!real || !saveRemote) return Promise.resolve();
+    const recalls = recallLog.current;
+    recallLog.current = [];
+    const earned = Math.max(0, earnedTotal - sentEarned.current);
+    sentEarned.current = Math.max(sentEarned.current, earnedTotal);
+    const body: SaveBody = {
+      answers: world.current.answers.flatMap((a, i) => (a.id ? [{ itemId: a.id, stage: world.current.states[i].stage, top: world.current.states[i].top, wipeDay: world.current.states[i].wipeDay, recalls: world.current.states[i].recalls }] : [])),
+      recalls, earned,
+    };
+    queue.current = queue.current.then(async () => {
+      const reply = await saveRemote(body).catch(() => null);
+      if (!reply) { recallLog.current = [...recalls, ...recallLog.current]; sentEarned.current -= earned; setSaveFailed(true); return; }
+      setSaveFailed(false);
+      const w = world.current;
+      w.euros = reply.euros;
+      // The mastery record is the authority on "memorised". Make the ladder agree with it.
+      w.answers.forEach((a, i) => {
+        const st = w.states[i];
+        const should = !!a.id && reply.memorised.includes(a.id);
+        const last = lessonsOf(w.answers, i).length;
+        if (should && !st.memorised) { st.memorised = true; st.stage = last; }
+        if (!should && st.memorised) { st.memorised = false; st.stage = last - 1; st.wipeDay = w.day; }
+      });
+      bump();
+    });
+    return queue.current;
+  }, [real, saveRemote]);
+  const [saveFailed, setSaveFailed] = useState(false);
   useEffect(() => {
     let m = !isPhone();
     try {
-      const j = JSON.parse(localStorage.getItem(KEY) ?? 'null');
-      if (j?.states?.length === A.length) world.current = { answers: A, day: j.day ?? 1, euros: j.euros ?? 0, states: j.states };
+      const j = JSON.parse(localStorage.getItem(real ? PREFS_KEY : KEY) ?? 'null');
+      if (!real && j?.states?.length === A.length) world.current = { answers: A, day: j.day ?? 1, euros: j.euros ?? 0, states: j.states };
       if (typeof j?.selfMark === 'boolean') setSelfMark(j.selfMark);
       if (typeof j?.meter === 'boolean') m = j.meter;
     } catch { /* start fresh */ }
@@ -264,14 +342,18 @@ export function MemoriseLab() {
     const s = ses.current!;
     const step = s.cur as SayStep;
     live.stop();
-    const fb = resolveSay(w, s, o);
     const u = ui.current;
+    const whole = isWhole(w, step);
+    // A whole-answer go is a recall. It is kept as numbers only (task 27.4), and only the unaided, clean ones from memory count toward memorising.
+    if (real && whole && A[step.a].id) recallLog.current.push(recallOf(A[step.a], step, o, u.match, u.helped));
+    const fb = resolveSay(w, s, o);
     u.phase = 'result';
     u.fb = fb;
     u.line = tele(fb.tele);
     sfx(fb.tele === 'up' ? 'combo' : !fb.ok ? 'miss' : step.r === 5 && o.kind === 'clean' ? 'personal-best' : 'correct');
     if (fb.tele === 'miss' || fb.tele === 'top') void voice.speak(u.line[0]);
     save();
+    if (whole) void flush(s.earned);
     bump();
     if (fb.auto) autoTimer.current = setTimeout(() => { if (ui.current === u) nextStep(); }, fb.auto);
   }
@@ -351,20 +433,21 @@ export function MemoriseLab() {
   }
 
   // ---- Moving through a lesson --------------------------------------------------------------------------
-  function cueText(step: Step): { text: string; clip: boolean } | null {
+  /** What Tele says for a screen: the bits to echo, or the question. A list is said bit by bit. */
+  function cueText(step: Step): string | string[] | null {
     const a = A[step.a];
     if (step.t === 'say') {
-      if (step.r === 1 && !step.read) return { text: spanChunks(step).join(' '), clip: false };
-      if (isWhole(w, step)) return { text: a.q, clip: true };
+      if (step.r === 1 && !step.read) return spanChunks(step);
+      if (isWhole(w, step)) return a.q;
       return null;
     }
-    if (step.t === 'meaning') return { text: a.chunks[step.i ?? 0].t, clip: false };
-    if (step.t === 'start') return { text: a.q, clip: true };
+    if (step.t === 'meaning') return a.chunks[step.i ?? 0].t;
+    if (step.t === 'start') return a.q;
     return null;
   }
   async function playCue(step: Step, slow = false) {
     const c = cueText(step);
-    if (c) await voice.speak(c.text, slow);
+    if (c) await voice.speak(c, slow);
   }
   function nextStep() {
     clearTimeout(autoTimer.current);
@@ -401,6 +484,7 @@ export function MemoriseLab() {
   }
   function startLesson(L: Lesson) {
     fallback.current = false;
+    sentEarned.current = 0;
     ses.current = newSession(w, L);
     setView('lesson');
     nextStep();
@@ -414,6 +498,7 @@ export function MemoriseLab() {
     live.release();
     setSel(null);
     save();
+    void flush(s.earned);
     sfx('section-complete');
     setView('done');
   }
@@ -422,6 +507,7 @@ export function MemoriseLab() {
     voice.stop();
     live.stop();
     live.release();
+    void flush(ses.current?.earned ?? 0);
     ses.current = null;
     setView('home');
   }
@@ -554,7 +640,8 @@ export function MemoriseLab() {
     const line = (memo === A.length ? TELE.all : rec?.type === 'lock' ? TELE.morning : !rec ? TELE.rest : started ? TELE.back : TELE.hello) as Line;
     return (
       <main className="ml ml-home" data-testid="lab-home">
-        <div className="ml-titlebar"><span>Memorizar.exe</span><span className="ml-when">{Math.max(0, 9 - w.day)} days to the test</span></div>
+        <div className="ml-titlebar"><span>memorise.exe</span>{real && <Link href="/" className="ml-link" data-testid="section-exit">Desktop</Link>}{real ? (start?.testDays != null && <span className="ml-when" data-testid="ml-countdown">{start.testDays} {start.testDays === 1 ? 'day' : 'days'} to the test</span>) : <span className="ml-when">{Math.max(0, 9 - w.day)} days to the test</span>}</div>
+        {saveFailed && <p className="ml-note" role="status" data-testid="ml-save-failed">Your progress could not be saved just now. It will be sent with your next answer, so keep this page open.</p>}
         {teleRow(line, undefined)}
         <section className="ml-paper ml-today" aria-label="Up next">
           <p className="ml-which"><span>Answer {a.n} of {A.length}</span><span className="ml-euros" aria-label={`${w.euros} euros`}>€{w.euros}</span></p>
@@ -574,7 +661,7 @@ export function MemoriseLab() {
             </>
           )}
         </section>
-        <div className="ml-listhead"><h2>Your five answers</h2><span>{memo} memorised</span></div>
+        <div className="ml-listhead"><h2>Your answers</h2><span data-testid="ml-memorised">{memo} of {A.length} memorised</span></div>
         <ol className="ml-list">
           {A.map((x, i) => (
             <li key={x.n}>
@@ -587,31 +674,42 @@ export function MemoriseLab() {
             <li><button type="button" className="ml-row" onClick={() => startLesson({ type: 'mix', a: null })}><span className="ml-n">?</span><span><strong>Mix-up.</strong> Tele asks any question you know.</span><strong>Start</strong></button></li>
           )}
         </ol>
-        <details className="ml-tools">
-          <summary>Tester tools</summary>
-          <div className="ml-toolbody">
-            <p>{live.supported ? 'This browser can listen as you speak.' : 'This browser has no built-in listening, so you check your own answers here. Chrome and Safari have it.'}</p>
-            <label><input type="checkbox" checked={selfMark} onChange={(e) => { setSelfMark(e.target.checked); save({ selfMark: e.target.checked }); }} /> Check my own answers (no microphone)</label>
-            <label><input type="checkbox" checked={meter} onChange={(e) => { setMeter(e.target.checked); save({ meter: e.target.checked }); }} /> Voice level meter (turn off if words stop lighting up)</label>
-            <div className="ml-rowbtns">
-              <button type="button" className="ml-btn ml-small" onClick={() => { w.day++; setSel(null); save(); bump(); }}>Skip to tomorrow (now day {w.day})</button>
-              <button type="button" className="ml-btn ml-small" onClick={() => { world.current = freshWorld(); setSel(null); save(); bump(); }}>Start over</button>
+        {real ? (
+          <details className="ml-tools">
+            <summary>Settings</summary>
+            <div className="ml-toolbody">
+              <label><input type="checkbox" checked={selfMark} onChange={(e) => { setSelfMark(e.target.checked); save({ selfMark: e.target.checked }); }} /> Check my own answers (no microphone)</label>
+              <label><input type="checkbox" checked={meter} onChange={(e) => { setMeter(e.target.checked); save({ meter: e.target.checked }); }} /> Voice level meter (turn off if words stop lighting up)</label>
+              <p>{live.supported ? 'This browser can listen as you speak.' : 'This browser has no built-in listening, so you check your own answers here.'}</p>
             </div>
-            <p>How well this phone keeps up, from the lessons you have just done:</p>
-            <div className="ml-rowbtns">
-              <button type="button" className="ml-btn ml-small" data-testid="lab-report" onClick={() => {
-                const text = deviceReport({ userAgent: navigator.userAgent, recogniser: live.supported, meterOn: live.meterOn, wakeLock: awake.supported, wakeLockHeld: awake.held }, live.stats.current, lat.current);
-                setReport(text);
-                void navigator.clipboard?.writeText(text).catch(() => {});
-              }}>Show and copy the device report</button>
-              <button type="button" className="ml-btn ml-small" onClick={() => { lat.current.reset(); setReport(''); }}>Clear timings</button>
+          </details>
+        ) : (
+          <details className="ml-tools">
+            <summary>Tester tools</summary>
+            <div className="ml-toolbody">
+              <p>{live.supported ? 'This browser can listen as you speak.' : 'This browser has no built-in listening, so you check your own answers here. Chrome and Safari have it.'}</p>
+              <label><input type="checkbox" checked={selfMark} onChange={(e) => { setSelfMark(e.target.checked); save({ selfMark: e.target.checked }); }} /> Check my own answers (no microphone)</label>
+              <label><input type="checkbox" checked={meter} onChange={(e) => { setMeter(e.target.checked); save({ meter: e.target.checked }); }} /> Voice level meter (turn off if words stop lighting up)</label>
+              <div className="ml-rowbtns">
+                <button type="button" className="ml-btn ml-small" onClick={() => { w.day++; setSel(null); save(); bump(); }}>Skip to tomorrow (now day {w.day})</button>
+                <button type="button" className="ml-btn ml-small" onClick={() => { world.current = freshWorld(A); setSel(null); save(); bump(); }}>Start over</button>
+              </div>
+              <p>How well this phone keeps up, from the lessons you have just done:</p>
+              <div className="ml-rowbtns">
+                <button type="button" className="ml-btn ml-small" data-testid="lab-report" onClick={() => {
+                  const text = deviceReport({ userAgent: navigator.userAgent, recogniser: live.supported, meterOn: live.meterOn, wakeLock: awake.supported, wakeLockHeld: awake.held }, live.stats.current, lat.current);
+                  setReport(text);
+                  void navigator.clipboard?.writeText(text).catch(() => {});
+                }}>Show and copy the device report</button>
+                <button type="button" className="ml-btn ml-small" onClick={() => { lat.current.reset(); setReport(''); }}>Clear timings</button>
+              </div>
+              {report && <pre className="ml-report" data-testid="lab-report-text">{report}</pre>}
+              <p className="ml-en">Budget: a lit word on screen within {LATENCY_BUDGET.paintP90Ms} ms of the result in 9 of 10 tries, and the first word lit within {LATENCY_BUDGET.firstWordMedianMs / 1000} s of starting to speak. Measured so far: result to screen {budgetVerdict(lat.current).paint}, first word {budgetVerdict(lat.current).firstWord}.</p>
+              <p>Jump to a step of answer {a.n}:</p>
+              <div className="ml-rowbtns">{Ls.map((x, i) => <button key={i} type="button" className="ml-btn ml-small" onClick={() => startLesson(x)}>{lessonName(A, x)}</button>)}</div>
             </div>
-            {report && <pre className="ml-report" data-testid="lab-report-text">{report}</pre>}
-            <p className="ml-en">Budget: a lit word on screen within {LATENCY_BUDGET.paintP90Ms} ms of the result in 9 of 10 tries, and the first word lit within {LATENCY_BUDGET.firstWordMedianMs / 1000} s of starting to speak. Measured so far: result to screen {budgetVerdict(lat.current).paint}, first word {budgetVerdict(lat.current).firstWord}.</p>
-            <p>Jump to a step of answer {a.n}:</p>
-            <div className="ml-rowbtns">{Ls.map((x, i) => <button key={i} type="button" className="ml-btn ml-small" onClick={() => startLesson(x)}>{lessonName(A, x)}</button>)}</div>
-          </div>
-        </details>
+          </details>
+        )}
       </main>
     );
   }

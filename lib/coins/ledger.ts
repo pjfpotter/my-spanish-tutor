@@ -13,7 +13,7 @@ export const COIN_AMOUNTS = {
   session: 10,
 } as const;
 
-export type CoinReason = 'attempt' | 'session' | 'improvement' | 'bonus' | 'answer' | 'spend';
+export type CoinReason = 'attempt' | 'session' | 'improvement' | 'bonus' | 'answer' | 'memorise' | 'spend';
 
 export async function awardCoins(db: Db, profileId: string, amount: number, reason: CoinReason): Promise<void> {
   if (!Number.isInteger(amount) || amount === 0) throw new Error('coin amount must be a non-zero whole number');

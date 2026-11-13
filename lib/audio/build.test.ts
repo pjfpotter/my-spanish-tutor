@@ -142,3 +142,19 @@ describe('the build', () => {
     expect(spy).not.toHaveBeenCalled();
   });
 });
+
+describe('planClips: the bits of a student\'s answer (task 27.4)', () => {
+  const bits = SEED_COURSE.chunks.slice(0, 3);
+  const specs = planClips(SEED_COURSE.questions, PHRASE_BANK, bits);
+  it('plans each course chunk at slow and normal speed, and nothing for the questions changes', () => {
+    const got = specs.filter((s) => s.kind === 'bit');
+    expect(got).toHaveLength(bits.length * 2);
+    expect(got.map((s) => s.speed).sort()).toEqual([0.7, 0.7, 0.7, 1, 1, 1]);
+    expect(specs.filter((s) => s.kind !== 'bit')).toEqual(planClips(SEED_COURSE.questions, PHRASE_BANK));
+  });
+  it('shares a clip when a chunk is already a phrase or question at the same speed', () => {
+    const q = SEED_COURSE.questions[0];
+    const again = planClips(SEED_COURSE.questions, PHRASE_BANK, [{ spanish: q.spanish, english: q.english }]);
+    expect(again.filter((s) => s.text === q.spanish && s.speed === 1)).toHaveLength(1);
+  });
+});

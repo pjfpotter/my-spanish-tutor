@@ -19,6 +19,7 @@ const SPANISH = /[áéíóúñ¿¡]|\b(bienvenid[oa]|privacidad|tienda|escritori
  */
 const ALLOWED: { fragment: string; why: string }[] = [
   { fragment: "const IDLE_ES = '· · · señal débil · · ·'", why: "Tele's caption when idle: a tutor line, and its English subtitle (IDLE_EN) sits beside it" },
+  { fragment: "['¿ … ?', '']", why: "Tele's placeholder for a question the student has to recall: only the question marks, no words" },
   { fragment: '[.,;:!?¡¿"“”]', why: 'a punctuation-stripping pattern in code, not text shown to anyone' },
 ];
 

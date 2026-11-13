@@ -10,7 +10,7 @@ import type { ChunkKind } from '../practice/chunk-kind';
  * keeps going after fudging one bit passes the screen and only tidies that bit.
  */
 export interface LadderChunk { t: string; en: string; k: ChunkKind; /** Sentence number, from 0. */ s: number }
-export interface LadderAnswer { n: number; q: string; qen: string; en: string; chunks: LadderChunk[] }
+export interface LadderAnswer { /** The question's id, for a student's own answers. Absent in the lab. */ id?: string; n: number; q: string; qen: string; en: string; chunks: LadderChunk[] }
 export interface AnswerState { stage: number; top: number; recalls: number[]; wipeDay: number; memorised: boolean }
 export interface World { answers: readonly LadderAnswer[]; day: number; euros: number; states: AnswerState[] }
 
@@ -70,12 +70,23 @@ export const isWhole = (w: World, s: SayStep) => s.span.length === w.answers[s.a
 const say = (a: number, span: number[], r: number, x: Partial<SayStep> = {}): SayStep => ({ t: 'say', a, span, r, tries: 0, planned: true, ...x });
 const tap = (t: TapStep['t'], a: number, i?: number): TapStep => ({ t, a, i, planned: true });
 
+/** Whether a tap screen of this kind has enough real material to ask: a gloss to ask about, or other bits to choose between. */
+const canTap = (w: World, ai: number, t: TapStep['t'], i = 0): boolean => {
+  const a = w.answers[ai];
+  const texts = new Set(w.answers.flatMap((x) => x.chunks.map((c) => c.t)));
+  if (t === 'meaning') return a.chunks[i]?.en.trim().length > 0 && new Set(w.answers.flatMap((x) => x.chunks.map((c) => c.en.trim()).filter(Boolean))).size >= 2;
+  if (t === 'next') return a.chunks.length >= 2 && i + 1 < a.chunks.length && texts.size >= 3;
+  if (t === 'order') return a.chunks.length >= 2;
+  return texts.size >= 2; // start
+};
+
 /** The screens of a lesson, before any slip or streak changes them. */
 export function plan(w: World, L: Lesson, rng: Rng = Math.random): Step[] {
   const q: Step[] = [];
+  const pushTap = (t: TapStep['t'], a: number, i?: number) => { if (canTap(w, a, t, i)) q.push(tap(t, a, i)); };
   if (L.type === 'mix') {
     const ids = shuffle(range(w.answers.length).filter((i) => w.states[i].top >= 5), rng);
-    if (ids.length) q.push(tap('start', ids[ids.length - 1]));
+    if (ids.length) pushTap('start', ids[ids.length - 1]);
     ids.forEach((i) => q.push(say(i, allOf(w.answers[i]), 5)));
     return q;
   }
@@ -86,10 +97,11 @@ export function plan(w: World, L: Lesson, rng: Rng = Math.random): Step[] {
   if (L.type === 'meet') {
     for (let i = 0; i < n; i++) {
       q.push(say(ai, [i], 1));
-      if (i % 2 === 1) q.push(tap('meaning', ai, i - 1));
+      if (i % 2 === 1) pushTap('meaning', ai, i - 1);
     }
-    if (n % 2 === 1) q.push(tap('meaning', ai, n - 1));
-    q.push(tap('order', ai), say(ai, all, 1), say(ai, all, 1, { read: true }));
+    if (n % 2 === 1) pushTap('meaning', ai, n - 1);
+    pushTap('order', ai);
+    q.push(say(ai, all, 1), say(ai, all, 1, { read: true }));
   } else if (L.type === 'build') {
     const parts = partsOf(ans);
     const part = parts[L.part ?? 0];
@@ -97,20 +109,25 @@ export function plan(w: World, L: Lesson, rng: Rng = Math.random): Step[] {
     part.forEach((i, j) => {
       q.push(say(ai, [i], 2));
       if (j >= 1) q.push(say(ai, part.slice(0, j + 1), 2));
-      if (j === 1) q.push(tap('next', ai, part[0]));
+      if (j === 1) pushTap('next', ai, part[0]);
     });
     if ((L.part ?? 0) > 0) q.push(say(ai, upto, 2));
     q.push(say(ai, upto, 3));
   } else if (L.type === 'wipe') {
     // Start one level below the best so far, then climb to the question alone, twice, with a tap task between recalls.
     const from = Math.min(4, Math.max(2, w.states[ai].top - 1));
-    const taps: TapStep[] = [tap('start', ai), tap('next', ai, Math.floor(rng() * (n - 1))), tap('meaning', ai, Math.floor(rng() * n))];
+    const nextAt = Math.floor(rng() * Math.max(1, n - 1));
+    const meaningAt = Math.floor(rng() * n);
+    const taps: TapStep[] = [tap('start', ai), tap('next', ai, nextAt), tap('meaning', ai, meaningAt)].filter((x) => canTap(w, ai, x.t, x.i));
+    const between = (k: number): Step[] => (taps.length ? [{ ...taps[k % taps.length] }] : []);
     q.push(say(ai, all, from), say(ai, all, from + 1));
     let t = 0;
-    for (let r = from + 2; r <= 5; r++) q.push({ ...taps[t++ % 3] }, say(ai, all, r));
-    q.push({ ...taps[t % 3] }, say(ai, all, 5));
+    for (let r = from + 2; r <= 5; r++) q.push(...between(t++), say(ai, all, r));
+    q.push(...between(t), say(ai, all, 5));
   } else if (L.type === 'lock') {
-    q.push(say(ai, all, 5, { cold: true }), tap('order', ai), say(ai, all, 5));
+    q.push(say(ai, all, 5, { cold: true }));
+    pushTap('order', ai);
+    q.push(say(ai, all, 5));
   } else q.push(say(ai, all, 5));
   return q;
 }

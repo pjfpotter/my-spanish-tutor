@@ -24,7 +24,7 @@ test('a tester in the testing course sees every step open and labelled, with not
   // Memorise opens on the model answers instead of an empty or "all done" screen.
   await page.goto('/phases/memorise');
   await expect(page).toHaveURL('/phases/memorise');
-  await expect(page.getByTestId('memorised-count')).toHaveText('0 of 5 answers memorised');
+  await expect(page.getByTestId('ml-memorised')).toHaveText('0 of 5 memorised');
   await expect(page.getByTestId('nothing-to-practise')).toHaveCount(0);
 });
 
