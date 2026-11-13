@@ -21,12 +21,13 @@ export interface ClipFile extends ClipTimeline {
 const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
 
 /** Checks loose JSON from disk or the network and returns a typed clip, or throws a plain message. */
-export function parseClipFile(input: unknown): ClipFile {
+/** `allowNoSubtitle` is for bit clips, which are only ever played as audio and never shown as captions, and so may have no English gloss. */
+export function parseClipFile(input: unknown, opts: { allowNoSubtitle?: boolean } = {}): ClipFile {
   const c = input as Partial<ClipFile> | null;
   if (!c || typeof c !== 'object') throw new Error('clip file is not an object');
   if (typeof c.id !== 'string' || !c.id) throw new Error('clip file has no id');
   if (typeof c.text !== 'string' || !c.text.trim()) throw new Error('clip file has no Spanish text');
-  if (typeof c.en !== 'string' || !c.en.trim()) throw new Error('clip file has no English subtitle');
+  if (typeof c.en !== 'string' || (!c.en.trim() && !opts.allowNoSubtitle)) throw new Error('clip file has no English subtitle');
   if (!isNum(c.end) || c.end <= 0) throw new Error('clip file has no end time');
 
   if (!Array.isArray(c.words) || !c.words.length) throw new Error('clip file has no words');

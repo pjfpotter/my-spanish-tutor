@@ -25,6 +25,7 @@ import { planClips } from '../lib/audio/manifest.ts';
 import { CHEEKY_POOL } from '../lib/tele/cheeky.ts';
 import { SEED_COURSE } from '../lib/course/seed.ts';
 import { bitsFor } from '../lib/audio/bits.ts';
+import { teleLines } from '../lib/memorise/tele-lines.ts';
 import { ffmpegStretcher } from '../lib/audio/ffmpeg.ts';
 import { LAB_ANSWERS } from '../app/lab/memorise/content.ts';
 import { PHRASE_BANK } from '../lib/tele/phrase-bank.ts';
@@ -74,7 +75,7 @@ const store = {
 // Bits Tele can say in the memorise ladder: the course chunks, the pieces of the model answers that match no chunk, and
 // the memorise lab's sample bits, so the lab sounds like the real phase.
 const bits = bitsFor(SEED_COURSE, LAB_ANSWERS.flatMap((a) => a.chunks.map((c) => ({ t: c.t, en: c.en }))));
-let specs = planClips(SEED_COURSE.questions, [...PHRASE_BANK, ...CHEEKY_POOL], bits);
+let specs = planClips(SEED_COURSE.questions, [...PHRASE_BANK, ...CHEEKY_POOL], bits, teleLines());
 if (only === 'lines') specs = specs.filter((s) => s.kind === 'line');
 if (only === 'questions') specs = specs.filter((s) => s.kind === 'question');
 if (only === 'bits') specs = specs.filter((s) => s.kind === 'bit');

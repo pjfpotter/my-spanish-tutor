@@ -51,4 +51,4 @@ Tele's voice is being redesigned to be clearer and slower. `ELEVENLABS_TAG` (for
 - Tags are directions only on `eleven_v3`. The build refuses to run with a tag on another model, because those may say the tag aloud.
 - The tag characters are billed, so the dry run's estimate includes them.
 - Not yet checked: whether `eleven_v3` honours the `speed` setting the slow variants (0.7) use, or whether `[very slowly]` makes that redundant. Listen to a few clips before a full build.
-- Nothing has been built with the tag yet; the bit clips for the memorise ladder (27.4) wait for the new voice.
+- Nothing has been built with the tag yet. All 309 clips were rebuilt on 13 Nov 2026 in the new voice (`eleven_v4`, no tag), including the bit clips for the memorise ladder (27.4) and Tele's fixed lesson lines.

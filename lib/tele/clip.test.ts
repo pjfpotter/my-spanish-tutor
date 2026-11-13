@@ -81,6 +81,13 @@ describe('parseClipFile', () => {
     expect(parseClipFile(JSON.parse(JSON.stringify(good)))).toEqual(good);
   });
 
+  it('lets a bit clip have no English subtitle, but never a question or line', () => {
+    const bare = { ...good, en: '' };
+    expect(() => parseClipFile(bare)).toThrow('English subtitle');
+    expect(parseClipFile(bare, { allowNoSubtitle: true }).en).toBe('');
+    expect(() => parseClipFile({ ...good, en: undefined }, { allowNoSubtitle: true })).toThrow('English subtitle');
+  });
+
   it.each([
     ['not an object', null, 'not an object'],
     ['no English subtitle', { ...good, en: ' ' }, 'English subtitle'],

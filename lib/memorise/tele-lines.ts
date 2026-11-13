@@ -25,3 +25,13 @@ export const TELE = {
     soft: ['No pasa nada. Mañana vuelve.', "It's fine. Tomorrow it comes back."],
   },
 } as const;
+
+const isLine = (x: unknown): x is readonly [string, string] => Array.isArray(x) && x.length === 2 && typeof x[0] === 'string' && typeof x[1] === 'string';
+
+/** Every line above as Spanish and English, for the audio build. */
+export function teleLines(tree: unknown = TELE): { es: string; en: string }[] {
+  if (isLine(tree)) return [{ es: tree[0], en: tree[1] }];
+  if (Array.isArray(tree)) return tree.flatMap((t) => teleLines(t));
+  if (tree && typeof tree === 'object') return Object.values(tree).flatMap((t) => teleLines(t));
+  return [];
+}

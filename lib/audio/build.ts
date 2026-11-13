@@ -110,7 +110,7 @@ export async function buildClips(
       envelopeHop: HOP,
       feelings: buildFeelingTrack(words.map((w) => ({ text: w.text, t0: w.t0 / rate })), spec.feelings),
       source: { provider: voice.provider, voiceId: voice.voiceId, model: voice.model, speed: spec.speed, hash: hashFor(spec, voice) },
-    });
+    }, { allowNoSubtitle: spec.kind === 'bit' });
     await deps.store.write(spec.slot, mp3, clip);
     report.built.push(spec.label);
   };

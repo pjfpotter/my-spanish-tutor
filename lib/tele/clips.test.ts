@@ -38,7 +38,8 @@ describe('clip loading', () => {
 
 describe('built clips', () => {
   it.each(BUILT_CLIPS.map((c) => [c.slot, c] as const))('%s has an audio file and a valid timeline with a feeling track', (slot, entry) => {
-    const clip = parseClipFile(readClip(slot));
+    // A bit that matches no course chunk has no English gloss, and bits are only played, never captioned.
+    const clip = parseClipFile(readClip(slot), { allowNoSubtitle: true });
     expect(clip.id).toBe(slot);
     expect(slotFor(clip.text, clip.source.speed)).toBe(slot); // filed under the hash of what it says
     expect(clip.text).toBe(entry.text);

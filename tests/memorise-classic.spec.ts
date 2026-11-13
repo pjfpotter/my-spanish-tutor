@@ -159,6 +159,8 @@ test('a missed word shows its syllables, plays slowly, and can be repeated (5.4)
     (window as any).__spoken = spoken;
     Object.defineProperty(window.speechSynthesis, 'speak', { value: (u: SpeechSynthesisUtterance) => spoken.push({ text: u.text, rate: u.rate, lang: u.lang }) });
   });
+  // These check the fallbacks, so no built clip may exist for the word (there is one now, and it is used when present).
+  await page.route('**/api/clips', (r) => r.fulfill({ json: [] }));
   await signUp(page);
   await unlockMemorise(page);
   const heard = hear(page);
@@ -194,6 +196,8 @@ test('a missed word shows its syllables, plays slowly, and can be repeated (5.4)
 
 test('with no voice on the device, the syllables still show and the student carries on (5.4)', async ({ page }) => {
   await page.addInitScript(() => Object.defineProperty(window, 'speechSynthesis', { value: undefined, configurable: true }));
+  // These check the fallbacks, so no built clip may exist for the word (there is one now, and it is used when present).
+  await page.route('**/api/clips', (r) => r.fulfill({ json: [] }));
   await signUp(page);
   await unlockMemorise(page);
   const heard = hear(page);
