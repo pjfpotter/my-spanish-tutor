@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Gives each student a lively Spanish-speaking tutor character with no mouth, whose feelings show in its eye, antennae, picture and world, that never speaks English, and whose look was designed with the first test user.
+Gives each student a lively Spanish-speaking tutor character with no mouth, a 1970s television with one realistic eye, whose feelings show in its eye, antennae, picture and world, that never speaks English, and whose look was designed with the first test user.
 
 ## ADDED Requirements
 
@@ -37,6 +37,38 @@ The character SHALL have no mouth. Its feelings (joy, sadness, anger, fear, surp
 #### Scenario: Blended feeling
 - **WHEN** a line carries two feelings
 - **THEN** the character shows a blend of both
+
+### Requirement: Tele's look
+The character SHALL be drawn as a 1970s television with rabbit-ear antennae, a speaker grille, turning dials and one realistic eye on its screen, on the shoulders of a body in a striped turtleneck, standing in a painted room with a checkerboard floor, drifting clouds, a lone door and a small mushroom with an eye. Its accessible name SHALL describe the television, the eye and the clothes, and the feeling SHALL still be shown in words beside it, so nothing is carried by the picture alone.
+
+#### Scenario: Character shown
+- **WHEN** the character is shown on the desktop or a practice screen
+- **THEN** it is drawn as the television with one eye above a striped turtleneck and jacket, with a descriptive accessible name
+
+### Requirement: Jacket option
+The character SHALL wear a patchwork corduroy jacket over the turtleneck by default, and the screen showing it SHALL be able to take the jacket off.
+
+#### Scenario: Jacket on by default
+- **WHEN** a screen shows the character without saying otherwise
+- **THEN** the jacket is worn
+
+#### Scenario: Jacket off
+- **WHEN** a screen turns the jacket off
+- **THEN** the turtleneck and hands are shown without the jacket
+
+### Requirement: Channel change
+The character SHALL be able to flash its picture and turn its channel dial, as a wordless reaction that does not need audio.
+
+#### Scenario: Channel change
+- **WHEN** a screen asks for a channel change
+- **THEN** the picture flashes with static and the dial turns, and under reduced motion or the calm switch the flash still shows but no idle motion starts
+
+### Requirement: Light to load and draw
+The character's images SHALL be compressed (WebP) and total no more than about 350 KB, SHALL load without blocking the screen, and the character SHALL be drawn at no more than 30 frames a second at a pixel ratio of at most 1.5. A failed image load SHALL NOT stop the student practising.
+
+#### Scenario: Images slow or missing
+- **WHEN** the character's images have not loaded or fail to load
+- **THEN** the rest of the screen works, and the caption, controls and practice are unaffected
 
 ### Requirement: Voice-driven response
 While the character speaks, its screen and antenna tips SHALL glow in proportion to the loudness of the audio, and the caption SHALL highlight the word being spoken. Both SHALL stay aligned when the audio plays at slower speeds.

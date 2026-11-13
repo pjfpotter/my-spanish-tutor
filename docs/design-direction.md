@@ -25,7 +25,7 @@ A Windows 98-style desktop pasted over a lost world: painted sky, an endless pla
 
 ## Character: Tele
 
-An old CRT television with one large eye, in a pink cardigan, broadcasting Castilian Spanish. It has **no mouth**.
+A 1970s television with one realistic eye, rabbit-ear antennae and turning dials, in a striped turtleneck and a patchwork corduroy jacket, standing in a painted room (checkerboard floor, drifting clouds, a lone door, a mushroom with an eye), broadcasting Castilian Spanish. It has **no mouth**. Redesigned by the owner on 12 Nov 2026; the source package is `docs/design/tele-react/`.
 
 - Feelings live in the eye (lids, brow, pupil, gaze, tears), the antennae, the picture (tint, static, glitch) and the world (sky colour, rainbow, darkness).
 - Six feelings (joy, sadness, anger, fear, surprise, disgust) are recipes that add together, so any two blend.
@@ -33,7 +33,8 @@ An old CRT television with one large eye, in a pink cardigan, broadcasting Casti
 - **Feelings are baked at build time** per phrase-bank line (a feeling track beside the audio). A rule-based word list is the fallback. There is no runtime language-model call and no open chat.
 - Tele speaks only Spanish. English appears only as subtitles in the caption window.
 - Voice: the ElevenLabs character voice. The "Dream TV voice" effect (slowed, echo) is an optional setting, not a default requirement.
-- The first sketch is procedural canvas code. Whether v1 keeps it or rebuilds Tele as layered SVG via `docs/art-pipeline.md` is open (see conflicts register).
+- v1 keeps canvas drawing (decided at M1): the eye and effects are procedural and the television, body, door, mushroom and clouds are WebP sprites in `public/tele/`. `lib/tele/draw.ts` is the port. The jacket is on by default and can be turned off.
+- The stage is 400 by 360 units. Calm mode and reduced motion stop clouds, glances, breathing and glitches.
 - Original character only. No copyrighted characters.
 
 ## Colour tokens
