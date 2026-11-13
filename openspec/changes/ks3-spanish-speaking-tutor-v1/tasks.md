@@ -201,7 +201,7 @@ Note: task 7.x level work (names, thresholds) is superseded by 26.1a. Tasks 10.4
 
 ## 23. Teacher flow and course shape (M10)
 
-- [ ] 23.1 Document the teacher flow end to end (steps, where each runs, calls made, what is cached) in docs/teacher-flow.md, including the question of local versus server; verify it matches the scripts
+- [x] 23.1 Document the teacher flow end to end (steps, where each runs, calls made, what is cached) in docs/teacher-flow.md, including the question of local versus server; verify it matches the scripts
 - [ ] 23.2 Extend the course schema for one or more sentence builders, four or five questions and core or extension questions; update readiness and the overview; verify with a two-builder, four-question seed course
 - [ ] 23.3 Record the draft, set-up, review, publish and share status per course; make publish block on missing items; verify re-publishing unchanged text makes no new calls
 - [ ] 23.6 Stretch: add scan-to-start (photo of a sentence builder to an editable draft) with a manual fallback, and edit screening (length, blocklist, valid words, class-code visibility, disable course); verify a blocklisted edit blocks publishing.  Stays with 17.1 as stretch
