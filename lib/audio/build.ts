@@ -3,6 +3,7 @@ import { wordsFromAlignment, type CharAlignment } from '../tele/alignment.ts';
 import { parseClipFile, type ClipFile } from '../tele/clip.ts';
 import { envelopeFromSamples } from '../tele/envelope.ts';
 import { sourceHash, type ClipSpec } from './manifest.ts';
+import { tagSentences, withoutAdded } from './tags.ts';
 import type { createCostRouter } from '../cost-router/router.ts';
 
 export const TTS_SERVICE = 'elevenlabs-tts';
@@ -27,7 +28,12 @@ export interface Voice {
   provider: string;
   voiceId: string;
   model: string;
+  /** A direction put at the start of every sentence sent to the voice, such as `[very slowly]`. Needs a model that reads tags. */
+  tag?: string;
 }
+
+/** What the voice service is asked to say, and so what is billed. */
+export const sentText = (text: string, voice: Pick<Voice, 'tag'>) => tagSentences(text, voice.tag ?? '').text;
 
 export interface Plan {
   /** Clips that exist and match the current voice, model, text and speed: nothing to pay for. */
@@ -38,7 +44,7 @@ export interface Plan {
   characters: number;
 }
 
-export const estimateFor = (specs: ClipSpec[]) => specs.reduce((s, c) => s + c.text.length * COST_PER_CHAR_GBP, 0);
+export const estimateFor = (specs: ClipSpec[], voice: Pick<Voice, 'tag'> = {}) => specs.reduce((s, c) => s + sentText(c.text, voice).length * COST_PER_CHAR_GBP, 0);
 
 /** Works out what needs building without calling anything. This is the dry run. */
 export async function planBuild(specs: ClipSpec[], voice: Voice, store: ClipStore, force = false): Promise<Plan> {
@@ -46,10 +52,10 @@ export async function planBuild(specs: ClipSpec[], voice: Voice, store: ClipStor
   const toBuild: ClipSpec[] = [];
   for (const spec of specs) {
     const existing = force ? null : await store.read(spec.slot);
-    const wanted = sourceHash(spec.text, voice.voiceId, voice.model, spec.speed);
+    const wanted = sourceHash(spec.text, voice.voiceId, voice.model, spec.speed, voice.tag);
     (existing?.source.hash === wanted ? upToDate : toBuild).push(spec);
   }
-  return { upToDate, toBuild, estimateGbp: estimateFor(toBuild), characters: toBuild.reduce((n, s) => n + s.text.length, 0) };
+  return { upToDate, toBuild, estimateGbp: estimateFor(toBuild, voice), characters: toBuild.reduce((n, s) => n + sentText(s.text, voice).length, 0) };
 }
 
 export interface BuildReport {
@@ -67,10 +73,11 @@ export async function buildClips(
 ): Promise<BuildReport> {
   const report: BuildReport = { built: [], failed: [], spentGbp: 0 };
   for (const spec of toBuild) {
-    const cost = spec.text.length * COST_PER_CHAR_GBP;
+    const tagged = tagSentences(spec.text, voice.tag ?? '');
+    const cost = tagged.text.length * COST_PER_CHAR_GBP;
     const result = await deps.route({
       service: TTS_SERVICE, tier: 'speech', profileId: null, estimateGbp: cost, fallback: () => null,
-      call: async () => ({ value: await deps.synth.synthesise(spec.text, spec.speed), units: spec.text.length, costGbp: cost }),
+      call: async () => ({ value: await deps.synth.synthesise(tagged.text, spec.speed), units: tagged.text.length, costGbp: cost }),
     });
     if (result.status !== 'ok') {
       report.failed.push({ label: spec.label, status: result.status });
@@ -79,7 +86,7 @@ export async function buildClips(
     }
     const { mp3, alignment } = result.value;
     const { samples, sampleRate } = await deps.decoder.decode(mp3);
-    const { words } = wordsFromAlignment(alignment);
+    const { words } = wordsFromAlignment(voice.tag ? withoutAdded(alignment, tagged) : alignment);
     const round = (n: number) => Math.round(n * 1000) / 1000;
     const clip = parseClipFile({
       id: spec.slot,
@@ -90,7 +97,7 @@ export async function buildClips(
       envelope: envelopeFromSamples(samples, sampleRate, HOP),
       envelopeHop: HOP,
       feelings: buildFeelingTrack(words, spec.feelings),
-      source: { provider: voice.provider, voiceId: voice.voiceId, model: voice.model, speed: spec.speed, hash: sourceHash(spec.text, voice.voiceId, voice.model, spec.speed) },
+      source: { provider: voice.provider, voiceId: voice.voiceId, model: voice.model, speed: spec.speed, hash: sourceHash(spec.text, voice.voiceId, voice.model, spec.speed, voice.tag) },
     });
     await deps.store.write(spec.slot, mp3, clip);
     report.built.push(spec.label);

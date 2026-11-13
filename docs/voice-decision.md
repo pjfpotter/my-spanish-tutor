@@ -43,3 +43,12 @@ Do A now, build M1 against the ElevenLabs voice meanwhile (the build script isol
 
 - A second voice for rotation: deferred by decision (2026-11-02). Variety in v1 comes from three speeds.
 - Which model sounds best for Tele, `eleven_multilingual_v2` (default) or `eleven_v3`, which is slower and more expressive. Set `ELEVENLABS_MODEL` and run `npm run build-audio -- --yes --force --only=lines` to compare (this spends money again). This is a listening decision.
+
+## Sentence tag (13 Nov 2026)
+
+Tele's voice is being redesigned to be clearer and slower. `ELEVENLABS_TAG` (for example `[very slowly]`) is put at the start of **every sentence** the build sends to ElevenLabs, and taken back out of the character timings it returns, so the clip's text, captions, word highlights and mouth never see it. The tag is part of a clip's source hash, so setting or changing it marks every clip stale; leaving it empty leaves existing hashes unchanged.
+
+- Tags are directions only on `eleven_v3`. The build refuses to run with a tag on another model, because those may say the tag aloud.
+- The tag characters are billed, so the dry run's estimate includes them.
+- Not yet checked: whether `eleven_v3` honours the `speed` setting the slow variants (0.7) use, or whether `[very slowly]` makes that redundant. Listen to a few clips before a full build.
+- Nothing has been built with the tag yet; the bit clips for the memorise ladder (27.4) wait for the new voice.

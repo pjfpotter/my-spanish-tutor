@@ -33,7 +33,14 @@ if (!voiceId || (yes && !key)) {
   console.error('Set ELEVENLABS_VOICE_TELE (and ELEVENLABS_API_KEY to build) in .env.local');
   process.exit(2);
 }
-const voice = { provider: 'elevenlabs', voiceId, model: process.env.ELEVENLABS_MODEL ?? 'eleven_multilingual_v2' };
+// ELEVENLABS_TAG, such as "[very slowly]", is put at the start of every sentence sent and removed from the timings.
+// Tags are read as directions by the v3 model only, so set ELEVENLABS_MODEL=eleven_v3 with it.
+const tag = process.env.ELEVENLABS_TAG?.trim() || undefined;
+const voice = { provider: 'elevenlabs', voiceId, model: process.env.ELEVENLABS_MODEL ?? 'eleven_multilingual_v2', tag };
+if (tag && !/v3/.test(voice.model)) {
+  console.error(`ELEVENLABS_TAG is set but the model is ${voice.model}. Tags are directions only on eleven_v3; other models may say them aloud. Set ELEVENLABS_MODEL=eleven_v3.`);
+  process.exit(2);
+}
 
 const dir = path.join(import.meta.dirname, '../public/audio/clips');
 const builtIndex = path.join(import.meta.dirname, '../lib/audio/built.ts');

@@ -25,8 +25,8 @@ export const slotFor = (text: string, speed: number) =>
   createHash('sha1').update(JSON.stringify({ text, speed })).digest('hex').slice(0, 12);
 
 /** What marks a stored clip as out of date: change the text, voice, model or speed and it differs. */
-export const sourceHash = (text: string, voiceId: string, model: string, speed: number) =>
-  createHash('sha1').update(JSON.stringify({ text, voiceId, model, speed })).digest('hex').slice(0, 12);
+export const sourceHash = (text: string, voiceId: string, model: string, speed: number, tag?: string) =>
+  createHash('sha1').update(JSON.stringify(tag ? { text, voiceId, model, speed, tag } : { text, voiceId, model, speed })).digest('hex').slice(0, 12);
 
 export interface QuestionLike {
   position: number;
