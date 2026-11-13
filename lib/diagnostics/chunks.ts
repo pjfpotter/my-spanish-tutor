@@ -1,4 +1,4 @@
-import { normaliseWord, tokenise } from '../speech/score';
+import { normaliseWord, tokenise } from '../speech/score.ts';
 
 export interface ChunkRef {
   id: string;

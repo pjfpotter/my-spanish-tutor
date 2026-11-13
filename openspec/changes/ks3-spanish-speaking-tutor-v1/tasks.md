@@ -205,6 +205,7 @@ Note: task 7.x level work (names, thresholds) is superseded by 26.1a. Tasks 10.4
 - [ ] 23.2 Extend the course schema for one or more sentence builders, four or five questions and core or extension questions; update readiness and the overview; verify with a two-builder, four-question seed course
 - [ ] 23.3 Record the draft, set-up, review, publish and share status per course; make publish block on missing items; verify re-publishing unchanged text makes no new calls
 - [ ] 23.6 Stretch: add scan-to-start (photo of a sentence builder to an editable draft) with a manual fallback, and edit screening (length, blocklist, valid words, class-code visibility, disable course); verify a blocklisted edit blocks publishing.  Stays with 17.1 as stretch
+- [ ] 23.7 Price a new course and limit how many a teacher can load: have the audio build and set-up record each course's spend against its course id in the cost log (the log already has a `course_id` column, the build does not fill it yet), report the cost of a course before loading it (new clips only: a clip is shared by text, voice and speed, so a repeated phrase costs nothing), and add a per-teacher monthly limit on new courses with the reason shown to the teacher; owner to choose the limit. Verify a second course that shares phrases with the first is priced for the new clips only
 - [ ] 23.4 On hold: a teacher-facing setup page that calls the same server functions as the scripts, with regenerate-owner-link; do not start until the owner decides
 - [ ] 23.5 Parked for later: coursework submission dashboard
 

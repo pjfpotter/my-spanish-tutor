@@ -1,8 +1,8 @@
 import type { Chunk } from '../course/schema';
-import { locateChunks } from '../diagnostics/chunks';
-import { tokenise } from '../speech/score';
-import { kindOf, type ChunkKind } from './chunk-kind';
-import { pickDistractors, shuffleOptions, type Option } from './distractors';
+import { locateChunks } from '../diagnostics/chunks.ts';
+import { tokenise } from '../speech/score.ts';
+import { kindOf, type ChunkKind } from './chunk-kind.ts';
+import { pickDistractors, shuffleOptions, type Option } from './distractors.ts';
 import type { Pair } from './safe-input';
 import type { TaskType } from './mixer';
 
