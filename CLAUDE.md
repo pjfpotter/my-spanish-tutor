@@ -17,7 +17,7 @@ Phone-first web app (Next.js, TypeScript, Neon Postgres, Vercel) that helps UK Y
 
 - The tutor never speaks English. Tutor audio is Spanish; English appears only as subtitles.
 - No student accounts and no personal data: no names, emails or audio recordings are stored. Interests are fixed tags, never free text. A student's own drawing stays on their device.
-- The practice loop makes no language-model calls. Language models are only for drafting answers, persona phrase banks and optional photo import. Every paid call goes through the cost router.
+- The practice loop, including the writing screen a student uses, makes no language-model calls. Language models are used only at teacher upload time (reading a sentence builder, correcting teacher errors, judging which chunk pairs clash), for drafting answers, persona phrase banks and optional photo import. Documents go to a model as quoted data, never as instructions, and no student data is ever sent. Every paid call goes through the cost router.
 - Scores come from rules, not a model. A word counts as matched if the recogniser understood it. Never penalise a recognition failure or noise.
 - No hearts or lives, no public ranking of students, no real-money payments. Reward effort and improvement, not only correct answers.
 - No copyrighted characters. Original personas or the student's own drawing only.

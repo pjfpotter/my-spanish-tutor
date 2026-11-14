@@ -2,9 +2,24 @@
 
 ## Purpose
 
-Helps a student build, for each question, a Spanish answer they can realistically memorise and say, by filling a sentence-builder-style row of blocks with chunks from the question's own sentence builder. Everyone starts from empty spaces, the app rewards added detail with more value instead of showing levels or grades, and nudges students to extend until the answer is challenging but achievable. The writing stage makes no language-model call. Design record: `docs/writing-flow-options.md`.
+Helps a student build, for each question, a Spanish answer they can realistically memorise and say, by filling a sentence-builder-style row of blocks with chunks from the question's own sentence builder. Everyone starts from empty spaces, the app rewards added detail with more value instead of showing levels or grades, and nudges students to extend until the answer is challenging but achievable. The writing stage makes no language-model call; a model is used only once, at upload time, to interpret the teacher's sentence builder (see the requirement "Teacher's sentence builder"). Design record: `docs/writing-flow-options.md`.
 
 ## ADDED Requirements
+
+### Requirement: Teacher's sentence builder
+When a course has an uploaded sentence builder, the student SHALL write each answer on a re-typeset version of that sheet above an answer card, choosing chunks from its lists. The sheet's rules (which chunks fit which slots, which clash, how a sentence reads) SHALL come from an interpretation made once at upload time, checked by rules and stored as data. No model SHALL be called while a student writes. An answer SHALL be confirmed only when it passes the exam-rule sign-off (credit anything grammatical that could be true; block only an incomplete or contradictory answer; name at most one thing to fix), and the server SHALL rebuild the answer from the chosen chunks before saving it. A course with no uploaded sheet SHALL keep the original flow.
+
+#### Scenario: Finished sentence
+- **WHEN** a student has built a complete, sensible sentence and taps Check it
+- **THEN** the check passes and Done confirms the answer
+
+#### Scenario: Half-built sentence
+- **WHEN** a student taps Check it with a sentence that is only half built
+- **THEN** the answer is not confirmed and one missing part is named
+
+#### Scenario: Words not on the sheet
+- **WHEN** a request to save an answer names chunks that are not on the course's sheet
+- **THEN** the answer is refused and nothing is stored
 
 ### Requirement: Build from empty spaces
 Writing a question's answer SHALL start with empty slots laid out like the sentence builder the student knows, coloured by chunk kind, with the same colours used for chunks in the automatise phase. The student SHALL fill slots by choosing chunks from that question's sentence builder. The app SHALL NOT ask the student to choose a target or level.

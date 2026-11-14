@@ -17,7 +17,7 @@ Help Year 8 students (age 12 to 13) revise for a KS3 Spanish speaking test. Stud
 
 - **Speech recognition.** The browser's built-in recogniser may send the student's voice to the browser maker (for example Google or Apple). The app does not control this and says so in the notice. If the browser cannot recognise speech, a short clip may be sent once to a transcription service (OpenAI) and is processed in memory only. The clip is never stored by us. The vendor's retention settings must be checked and set to no retention before launch (not yet verified).
 - **Hosting.** Vercel (application) and Neon (database), in the region chosen at set-up. Both act as processors.
-- **Language models** draft course content offline. They never see student data, and the practice loop makes no model calls.
+- **Language models** read and interpret a teacher's uploaded sentence builder and draft course content, at upload time only. What they receive is teacher content (a document, treated as quoted data). They never see student data: no names, answers, recordings, interests or session ids are in any model call. The practice loop and the writing screen make no model calls, and the interpretation stored with a course holds nothing about a student.
 
 ## Risks and what reduces them
 

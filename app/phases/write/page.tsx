@@ -4,6 +4,7 @@ import { getDb } from '../../../lib/db';
 import { loadMemoriseItems } from '../../../lib/memorise/store';
 import { loadSavedAnswers, loadWritingCourse } from '../../../lib/progress/writing-store';
 import { currentProfile } from '../../../lib/server/session';
+import { SheetWrite } from './SheetWrite';
 import { Write } from './Write';
 
 export const dynamic = 'force-dynamic';
@@ -13,6 +14,8 @@ export default async function WritePage({ searchParams }: { searchParams: Promis
   if (!profile) redirect('/welcome');
   const db = await getDb();
   const [course, saved] = await Promise.all([loadWritingCourse(db, profile.courseId), loadSavedAnswers(db, profile.id)]);
+  // A course with a teacher's sentence builder writes on the sheet; any other course keeps the slot-builder flow.
+  if (course.sheet) return <SheetWrite course={course} saved={saved} />;
   // An answer the student keeps failing to recall gets a simpler version to offer, never to force.
   const stalled = (await loadMemoriseItems(db, profile.id, profile.courseId)).filter((i) => i.stalled);
   const suggestions: Record<string, Simplification> = {};
