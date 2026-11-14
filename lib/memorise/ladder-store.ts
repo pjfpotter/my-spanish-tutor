@@ -20,8 +20,8 @@ export interface LadderStart {
 interface Row { question_id: string; stage: number; top: number; wipe_day: number; recalls: number[] }
 
 /**
- * Where each answer is. The mastery table is the authority on "memorised" (three clean answers from memory in two
- * separate sessions), so an answer it counts as memorised is shown as memorised whatever this table says, and an
+ * Where each answer is. The mastery table is the authority on "memorised" (three clean answers from memory, which may
+ * all come in one sitting), so an answer it counts as memorised is shown as memorised whatever this table says, and an
  * answer it does not count is never shown as memorised.
  */
 export function stateFor(row: Row | undefined, item: Pick<MemoriseItem, 'mastered'>, answer: LadderAnswer): AnswerState {
@@ -71,8 +71,8 @@ export const LADDER_PAY = { perSave: 80, perDay: 200 } as const;
 export type LessonSaveResult = { ok: true; paid: number; euros: number; memorised: string[] } | { ok: false; error: string };
 
 /**
- * One session for each UK day. Mastery counts separate sessions, and the ladder counts separate days, so using the day
- * as the session makes the two agree: an answer is memorised in the database exactly when the ladder says it is.
+ * One session id for each UK day, so a day's ladder work is one session in the attempts log. Nothing is gated on it:
+ * three clean answers memorise an answer in the database and in the ladder alike, whichever days they came on.
  */
 export function ladderSessionId(profileId: string, day: number): string {
   const h = createHash('sha1').update(`memorise-ladder:${profileId}:${day}`).digest('hex');

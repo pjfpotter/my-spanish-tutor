@@ -1,6 +1,6 @@
 /**
- * The ladder's "day": whole days since 1 January 2026 in UK time. The next-day check opens when this number is higher
- * than the day of the last unaided run, so it opens at UK midnight, not 24 hours later.
+ * The ladder's "day": whole days since 1 January 2026 in UK time. It dates each clean answer and drives the test
+ * countdown. Nothing waits for it: a student can memorise an answer in one sitting.
  */
 const EPOCH = Date.UTC(2026, 0, 1);
 

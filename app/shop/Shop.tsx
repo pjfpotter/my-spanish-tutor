@@ -40,7 +40,7 @@ export function Shop({ initial, cheekyOn = false }: { initial: ShopState; cheeky
   return (
     <main className="screen">
       <h1>Shop</h1>
-      <Win title="shop.exe" label="Spend your euros">
+      <Win title="Spend your euros">
         <div className="stack">
           <p className="coins" data-testid="coins">€{state.coins}</p>
           <p className="muted">Euros come from practising. They are pretend: looking around earns none, and nothing here costs real money.</p>

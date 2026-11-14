@@ -14,7 +14,7 @@ export default function SpeechLab() {
   return (
     <main className="screen">
       <h1>Hablar</h1>
-      <Win title="hablar.exe" label="Speech capture">
+      <Win title="Speech capture">
         <div className="stack">
           {cap.state === 'idle' && (
             <p data-testid="explain">

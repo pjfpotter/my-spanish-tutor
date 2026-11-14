@@ -33,3 +33,5 @@ docs/teaching-resources/
 .next-test/
 tests/local/
 playwright.local.config.ts
+.neon
+.claude/worktrees/

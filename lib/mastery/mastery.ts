@@ -1,17 +1,18 @@
 /**
- * Mastery as separate-session evidence (design D10). An item is mastered after enough correct,
- * unassisted answers spread across enough different sessions. Wrong answers never take
- * progress away; they only bring the item back sooner.
+ * Mastery as evidence from correct, unassisted answers. By default three are enough, and they may all
+ * come from one sitting so a student revising at the last minute can finish. A course can still ask for
+ * more than one session by raising `sessions`. Wrong answers never take progress away; they only bring
+ * the item back sooner.
  */
 
 export interface MasteryConfig {
   /** Correct, unassisted answers needed. */
   successes: number;
-  /** Distinct sessions those answers must come from. */
+  /** Distinct sessions those answers must come from. One by default: a single sitting can master an item. */
   sessions: number;
 }
 
-export const DEFAULT_MASTERY: MasteryConfig = { successes: 3, sessions: 2 };
+export const DEFAULT_MASTERY: MasteryConfig = { successes: 3, sessions: 1 };
 
 /** Matches the `mastery` table: qualifying_successes, distinct_sessions, last_success_session_id. */
 export interface MasteryState {
@@ -46,20 +47,6 @@ export function recordAttempt(state: MasteryState, attempt: AttemptResult): Mast
 
 export function isMastered(state: MasteryState, config: MasteryConfig = DEFAULT_MASTERY): boolean {
   return state.qualifyingSuccesses >= config.successes && state.distinctSessions >= config.sessions;
-}
-
-/** Enough correct answers, but all from too few sessions: it must wait for a later session. */
-export function needsLaterSession(state: MasteryState, config: MasteryConfig = DEFAULT_MASTERY): boolean {
-  return state.qualifyingSuccesses >= config.successes && state.distinctSessions < config.sessions;
-}
-
-/** 0 to 1, how far along the item is. Drives how clear a channel's picture is (task 6.4). */
-export function masteryFraction(state: MasteryState, config: MasteryConfig = DEFAULT_MASTERY): number {
-  if (isMastered(state, config)) return 1;
-  const bySuccess = Math.min(1, state.qualifyingSuccesses / config.successes);
-  const bySession = Math.min(1, state.distinctSessions / config.sessions);
-  // Capped just under 1: only real mastery reaches 1.
-  return Math.min(0.95, (bySuccess + bySession) / 2);
 }
 
 /** How many of the given items are mastered. */

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { advance, finish, freshState, lessonsOf, newSession, outcomeOf, plan, recommended, resolveSay, resolveTap, total, type LadderAnswer, type SayStep, type World } from './ladder';
+import { advance, finish, freshState, lessonsOf, newSession, nextFor, outcomeOf, plan, recommended, resolveSay, resolveTap, stepState, total, type LadderAnswer, type SayStep, type World } from './ladder';
 import { liveMatch } from '../speech/live-match';
 import { DEFAULT_PAUSE, listenCall } from '../speech/pause';
 
@@ -36,25 +36,30 @@ describe('lesson plans', () => {
     const spans = plan(world(), { type: 'build', a: 0 }, rng).filter((q) => q.t === 'say').map((q) => (q as SayStep).span.join(''));
     expect(spans).toEqual(['0', '1', '01', '2', '012', '012']);
   });
-  it('recommends the shortest answer first, then a due next-day check', () => {
+  it('recommends the shortest answer first, then a final check as soon as it is due', () => {
     const w = world();
     expect(recommended(w)).toMatchObject({ type: 'meet', a: 0 });
     w.states[1] = { stage: 4, top: 5, recalls: [1, 1], wipeDay: 1, memorised: false };
-    expect(recommended(w)).toMatchObject({ type: 'meet', a: 0 }); // the check is not open today
-    w.day = 2;
-    expect(recommended(w)).toMatchObject({ type: 'lock', a: 1 });
+    expect(recommended(w)).toMatchObject({ type: 'lock', a: 1 }); // open the same day: nothing waits for tomorrow
+  });
+  it('never makes a student wait: every unfinished answer has a lesson open today', () => {
+    const w = world();
+    for (let stage = 0; stage < 4; stage++) {
+      w.states[0] = { stage, top: 5, recalls: [], wipeDay: w.day, memorised: false };
+      expect(nextFor(w, 0)).not.toBeNull();
+      expect(stepState(w, 0, stage)).toBe('now');
+    }
   });
 });
 
 describe('help moves with results', () => {
-  it('a clean run reaches the question alone and opens the next-day check', () => {
+  it('a clean run reaches the question alone, and the final check memorises it the same day', () => {
     const w = world();
     play(w, 'meet', () => 'clean');
     play(w, 'build', () => 'clean');
     const { end } = play(w, 'wipe', () => 'clean');
     expect(end.shout).toBe('From memory');
     expect(w.states[0]).toMatchObject({ stage: 3, top: 5, wipeDay: 1 });
-    w.day = 2;
     expect(play(w, 'lock', () => 'clean').end.shout).toBe('Memorised');
     expect(w.states[0].memorised).toBe(true);
   });

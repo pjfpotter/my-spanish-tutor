@@ -60,17 +60,14 @@ describe('the ladder store (task 27.4)', () => {
     expect((await balance(db, profileId)) - before).toBeLessThanOrEqual(LADDER_PAY.perDay);
   });
 
-  it('memorises an answer only after clean answers from memory on two separate days, matching the ladder', async () => {
+  it('memorises an answer after three clean answers from memory, even on one day, matching the ladder', async () => {
     const a = { itemId: q[1], stage: 3, top: 5, wipeDay: ladderDay(today), recalls: [ladderDay(today), ladderDay(today)] };
-    // Three clean answers on one day are not enough, even in separate visits.
     await save({ answers: [a], recalls: [clean(q[1]), clean(q[1])] });
-    await save({ answers: [a], recalls: [clean(q[1])] });
     let start = await loadLadder(db, profileId, courseId, chunks, today);
-    expect(start.states[1].memorised).toBe(false);
-    // The next day's check makes it two days.
-    await save({ answers: [{ ...a, recalls: [...a.recalls, ladderDay(tomorrow)] }], recalls: [clean(q[1])] }, tomorrow);
-    start = await loadLadder(db, profileId, courseId, chunks, tomorrow);
-    expect(start.states[1]).toMatchObject({ memorised: true });
+    expect(start.states[1].memorised).toBe(false); // two are not enough
+    await save({ answers: [{ ...a, recalls: [...a.recalls, ladderDay(today)] }], recalls: [clean(q[1])] });
+    start = await loadLadder(db, profileId, courseId, chunks, today);
+    expect(start.states[1]).toMatchObject({ memorised: true }); // the third, the same day, is
   });
 
   it('does not count help or the lower rungs as memorising', async () => {

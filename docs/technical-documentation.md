@@ -448,8 +448,8 @@ The student hears a question (Spanish text hidden) and chooses its meaning from 
 - **Speed progression.** After a correct answer at one speed, the next presentation is faster. The same clip is not played back to back unless the student asks for a replay (`lib/understand/speed.ts`).
 - **Help is recorded.** Replay, slow and reveal are stored on the attempt (`replays`, `used_slow`, `revealed`). Revealing the text marks the attempt `assisted`, so it does not count toward mastery.
 - **Spaced return.** A missed question returns after a gap of `MISS_GAP` (2) presentations; successes return at gaps of `SUCCESS_GAPS` (3, 5, 8) (`lib/mastery/mastery.ts`).
-- **Mastery.** Three correct, unassisted answers across at least two separate sessions (section 10.1).
-- **Channels.** Each question is a TV channel. Its picture clears from static as `masteryFraction` rises, and the channel locks only after mastery has held across sessions.
+- **Mastery.** Three correct, unassisted answers, which may all come from one session (section 10.1).
+- **Can-do ticks.** Each question has a "What I can do" row (`lib/progress/can-do.ts`). The Understand tick moves from Not yet to Getting there to Got it as mastery rises. The quick check at the start of Understand can mark a question Got it for that step.
 
 ### 9.4 Say it
 
@@ -458,7 +458,7 @@ The student sees the English meaning of a question and says their Spanish answer
 - **Scaffold fading** (section 10.4): the prompt starts as the whole script and gives less as recent accuracy rises.
 - **Chunk isolation.** If the student keeps missing the same sentence, the app isolates it for short repeated attempts, then returns to the full answer.
 - **Reading aloud does not count.** An attempt made while the whole script is showing earns coins and helps the prompt fade, but does not count toward mastery.
-- **Mastery.** Accuracy at or above the threshold (default 80%) three times across two sessions.
+- **Mastery.** Accuracy at or above the threshold (default 80%) three times. The memorise ladder ends with a same-sitting "Final check" and memorises an answer after three clean answers from memory, whichever days they came on.
 - **Feedback.** Highlights the strongest part and names **one** next step. It never describes the student as failing.
 
 ### 9.5 Own it
@@ -470,7 +470,7 @@ The student hears a question with no text and answers from memory within a respo
 - **Blanks.** If nothing is said within the window, the attempt is stored as `blank` (never as `wrong`), the window grows, and Tele offers a first-words hint.
 - **Repeat request.** Saying "¿Puede repetir, por favor?" replays the question. It is rewarded, not penalised, and logged as good test technique.
 - **Mixed order.** Rounds shuffle the five questions (the recycled one included), differ from the previous round, and use speeds `ROUND_SPEEDS = [1, 1.2, 0.7]`.
-- **Test-ready.** Every question answered accurately and within the target response time (default 3.5 s) on at least two separate sessions.
+- **Test-ready.** Every question answered accurately and within the target response time (default 3.5 s). One session is enough by default (`readySessions` is 1).
 
 ---
 
@@ -480,18 +480,16 @@ Each module is pure where possible and takes its configuration as an argument wi
 
 ### 10.1 Mastery (`lib/mastery/mastery.ts`)
 
-Mastery is evidence across separate sessions (D10).
+Mastery is evidence from correct, unassisted answers (D10). The `sessions` setting still exists and defaults to 1, so a course can ask for more than one session, but nothing waits for another day by default.
 
 ```ts
-DEFAULT_MASTERY = { successes: 3, sessions: 2 }
+DEFAULT_MASTERY = { successes: 3, sessions: 1 }
 ```
 
 | Function | Behaviour |
 |---|---|
 | `recordAttempt(state, attempt)` | Returns new state. An incorrect **or assisted** attempt returns the state unchanged. A success increments `qualifyingSuccesses`; it also increments `distinctSessions` when its `sessionId` differs from `lastSuccessSessionId` |
 | `isMastered(state, cfg)` | `qualifyingSuccesses >= successes` **and** `distinctSessions >= sessions` |
-| `needsLaterSession(state, cfg)` | Enough successes, too few sessions: the item waits for a later session |
-| `masteryFraction(state, cfg)` | 0 to 1, drives how clear a channel's picture is |
 
 A wrong answer never removes progress; it only brings the item back sooner.
 
@@ -590,7 +588,7 @@ COIN_AMOUNTS = { attempt: 2, attemptsPerDay: 40, session: 10 }
 
 ### 10.9 Progress and readiness (`lib/progress/progress.ts`)
 
-Readiness is a 0 to 100% measure computed from questions mastered, answers memorised and questions automatised, and always names the next action that would raise it. After the test date, countdown messaging stops and a short reflection prompt is shown.
+Readiness is a 0 to 100% measure computed from questions mastered, answers memorised and questions automatised. The next action is not on the meter: the "What's next?" window says it, from `nextStep()` in `lib/planner/next-step.ts` (fixed rules over saved progress and the most recent step, no model). "What I can do" is computed by `loadCanDo()` in `lib/progress/can-do.ts`. After the test date, countdown messaging stops and a short reflection prompt is shown.
 
 ---
 
@@ -1053,7 +1051,7 @@ Photo import of a sentence builder, meme and reggaeton remix, a virtual-pet wrap
 | A test fails on the asset-credits check | Image added without a register row | Add it to `docs/asset-credits.md` |
 | Device matrix test fails | `VERIFIED_BROWSER_DEVICES` and the doc disagree | Update both together |
 | Playwright cannot start | Port 3100 in use, or Chromium not installed | Free the port; `npx playwright install chromium` |
-| Students are not recognised as mastered | Successes all came from one session | By design: mastery needs two separate sessions |
+| Students are not recognised as mastered | Fewer than three qualifying (correct, unassisted) answers, or a course set `sessions` above 1 | Check the answers were not assisted; one session is enough by default |
 | Student says "the score felt unfair" | Recognition failure on a noisy device | Confirm the low-confidence path produced a retry rather than a score; log the device in the matrix |
 
 ---
@@ -1086,7 +1084,7 @@ Photo import of a sentence builder, meme and reggaeton remix, a virtual-pet wrap
 |---|---|
 | **Automatise** | Make question-to-answer recall fast and automatic |
 | **Calibration data** | Editable files defining rubric features, thresholds, level names, glue words and teacher examples |
-| **Channel** | One question shown as a TV channel on Tele's desktop; its picture clears from static as mastery rises |
+| **Can-do row** | One question in the "What I can do" window: a statement and four ticks (Understand, Write, Memorise, Fast), each Not yet, Getting there or Got it |
 | **Chunk** | A Spanish phrase from the sentence builder, with a gloss, category and feature tags |
 | **Cost router** | The single wrapper through which every paid call passes |
 | **Course** | One or more sentence builders, four or five core questions (and optional extension questions), a test date and calibration data |
@@ -1095,7 +1093,7 @@ Photo import of a sentence builder, meme and reggaeton remix, a virtual-pet wrap
 | **Hotspot** | A chunk missed in three or more attempts |
 | **Justified opinion** | A starter, an activity, *porque*/*ya que*/*dado que* and a reason |
 | **KS3** | UK Key Stage 3, ages 11 to 14 |
-| **Mastery** | Enough qualifying successes across enough separate sessions |
+| **Mastery** | Enough qualifying successes (three by default), from one session or more |
 | **Euros (€)** | What students see for the in-app currency, with the euro sign. It is pretend: it is never bought or exchanged and no wording suggests real money. Code and the database keep the names `coins`, `coin_ledger` and `awardCoins` |
 | **Value** | What an answer is worth: the frame (3, once) plus 1 + weight for each feature it uses, once. Replaces the old Rock solid / Stepping out / Showing off levels, which no longer exist |
 | **Sentence builder** | A classroom grid of Spanish chunks students combine into answers |

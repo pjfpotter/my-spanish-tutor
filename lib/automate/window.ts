@@ -21,7 +21,7 @@ export interface AutomateConfig {
   growBy: number;
   /** Test-ready: an accurate answer at least this quick counts toward readiness. */
   targetMs: number;
-  /** Test-ready: separate sessions each question must meet the target in. */
+  /** Test-ready: sessions each question must meet the target in. One by default, so a single sitting can finish. */
   readySessions: number;
 }
 
@@ -29,7 +29,7 @@ export const DEFAULT_AUTOMATE: AutomateConfig = {
   startMs: 8000, minMs: 3000, maxMs: 12000,
   threshold: 80, hardBelow: 40, fastShare: 0.5,
   shrinkAfter: 3, growAfter: 2, shrinkBy: 0.85, growBy: 1.25,
-  targetMs: 3500, readySessions: 2,
+  targetMs: 3500, readySessions: 1,
 };
 
 /** What one attempt contributes. `responseMs` is null for a blank. */

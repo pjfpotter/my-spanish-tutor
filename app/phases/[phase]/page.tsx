@@ -23,7 +23,7 @@ export default async function PhasePage({ params }: { params: Promise<{ phase: s
 
   return (
     <main style={{ maxWidth: '36rem', margin: '0 auto', padding: '3.5rem 1rem' }}>
-      <Win title={`${phase}.exe`}>
+      <Win title="Coming soon">
         <p>This step is built in a later milestone.</p>
         <Link href="/">Back to the desktop</Link>
       </Win>

@@ -1,9 +1,10 @@
 /**
- * The gated learning path. The order never changes; the sandbox is around it, not in it.
+ * The gated learning path. The order never changes; the sandbox is around it, not in it. The steps are listed
+ * Understand first, then Write, but both are open from the start.
  *
- *   write ──┐
- *           ├─> memorise ──> automate
- *   understand ─┘
+ *   understand ─┐
+ *               ├─> memorise ──> automate
+ *   write ──────┘
  *
  * From the specs:
  * - A confirmed answer unlocks memorising for that answer alone (answer-writing-coach: Confirm each answer),
@@ -11,7 +12,7 @@
  *   until all five questions are mastered (question-comprehension). So memorise needs both.
  * - response-automatisation states no unlock rule. Inferred: it follows memorisation.
  */
-export const PHASES = ['write', 'understand', 'memorise', 'automate'] as const;
+export const PHASES = ['understand', 'write', 'memorise', 'automate'] as const;
 export type PhaseId = (typeof PHASES)[number];
 
 /** How many core questions a course has when nothing says otherwise. A course can have four or five. */

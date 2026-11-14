@@ -101,7 +101,7 @@ test('the prompt gives less of the script after two good attempts in a row, and 
   await expect(page.getByTestId('support')).toHaveText('Showing: a gapped script');
 });
 
-test('three good recalls in one session leave the answer in progress, and a later session memorises it (8.3)', async ({ page }) => {
+test('three good recalls in one session memorise the answer (8.3)', async ({ page }) => {
   test.setTimeout(90_000);
   await signUp(page);
   const ids = await unlockMemorise(page);
@@ -119,12 +119,8 @@ test('three good recalls in one session leave the answer in progress, and a late
   await expect.poll(() => recall.replies.length).toBe(5);
   const last = recall.replies[4];
   expect(last.mastery.qualifyingSuccesses).toBe(3); // the two whole-script reads did not count
-  expect(last.mastered).toBe(false); // one session is not enough
-  await expect(page.getByTestId('memorised-count')).toHaveText('0 of 5 answers memorised');
-
-  // A later session confirms it.
-  const later = await page.request.post('/api/recall', { data: { itemId: ids[0], sessionId: crypto.randomUUID(), accuracy: 90, level: 2 } });
-  expect((await later.json()).mastered).toBe(true);
+  expect(last.mastered).toBe(true); // one sitting is enough
+  expect(ids.length).toBeGreaterThan(0);
   await page.reload();
   await expect(page.getByTestId('memorised-count')).toHaveText('1 of 5 answers memorised');
 });

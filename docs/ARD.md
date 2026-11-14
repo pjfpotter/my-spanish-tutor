@@ -243,12 +243,12 @@ Each record states the decision, the alternatives considered, and the consequenc
 - **Alternatives:** A conversational model in the practice loop (cost per student, safety exposure, unpredictable content).
 - **Consequences:** Language-model cost is bounded and predictable. The tutor cannot improvise; its lines are authored in advance.
 
-### ADR-10. Mastery as evidence across separate sessions
+### ADR-10. Mastery as evidence from qualifying successes (updated 14 Nov 2026)
 
 - **Status:** Accepted
-- **Decision:** Each item records qualifying successes and the distinct sessions they occurred in. Default threshold: three successes across two sessions, configurable. In-session spaced return, next-session queue.
+- **Decision:** Each item records qualifying successes and the distinct sessions they occurred in. Default threshold: three successes in one session, configurable (a course can set `sessions` above 1). In-session spaced return. Changed from three successes across two sessions because about half of students revise at the last minute and a time gate stopped them finishing.
 - **Alternatives:** Advance on first success (the PRD requires embedding, not one-off recall).
-- **Consequences:** Better retention and a truthful readiness meter, at the cost of slower visible progress, which rewards and the tutor's encouragement must offset.
+- **Consequences:** Students can finish in one sitting. Mastery from one visit is weaker evidence of retention, which the in-session spaced return and the later steps (each question reappears in Write, Memorise and Automate) offset.
 
 ### ADR-11. Diagnostics from small event data and a closed tag list
 

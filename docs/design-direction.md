@@ -187,3 +187,24 @@ A design rule from the first test user, built at `/lab/memorise` and not yet in 
 - **A repeated word lights only at the student's place.** Matching prefers unbroken runs of words, and a word that occurs more than once only lights near the student's place (the rest of the bit they are on and the next one) unless a run of three words shows they have jumped ahead. This also stops a recogniser that repeats earlier words from lighting a second "me gusta" further on.
 - Logic: `lib/speech/live-match.ts`, `lib/speech/pause.ts`, `lib/memorise/ladder.ts`. Microphone: `app/components/useLiveSpeech.ts`.
 - Open: this needs the browser's built-in recogniser with interim results, which `docs/device-matrix.md` still lists as unverified on every device. Where it is missing the lab falls back to the student checking their own answer. Some phones cannot share the microphone between the recogniser and the level meter, so the meter is a switch in the lab's tester tools and starts off on phones.
+
+## Home screen rework (change `rework-home-screen`)
+
+Planned 14 Nov 2026 with the frontend-design skill, inside the system above: same tokens, fonts and bevelled windows. Two new pieces, one place for boldness.
+
+**Plain-English windows.** No `.exe` titles and no Spanish interface labels, so an anxious student never thinks "the app is all in Spanish". Titles live in `lib/ui/window-titles.ts`: What's next?, What I can do, Your speaking test, Your four steps, Your streak.
+
+**What's next?** Quiet. One sentence in Atkinson Hyperlegible and one primary button. No icon, no decoration. It is the first window under Tele.
+
+**What I can do.** Clarity over style.
+
+- Layout: a header "3 of 5 ready" (whole numbers, VT323 for the count), then one row per question. Each row is the statement `I can answer "<English meaning>"` over four labelled ticks: Understand, Write, Memorise, Fast. On a phone the ticks sit in a 2 by 2 grid, on wide screens in one row of four.
+- States are an icon and a word, never colour alone: empty circle "Not yet", half circle "Getting there", filled circle with a check "Got it". Words are sentence case and read as a status, not a mark.
+- Colour: white window body, ink-navy text, the existing `fb-right` green only as a tint behind "Got it" (the icon and word carry the meaning). No red anywhere: "Not yet" is neutral grey.
+- The memorable thing, and the only decoration: a row with all four ticks done gets a cut-out sticker ("Got it all": cream, white scissor edge, hard navy shadow, tilted a few degrees, no animation). It is the one place the camcorder world leaks into the checklist.
+- A row that is not complete is a link to that question's next unfinished step, with a visible focus ring and the full row as the tap target (44px minimum).
+- No percentages, no ranking, no static overlay. The old file icons with static are gone.
+
+**Nickname greeting.** A dusk-sky strip at the top of Tele's area: deep violet to pink to peach, a few pixel stars, one pixel cloud drifting slowly, and a cream nameplate (ink-navy text, 12.9:1) reading "Good evening," over the nickname in Fredoka. The greeting word comes from the device clock after load; before that it says "Hello". It is dreamy, not eerie: no faces, no flicker, no sound. The strip is self-contained, like the windows, so it looks the same in light and dark. The cloud stops under reduced motion and the calm switch, and the strip is decoration (`aria-hidden`); the nickname stays real text.
+
+**Reviewed against the brief.** First draft used a progress bar per question and a rainbow sky; both dropped. The bar hid the four-step structure the app is built around, and the rainbow competed with Tele's own sky. One bold element only: the sticker.

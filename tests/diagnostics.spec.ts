@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { SEED_COURSE } from '../lib/course/seed';
-import { signUp } from './helpers';
+import { signUp, unlockAutomate } from './helpers';
 
 // Task 10.4 and 19.2: the starting-point check. The mood check-in and the quick win were removed in 19.4.
 // No clips are stubbed: a question with no clip is shown as text, so these tests need no audio and cost nothing.
@@ -20,7 +20,7 @@ test('there is no mood check-in, and no timing or session plan, on the desktop o
   await signUp(page);
   const asked: string[] = [];
   page.on('request', (r) => /\/api\/mood/.test(r.url()) && asked.push(r.url()));
-  for (const path of ['/', '/phases/write', '/phases/understand', '/baseline']) {
+  for (const path of ['/', '/phases/write', '/phases/understand', '/phases/understand/check']) {
     await page.goto(path);
     await expect(page.locator('[data-mood]'), path).toHaveCount(0);
     await expect(page.locator('body'), path).not.toContainText(/how are you (feeling|today)|¿Cómo estás hoy|Mood today|One easy one first/i);
@@ -43,8 +43,8 @@ async function runBaseline(page: import('@playwright/test').Page, rights: boolea
   const saved: { stage: string; correct: boolean }[] = [];
   page.on('request', (r) => r.url().endsWith('/api/baseline') && saved.push(r.postDataJSON()));
   await page.route('**/api/clips', (r) => r.fulfill({ json: [] })); // no clips: the question shows as text
-  await page.goto('/baseline');
-  await expect(page.getByRole('heading', { name: 'Find your starting point' })).toBeVisible();
+  await page.goto('/phases/understand/check');
+  await expect(page.getByRole('heading', { name: 'Quick check' })).toBeVisible();
   for (const [n, right] of rights.entries()) {
     await expect(page.getByTestId('baseline-progress')).toContainText(`Question ${n + 1} of 5`);
     await expect(page.getByTestId('section-exit')).toBeVisible(); // never without navigation
@@ -60,7 +60,7 @@ async function runBaseline(page: import('@playwright/test').Page, rights: boolea
 test('placement check, all correct: one pass, success message, comprehension skipped, next step offered', async ({ page }) => {
   await signUp(page);
   const saved = await runBaseline(page, [true, true, true, true, true]);
-  await expect(page.getByTestId('baseline-summary')).toContainText('Starting point saved');
+  await expect(page.getByTestId('baseline-summary')).toContainText('Quick check done');
   await expect(page.getByTestId('baseline-score')).toContainText('all 5');
   expect(saved).toHaveLength(5); // a single pass: no second look
   expect(saved.every((s) => s.stage === 'pre' && s.correct)).toBe(true);
@@ -69,6 +69,8 @@ test('placement check, all correct: one pass, success message, comprehension ski
 
   await page.goto('/phases/understand');
   await expect(page.getByTestId('finished')).toBeVisible(); // nothing left to learn by ear
+  await expect(page.getByTestId('quick-check-offer')).toHaveCount(0); // the offer is not shown again
+  await expect(page.getByTestId('quick-check-link')).toHaveCount(0);
   await page.goto('/');
   await expect(page.getByTestId('baseline-link')).toHaveCount(0);
 });
@@ -78,10 +80,11 @@ test('placement check, some wrong: results name the questions to learn, and comp
   await runBaseline(page, [true, false, true, false, true]);
   await expect(page.getByTestId('baseline-score')).toContainText('3');
   await expect(page.getByTestId('to-learn').locator('li')).toHaveCount(2);
-  await expect(page.getByTestId('baseline-next')).toHaveAttribute('href', '/phases/understand');
+  await expect(page.getByTestId('baseline-summary')).toContainText('worth a listen');
+  await expect(page.getByTestId('baseline-next')).toHaveAttribute('href', '/phases/understand?start=1');
 
   await page.getByTestId('baseline-next').click();
-  await expect(page).toHaveURL('/phases/understand');
+  await expect(page).toHaveURL(/\/phases\/understand\?start=1/);
   await expect(page.getByTestId('mastered-count')).toContainText('3 of 5'); // the three proved ones are skipped here, and only here
   await expect(page.getByTestId('finished')).toHaveCount(0);
 });
@@ -90,7 +93,7 @@ test('placement check, all wrong: still positive, all five to learn, and the pag
   await signUp(page);
   await runBaseline(page, [false, false, false, false, false]);
   await expect(page.getByTestId('to-learn').locator('li')).toHaveCount(5);
-  await expect(page.getByTestId('baseline-summary')).toContainText('Starting point saved');
+  await expect(page.getByTestId('baseline-summary')).toContainText('Quick check done');
   await expect(page.getByTestId('baseline-next')).toBeVisible();
   await page.getByRole('link', { name: 'Back to the desktop' }).click();
   await expect(page).toHaveURL('/');
@@ -99,19 +102,41 @@ test('placement check, all wrong: still positive, all five to learn, and the pag
 test('placement check: leaving part-way keeps the answers and resumes at the next question', async ({ page }) => {
   await signUp(page);
   await page.route('**/api/clips', (r) => r.fulfill({ json: [] }));
-  await page.goto('/baseline');
+  await page.goto('/phases/understand/check');
   await answerBaseline(page, true);
   await page.getByRole('button', { name: 'Next question' }).click();
   await page.getByTestId('section-exit').click();
   await expect(page).toHaveURL('/');
-  await page.goto('/baseline');
+  await page.goto('/phases/understand/check');
   await expect(page.getByTestId('baseline-progress')).toContainText('Question 2 of 5');
 });
 
 test('the starting-point check does not count as practice: no coins and no mastery', async ({ page }) => {
   await signUp(page);
-  await page.goto('/baseline');
+  await page.goto('/phases/understand/check');
   await answerOne(page);
   await page.goto('/');
   await expect(page.getByTestId('desktop-coins')).toContainText('€0');
+});
+
+test('Understand offers the quick check first, with a way to start learning instead', async ({ page }) => {
+  await signUp(page);
+  await page.goto('/phases/understand');
+  await expect(page.getByTestId('quick-check-offer')).toBeVisible();
+  await expect(page.getByTestId('quick-check-start')).toHaveText('Already know these? Try the quick check');
+  await expect(page.getByTestId('section-exit')).toBeVisible();
+  await expect(page.locator('body')).not.toContainText(/\.exe|starting point/i);
+
+  await page.getByTestId('start-learning').click();
+  await expect(page).toHaveURL(/\/phases\/understand\?start=1/);
+  await expect(page.getByTestId('mastered-count')).toContainText('0 of 5'); // nothing skipped
+  await expect(page.getByTestId('quick-check-link')).toBeVisible(); // still reachable while no check has been done
+});
+
+test('there is no test-out in Memorise', async ({ page }) => {
+  await signUp(page);
+  await unlockAutomate(page);
+  await page.goto('/phases/memorise');
+  await expect(page.locator('body')).not.toContainText(/quick check/i);
+  await expect(page.getByTestId('quick-check-offer')).toHaveCount(0);
 });

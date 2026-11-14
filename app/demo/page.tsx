@@ -9,7 +9,7 @@ export default function DemoHub() {
   return (
     <main className="screen demo-hub" data-testid="demo-hub">
       <h1>Demo</h1>
-      <Win title="demo.exe" label="Take the tour">
+      <Win title="Take the tour">
         <div className="stack">
           <p>Six one-minute stops on a sample course. Start at the top, or jump to any stop. Nothing you do here is saved, and nobody is signed up.</p>
           <ol className="demo-stops">

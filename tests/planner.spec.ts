@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { signUp } from './helpers';
 
-// Tasks 11.1 to 11.3: readiness meter that names its next action, reminders that stay off until the student opts in.
+// Tasks 11.1 to 11.3: the readiness meter. There is no reminder in version one.
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
@@ -12,10 +13,11 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-test('shows readiness with its next action, and no session plan or timings', async ({ page }) => {
-  await page.goto('/');
+test("shows readiness, with the next action in What's next? and no session plan or timings", async ({ page }) => {
+  await signUp(page);
   await expect(page.getByTestId('readiness')).toHaveText('Readiness: 0%');
-  await expect(page.getByTestId('readiness-next')).toContainText('Listen to the questions');
+  await expect(page.getByTestId('readiness-next')).toHaveCount(0); // the meter no longer repeats the next action
+  await expect(page.getByTestId('whats-next-text')).toContainText('what the test questions mean');
   await expect(page.getByRole('progressbar', { name: 'Readiness' })).toHaveAttribute('aria-valuenow', '0');
 
   await expect(page.getByTestId('plan-message')).toHaveCount(0);
@@ -23,20 +25,12 @@ test('shows readiness with its next action, and no session plan or timings', asy
   await expect(page.locator('body')).not.toContainText(/\d+ min|How long can you do/);
 });
 
-test('sends no notification unless the student opts in', async ({ page }) => {
-  await page.goto('/');
-  expect(await page.evaluate(() => (window as unknown as { shown: string[] }).shown)).toEqual([]);
-  await page.getByTestId('reminder-toggle').click();
-  await expect(page.getByTestId('reminder-toggle')).toHaveText('Turn reminder off');
-  // Opting in does not itself send one: it waits for the chosen time on a later visit.
-  expect(await page.evaluate(() => (window as unknown as { shown: string[] }).shown)).toEqual([]);
-});
-
-test('reminder fires once on a later visit when opted in and the time has passed', async ({ page }) => {
+test('offers no reminder, and shows no notification even for a device with old saved settings', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('planner:prefs', JSON.stringify({ enabled: true, time: '00:00' })));
   await page.goto('/');
-  await expect.poll(() => page.evaluate(() => (window as unknown as { shown: string[] }).shown.length)).toBe(1);
-  await page.reload();
-  // The recorder restarts on each load, so zero here means it was not shown a second time today.
-  expect(await page.evaluate(() => (window as unknown as { shown: string[] }).shown.length)).toBe(0);
+  await expect(page.getByTestId('reminder-toggle')).toHaveCount(0);
+  await expect(page.locator('body')).not.toContainText(/remind/i);
+  expect(await page.evaluate(() => (window as unknown as { shown: string[] }).shown)).toEqual([]);
+  // The old saved settings are cleared from the device.
+  expect(await page.evaluate(() => localStorage.getItem('planner:prefs'))).toBeNull();
 });

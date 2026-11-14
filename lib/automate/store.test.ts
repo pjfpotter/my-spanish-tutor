@@ -78,21 +78,19 @@ describe('automate store (tasks 9.2 to 9.5)', () => {
     expect(state.history).toEqual([]);
   });
 
-  it('is test-ready only when every question meets the target in two separate sessions (9.4)', async () => {
+  it('is test-ready once every question meets the target, even in one session (9.4)', async () => {
     const p = await createProfile(db, { courseId, nickname: nicknameOptions(4)[0], interests: [] });
     if (!p.ok) throw new Error('profile');
     const go = (itemId: string, sessionId: string, ms = 2500) =>
       recordResponse(db, { profileId: p.profile.id, courseId, itemId, sessionId, blank: false, accuracy: 90, responseTimeMs: ms, speed: 1, repeats: 0, assisted: false });
-    for (const id of q) await go(id, sessions[0]);
-    expect((await loadAutomateState(db, p.profile.id, q)).ready).toBe(false); // one session is not enough
-    for (const id of q.slice(1)) await go(id, sessions[1]);
-    expect((await loadAutomateState(db, p.profile.id, q)).ready).toBe(false); // one question still has one session
-    await go(q[0], sessions[1], 9000); // right, but too slow
+    for (const id of q.slice(1)) await go(id, sessions[0]);
+    expect((await loadAutomateState(db, p.profile.id, q)).ready).toBe(false); // one question has no record yet
+    await go(q[0], sessions[0], 9000); // right, but too slow
     expect((await loadAutomateState(db, p.profile.id, q)).ready).toBe(false);
-    await go(q[0], sessions[2]);
+    await go(q[0], sessions[0]);
     const state = await loadAutomateState(db, p.profile.id, q);
-    expect(state.ready).toBe(true);
-    expect(state.sessionsMet[q[0]]).toBe(2);
+    expect(state.ready).toBe(true); // one sitting is enough
+    expect(state.sessionsMet[q[0]]).toBe(1);
   });
 
   it('gives a rank and the student\'s own session history (9.5)', async () => {

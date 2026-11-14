@@ -85,7 +85,7 @@ test('a lesson is taught from the student\'s own answer, listens, saves numbers 
   }
 });
 
-test('"I already know this one": a clean answer from memory is recorded as a recall and the next-day check waits for tomorrow (27.4)', async ({ page }) => {
+test('"I already know this one": a clean answer from memory is recorded as a recall and the final check is open straight away (27.4)', async ({ page }) => {
   const sent = saves(page);
   await ready(page);
   const spoken = await offered(page);
@@ -101,11 +101,11 @@ test('"I already know this one": a clean answer from memory is recorded as a rec
   expect(recall).toMatchObject({ level: 4 });
   expect(recall.accuracy).toBeGreaterThanOrEqual(80);
 
-  // It is remembered: the answer is waiting for the next-day check, and the euros are in the balance.
+  // It is remembered: the final check is open now, and the euros are in the balance.
   await page.reload();
   await expect(page.getByTestId('lab-home')).toBeVisible();
   await page.locator('.ml-row').nth(n - 1).click();
-  await expect(page.locator('.ml-today')).toContainText('opens tomorrow');
+  await expect(page.locator('.ml-today')).toContainText('Final check');
   await expect(page.locator('.ml-which .ml-euros')).not.toHaveText(before); // effort was paid, and the balance is the server's
 });
 

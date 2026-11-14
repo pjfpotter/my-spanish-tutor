@@ -32,7 +32,6 @@ export interface QuestionItem {
   spanish: string;
   english: string;
   mastered: boolean;
-  laterSession: boolean;
   successes: number;
   keyWord: { spanish: string; english: string } | null;
 }
@@ -60,7 +59,7 @@ const slotFor = (index: readonly BuiltClip[], text: string, speed: number) => in
  * words; revealing marks the attempt as assisted so it never counts toward mastery. A miss brings
  * the question back soon, a success pushes it further away, and speed rises as they succeed.
  */
-export function Understand({ questions, plans = {} }: { questions: QuestionItem[]; plans?: Record<string, Support> }) {
+export function Understand({ questions, plans = {}, quickCheck = false }: { questions: QuestionItem[]; plans?: Record<string, Support>; quickCheck?: boolean }) {
   const byId = useMemo(() => new Map(questions.map((q) => [q.id, q])), [questions]);
   const [showEnglish, toggleEnglish] = useSubtitles();
   const playback = useLinePlayback();
@@ -70,7 +69,7 @@ export function Understand({ questions, plans = {} }: { questions: QuestionItem[
   const last = useRef(new Map<string, LastPresentation>());
   const lastLine = useRef<string | null>(null);
 
-  const [queue, setQueue] = useState<SessionQueue>(() => newQueue(questions.filter((q) => !q.mastered && !q.laterSession).map((q) => q.id)));
+  const [queue, setQueue] = useState<SessionQueue>(() => newQueue(questions.filter((q) => !q.mastered).map((q) => q.id)));
   const [cur, setCur] = useState<Presentation | null>(null);
   const [stage, setStage] = useState<Stage>('ready');
   const [picked, setPicked] = useState<string | null>(null);
@@ -220,7 +219,7 @@ export function Understand({ questions, plans = {} }: { questions: QuestionItem[
       if (!res.ok) throw new Error('save failed');
       const result = (await res.json()) as { mastered: boolean; mastery: { qualifyingSuccesses: number; distinctSessions: number }; coinsAwarded: number };
       setCoins((c) => c + result.coinsAwarded);
-      const doneForToday = result.mastered || (result.mastery.qualifyingSuccesses >= 3 && result.mastery.distinctSessions < 2);
+      const doneForToday = result.mastered;
       if (result.mastered) setMasteredIds((s) => new Set(s).add(cur.id));
       last.current.set(cur.id, { speed: cur.speed, outcome });
       // A quick win is one question, whatever the result: the effort counts and it ends on a good note.
@@ -282,6 +281,7 @@ export function Understand({ questions, plans = {} }: { questions: QuestionItem[
         <>
           <span data-testid="mastered-count">{masteredIds.size} of {questions.length} questions mastered</span>
           <span data-testid="coins">+€{coins} today</span>
+          {quickCheck && <Link href="/phases/understand/check" data-testid="quick-check-link">Take the quick check</Link>}
         </>
       }
       footer={footer}
@@ -291,11 +291,11 @@ export function Understand({ questions, plans = {} }: { questions: QuestionItem[
 
       {finished && (
         <div className="stack" data-testid="finished">
-          <Status kind="done" label={allMastered ? 'All five mastered' : 'Done for today'} />
+          <Status kind="done" label={allMastered ? 'All five mastered' : 'Nice work'} />
           <p>
             {allMastered
               ? 'You can understand all five questions. The next step is open.'
-              : 'That is enough for today. Questions are only mastered once you get them right on more than one day, so come back tomorrow.'}
+              : 'Nice work. Come back whenever you want more practice.'}
           </p>
           <LittleAndOften />
           <Link className="btn btn-primary" href="/">

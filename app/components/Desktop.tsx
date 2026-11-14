@@ -8,12 +8,18 @@ import { linesFor, type PhraseLine } from '../../lib/tele/phrase-bank';
 import { selectLine } from '../../lib/tele/select';
 import { FIRST_SCREEN } from '../../lib/ui/first-screen';
 import { Status } from '../../lib/ui/Status';
-import { PHASES, QUESTION_COUNT, type PhaseId, type PhaseState } from '../../lib/phases/gate';
+import { PHASES, type PhaseId, type PhaseState } from '../../lib/phases/gate';
+import type { CanDo as CanDoData } from '../../lib/progress/can-do';
 import { Caption, useSubtitles } from './Caption';
 import { Tele } from './Tele';
 import { useLinePlayback } from './useLinePlayback';
-import { ExamWindow, ReminderWindow } from './Planner';
+import { ExamWindow } from './Planner';
+import { WhatsNext } from './WhatsNext';
+import type { NextStep } from '../../lib/planner/next-step';
 import type { ReadinessInput } from '../../lib/planner/readiness';
+import { WINDOW_TITLES } from '../../lib/ui/window-titles';
+import { CanDo } from './CanDo';
+import { Greeting } from './Greeting';
 import { Win } from './Win';
 import './desktop.css';
 import './screens.css';
@@ -30,10 +36,12 @@ export interface DesktopProps {
   /** A testing course (course-unlock-testing): every phase is open, and the desktop says so in words. */
   unlockAll?: boolean;
   daysToTest: number;
-  /** One number per question, 0 (static) to 1 (clear). Missing means no progress yet. */
-  channels?: number[];
+  /** One can-do row per question for the "What I can do" window. Left out for a signed-out visitor. */
+  canDo?: CanDoData | null;
   /** What the readiness meter and plan are computed from. */
   progress?: ReadinessInput;
+  /** The step the "What's next?" window points at. Left out for a signed-out visitor. */
+  next?: NextStep;
   signedIn?: boolean;
   nickname?: string | null;
   coins?: number;
@@ -41,8 +49,6 @@ export interface DesktopProps {
   freezes?: number;
   wallpaper?: string | null;
   objects?: { id: string; es: string; en: string }[];
-  /** The starting-point check has been done (or does not apply), so it is not offered. */
-  baselineDone?: boolean;
   /** Extra lines for poking Tele. Empty unless the course has the cheeky pool on and the student bought it. */
   cheekyLines?: PhraseLine[];
 }
@@ -51,15 +57,12 @@ export interface DesktopProps {
 const NO_LINES: PhraseLine[] = [];
 const NO_READINESS: ReadinessInput = { answersConfirmed: 0, questionsMastered: 0, answersMemorised: 0, questionsAutomated: 0 };
 
-/** A question's picture in words as well as in the picture, so it is never shown by clarity alone. */
-const clarityWord = (c: number) => (c >= 1 ? 'clear' : c > 0 ? 'clearing' : 'static');
-
 /**
- * The home screen: Tele on a desktop with the countdown, the four phases in their fixed order and
- * the five question files. Locked phases show as static and cannot be opened. The sandbox is the
- * space around the path; it never replaces it.
+ * The home screen: Tele on a desktop with a greeting, what to do next, what the student can already do, the
+ * countdown and the four steps in their fixed order. Locked steps cannot be opened. The sandbox is the space
+ * around the path; it never replaces it.
  */
-export function Desktop({ states, unlockAll = false, daysToTest, channels = [], progress = NO_READINESS, signedIn = true, nickname = null, coins = 0, streak = 0, freezes = 0, wallpaper = null, objects = [], baselineDone = true, cheekyLines = NO_LINES }: DesktopProps) {
+export function Desktop({ states, unlockAll = false, daysToTest, canDo = null, progress = NO_READINESS, next, signedIn = true, nickname = null, coins = 0, streak = 0, freezes = 0, wallpaper = null, objects = [], cheekyLines = NO_LINES }: DesktopProps) {
   const [showEnglish, toggleEnglish] = useSubtitles();
   const playback = useLinePlayback();
   const lastLine = useRef<string | null>(null);
@@ -73,6 +76,11 @@ export function Desktop({ states, unlockAll = false, daysToTest, channels = [], 
       if (slot) loadClip(slot).then((clip) => clips.current.set(line.id, clip), () => {});
     }
   }, [cheekyLines]);
+
+  // The daily reminder was removed. Clear the settings it left on this device.
+  useEffect(() => {
+    try { localStorage.removeItem('planner:prefs'); localStorage.removeItem('planner:reminder-shown'); } catch { /* storage blocked */ }
+  }, []);
 
   // Poking Tele plays a stock line. It earns nothing: no coins, no progress, no request to the API.
   function poke() {
@@ -89,6 +97,7 @@ export function Desktop({ states, unlockAll = false, daysToTest, channels = [], 
       <h1 className="desktop-title">My Spanish Tutor</h1>
 
       <div className="desktop-tele">
+        {signedIn && nickname && <Greeting nickname={nickname} />}
         <button type="button" className="tele-poke" onClick={poke} aria-label="Poke Tele to hear a line">
           <Tele feelings={playback.feelings ?? undefined} loudness={playback.loudness} speaking={playback.playing} />
         </button>
@@ -103,7 +112,7 @@ export function Desktop({ states, unlockAll = false, daysToTest, channels = [], 
 
       <div className="desktop-windows">
         {!signedIn && (
-          <Win title="get-started.exe" label="Get started">
+          <Win title={WINDOW_TITLES.getStarted}>
             <div className="stack">
               <div className="stack">
                 <Link className="btn btn-primary" href="/welcome" data-testid="sign-up">
@@ -120,21 +129,11 @@ export function Desktop({ states, unlockAll = false, daysToTest, channels = [], 
             </div>
           </Win>
         )}
-        {signedIn && nickname && (
-          <p className="muted" data-testid="nickname">
-            Hi, {nickname}
-          </p>
-        )}
-        {signedIn && !baselineDone && (
-          <Win title="start.exe" label="Starting point">
-            <p>Want to see what you already know? Five quick questions, with the meaning shown after each.</p>
-            <Link className="btn" href="/baseline" data-testid="baseline-link">Find my starting point</Link>
-          </Win>
-        )}
+        {signedIn && next && <WhatsNext next={next} />}
+        {signedIn && canDo && <CanDo canDo={canDo} />}
         <ExamWindow daysToTest={daysToTest} progress={progress} />
-        <ReminderWindow daysToTest={daysToTest} />
 
-        <Win title="steps.exe" label="Your four steps">
+        <Win title={WINDOW_TITLES.steps}>
           {unlockAll && (
             <p className="testing-note" data-testid="testing-label">
               <strong>Testing course:</strong> every step is open so you can try them all.
@@ -184,7 +183,7 @@ export function Desktop({ states, unlockAll = false, daysToTest, channels = [], 
         </Win>
 
         {signedIn && (
-          <Win title="desktop.exe" label="Your desktop">
+          <Win title={WINDOW_TITLES.streak}>
             <p data-testid="streak">
               Streak: <strong>{streak}</strong> {streak === 1 ? 'day' : 'days'}
               {freezes > 0 && <span className="muted"> ({freezes} {freezes === 1 ? 'freeze' : 'freezes'} ready)</span>}
@@ -202,31 +201,10 @@ export function Desktop({ states, unlockAll = false, daysToTest, channels = [], 
             )}
             <div className="controls">
               <Link className="btn" href="/shop">Shop</Link>
-              <Link className="btn" href="/progress">My progress</Link>
             </div>
           </Win>
         )}
 
-        <Win title="preguntas" label="The test questions">
-          <ul className="files">
-            {Array.from({ length: channels.length || QUESTION_COUNT }, (_, i) => {
-              const clarity = channels[i] ?? 0;
-              return (
-                <li key={i} className="file" data-testid="question-file" data-clarity={clarityWord(clarity)}>
-                  <span className="file-pic" style={{ ['--static' as string]: 1 - clarity }}>
-                    <svg viewBox="0 0 20 23" width="28" height="32" aria-hidden="true" shapeRendering="crispEdges">
-                      <path d="M1 1h12l6 6v15H1z" fill="#fff" stroke="#0b2a4a" />
-                      <path d="M13 1v6h6" fill="none" stroke="#0b2a4a" />
-                    </svg>
-                    <span className="file-static" aria-hidden="true" />
-                  </span>
-                  <span>Question{i + 1}.txt</span>
-                  <span className="file-state">{clarityWord(clarity)}</span>
-                </li>
-              );
-            })}
-          </ul>
-        </Win>
         {/* Inside the windows column, never below the pinned Tele. */}
         <p className="muted desktop-footer">
           <Link href="/privacy" data-testid="privacy-link">Privacy and your data</Link>

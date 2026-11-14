@@ -155,9 +155,9 @@ describe('test-ready threshold (task 9.4)', () => {
     expect(meetsTarget({ accuracy: null, responseMs: null, blank: true })).toBe(false);
   });
 
-  it('is ready only when every question has met it in enough separate sessions', () => {
-    expect(isTestReady(IDS.map(() => ({ sessionsMet: 2 })), 5)).toBe(true);
-    expect(isTestReady([...IDS.slice(1).map(() => ({ sessionsMet: 2 })), { sessionsMet: 1 }], 5)).toBe(false);
+  it('is ready when every question has met it, even in a single session', () => {
+    expect(isTestReady(IDS.map(() => ({ sessionsMet: 1 })), 5)).toBe(true);
+    expect(isTestReady([...IDS.slice(1).map(() => ({ sessionsMet: 1 })), { sessionsMet: 0 }], 5)).toBe(false);
   });
 
   it('is not ready when a question has no record at all', () => {
@@ -165,7 +165,7 @@ describe('test-ready threshold (task 9.4)', () => {
   });
 
   it('follows configured thresholds', () => {
-    expect(isTestReady(IDS.map(() => ({ sessionsMet: 2 })), 5, { ...DEFAULT_AUTOMATE, readySessions: 3 })).toBe(false);
+    expect(isTestReady(IDS.map(() => ({ sessionsMet: 2 })), 5, { ...DEFAULT_AUTOMATE, readySessions: 3 })).toBe(false); // a course can still ask for more
   });
 });
 

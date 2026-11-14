@@ -49,13 +49,13 @@ describe('memorise store (tasks 8.1 to 8.4)', () => {
     expect(rows.map((r) => r.outcome)).toEqual(['assisted', 'assisted']);
   });
 
-  it('three good recalls in one session leave the answer in progress, and a later session confirms it', async () => {
-    for (let i = 0; i < 3; i++) await say(q[0], 90, 1, s1);
+  it('three good recalls in one session memorise the answer', async () => {
+    for (let i = 0; i < 2; i++) await say(q[0], 90, 1, s1);
     let items = await loadMemoriseItems(db, profileId, courseId);
-    expect(items[0]).toMatchObject({ mastered: false, laterSession: true, successes: 3 });
-    const later = await say(q[0], 85, 2, s2);
-    if (!later.ok) throw new Error('save');
-    expect(later.mastered).toBe(true);
+    expect(items[0]).toMatchObject({ mastered: false, successes: 2 });
+    const third = await say(q[0], 85, 2, s1);
+    if (!third.ok) throw new Error('save');
+    expect(third.mastered).toBe(true);
     items = await loadMemoriseItems(db, profileId, courseId);
     expect(items[0].mastered).toBe(true);
   });

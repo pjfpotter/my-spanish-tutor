@@ -666,10 +666,10 @@ export function MemoriseLadder({ answers: A, variant, start, save: saveRemote }:
     const L = nextFor(w, ai);
     const memo = w.states.filter((s) => s.memorised).length;
     const started = w.states.some((s) => s.stage > 0 || s.top > 0);
-    const line = (memo === A.length ? TELE.all : rec?.type === 'lock' ? TELE.morning : !rec ? TELE.rest : started ? TELE.back : TELE.hello) as Line;
+    const line = (memo === A.length ? TELE.all : started ? TELE.back : TELE.hello) as Line;
     return (
       <main className="ml ml-home" data-testid="lab-home">
-        <div className="ml-titlebar"><span>memorise.exe</span>{real && <Link href="/" className="ml-link" data-testid="section-exit">Desktop</Link>}{demo && <Link href="/demo" className="ml-link" data-testid="section-exit">Tour</Link>}{real ? (start?.testDays != null && <span className="ml-when" data-testid="ml-countdown">{start.testDays} {start.testDays === 1 ? 'day' : 'days'} to the test</span>) : <span className="ml-when">{Math.max(0, 9 - w.day)} days to the test</span>}</div>
+        <div className="ml-titlebar"><span>Say it from memory</span>{real && <Link href="/" className="ml-link" data-testid="section-exit">Desktop</Link>}{demo && <Link href="/demo" className="ml-link" data-testid="section-exit">Tour</Link>}{real ? (start?.testDays != null && <span className="ml-when" data-testid="ml-countdown">{start.testDays} {start.testDays === 1 ? 'day' : 'days'} to the test</span>) : <span className="ml-when">{Math.max(0, 9 - w.day)} days to the test</span>}</div>
         {saveFailed && <p className="ml-note" role="status" data-testid="ml-save-failed">Your progress could not be saved just now. It will be sent with your next answer, so keep this page open.</p>}
         {teleRow(line, undefined)}
         <section className="ml-paper ml-today" aria-label="Up next">
@@ -683,12 +683,7 @@ export function MemoriseLadder({ answers: A, variant, start, save: saveRemote }:
             </>
           ) : st.memorised ? (
             <p>{pips(ai)} <strong>Memorised.</strong> Pick another answer below.</p>
-          ) : (
-            <>
-              <p>{pips(ai)} The last step opens <strong>tomorrow</strong>. A night&apos;s sleep is part of learning it.</p>
-              {rec && <button type="button" className="ml-btn ml-primary ml-big" onClick={() => setSel(rec.a ?? 0)}>Go to answer {A[rec.a ?? 0].n}<small>{lessonName(A, rec)}</small></button>}
-            </>
-          )}
+          ) : null}
         </section>
         <div className="ml-listhead"><h2>Your answers</h2><span data-testid="ml-memorised">{memo} of {A.length} memorised</span></div>
         <ol className="ml-list">
@@ -720,7 +715,6 @@ export function MemoriseLadder({ answers: A, variant, start, save: saveRemote }:
               <label><input type="checkbox" checked={selfMark} onChange={(e) => { setSelfMark(e.target.checked); save({ selfMark: e.target.checked }); }} /> Check my own answers (no microphone)</label>
               <label><input type="checkbox" checked={meter} onChange={(e) => { setMeter(e.target.checked); save({ meter: e.target.checked }); }} /> Voice level meter (turn off if words stop lighting up)</label>
               <div className="ml-rowbtns">
-                <button type="button" className="ml-btn ml-small" onClick={() => { w.day++; setSel(null); save(); bump(); }}>Skip to tomorrow (now day {w.day})</button>
                 <button type="button" className="ml-btn ml-small" onClick={() => { world.current = freshWorld(A); setSel(null); save(); bump(); }}>Start over</button>
               </div>
               <p>How well this phone keeps up, from the lessons you have just done:</p>
@@ -760,7 +754,7 @@ export function MemoriseLadder({ answers: A, variant, start, save: saveRemote }:
               <ol className="ml-steps">
                 {lessonsOf(A, ai).map((x, i) => {
                   const s = stepState(w, ai, i);
-                  return <li key={i} data-s={s}><span className="ml-ic" aria-hidden="true">{s === 'done' ? '✓' : i + 1}</span><span>{lessonName(A, x)}</span><small>{s === 'done' ? 'done' : s === 'now' ? 'next' : s === 'wait' ? 'opens tomorrow' : ''}</small></li>;
+                  return <li key={i} data-s={s}><span className="ml-ic" aria-hidden="true">{s === 'done' ? '✓' : i + 1}</span><span>{lessonName(A, x)}</span><small>{s === 'done' ? 'done' : s === 'now' ? 'next' : ''}</small></li>;
                 })}
               </ol>
             </>
