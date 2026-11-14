@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { courseUnlockAll } from '../../../lib/course/unlock';
 import { getDb } from '../../../lib/db';
 import { loadSavedAnswers, loadWritingCourse } from '../../../lib/progress/writing-store';
 import { currentProfile } from '../../../lib/server/session';
@@ -32,5 +33,6 @@ export default async function WritePage({ searchParams }: { searchParams: Promis
   // The memorise phase links to one question to rebuild it with fewer parts.
   const wanted = Number((await searchParams).question);
   const focus = Math.max(0, course.questions.findIndex((q) => q.position === wanted));
-  return <SheetWrite course={course} saved={saved} focus={focus} />;
+  const unlockAll = await courseUnlockAll(db, profile.courseId);
+  return <SheetWrite course={course} saved={saved} focus={focus} unlockAll={unlockAll} />;
 }

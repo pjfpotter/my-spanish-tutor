@@ -33,8 +33,17 @@ describe('what fits where (task 2.3)', () => {
     expect(why(base, 'reason', 'es aburrido')).toContain('doesn\'t go with');
     expect(why(base, 'reason', 'es divertido')).toBeNull();
     const although = ans({ starter: 'Me gusta', activity: 'cocinar', connector: 'aunque' });
-    expect(why(although, 'reason', 'es aburrido')).toBeNull();
     expect(why(although, 'reason', 'es divertido')).not.toBeNull();
+  });
+
+  it('lets "aunque" bring in a cost or a benefit against an opinion, but not a feeling that contradicts it', () => {
+    // "I love going to the cinema although it is expensive" makes sense; "although it is boring" does not.
+    const likes = ans({ starter: 'Me encanta', activity: 'ir al cine', connector: 'aunque' });
+    expect(why(likes, 'reason', 'es caro')).toBeNull();
+    expect(why(likes, 'reason', 'es aburrido')).toContain("doesn't go with");
+    // The other feelings are refused too, and a plain reason after "porque" is untouched.
+    expect(why(likes, 'reason', 'me hace reír')).toContain("doesn't go with");
+    expect(why(ans({ starter: 'Me encanta', activity: 'ir al cine', connector: 'porque' }), 'reason', 'es emocionante')).toBeNull();
   });
 
   it('needs the right kind of activity for a reason that depends on it', () => {

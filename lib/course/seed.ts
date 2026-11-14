@@ -206,3 +206,22 @@ export const simplestSeedAnswer = (position: number): string => {
   const own = SEED_COURSE.modelAnswers.filter((a) => a.questionPosition === position);
   return own.sort((x, y) => assessAnswer(SEED_COURSE.calibration, x.text).value - assessAnswer(SEED_COURSE.calibration, y.text).value)[0].text;
 };
+
+/**
+ * Test fixture only, never seeded to a real database: the seeded course with every question matched to the
+ * free-time sheet, so tests that write all five answers still can. The real seed has one matched question
+ * because there is no going-out sentence builder yet (question-sheet-match). Used by the in-process test
+ * database and by unit tests.
+ */
+export const ALL_MATCHED_COURSE: Course = {
+  ...SEED_COURSE,
+  // Same title as the real course so tests that look for it on screen still find it.
+  classCode: 'MATCH5',
+  sheet: {
+    sheet: FREE_TIME_SHEET,
+    interpretation: {
+      ...FREE_TIME,
+      questions: [...FREE_TIME.questions, ...SEED_COURSE.questions.filter((q) => !q.recycled).map((q) => ({ es: q.spanish, en: q.english }))],
+    },
+  },
+};

@@ -4,13 +4,18 @@ import { buildBuilder, type Builder } from '../sheets/builder';
 import { prepare, sentences } from '../sheets/engine';
 import type { Interpretation } from '../sheets/interpretation';
 import { fromSelection, type Selection } from '../sheets/selection';
+import { matchSheetQuestion } from '../sheets/question-match';
 import { signOff } from '../sheets/signoff';
 import type { Sheet } from '../sheets/types';
 import type { Db } from '../db/types';
 import type { Calibration, Chunk, ModelAnswer } from '../course/schema';
 
 export interface WritingCourse {
-  questions: { id: string; position: number; spanish: string; english: string; topics: string[]; template: string[] }[];
+  questions: {
+    id: string; position: number; spanish: string; english: string; topics: string[]; template: string[];
+    /** Index of the sheet question this one is answered from, or null when the sheet has none (question-sheet-match). */
+    sheetQuestion: number | null;
+  }[];
   chunks: Chunk[];
   calibration: Calibration;
   modelAnswers: ModelAnswer[];
@@ -32,8 +37,9 @@ export async function loadWritingCourse(db: Db, courseId: string): Promise<Writi
     'select id, position, spanish, english_subtitle, topics, template from questions where course_id = $1 order by position', [courseId]);
   const chunks = await db.query<{ spanish: string; english_gloss: string; category: string; feature_tags: string[]; recycled: boolean }>(
     'select spanish, english_gloss, category, feature_tags, recycled from chunks where course_id = $1 order by spanish', [courseId]);
+  const interpretation = course.rows[0].interpretation;
   return {
-    questions: questions.rows.map((q) => ({ id: q.id, position: q.position, spanish: q.spanish, english: q.english_subtitle, topics: q.topics, template: q.template.length ? q.template : q.topics })),
+    questions: questions.rows.map((q) => ({ id: q.id, position: q.position, spanish: q.spanish, english: q.english_subtitle, topics: q.topics, template: q.template.length ? q.template : q.topics, sheetQuestion: matchSheetQuestion(interpretation, q.spanish) })),
     chunks: chunks.rows.map((c) => ({ spanish: c.spanish, english: c.english_gloss, category: c.category, featureTags: c.feature_tags as Chunk['featureTags'], recycled: c.recycled })),
     calibration: course.rows[0].calibration,
     modelAnswers: course.rows[0].model_answers,
@@ -48,6 +54,8 @@ export async function loadSavedAnswers(db: Db, profileId: string): Promise<Saved
 }
 
 export type SaveResult = { ok: true; confirmed: boolean; value: number; bonus: number; progressReset: boolean } | { ok: false; error: string };
+
+export const NO_SHEET_FOR_QUESTION = 'This question has no sentence builder yet.';
 
 const sameWords = (a: string, b: string) => tokens(a).join(' ') === tokens(b).join(' ');
 
@@ -89,13 +97,17 @@ export function builderFor(course: WritingCourse): Builder | null {
 export async function saveSheetAnswer(db: Db, course: WritingCourse, profileId: string, questionId: string, selection: unknown, confirm: boolean): Promise<SaveResult> {
   const B = builderFor(course);
   if (!B) return { ok: false, error: 'This course has no sentence builder.' };
-  if (!course.questions.some((q) => q.id === questionId)) return { ok: false, error: 'Unknown question.' };
+  const question = course.questions.find((q) => q.id === questionId);
+  if (!question) return { ok: false, error: 'Unknown question.' };
+  // A question with no sheet question is never answered from another question's sheet.
+  if (question.sheetQuestion === null) return { ok: false, error: NO_SHEET_FOR_QUESTION };
+  const Q = B.questions[question.sheetQuestion];
   const a = fromSelection(B, selection);
   if (!a) return { ok: false, error: 'That answer is not from your sentence builder.' };
-  const text = sentences(B, a, 'es').join(' ');
+  const text = sentences(B, a, 'es', Q).join(' ');
   if (text.length > 1500) return { ok: false, error: 'That answer is too long.' };
   const value = assessAnswer(course.calibration, text).value;
-  const ok = signOff(B, a).code === 'ok';
+  const ok = signOff(B, a, Q).code === 'ok';
   if (confirm && (!ok || !text.trim())) return { ok: false, error: 'This answer is not finished yet.' };
   const before = await db.query<{ text: string; confirmed_at: Date | null }>('select text, confirmed_at from answers where profile_id = $1 and question_id = $2', [profileId, questionId]);
   const progressReset = !!before.rows[0]?.confirmed_at && !sameWords(before.rows[0].text, text);

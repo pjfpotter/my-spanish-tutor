@@ -18,6 +18,8 @@ Optional manual check. Skip it if there is no time; nothing else depends on it.
 
 A profile belongs to one course. After tasks 1 and 2, open **Privacy** and use **Delete everything**, then join again with `PRBA7K3M`. If time is short, use `PRBA7K3M` from the start (joining works the same way).
 
+- **The seeded course has one sentence builder, for free time (question 5).** Questions 1 to 4 are about films, the cinema and clothes, and there is no going-out sentence builder yet. On the write screen those four say "There is no sentence builder for this question yet", and in the testing course a **Skip this question** button moves on. Only question 5 can be built and confirmed. This is intended: a sentence builder is never offered for a question it was not written for.
+- The testing course also opens the gates inside the steps: expert mode in the timed round is available straight away, and **Settings** on the memorise screen opens any step of any answer.
 - In the testing course the child has not written any answers, so the memorise and timed-round steps use the model answers. Their own answers are never needed. Read findings about "saying my answer" with that in mind.
 - Attempts in the testing course are real attempts: they earn coins and count towards that profile's mastery. Treat every tester profile as throwaway and delete it afterwards.
 - Do not give `PRBA7K3M` to students. It opens every step early. Nothing is lost, but the class would skip the gated order.

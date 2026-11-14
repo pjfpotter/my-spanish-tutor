@@ -107,7 +107,7 @@ const saveOrder = (ids: string[]) => {
  * with the attempt. Saying nothing is a blank, never a wrong answer, and asking Tele to repeat in Spanish is rewarded.
  * Nothing here calls a language model.
  */
-export function Automate({ items, initial, chunks = [], demo = false }: { items: AutomateItem[]; initial: AutomateState; chunks?: Chunk[]; /** The tour stop: nothing is sent to the server, the microphone is never opened and a Pretend button answers for the visitor. */ demo?: boolean }) {
+export function Automate({ items, initial, chunks = [], demo = false, unlockAll = false }: { items: AutomateItem[]; initial: AutomateState; chunks?: Chunk[]; /** A testing course: expert mode is available before every answer is at its top level (course-unlock-testing). */ unlockAll?: boolean; /** The tour stop: nothing is sent to the server, the microphone is never opened and a Pretend button answers for the visitor. */ demo?: boolean }) {
   const [state, setState] = useState(initial);
   const [stage, setStage] = useState<Stage>('intro');
   const [round, setRound] = useState<RoundItem[]>([]);
@@ -437,7 +437,7 @@ export function Automate({ items, initial, chunks = [], demo = false }: { items:
   const counted = results.filter((r) => !r.assisted);
   const answered = counted.filter((r) => !r.blank && r.responseMs !== null);
   const roundAverage = answered.length ? Math.round(answered.reduce((t, r) => t + (r.responseMs as number), 0) / answered.length) : null;
-  const allAtTop = items.every((i) => (ladder[i.id]?.at ?? 0) >= plans.get(i.id)!.levels.length - 1);
+  const allAtTop = unlockAll || items.every((i) => (ladder[i.id]?.at ?? 0) >= plans.get(i.id)!.levels.length - 1);
 
   // ---- Panel at the foot of the screen -----------------------------------------------------------------
 

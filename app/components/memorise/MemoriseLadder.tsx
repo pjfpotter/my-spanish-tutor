@@ -200,13 +200,15 @@ export function recallOf(answer: LadderAnswer, step: SayStep, o: SayOutcome, mat
 export interface SaveBody { answers: { itemId: string; stage: number; top: number; wipeDay: number; recalls: number[] }[]; recalls: LessonRecall[]; earned: number }
 export interface SaveReply { paid: number; euros: number; memorised: string[] }
 
-export function MemoriseLadder({ answers: A, variant, start, save: saveRemote }: {
+export function MemoriseLadder({ answers: A, variant, start, save: saveRemote, unlockAll = false }: {
   answers: LadderAnswer[];
   /** `lab` keeps progress in this browser and shows the tester tools; `real` is the memorise phase, saved to the server; `demo` is the tour stop: this browser only, a Pretend button on every spoken screen and no tester tools. */
   variant: 'lab' | 'real' | 'demo';
   start?: Pick<LadderStart, 'day' | 'euros' | 'states' | 'testDays'>;
   /** Real phase: saves progress and pays what was earned. Resolves null if the save could not be made. */
   save?: (body: SaveBody) => Promise<SaveReply | null>;
+  /** A testing course (real phase only): every lesson of every answer can be opened, in any order. The ladder's own rules are unchanged. */
+  unlockAll?: boolean;
 }) {
   const real = variant === 'real';
   const demo = variant === 'demo';
@@ -705,6 +707,12 @@ export function MemoriseLadder({ answers: A, variant, start, save: saveRemote }:
               <label><input type="checkbox" checked={selfMark} onChange={(e) => { setSelfMark(e.target.checked); save({ selfMark: e.target.checked }); }} /> Check my own answers (no microphone)</label>
               <label><input type="checkbox" checked={meter} onChange={(e) => { setMeter(e.target.checked); save({ meter: e.target.checked }); }} /> Voice level meter (turn off if words stop lighting up)</label>
               <p>{live.supported ? 'This browser can listen as you speak.' : 'This browser has no built-in listening, so you check your own answers here.'}</p>
+              {unlockAll && (
+                <div data-testid="ml-open-lessons">
+                  <p>Testing course: open any step of answer {a.n}.</p>
+                  <div className="ml-rowbtns">{Ls.map((x, i) => <button key={i} type="button" className="ml-btn ml-small" onClick={() => startLesson(x)}>{lessonName(A, x)}</button>)}</div>
+                </div>
+              )}
             </div>
           </details>
         ) : (

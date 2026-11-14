@@ -16,12 +16,15 @@ import '../../components/screens.css';
  * re-checks it from the chosen chunks. No model is called here. Pick-up view is off unless a student
  * turns it on (task 5.3).
  */
-export function SheetWrite({ course, saved, pickup = false, focus = 0 }: { course: WritingCourse; saved: SavedAnswer[]; pickup?: boolean; focus?: number }) {
+export function SheetWrite({ course, saved, pickup = false, focus = 0, unlockAll = false }: { course: WritingCourse; saved: SavedAnswer[]; pickup?: boolean; focus?: number; /** A testing course: a question can be passed without confirming it (course-unlock-testing). */ unlockAll?: boolean }) {
   const B = useMemo(() => builderFor(course)!, [course]);
   const [index, setIndex] = useState(focus);
   const [confirmed, setConfirmed] = useState(() => new Set(saved.filter((s) => s.confirmed).map((s) => s.questionId)));
   const [error, setError] = useState<string | null>(null);
   const q = course.questions[index];
+  // The sheet question this one is answered from. With none, no sheet is shown at all (question-sheet-match).
+  const sheetQ = q.sheetQuestion === null ? null : B.questions[q.sheetQuestion];
+  const last = index === course.questions.length - 1;
   const initial = useMemo(() => {
     const mine = saved.find((s) => s.questionId === q.id);
     return mine?.selection ? (fromSelection(B, mine.selection) ?? {}) : {};
@@ -61,10 +64,19 @@ export function SheetWrite({ course, saved, pickup = false, focus = 0 }: { cours
         ))}
       </ol>
       {error && <p className="error" role="alert">{error}</p>}
+      {sheetQ === undefined || sheetQ === null ? (
+        <section className="stack" data-testid="no-sheet-for-question" aria-live="polite">
+          <p lang="es"><strong>{q.spanish}</strong></p>
+          <p>{q.english}</p>
+          <p>There is no sentence builder for this question yet, so you cannot write an answer to it here. {unlockAll ? 'This is a testing course, so you can skip it.' : 'Ask your teacher.'}</p>
+          {unlockAll && !last && <button type="button" className="btn btn-primary" onClick={() => setIndex(index + 1)} data-testid="skip-question">Skip this question</button>}
+        </section>
+      ) : (
       <div style={{ height: 'min(78dvh, 720px)', minHeight: 520 }}>
         <WriteSheet
           key={q.id}
           builder={B}
+          question={sheetQ}
           sheet={course.sheet!.sheet}
           heading={{ es: q.spanish, en: q.english }}
           initial={initial}
@@ -73,6 +85,8 @@ export function SheetWrite({ course, saved, pickup = false, focus = 0 }: { cours
           onSignedOff={(_t, _e, a) => void onSignedOff(a)}
         />
       </div>
+      )}
+      {unlockAll && sheetQ && !confirmed.has(q.id) && !last && <button type="button" className="btn" onClick={() => setIndex(index + 1)} data-testid="skip-question">Skip this question</button>}
       <div className="controls">
         {all ? <Link className="btn btn-primary" href="/">All five confirmed. Back to the desktop</Link> : <Link className="btn" href="/">Back to the desktop</Link>}
       </div>
