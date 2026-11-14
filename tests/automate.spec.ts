@@ -161,26 +161,24 @@ test('an unclear recording is not scored or saved, and the question is asked aga
   expect(t.sent).toHaveLength(1);
 });
 
-test('test-ready needs every question accurate and quick in two separate sessions, and the rank ladder shows the student\'s own history (9.4, 9.5)', async ({ page }) => {
+test('test-ready needs every question accurate and quick, in one sitting if need be, and the rank ladder shows the student\'s own history (9.4, 9.5)', async ({ page }) => {
   const t = await setup(page);
   const [a, b] = [crypto.randomUUID(), crypto.randomUUID()];
   await page.goto('/phases/automate');
   await expect(page.getByTestId('rank')).toContainText('No speed rank yet');
   await expect(page.getByTestId('rank')).toContainText('3 more timed answers');
 
-  for (const id of t.ids) await seed(page, id, a);
+  for (const id of t.ids.slice(1)) await seed(page, id, a);
   await page.reload();
-  await expect(page.getByTestId('test-ready')).toHaveCount(0); // one session is not enough
+  await expect(page.getByTestId('test-ready')).toHaveCount(0); // question one has no record yet
+  await seed(page, t.ids[0], a);
+  await page.reload();
+  await expect(page.getByTestId('test-ready')).toBeVisible(); // every question met it, in one session
   await expect(page.getByTestId('rank')).toContainText('Gato'); // 1.0 s average is the top step
   await expect(page.locator('.ladder li[aria-current="step"]')).toHaveText(/Gato/);
   await expect(page.locator('.ladder li')).toHaveCount(6);
 
-  await seed(page, t.ids[0], b, { responseTimeMs: 9000 }); // right, but too slow for the target
-  for (const id of t.ids.slice(1)) await seed(page, id, b);
-  await page.reload();
-  await expect(page.getByTestId('test-ready')).toHaveCount(0); // question one has met the target in one session only
-
-  await seed(page, t.ids[0], b);
+  for (const id of t.ids) await seed(page, id, b); // a second sitting for the history line
   await page.reload();
   await expect(page.getByTestId('test-ready')).toBeVisible();
   await expect(page.getByTestId('history')).toContainText('Your recent sessions:');

@@ -91,10 +91,10 @@ Photo import of a student's own sentence builder; meme and reggaeton-style remix
 ## 6. User journey
 
 1. **Join.** Student enters a class code, reads a short privacy notice, picks a nickname and a few interest tags, and receives a recovery code.
-2. **Starting point.** A one-pass placement check: hear each question once and choose its meaning. Anything right first time skips that stage. There is no mood check-in (parked).
-3. **Countdown.** The app shows days to the test and a readiness meter that names its next action, with a gentle little-and-often message. It shows no timings and no session plan.
+2. **Quick check.** Optional, and inside Understand: hear each question once and choose its meaning. Anything right first time skips that question in Understand only. There is no test-out for Memorise. There is no mood check-in (parked).
+3. **Home.** The app greets the student by nickname, shows a "What's next?" window (one sentence and one button), a "What I can do" checklist (one can-do statement per question with a tick for each of the four steps), the days to the test and a readiness meter. It shows no timings and no session plan.
 4. **Write.** The tutor coaches the student to draft an answer to each question using only sentence-builder chunks, pitched at their ability and time, with light personal touches, and encourages aiming one level higher. The student confirms each answer.
-5. **Understand.** The student hears each question at varied speeds and chooses its meaning. A question is mastered only after repeated success across separate sessions.
+5. **Understand.** The student hears each question at varied speeds and chooses its meaning. A question is mastered after repeated success (three correct), which can all happen in one sitting.
 6. **Memorise.** The student sees the English meaning, says their answer aloud, and gets a quick percentage with highlighted words.
 7. **Automate.** The student hears a question with no text and answers within a shrinking time window. Speed is measured and rewarded. They are marked test-ready when accuracy and speed hold across sessions.
 8. **Celebrate.** Coins, ranks, stickers and collectibles reward effort and improvement throughout.
@@ -142,14 +142,14 @@ Priorities use MoSCoW (Must, Should, Could). Each requirement maps to a capabili
 | ID | Requirement | Priority |
 |---|---|---|
 | FR-20 | Hear a question and choose its meaning; text hidden by default | Must |
-| FR-21 | Mastery needs repeated success across at least two separate sessions (default 3 correct) | Must |
+| FR-21 | Mastery needs repeated success (default 3 correct). It never needs more than one session by default, so a last-minute student can finish in one sitting; a course can still ask for more | Must |
 | FR-22 | Speed varies and rises with success (one voice in v1); replay, slow and reveal are allowed but assisted attempts do not count | Must |
 | FR-23 | Memorisation shows English prompts, the student speaks, and gets an accuracy percentage quickly | Must |
 | FR-24 | Prompt support fades as accuracy rises; stuck sentences can be isolated | Should |
 | FR-25 | Automatisation plays a question with no text and measures time from question end to speech start | Must |
 | FR-26 | The response window adapts; blanks get a first-words hint and are not counted as wrong | Should |
 | FR-27 | Saying a Spanish phrase to ask for repetition replays the question and is rewarded | Should |
-| FR-28 | A student is marked test-ready when accuracy and speed hold across separate sessions | Must |
+| FR-28 | A student is marked test-ready when accuracy and speed meet the target on every question, in one sitting if need be | Must |
 
 ### 7.5 Feedback and diagnostics (`spoken-answer-feedback`, `learning-diagnostics`)
 
@@ -169,9 +169,9 @@ Priorities use MoSCoW (Must, Should, Could). Each requirement maps to a capabili
 
 | ID | Requirement | Priority |
 |---|---|---|
-| FR-38 | Home screen shows days to the test, the current phase and a readiness meter that names its next action | Must |
+| FR-38 | Home screen shows days to the test, a readiness meter, a "What's next?" window that names the next step, and a "What I can do" checklist | Must |
 | FR-39 | Superseded: the timed session plan was removed (task 19.4). Instead the home screen shows a little-and-often message and never a timing | Won't (v1) |
-| FR-40 | Opt-in daily reminder only | Could |
+| FR-40 | Superseded: the opt-in daily reminder was removed from version one (14 Nov 2026). It may return as a complete feature later | Won't (v1) |
 | FR-41 | The tutor speaks only Spanish; English appears only as subtitles | Must |
 | FR-42 | Tutor lines come from a stored phrase bank generated once per persona | Must |
 | FR-43 | The tutor's mouth tracks the voice convincingly at any playback speed | Must |

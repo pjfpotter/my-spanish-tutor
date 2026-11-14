@@ -38,7 +38,7 @@ export function UploadProgress({ stage, problem, canRetry = true, note, onRetry,
   const state = problem ? 'problem' : note ? 'fallback' : stage === 'done' ? 'ready' : 'working';
   const feelings = problem ? { sadness: 0.5 } : stage === 'done' ? { joy: 0.8 } : { surprise: 0.25 };
   return (
-    <Win title="leyendo.exe" label="Reading your sheet">
+    <Win title="Reading your sheet">
       <div className="up" data-state={state} data-stage={stage}>
         <div className="up-tele"><Tele feelings={feelings} /></div>
         <div>

@@ -6,7 +6,7 @@ export default function Restore() {
   return (
     <main className="screen">
       <h1>Get your progress back</h1>
-      <Win title="restore.exe" label="Get your progress back">
+      <Win title="Get your progress back">
         <RestoreForm />
       </Win>
     </main>

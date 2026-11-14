@@ -1,5 +1,5 @@
 import type { Db } from '../db/types';
-import { DEFAULT_MASTERY, isMastered, masteryFraction, NO_MASTERY, type MasteryState } from '../mastery/mastery';
+import { DEFAULT_MASTERY, isMastered, type MasteryState } from '../mastery/mastery';
 import { loadAutomateState } from '../automate/store';
 import { QUESTION_COUNT, type Progress } from '../phases/gate';
 import { knownAtStart, loadBaseline } from '../diagnostics/baseline';
@@ -57,11 +57,6 @@ export async function loadProgress(db: Db, profileId: string, courseId?: string)
   let testReady = false;
   if (memorisedCount >= total && core) testReady = (await loadAutomateState(db, profileId, core)).ready;
   return { answersConfirmed: confirmed.rows.filter((r) => isCore(r.question_id)).length, questionsMastered: understoodIds.size, answersMemorised: memorisedCount, testReady, total };
-}
-
-/** How clear each question's channel is, 0 (static) to 1 (clear and locked in). In question order. */
-export function channelClarity(questions: QuestionRow[], mastery: Map<string, MasteryState>): number[] {
-  return questions.map((q) => masteryFraction(mastery.get(q.id) ?? NO_MASTERY, DEFAULT_MASTERY));
 }
 
 /** Whole days from `now` to the test date (negative once it has passed), by calendar date in UTC. */

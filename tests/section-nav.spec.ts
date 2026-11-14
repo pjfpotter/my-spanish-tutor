@@ -11,7 +11,7 @@ test('every section screen has an exit to the desktop that works', async ({ page
   await signUp(page);
   await unlockAutomate(page); // opens all four sections
   await page.route('**/api/clips', (r) => r.fulfill({ json: [] }));
-  for (const path of ['/baseline', '/phases/write', '/phases/understand', '/phases/memorise', '/phases/automate']) {
+  for (const path of ['/phases/understand/check', '/phases/write', '/phases/understand', '/phases/memorise', '/phases/automate']) {
     await page.goto(path);
     await expect(page.getByTestId('section-exit'), path).toBeVisible();
     await page.getByTestId('section-exit').click();
@@ -44,7 +44,7 @@ test('leaving part-way through understand keeps the attempts already made', asyn
   await signUp(page);
   const attempts: unknown[] = [];
   page.on('request', (r) => r.url().endsWith('/api/attempts') && attempts.push(r.postDataJSON()));
-  await page.goto('/phases/understand');
+  await page.goto('/phases/understand?start=1');
   await page.getByRole('button', { name: 'Listen', exact: true }).click();
   await page.locator('.options button:not([disabled])').first().click();
   await expect.poll(() => attempts.length).toBe(1);

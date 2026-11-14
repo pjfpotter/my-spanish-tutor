@@ -4,7 +4,7 @@ import { insertTestCourse, newTestDb } from '../db/test-db';
 import { logAttempt } from '../events/attempts';
 import { createProfile, nicknameOptions } from '../profile/profile';
 import { phaseStates } from '../phases/gate';
-import { channelClarity, daysUntil, loadMastery, loadProgress, loadQuestions } from './progress';
+import { daysUntil, loadProgress } from './progress';
 
 let db: Awaited<ReturnType<typeof newTestDb>>;
 let profileId: string;
@@ -27,23 +27,12 @@ describe('progress from the database', () => {
     expect(await loadProgress(db, profileId)).toEqual({ answersConfirmed: 0, questionsMastered: 0, answersMemorised: 0, testReady: false, total: 5 });
   });
 
-  it('counts a question as mastered only after three correct across two sessions', async () => {
+  it('counts a question as mastered after three correct, even in one session', async () => {
     const s1 = randomUUID();
-    await ok(qids[0], s1); await ok(qids[0], s1); await ok(qids[0], s1);
+    await ok(qids[0], s1); await ok(qids[0], s1);
     expect((await loadProgress(db, profileId)).questionsMastered).toBe(0);
-    await ok(qids[0], randomUUID());
+    await ok(qids[0], s1);
     expect((await loadProgress(db, profileId)).questionsMastered).toBe(1);
-  });
-
-  it('shows a channel clearing as mastery rises and fully clear only when mastered', async () => {
-    const qs = await loadQuestions(db, courseId);
-    const clarity = channelClarity(qs, await loadMastery(db, profileId, 'understand'));
-    expect(clarity[0]).toBe(1);
-    expect(clarity[1]).toBe(0);
-    await ok(qids[1], randomUUID());
-    const after = channelClarity(qs, await loadMastery(db, profileId, 'understand'));
-    expect(after[1]).toBeGreaterThan(0);
-    expect(after[1]).toBeLessThan(1);
   });
 });
 
@@ -82,29 +71,6 @@ describe('the gate, from seeded mastery records (tasks 6.3 and 6.4)', () => {
     progress = await loadProgress(d, pid);
     expect(progress.questionsMastered).toBe(5);
     expect(phaseStates(progress).memorise.status).toBe('open');
-    await d.close();
-  });
-
-  it('keeps a channel from locking clear until mastery has held across a second session', async () => {
-    const d = await newTestDb();
-    const { courseId, questionIds } = await insertTestCourse(d);
-    const p = await createProfile(d, { courseId, nickname: nicknameOptions(1)[0], interests: [] });
-    if (!p.ok) throw new Error('profile');
-    const qs = await loadQuestions(d, courseId);
-    const s1 = randomUUID();
-    const ok = (sid: string) => logAttempt(d, { profileId: p.profile.id, itemKind: 'question', itemId: questionIds[0], phase: 'understand', outcome: 'correct', assisted: false, sessionId: sid });
-    const clarity = async () => channelClarity(qs, await loadMastery(d, p.profile.id, 'understand'))[0];
-
-    expect(await clarity()).toBe(0);
-    await ok(s1);
-    const one = await clarity();
-    await ok(s1);
-    await ok(s1); // three in one day
-    const three = await clarity();
-    expect(three).toBeGreaterThan(one);
-    expect(three).toBeLessThan(1); // still not locked in
-    await ok(randomUUID()); // the second day
-    expect(await clarity()).toBe(1);
     await d.close();
   });
 });

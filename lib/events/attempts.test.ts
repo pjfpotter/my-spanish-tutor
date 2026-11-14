@@ -50,18 +50,16 @@ describe('attempt events', () => {
     expect(validateAttempt(ev())).toBeNull();
   });
 
-  it('updates mastery across sessions, ignoring assisted attempts', async () => {
+  it('masters an item in one session, ignoring assisted attempts', async () => {
     const q = (await db.query<{ id: string }>(`select id from questions where position = 2`)).rows[0].id;
     const s1 = randomUUID();
-    const s2 = randomUUID();
     await logAttempt(db, ev({ itemId: q, sessionId: s1, assisted: true }));
     await logAttempt(db, ev({ itemId: q, sessionId: s1 }));
-    await logAttempt(db, ev({ itemId: q, sessionId: s1 }));
+    const second = await logAttempt(db, ev({ itemId: q, sessionId: s1 }));
+    expect(second.mastered).toBe(false);
     const third = await logAttempt(db, ev({ itemId: q, sessionId: s1 }));
-    expect(third.mastered).toBe(false);
+    expect(third.mastered).toBe(true);
     expect(third.mastery).toMatchObject({ qualifyingSuccesses: 3, distinctSessions: 1 });
-    const fourth = await logAttempt(db, ev({ itemId: q, sessionId: s2 }));
-    expect(fourth.mastered).toBe(true);
   });
 });
 

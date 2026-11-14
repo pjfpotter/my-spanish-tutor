@@ -27,7 +27,8 @@ test('signing up types only a code: the nickname step has no text field', async 
 test('shows a recovery code once, then the home screen greets the nickname', async ({ page }) => {
   const code = await signUp(page);
   expect(code).toMatch(/^[A-Z2-9]{5}-[A-Z2-9]{5}$/);
-  await expect(page.getByTestId('nickname')).toContainText('Hi,');
+  await expect(page.getByTestId('greeting')).toBeVisible();
+  await expect(page.getByTestId('nickname')).not.toBeEmpty();
   // Back on the sign-up page a signed-in device goes home.
   await page.goto('/welcome');
   await expect(page).toHaveURL('/');

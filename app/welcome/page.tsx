@@ -13,7 +13,7 @@ export default async function Welcome() {
   return (
     <main className="screen">
       <h1>Welcome</h1>
-      <Win title="welcome.exe" label="Make your profile">
+      <Win title="Make your profile">
         <WelcomeForm nicknames={nicknameOptions(6)} />
       </Win>
       <p className="muted">Not in a class? <Link href="/demo" data-testid="demo-entry">Try the demo</Link>. It needs no sign-up and saves nothing.</p>

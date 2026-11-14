@@ -65,7 +65,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 async function open(page: Page) {
-  await page.goto('/phases/understand');
+  await page.goto('/phases/understand?start=1'); // skips the optional quick-check offer
   await expect(page.getByRole('button', { name: 'Listen', exact: true })).toBeVisible();
 }
 
@@ -198,7 +198,7 @@ test('the next phase stays locked until all five questions are mastered (task 6.
   await expect(page.locator('[data-phase="understand"]')).toHaveAttribute('data-state', 'open');
 });
 
-test('three correct in one session is not mastery: the student is done for today and told to come back', async ({ page }) => {
+test('three correct in one session is mastery: the student finishes in one sitting with no wait message', async ({ page }) => {
   test.setTimeout(180_000); // about fifteen clips are played in a row
   const rec = recordAttempts(page);
   await open(page);
@@ -209,22 +209,23 @@ test('three correct in one session is not mastery: the student is done for today
     await expect(listenButton.or(page.getByTestId('finished'))).toBeVisible();
     if ((await page.getByTestId('finished').count()) > 0) break;
   }
-  await expect(page.getByTestId('finished')).toContainText('come back tomorrow');
+  await expect(page.getByTestId('finished')).toContainText('next step is open');
+  await expect(page.getByTestId('finished')).not.toContainText(/tomorrow|another day/i);
   await expect(page.getByTestId('little-and-often')).toContainText('short sessions'); // plain words, no plan and no timings
   await expect(page.getByTestId('finished')).not.toContainText(/\d+\s*min/);
-  await expect(page.getByTestId('mastered-count')).toContainText('0 of 5'); // one session is not mastery
+  await expect(page.getByTestId('mastered-count')).toContainText('5 of 5'); // one sitting is mastery
 });
 
-test("a question's channel on the desktop clears from static after a correct answer (task 6.4)", async ({ page }) => {
+test("a question's can-do ticks on the desktop move from Not yet to Getting there after a correct answer", async ({ page }) => {
   const rec = recordAttempts(page);
   await open(page);
   const { q } = await answer(page, rec);
   await page.goto('/');
-  const file = page.getByTestId('question-file').nth(q);
-  await expect(file).toHaveAttribute('data-clarity', 'clearing');
-  await expect(file).toContainText('clearing'); // said in words too
-  const other = page.getByTestId('question-file').nth((q + 1) % 5);
-  await expect(other).toHaveAttribute('data-clarity', 'static');
+  const tick = page.getByTestId('can-do-row').nth(q).locator('[data-step="understand"]');
+  await expect(tick).toHaveAttribute('data-state', 'getting-there');
+  await expect(tick).toContainText('Getting there'); // said in words too
+  const other = page.getByTestId('can-do-row').nth((q + 1) % 5).locator('[data-step="understand"]');
+  await expect(other).toHaveAttribute('data-state', 'not-yet');
 });
 
 // Task 10.2: after a miss, a short optional check plays the key word alone and the server stores a cause tag by rule.

@@ -89,8 +89,8 @@ const REACTION_FEELINGS: Record<Reaction, Feelings> = {
 export function Memorise({ items: initial, chunks = [], causes = {}, focusIds = [] }: { items: MemoriseItem[]; chunks?: Chunk[]; causes?: Record<string, CauseTag[]>; focusIds?: string[] }) {
   const [items, setItems] = useState(initial);
   const byId = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
-  const [queue, setQueue] = useState<SessionQueue>(() => newQueue(prioritise(initial.filter((i) => !i.mastered && !i.laterSession).map((i) => i.id), (id) => focusIds.includes(id))));
-  const [curId, setCurId] = useState<string | null>(() => nextInQueue(newQueue(prioritise(initial.filter((i) => !i.mastered && !i.laterSession).map((i) => i.id), (id) => focusIds.includes(id)))));
+  const [queue, setQueue] = useState<SessionQueue>(() => newQueue(prioritise(initial.filter((i) => !i.mastered).map((i) => i.id), (id) => focusIds.includes(id))));
+  const [curId, setCurId] = useState<string | null>(() => nextInQueue(newQueue(prioritise(initial.filter((i) => !i.mastered).map((i) => i.id), (id) => focusIds.includes(id)))));
   const [attempt, setAttempt] = useState<Attempt | null>(null);
   const [unclear, setUnclear] = useState(false);
   const [drill, setDrill] = useState<DrillState | null>(null);
@@ -328,9 +328,9 @@ export function Memorise({ items: initial, chunks = [], causes = {}, focusIds = 
       if (!res.ok) throw new Error('save failed');
       const out = (await res.json()) as { mastered: boolean; mastery: { qualifyingSuccesses: number; distinctSessions: number }; coinsAwarded: number; answerValue?: number; level: number; best: number; previousBest: number | null };
       const newBest = out.previousBest !== null && score.accuracy > out.previousBest;
-      const doneForToday = out.mastered || (out.mastery.qualifyingSuccesses >= 3 && out.mastery.distinctSessions < 2);
+      const doneForToday = out.mastered;
       setCoins((c) => c + out.coinsAwarded + (out.answerValue ?? 0));
-      setItems((all) => all.map((x) => (x.id === it.id ? { ...x, level: out.level, best: out.best, mastered: out.mastered, successes: out.mastery.qualifyingSuccesses, laterSession: !out.mastered && out.mastery.qualifyingSuccesses >= 3, stalled: x.stalled && !out.mastered } : x)));
+      setItems((all) => all.map((x) => (x.id === it.id ? { ...x, level: out.level, best: out.best, mastered: out.mastered, successes: out.mastery.qualifyingSuccesses, stalled: x.stalled && !out.mastered } : x)));
       setAttempt({ score, script: text, drill: false, best: out.best, newBest, mastered: out.mastered });
       setQueue((q) => afterAttempt(q, it.id, good ? 'correct' : 'wrong', doneForToday));
       if (!good) setMissed((m) => new Set(m).add(it.id));
@@ -477,11 +477,11 @@ export function Memorise({ items: initial, chunks = [], causes = {}, focusIds = 
 
       {finished && (
         <div className="stack" data-testid="finished">
-          <Status kind="done" label={allDone ? 'All memorised' : 'Done for today'} />
+          <Status kind="done" label={allDone ? 'All memorised' : 'Nice work'} />
           <p>
             {allDone
               ? 'You can say all your answers from memory. The next step is open.'
-              : 'That is enough for today. An answer counts as memorised once you have said it well on more than one day, so come back tomorrow.'}
+              : 'Nice work. Come back whenever you want more practice.'}
           </p>
           <LittleAndOften />
           <Link className="btn btn-primary" href="/">Back to the desktop</Link>

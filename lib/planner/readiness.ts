@@ -9,10 +9,8 @@ export interface ReadinessInput extends Progress {
 export interface Readiness {
   /** 0 to 100: the mean of questions mastered, answers memorised and questions automatised. */
   percent: number;
-  /** The phase that will raise it next. */
+  /** The phase that will raise it next. The "What's next?" window says it in words (see next-step.ts). */
   next: PhaseId | null;
-  /** One sentence naming that action, plain and encouraging. */
-  nextAction: { es: string; en: string };
 }
 
 const totalOf = (i: Progress) => i.total ?? QUESTION_COUNT;
@@ -40,18 +38,10 @@ export function nextPhase(i: ReadinessInput): PhaseId | null {
   return null;
 }
 
-const ACTIONS: Record<PhaseId, { es: string; en: string }> = {
-  understand: { es: 'Escucha las preguntas', en: 'Listen to the questions until you catch them all.' },
-  write: { es: 'Escribe tus respuestas', en: 'Write and confirm your answers. That opens the next step.' },
-  memorise: { es: 'Memoriza tus respuestas', en: 'Say your answers from memory.' },
-  automate: { es: 'Responde sin pensar', en: 'Answer against the clock to make it automatic.' },
-};
-
 export function readiness(i: ReadinessInput): Readiness {
   const next = nextPhase(i);
   return {
     percent: readinessPercent(i),
     next,
-    nextAction: next ? ACTIONS[next] : { es: 'Todo listo', en: 'You have done every step. A little light practice keeps it fresh.' },
   };
 }

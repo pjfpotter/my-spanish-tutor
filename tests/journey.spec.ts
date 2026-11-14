@@ -51,7 +51,7 @@ test('join, write, understand, memorise and automate on the seeded course, then 
   await expect(state(page, 'memorise')).toHaveAttribute('data-state', 'open');
   await expect(state(page, 'automate')).toHaveAttribute('data-state', 'locked');
   await expect(page.getByTestId('readiness')).toHaveText('Readiness: 33%');
-  await expect(page.getByTestId('readiness-next')).toContainText('Say your answers from memory');
+  await expect(page.getByTestId('whats-next-text')).toContainText('say your answers from memory'); // What's next? names the step
 
   // 3. Memorised: automate opens.
   await unlockAutomate(page);
@@ -68,9 +68,9 @@ test('join, write, understand, memorise and automate on the seeded course, then 
   }
   await expect(page.getByTestId('summary')).toBeVisible();
 
-  // 5. Two quick, accurate sessions on every question make the student test-ready.
-  const [a, b] = [crypto.randomUUID(), crypto.randomUUID()];
-  for (const sessionId of [a, b]) {
+  // 5. One quick, accurate sitting on every question makes the student test-ready.
+  const a = crypto.randomUUID();
+  for (const sessionId of [a]) {
     for (const itemId of ids) {
       const r = await page.request.post('/api/respond', { data: { itemId, sessionId, blank: false, accuracy: 95, responseTimeMs: 1000, speed: 1, repeats: 0, assisted: false } });
       expect(r.ok()).toBe(true);
@@ -78,7 +78,7 @@ test('join, write, understand, memorise and automate on the seeded course, then 
   }
   await page.goto('/');
   await expect(page.getByTestId('readiness')).toHaveText('Readiness: 100%');
-  for (const phase of ['write', 'understand', 'memorise', 'automate']) await expect(state(page, phase)).toContainText('Done');
+  for (const phase of ['understand', 'write', 'memorise', 'automate']) await expect(state(page, phase)).toContainText('Done');
   await expect(page.getByTestId('days-to-test')).toBeVisible();
 
   // 6. The teacher sees one student, ready, by nickname only.

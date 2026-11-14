@@ -79,7 +79,7 @@ export function Caption({ words, activeIndex, english, showEnglish, onToggleEngl
   return (
     <section className="win" aria-label="Tele's caption">
       <div className="win-bar">
-        <span>tele.exe</span>
+        <span>What Tele says</span>
         <span className="win-buttons" aria-hidden="true">
           <i />
           <i />

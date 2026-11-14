@@ -19,7 +19,7 @@ export default async function AutomatePage() {
   const unlockAll = await courseUnlockAll(db, profile.courseId);
   if (phaseStates(await loadProgress(db, profile.id), { unlockAll }).automate.status === 'locked') redirect('/');
   const items = await loadMemoriseItems(db, profile.id, profile.courseId);
-  if (!items.length) return <NothingToPractise heading="Answer fast" windowTitle="answer-fast.exe" />;
+  if (!items.length) return <NothingToPractise heading="Answer fast" windowTitle="Answer fast" />;
   const state = await loadAutomateState(db, profile.id, items.map((i) => i.id));
   return <Automate items={items.map(({ id, position, question, english, answer }) => ({ id, position, question, english, answer }))} initial={state} chunks={await loadCourseChunks(db, profile.courseId)} />;
 }

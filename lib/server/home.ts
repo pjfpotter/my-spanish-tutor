@@ -1,13 +1,14 @@
 import { getDb } from '../db';
-import { baselineDone, loadBaseline } from '../diagnostics/baseline';
 import { cheekyLinesFor } from '../rewards/cheeky';
 import type { PhraseLine } from '../tele/phrase-bank';
 import { CATALOGUE, itemById } from '../rewards/catalogue';
 import { loadShop, settleStreak } from '../rewards/store';
 import { courseUnlockAll } from '../course/unlock';
 import { NO_PROGRESS, phaseStates, type PhaseId, type PhaseState, type Progress } from '../phases/gate';
-import { channelClarity, daysUntil, loadMastery, loadQuestions } from '../progress/progress';
-import { loadReadinessInput } from '../planner/load';
+import { loadCanDo, type CanDo } from '../progress/can-do';
+import { daysUntil, loadQuestions } from '../progress/progress';
+import { loadLastStep, loadReadinessInput } from '../planner/load';
+import { nextStep, type NextStep } from '../planner/next-step';
 import type { ReadinessInput } from '../planner/readiness';
 import { currentProfile, defaultCourse } from './session';
 
@@ -18,9 +19,11 @@ export interface HomeData {
   /** The student's course is a testing course with every phase open, so the desktop says so. */
   unlockAll: boolean;
   daysToTest: number;
-  /** One number per question, 0 (static) to 1 (clear), in question order. */
-  channels: number[];
+  /** One can-do row per question, or null for a device with no profile. */
+  canDo: CanDo | null;
   progress: ReadinessInput;
+  /** The step the "What's next?" window points at. */
+  next: NextStep;
   coins: number;
   streak: number;
   freezes: number;
@@ -28,8 +31,6 @@ export interface HomeData {
   wallpaper: string | null;
   /** Desktop things the student owns. */
   objects: { id: string; es: string; en: string }[];
-  /** The starting-point check is finished, so it is not offered again. */
-  baselineDone: boolean;
   /** Cheeky lines this student may see: empty unless the course owner switched the pool on and the student bought it. */
   cheekyLines: PhraseLine[];
 }
@@ -45,24 +46,26 @@ export async function loadHome(): Promise<HomeData> {
   const progress: Progress = readinessInput;
   // The only place the flag is read for the desktop; a device with no profile sees the gated course.
   const unlockAll = profile ? await courseUnlockAll(db, profile.courseId) : false;
-  const mastery = profile ? await loadMastery(db, profile.id, 'understand') : new Map();
   // Settling the streak is the only write here: it uses a freeze on a missed day if the student has one. It earns nothing.
   if (profile) await settleStreak(db, profile.id);
   const shop = profile ? await loadShop(db, profile.id) : null;
+  const daysToTest = course ? daysUntil(course.testDate) : 0;
+  const states = phaseStates(progress, { unlockAll });
+  const last = profile ? await loadLastStep(db, profile.id) : null;
   return {
     progress: readinessInput,
+    next: nextStep({ states, progress, last, daysToTest }),
     coins: shop?.coins ?? 0,
     streak: shop?.streak ?? 0,
     freezes: shop?.freezesAvailable ?? 0,
     wallpaper: (shop?.wallpaper && itemById(shop.wallpaper)?.css) || null,
     objects: (shop?.owned ?? []).map((id) => CATALOGUE.find((i) => i.id === id)!).filter((i) => i?.kind === 'object').map(({ id, es, en }) => ({ id, es, en })),
-    baselineDone: profile ? baselineDone(await loadBaseline(db, profile.id), questions.length) : true,
     cheekyLines: profile ? await cheekyLinesFor(db, profile.id, profile.courseId) : [],
     signedIn: !!profile,
     nickname: profile?.nickname ?? null,
-    states: phaseStates(progress, { unlockAll }),
+    states,
     unlockAll,
-    daysToTest: course ? daysUntil(course.testDate) : 0,
-    channels: channelClarity(questions, mastery),
+    daysToTest,
+    canDo: profile ? await loadCanDo(db, profile.id, profile.courseId) : null,
   };
 }

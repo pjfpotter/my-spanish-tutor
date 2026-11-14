@@ -1,27 +1,29 @@
 import { describe, expect, it } from 'vitest';
 import {
-  afterAttempt, countMastered, isMastered, masteryFraction, needsLaterSession, newQueue, nextInQueue,
+  afterAttempt, countMastered, isMastered, newQueue, nextInQueue,
   NO_MASTERY, recordAttempt, type MasteryState,
 } from './mastery';
 
 const ok = (s: MasteryState, sessionId: string) => recordAttempt(s, { correct: true, assisted: false, sessionId });
 
 describe('mastery rule', () => {
-  it('is not mastered after three correct in one session, and waits for a later one', () => {
+  it('is mastered after three correct in one session', () => {
     let s = NO_MASTERY;
     for (let i = 0; i < 3; i++) s = ok(s, 'day1');
     expect(s.qualifyingSuccesses).toBe(3);
     expect(s.distinctSessions).toBe(1);
-    expect(isMastered(s)).toBe(false);
-    expect(needsLaterSession(s)).toBe(true);
+    expect(isMastered(s)).toBe(true);
   });
 
-  it('is mastered with three correct across two sessions', () => {
-    let s = ok(ok(NO_MASTERY, 'day1'), 'day1');
-    expect(isMastered(s)).toBe(false);
-    s = ok(s, 'day2');
-    expect(isMastered(s)).toBe(true);
-    expect(needsLaterSession(s)).toBe(false);
+  it('is not mastered after two correct', () => {
+    expect(isMastered(ok(ok(NO_MASTERY, 'a'), 'a'))).toBe(false);
+  });
+
+  it('can still be configured to ask for more than one session', () => {
+    let s = NO_MASTERY;
+    for (let i = 0; i < 3; i++) s = ok(s, 'day1');
+    expect(isMastered(s, { successes: 3, sessions: 2 })).toBe(false);
+    expect(isMastered(ok(s, 'day2'), { successes: 3, sessions: 2 })).toBe(true);
   });
 
   it('does not count assisted attempts', () => {
@@ -39,13 +41,6 @@ describe('mastery rule', () => {
     const s = ok(ok(NO_MASTERY, 'a'), 'b');
     expect(isMastered(s, { successes: 2, sessions: 2 })).toBe(true);
     expect(isMastered(s, { successes: 3, sessions: 2 })).toBe(false);
-  });
-
-  it('keeps the fraction below 1 until mastered', () => {
-    expect(masteryFraction(NO_MASTERY)).toBe(0);
-    const three = ok(ok(ok(NO_MASTERY, 'a'), 'a'), 'a');
-    expect(masteryFraction(three)).toBeLessThan(1);
-    expect(masteryFraction(ok(three, 'b'))).toBe(1);
   });
 
   it('counts mastered items', () => {

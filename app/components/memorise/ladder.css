@@ -167,7 +167,7 @@ button.ml-tile { cursor: pointer; }
 .ml-steps li[data-s='done'] .ml-ic { background: var(--fb-right); border-color: var(--black); }
 .ml-steps li[data-s='now'] { font-weight: 700; }
 .ml-steps li[data-s='now'] .ml-ic { background: var(--lemon); border-color: var(--black); }
-.ml-steps li[data-s='todo'], .ml-steps li[data-s='wait'] { color: var(--text-muted); }
+.ml-steps li[data-s='todo'] { color: var(--text-muted); }
 .ml-steps small { font-size: 0.82rem; font-weight: 400; }
 .ml-earned { font-size: 0.95rem; border-top: 2px solid var(--ml-edge); padding-top: 0.5rem; }
 

@@ -5,6 +5,18 @@ const status = (p: Parameters<typeof phaseStates>[0]) =>
   Object.fromEntries(PHASES.map((id) => [id, phaseStates(p)[id].status]));
 
 describe('phase gate', () => {
+  it('lists Understand before Write, then Memorise, then Automate', () => {
+    expect([...PHASES]).toEqual(['understand', 'write', 'memorise', 'automate']);
+  });
+
+  it('opens Understand and Write on a fresh profile, without changing the unlock rules', () => {
+    const s = phaseStates(NO_PROGRESS);
+    expect(s.understand).toEqual({ status: 'open', done: false });
+    expect(s.write).toEqual({ status: 'open', done: false });
+    expect(s.memorise.status).toBe('locked');
+    expect(s.automate.status).toBe('locked');
+  });
+
   it('starts with writing and understanding open, memorising and automating locked', () => {
     expect(status(NO_PROGRESS)).toEqual({ write: 'open', understand: 'open', memorise: 'locked', automate: 'locked' });
   });

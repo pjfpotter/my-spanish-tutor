@@ -32,7 +32,7 @@ export function RewardsStop() {
     <main className="screen" data-testid="rewards-stop">
       <h1>Rewards</h1>
       <Reward burstKey={burst} />
-      <Win title="euros.exe" label="Your euros">
+      <Win title="Your euros">
         <div className="stack">
           <p className="coins" data-testid="demo-euros">€{euros}</p>
           <p data-testid="streak">You have practised {days} days in a row.</p>
@@ -41,7 +41,7 @@ export function RewardsStop() {
           {praise && <p role="status" data-testid="demo-praise">{praise} +€{PRACTICE_EUROS} for trying.</p>}
         </div>
       </Win>
-      <Win title="shop.exe" label="The shop">
+      <Win title="The shop">
         <ul className="stack" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
           {SHELF.map((item) => {
             const has = bought.includes(item.id);

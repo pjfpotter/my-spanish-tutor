@@ -7,7 +7,7 @@ import { payAnswerValue } from '../coins/answer-value';
 import { practiceAnswerText } from './practice-text';
 import { causeTagsForRecallFailure, recordChunkEvents } from '../diagnostics/recall-store';
 import { logAttempt, type AttemptResult } from '../events/attempts';
-import { DEFAULT_MASTERY, isMastered, needsLaterSession, NO_MASTERY } from '../mastery/mastery';
+import { DEFAULT_MASTERY, isMastered, NO_MASTERY } from '../mastery/mastery';
 import { loadMastery } from '../progress/progress';
 import { countsTowardMastery, DEFAULT_MEMORISE, foldFade, MAX_LEVEL, type FadeState, type MemoriseConfig } from './fade';
 
@@ -25,8 +25,6 @@ export interface MemoriseItem {
   best: number | null;
   successes: number;
   mastered: boolean;
-  /** Reached the bar enough times, but all in one session: a later day confirms it. */
-  laterSession: boolean;
   /** Repeated failures to recall it, so the app suggests a simpler version (answer-writing-coach). */
   stalled: boolean;
 }
@@ -81,7 +79,6 @@ export async function loadMemoriseItems(db: Db, profileId: string, courseId: str
       best: accuracies.length ? Math.max(...accuracies) : null,
       successes: m.qualifyingSuccesses,
       mastered: isMastered(m, DEFAULT_MASTERY),
-      laterSession: needsLaterSession(m, DEFAULT_MASTERY),
       stalled: isStalled(accuracies, isMastered(m, DEFAULT_MASTERY)),
     });
   }

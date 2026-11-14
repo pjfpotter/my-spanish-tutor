@@ -12,14 +12,14 @@ export default async function Privacy() {
   return (
     <main className="screen">
       <h1>Privacy</h1>
-      <Win title="privacy.exe" label="Privacy notice">
+      <Win title="Privacy notice">
         <PrivacyNotice />
         <p className="muted">
           Teachers and parents: the <Link href="/privacy/dpia" data-testid="dpia-link">data protection impact assessment</Link> has the detail.
         </p>
       </Win>
       {signedIn && (
-        <Win title="delete.exe" label="Delete everything">
+        <Win title="Delete everything">
           <DeleteEverything />
         </Win>
       )}

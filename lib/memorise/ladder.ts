@@ -37,7 +37,7 @@ export type SayOutcome = { kind: 'clean' } | { kind: 'helped' } | { kind: 'kept'
 export type Rng = () => number;
 
 export const HELP = ['', 'listen and repeat', 'first letters', 'empty blocks', 'English only', 'just the question'] as const;
-export const LESSON_NAME: Record<LessonType, string> = { meet: 'Listen and repeat', build: 'First letters', wipe: 'From memory', lock: 'Next-day check', mix: 'Mix-up', probe: 'Test me first' };
+export const LESSON_NAME: Record<LessonType, string> = { meet: 'Listen and repeat', build: 'First letters', wipe: 'From memory', lock: 'Final check', mix: 'Mix-up', probe: 'Test me first' };
 
 const range = (n: number) => Array.from({ length: n }, (_, i) => i);
 export function shuffle<T>(list: readonly T[], rng: Rng): T[] {
@@ -132,23 +132,22 @@ export function plan(w: World, L: Lesson, rng: Rng = Math.random): Step[] {
   return q;
 }
 
-export const lockOpen = (w: World, ai: number) => w.day > w.states[ai].wipeDay;
-export type StepState = 'done' | 'now' | 'wait' | 'todo';
+export type StepState = 'done' | 'now' | 'todo';
 export function stepState(w: World, ai: number, idx: number): StepState {
   const st = w.states[ai];
   if (st.memorised || idx < st.stage) return 'done';
-  if (idx === st.stage) return lessonsOf(w.answers, ai)[idx].type === 'lock' && !lockOpen(w, ai) ? 'wait' : 'now';
+  if (idx === st.stage) return 'now';
   return 'todo';
 }
-/** The lesson that can be done for one answer right now, or null (memorised, or waiting for tomorrow). */
+/** The lesson that can be done for one answer right now, or null once it is memorised. */
 export function nextFor(w: World, ai: number): Lesson | null {
   const st = w.states[ai];
   if (st.memorised) return null;
-  const L = lessonsOf(w.answers, ai)[st.stage];
-  return L.type === 'lock' && !lockOpen(w, ai) ? null : L;
+  // Every lesson is open as soon as the one before it is done, including the final check.
+  return lessonsOf(w.answers, ai)[st.stage];
 }
 const wordCount = (a: LadderAnswer) => a.chunks.reduce((n, c) => n + c.t.split(' ').length, 0);
-/** What to do next: a next-day check that is due, then the answer in progress, then the shortest answer not started. */
+/** What to do next: a final check that is due, then the answer in progress, then the shortest answer not started. */
 export function recommended(w: World): Lesson | null {
   const ids = range(w.answers.length).filter((i) => nextFor(w, i));
   const due = ids.filter((i) => nextFor(w, i)!.type === 'lock');
@@ -323,7 +322,8 @@ export function resolveTap(s: Session, right: boolean, answer: string, rng: Rng 
 
 export type EndKey = LessonType | 'soft';
 export interface Finish { shout: string; line: string; tele: EndKey }
-const memorisedNow = (st: AnswerState) => st.recalls.length >= 3 && new Set(st.recalls).size >= 2;
+/** Three clean answers from memory memorise an answer, whether they came on one day or several. */
+const memorisedNow = (st: AnswerState) => st.recalls.length >= 3;
 
 /** Ends the lesson: moves the answer on, back, or leaves it, and says how to sum it up. Pays the lesson bonus. */
 export function finish(w: World, s: Session): Finish {
@@ -363,21 +363,21 @@ export function finish(w: World, s: Session): Finish {
     if (s.got5 && memorisedNow(st)) {
       st.memorised = true;
       st.stage = Ls.length;
-      return { shout: 'Memorised', line: 'Three clean answers across two days. This one is yours.', tele: 'lock' };
+      return { shout: 'Memorised', line: 'Three clean answers from memory. This one is yours.', tele: 'lock' };
     }
     if (s.got5) {
       st.wipeDay = w.day;
-      return { shout: 'Still there', line: 'One more check tomorrow and it is locked in.', tele: 'lock' };
+      return { shout: 'Still there', line: 'One more clean go and it is locked in.', tele: 'lock' };
     }
     st.stage = idx('wipe');
-    return { shout: 'It slipped a bit', line: 'That is normal after a night. One more go at "From memory" and it comes back faster.', tele: 'soft' };
+    return { shout: 'It slipped a bit', line: 'That happens. One more go at "From memory" and it comes back faster.', tele: 'build' };
   }
   // "I already know this one"
   if (s.probe === null && s.got5) {
     st.stage = idx('lock');
     st.wipeDay = w.day;
     st.top = 5;
-    return { shout: 'You do know it', line: 'The lessons are skipped. It comes back tomorrow for a check.', tele: 'probe' };
+    return { shout: 'You do know it', line: 'The lessons are skipped. One final check and it is locked in.', tele: 'probe' };
   }
   if (s.probe !== null && s.probe > 0) {
     st.stage = Math.max(st.stage, 1);

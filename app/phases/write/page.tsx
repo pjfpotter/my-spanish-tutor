@@ -20,7 +20,7 @@ export default async function WritePage({ searchParams }: { searchParams: Promis
     return (
       <main className="screen">
         <h1>Write</h1>
-        <Win title="write.exe" label="Writing is not ready yet">
+        <Win title="Writing is not ready yet">
           <div className="stack" data-testid="no-sheet">
             <p>Your teacher has not added the sentence builder for this class yet. Check back soon.</p>
             <Link href="/">Back to the desktop</Link>

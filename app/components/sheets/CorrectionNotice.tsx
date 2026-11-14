@@ -7,7 +7,7 @@ import './sheets.css';
 export function CorrectionNotice({ corrections }: { corrections: Correction[] }) {
   const n = describeNotice(corrections);
   return (
-    <Win title="correcciones.exe" label="What was corrected">
+    <Win title="What was corrected">
       <div className="notice" data-count={n.count}>
         <h3>{n.headline}</h3>
         {n.lines.length > 0 && <ul>{n.lines.map((l, i) => <li key={i}>{l.text}</li>)}</ul>}
