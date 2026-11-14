@@ -1,6 +1,9 @@
 /** A course has four or five core questions. Extension questions are extra and never gate the path. */
 export const CORE_QUESTION_COUNTS = [4, 5] as const;
 import { BASIC_TENSES, validateCalibration, type BasicTense, type Calibration } from './calibration/types.ts';
+import type { Interpretation } from '../sheets/interpretation.ts';
+import { validateInterpretation } from '../sheets/validate.ts';
+import type { Sheet } from '../sheets/types.ts';
 
 export { BASIC_TENSES, type BasicTense, type Calibration };
 
@@ -83,6 +86,8 @@ export interface Course {
   /** Editable calibration data: features and their weights, glue words and the teacher's examples. */
   calibration: Calibration;
   modelAnswers: ModelAnswer[];
+  /** The teacher's sentence builder: the re-typeset sheet and its checked interpretation. Every course has one; it is the only way students write. */
+  sheet: { sheet: Sheet; interpretation: Interpretation };
   /**
    * A testing course: every phase is open from the first visit (course-unlock-testing). Off unless the
    * seed says so, so a real class keeps the gated order.
@@ -142,6 +147,9 @@ export function validateCourse(input: unknown): CourseCheck {
   if (core.filter((q) => q?.recycled).length > 1) {
     problems.push('at most one core question can be recycled from an earlier topic');
   }
+
+  if (!c.sheet?.sheet || !c.sheet?.interpretation) problems.push('the sentence builder sheet is missing: a course cannot be created without an uploaded sheet');
+  else problems.push(...validateInterpretation(c.sheet.sheet, c.sheet.interpretation).map((p) => `sentence builder ${p.path}: ${p.message}`));
 
   problems.push(...validateCalibration(c.calibration));
 

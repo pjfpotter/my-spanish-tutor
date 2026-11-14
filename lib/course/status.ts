@@ -31,6 +31,7 @@ interface CourseRow {
   test_date: Date | string;
   calibration: unknown;
   model_answers: { questionPosition: number }[] | null;
+  has_sheet: boolean;
   reviewed_hash: string | null;
   published_hash: string | null;
   published_at: Date | string | null;
@@ -43,7 +44,7 @@ const iso = (d: Date | string | null) => (d === null ? null : new Date(d).toISOS
 
 async function load(db: Db, courseId: string) {
   const course = (await db.query<CourseRow>(
-    'select title, test_date, calibration, model_answers, reviewed_hash, published_hash, published_at, shared_at from courses where id = $1', [courseId])).rows[0];
+    'select title, test_date, calibration, model_answers, (sheet is not null and interpretation is not null) as has_sheet, reviewed_hash, published_hash, published_at, shared_at from courses where id = $1', [courseId])).rows[0];
   if (!course) throw new Error('No such course.');
   const questions = (await db.query<QuestionRow>(
     'select position, spanish, english_subtitle, extension, topics, template, key_word from questions where course_id = $1 order by position', [courseId])).rows;
@@ -66,6 +67,7 @@ export async function missingForPublish(db: Db, courseId: string, clips: readonl
   const core = questions.filter((q) => !q.extension);
   if (![4, 5].includes(core.length)) missing.push(`4 or 5 core questions (it has ${core.length})`);
   if (!chunks.length) missing.push('a sentence builder with chunks');
+  if (!course.has_sheet) missing.push("the teacher's uploaded sentence builder sheet");
   const answered = new Set((course.model_answers ?? []).map((a) => a.questionPosition));
   const noAnswers = core.filter((q) => !answered.has(q.position)).map((q) => q.position);
   if (noAnswers.length) missing.push(`model answers for question${noAnswers.length > 1 ? 's' : ''} ${noAnswers.join(', ')} (run the course set-up)`);

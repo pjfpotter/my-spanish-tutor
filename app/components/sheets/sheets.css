@@ -1,0 +1,17 @@
+/* The upload screen and the correction notice (sheet-ingestion). Motion stops under reduced motion and the calm switch; the words still change. */
+.up { display: grid; grid-template-columns: 5.5rem 1fr; gap: 0.75rem 1rem; align-items: center; }
+.up-tele { width: 5.5rem; }
+.up-es { margin: 0; font-size: 1.15rem; font-weight: 700; line-height: 1.25; }
+.up-en { margin: 0.15rem 0 0; font-size: 0.9rem; color: var(--ink-soft, #44556b); }
+.up-bar { grid-column: 1 / -1; height: 1rem; border: 2px solid var(--ink-navy, #0b2a4a); background: var(--white, #fff); border-radius: 2px; overflow: hidden; }
+.up-fill { height: 100%; width: 0; background: repeating-linear-gradient(135deg, var(--title-navy-end, #0a5cc0) 0 10px, var(--sky-top, #4fa9f0) 10px 20px); background-size: 28px 28px; transition: width 0.6s ease; animation: up-stripe 1s linear infinite; }
+.up[data-state='ready'] .up-fill, .up[data-state='fallback'] .up-fill { animation: none; }
+.up-note, .up-problem { grid-column: 1 / -1; margin: 0; padding: 0.5rem 0.75rem; border: 2px solid var(--ink-navy, #0b2a4a); background: var(--cream, #f4f4d0); color: var(--ink-navy, #0b2a4a); }
+.up-problem { background: var(--fb-wrong, #ffd9b3); }
+.up-actions { grid-column: 1 / -1; display: flex; gap: 0.5rem; }
+.notice h3 { margin: 0 0 0.4rem; font-size: 1.05rem; }
+.notice ul { margin: 0; padding-left: 1.2rem; }
+.notice li { margin: 0.2rem 0; }
+@keyframes up-stripe { to { background-position: 28px 0; } }
+@media (prefers-reduced-motion: reduce) { .up-fill { animation: none; transition: none; } }
+html[data-calm='on'] .up-fill { animation: none; transition: none; }

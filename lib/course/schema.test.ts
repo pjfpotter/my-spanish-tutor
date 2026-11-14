@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FREE_TIME } from './calibration';
+import { FREE_TIME as FREE_TIME_INTERPRETATION, FREE_TIME_SHEET } from '../sheets/samples/free-time';
 import { BASIC_TENSES, FANCY_TAGS, FEATURE_TAGS, validateCourse, type Course, type ModelAnswer } from './schema';
 
 const good = (): Course => ({
@@ -13,6 +14,7 @@ const good = (): Course => ({
     position: n, spanish: `Pregunta ${n}`, english: `Question ${n}`, recycled: n === 5, topics: ['opinion'],
   })),
   calibration: structuredClone(FREE_TIME),
+  sheet: { sheet: FREE_TIME_SHEET, interpretation: FREE_TIME_INTERPRETATION },
   modelAnswers: [1, 2, 3, 4, 5].flatMap((n): ModelAnswer[] => [
     { questionPosition: n, text: 'Me gusta.' },
     { questionPosition: n, text: 'Me gusta porque es.' },
@@ -25,6 +27,12 @@ const problems = (c: unknown) => {
 };
 
 describe('validateCourse', () => {
+  it('refuses a course with no sentence builder sheet', () => {
+    const c: Partial<Course> = good();
+    delete c.sheet;
+    expect(problems(c).join()).toMatch(/sentence builder sheet is missing/);
+  });
+
   it('accepts a complete course', () => {
     expect(validateCourse(good()).ok).toBe(true);
   });

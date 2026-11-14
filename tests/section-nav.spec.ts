@@ -23,18 +23,21 @@ test('leaving the write section keeps a confirmed answer, and Back goes back wit
   await signUp(page);
   await page.goto('/phases/write');
   await expect(page.getByTestId('section-back')).toHaveCount(0); // nothing before the first question
-  await page.getByTestId('starter').click();
-  await page.getByRole('button', { name: 'Confirm this answer' }).click();
-  await expect(page.getByRole('button', { name: 'Confirmed', exact: true })).toBeVisible();
+  for (const t of ['Me gusta', 'jugar al baloncesto', 'porque', 'es divertido']) {
+    await page.locator('.ws-view .ws-cell:not(.static)', { hasText: t }).first().dispatchEvent('click');
+    await page.waitForTimeout(150);
+  }
+  await page.getByRole('button', { name: 'Check it' }).click();
+  await page.getByRole('button', { name: 'Done' }).click();
+  await expect(page.getByRole('button', { name: /^1.*confirmed/ })).toBeVisible();
 
-  await page.getByRole('button', { name: /^2/ }).first().click();
   await page.getByTestId('section-back').click();
-  await expect(page.getByRole('button', { name: 'Confirmed', exact: true })).toBeVisible(); // question 1, still confirmed
+  await expect(page.getByRole('button', { name: /^1.*confirmed/ })).toBeVisible(); // question 1, still confirmed
 
   await page.getByTestId('section-exit').click();
   await expect(page).toHaveURL('/');
   await page.goto('/phases/write');
-  await expect(page.getByRole('button', { name: 'Confirmed', exact: true })).toBeVisible(); // kept
+  await expect(page.getByRole('button', { name: /^1.*confirmed/ })).toBeVisible(); // kept
 });
 
 test('leaving part-way through understand keeps the attempts already made', async ({ page }) => {

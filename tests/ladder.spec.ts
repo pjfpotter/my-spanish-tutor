@@ -1,15 +1,15 @@
 import { expect, test, type Page } from '@playwright/test';
-import { SEED_COURSE, simplestSeedAnswer } from '../lib/course/seed';
+import { SEED_COURSE } from '../lib/course/seed';
 import { answerPieces } from '../lib/practice/tasks';
 import { levelsFor } from '../lib/practice/ladder';
-import { expectFits, installCuedMic, signUp, stubQuestionAudio, unlockAutomate } from './helpers';
+import { expectFits, installCuedMic, signUp, stubQuestionAudio, unlockAutomate, sheetAnswer } from './helpers';
 
 // Tasks 22.1 to 22.4: the chunk ladder, chunks appearing in colour as they are said, the hint delay, expert mode and
 // personal bests. The microphone speaks on cue and transcription is stubbed. Nothing here calls a model.
 
 const ANSWER = (spanish: string) => {
   const position = SEED_COURSE.questions.find((q) => q.spanish === spanish)!.position;
-  return simplestSeedAnswer(position);
+  return sheetAnswer(position);
 };
 const PIECES = (spanish: string) => answerPieces(ANSWER(spanish), SEED_COURSE.chunks);
 

@@ -1,13 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
-import { SEED_COURSE, simplestSeedAnswer } from '../lib/course/seed';
+import { SEED_COURSE } from '../lib/course/seed';
 import { answerPieces } from '../lib/practice/tasks';
-import { expectFits, signUp, skipWarmups, unlockMemorise } from './helpers';
+import { expectFits, signUp, skipWarmups, unlockMemorise, sheetAnswer } from './helpers';
 
 // Tasks 20.1 to 20.5 and 21.x: the practice screens fit one small phone screen, answers get an instant panel,
 // mistakes come back, sounds follow the switches, and the tutor never holds anything up. Nothing here calls a model.
 
 const PHONE = { width: 360, height: 640 };
-const ROCK = (n: number) => simplestSeedAnswer(n);
+const ROCK = (n: number) => sheetAnswer(n);
 const answerFor = (english: string) => ROCK(SEED_COURSE.questions.find((q) => q.english === english)!.position);
 
 /** A fixed random source, so the warm-ups a test sees are the same each run. */

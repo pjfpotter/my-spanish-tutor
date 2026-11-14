@@ -1,12 +1,12 @@
 import { expect, test, type Page } from '@playwright/test';
-import { SEED_COURSE, simplestSeedAnswer } from '../lib/course/seed';
-import { signUp, skipWarmups, unlockMemorise } from './helpers';
+import { SEED_COURSE } from '../lib/course/seed';
+import { signUp, skipWarmups, unlockMemorise, sheetAnswer, longSheetAnswer } from './helpers';
 
 // The memorise screen as it was before the ladder (kept at /phases/memorise/classic, task 27.4). Tasks 8.1 to 8.4 and 5.3 to 5.5: say a confirmed answer from memory. The transcription call is stubbed
 // (these tests cost nothing) and the fake microphone supplies the audio. Nothing here calls a model.
 
-const ROCK = (n: number) => simplestSeedAnswer(n);
-const SHOWING_OFF_1 = SEED_COURSE.modelAnswers.filter((a) => a.questionPosition === 1).sort((a, b) => b.text.length - a.text.length)[0].text;
+const ROCK = (n: number) => sheetAnswer(n);
+const SHOWING_OFF_1 = longSheetAnswer();
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => localStorage.getItem('calm') ?? localStorage.setItem('calm', 'on'));
@@ -137,17 +137,17 @@ test('feedback leads with what was right and names one thing to fix, with a tip 
   await skipWarmups(page);
 
   // A missed word with no matching confusion: a plain pointer, no tip.
-  heard.text = 'Me gustan las películas de acción porque son';
+  heard.text = 'Me gusta jugar al baloncesto porque es';
   await speak(page);
-  await expect(page.getByTestId('strongest')).toContainText('Me gustan las películas de acción porque son');
-  await expect(page.getByTestId('fix')).toContainText('divertidas');
+  await expect(page.getByTestId('strongest')).toContainText('Me gusta jugar al baloncesto porque es');
+  await expect(page.getByTestId('fix')).toContainText('divertido');
   await expect(page.getByTestId('fix')).toContainText('Tap it to hear it slowly');
   await expect(page.getByTestId('fix')).not.toContainText('may');
   await expect(page.getByTestId('fix')).toHaveCount(1);
 
   // me heard as mi: the one-line tip.
   await page.getByRole('button', { name: 'Say it again' }).click();
-  heard.text = 'mi gustan las películas de acción porque son divertidas';
+  heard.text = 'mi gusta jugar al baloncesto porque es divertido';
   await speak(page);
   await expect(page.getByTestId('fix')).toContainText('“me” sounds like English “may”');
   await expect(page.locator('body')).not.toContainText(/fail|incorrect/i);
@@ -167,16 +167,16 @@ test('a missed word shows its syllables, plays slowly, and can be repeated (5.4)
   await page.goto('/phases/memorise/classic');
   await skipWarmups(page);
   await page.evaluate(() => ((window as any).__spoken.length = 0)); // a warm-up that plays a chunk when it opens is not what this test is about
-  heard.text = 'Me gustan las películas de acción porque son';
+  heard.text = 'Me gusta jugar al baloncesto porque es';
   await speak(page);
 
-  await page.getByRole('button', { name: /divertidas, missed/ }).click();
-  await expect(page.getByTestId('syllables')).toHaveText('di-ver-ti-das');
+  await page.getByRole('button', { name: /divertido, missed/ }).click();
+  await expect(page.getByTestId('syllables')).toHaveText('di-ver-ti-do');
   await expect(page.getByTestId('word-practice')).toContainText('The loud part is ti.');
   await expect(page.getByTestId('word-practice')).toHaveAttribute('data-audio-source', 'voice');
   const spoken = await page.evaluate(() => (window as any).__spoken);
   expect(spoken).toHaveLength(1); // only the word, once
-  expect(spoken[0]).toMatchObject({ text: 'divertidas', lang: 'es-ES' });
+  expect(spoken[0]).toMatchObject({ text: 'divertido', lang: 'es-ES' });
   expect(spoken[0].rate).toBeCloseTo(0.7, 2); // slow
 
   // Repeat it: a clear attempt is "Got it", an unclear word asks for another go. Neither touches the score or mastery.
@@ -186,7 +186,7 @@ test('a missed word shows its syllables, plays slowly, and can be repeated (5.4)
   await page.waitForTimeout(400);
   await page.getByRole('button', { name: 'Done' }).click();
   await expect(page.getByTestId('word-again')).toBeVisible();
-  heard.text = 'divertidas';
+  heard.text = 'divertido';
   await page.getByRole('button', { name: 'Say the word' }).click();
   await expect(page.getByTestId('listening')).toBeVisible();
   await page.waitForTimeout(400);
@@ -203,10 +203,10 @@ test('with no voice on the device, the syllables still show and the student carr
   const heard = hear(page);
   await page.goto('/phases/memorise/classic');
   await skipWarmups(page);
-  heard.text = 'Me gustan las películas de acción porque son';
+  heard.text = 'Me gusta jugar al baloncesto porque es';
   await speak(page);
-  await page.getByRole('button', { name: /divertidas, missed/ }).click();
-  await expect(page.getByTestId('syllables')).toHaveText('di-ver-ti-das');
+  await page.getByRole('button', { name: /divertido, missed/ }).click();
+  await expect(page.getByTestId('syllables')).toHaveText('di-ver-ti-do');
   await expect(page.getByTestId('word-practice')).toHaveAttribute('data-audio-source', 'silent');
 });
 
@@ -246,7 +246,7 @@ test('a noisy or unclear recording is not scored, saved or counted, and a retry 
 test('a sentence missed three times in a row is isolated for short practice, then the whole answer returns (8.2)', async ({ page }) => {
   test.setTimeout(90_000);
   await signUp(page);
-  await unlockMemorise(page, { 1: SHOWING_OFF_1 });
+  await unlockMemorise(page, [1]);
   const heard = hear(page);
   const sentences = SHOWING_OFF_1.split(/(?<=[.!?])\s+/);
   await page.goto('/phases/memorise/classic');

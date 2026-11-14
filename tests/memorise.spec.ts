@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
-import { simplestSeedAnswer } from '../lib/course/seed';
-import { expectFits, signUp, unlockAutomate, unlockMemorise } from './helpers';
+
+import { expectFits, signUp, unlockAutomate, unlockMemorise, sheetAnswer } from './helpers';
 
 // Task 27.4: the memorise ladder with live listening, on the student's own confirmed answers, saved to the server.
 // A stand-in recogniser is spoken through, so nothing here needs a microphone, and nothing calls a model.
@@ -31,7 +31,7 @@ test.beforeEach(async ({ page }) => {
 /** The words of the answer the home screen offers first, as a recogniser would hand them back: no capitals, no punctuation. */
 async function offered(page: Page): Promise<string> {
   const n = Number((await page.locator('.ml-which span').first().innerText()).match(/Answer (\d)/)![1]);
-  return simplestSeedAnswer(n).toLowerCase().replace(/[.,;¿?¡!]/g, '');
+  return sheetAnswer(n).toLowerCase().replace(/[.,;¿?¡!]/g, '');
 }
 const hear = (page: Page, text: string) => page.evaluate((t) => (window as unknown as { __hear: (t: string) => void }).__hear(t), text);
 

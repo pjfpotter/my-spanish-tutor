@@ -1,4 +1,10 @@
 import { expect, type Page } from '@playwright/test';
+import { LONG, LONG_TEXT, SHORT, SHORT_TEXT } from '../lib/sheets/samples/free-time-selections';
+
+/** The text of the answer a student confirms on the sheet in these tests: one finished sentence from the sample sheet. */
+export const sheetAnswer = (_position: number): string => SHORT_TEXT;
+/** A longer confirmed answer: the same sentence with a closing line. */
+export const longSheetAnswer = (): string => LONG_TEXT;
 
 /** The class code of the seeded course the tests join. */
 export const SEED_CLASS_CODE = 'TELE8';
@@ -55,20 +61,18 @@ export async function masterUnderstand(page: Page): Promise<[number, string][]> 
 
 /**
  * Opens the memorise phase for a signed-in student by doing what a student would, through the app's own
- * routes: confirm all five answers (write phase), and master all five questions by ear on two separate
- * sessions (understand phase). `answers` overrides the text confirmed for a question position.
+ * routes: confirm all five answers on the sentence builder (write phase), and master all five questions by ear on two
+ * separate sessions (understand phase). `long` lists the positions confirmed with the longer answer (`longSheetAnswer`).
  * Returns the question ids in order.
  */
-export async function unlockMemorise(page: Page, answers: Record<number, string> = {}): Promise<string[]> {
-  const { SEED_COURSE, simplestSeedAnswer } = await import('../lib/course/seed');
+export async function unlockMemorise(page: Page, long: number[] = []): Promise<string[]> {
   const html = await (await page.request.get('/phases/write')).text();
   const ids = [...html.matchAll(/\\?"id\\?":\\?"([0-9a-f-]{36})\\?",\\?"position\\?":(\d)/g)].map((m) => ({ id: m[1], position: Number(m[2]) }));
   const ordered = [...new Map(ids.map((q) => [q.position, q.id])).entries()].sort((a, b) => a[0] - b[0]);
   expect(ordered).toHaveLength(5);
   const [sessionA, sessionB] = [crypto.randomUUID(), crypto.randomUUID()];
   for (const [position, id] of ordered) {
-    const text = answers[position] ?? simplestSeedAnswer(position);
-    const saved = await page.request.post('/api/answers', { data: { questionId: id, text, confirm: true } });
+    const saved = await page.request.post('/api/answers', { data: { questionId: id, selection: long.includes(position) ? LONG : SHORT, confirm: true } });
     expect(saved.ok()).toBe(true);
     for (const sessionId of [sessionA, sessionA, sessionB]) {
       const r = await page.request.post('/api/attempts', { data: { itemId: id, outcome: 'correct', sessionId } });
@@ -79,8 +83,8 @@ export async function unlockMemorise(page: Page, answers: Record<number, string>
 }
 
 /** Memorise-phase mastery for every question, seeded through the app's own route: three good recalls with some of the script hidden, across two sessions. */
-export async function unlockAutomate(page: Page, answers: Record<number, string> = {}): Promise<string[]> {
-  const ids = await unlockMemorise(page, answers);
+export async function unlockAutomate(page: Page, long: number[] = []): Promise<string[]> {
+  const ids = await unlockMemorise(page, long);
   const [a, b] = [crypto.randomUUID(), crypto.randomUUID()];
   for (const itemId of ids) {
     for (const sessionId of [a, a, b]) {
@@ -93,7 +97,7 @@ export async function unlockAutomate(page: Page, answers: Record<number, string>
 
 /** Stub clips for the five seed questions at three speeds. `onAsk` is told which question starts playing. */
 export async function stubQuestionAudio(page: Page, onAsk?: (spanish: string, speed: number) => void) {
-  const { SEED_COURSE, simplestSeedAnswer } = await import('../lib/course/seed');
+  const { SEED_COURSE } = await import('../lib/course/seed');
   const { SPEEDS } = await import('../lib/audio/manifest');
   const speeds = Object.values(SPEEDS);
   const slotOf = (q: number, s: number) => String(q * 3 + s + 1).padStart(12, '0');

@@ -413,7 +413,7 @@ For user testing, a course can be flagged `courses.unlock_all` (migration `0011`
 - **No written answers needed.** In a testing course, `practiceAnswerText()` (`lib/memorise/practice-text.ts`) gives a question's simplest model answer (lowest value) when the student has not confirmed one, for the memorise list, `recordRecall` and the automate recorder. It is read, never stored in `answers`, so `answersConfirmed` stays truthful.
 - **Another testing course.** Add a `Course` with a new class code and `unlockAll: true` to `scripts/seed.mjs`. A gated course needs nothing.
 
-### 9.2 Write it
+### 9.2 Write it (courses without a sentence builder sheet)
 
 The coach helps a student reach a Spanish answer they can memorise (`lib/coach/`).
 
@@ -431,6 +431,15 @@ The coach helps a student reach a Spanish answer they can memorise (`lib/coach/`
 Supporting behaviour: at most one optional suggestion per answer; a whole-test checklist (three tenses, two justified opinions) that gates nothing; a one-time "a longer answer takes more learning" note once an answer's value passes the course's `loadNoteValue`.
 
 If a course has no model answer for a question, the starter option says so and the student builds from the blocks. A student is never blocked.
+
+### 9.2a Write it on a teacher's sentence builder
+
+Every course carries a stored sheet and interpretation (`courses.sheet`, `courses.interpretation`, migration 0020), and the write phase always renders `app/components/sheets/WriteSheet.tsx`. There is no other write screen: `validateCourse` refuses a course without a sheet, `seedCourse` writes it, and publishing is blocked if it is missing. A sheet answer is stored as its Spanish sentence and valued by the rubric on that sentence.
+
+1. **Upload (model, once).** `lib/sheets/ingest.ts` reads the .docx (`read-docx.ts`), has a model draft an Interpretation through the cost router (`sheet-ingest`), verifies and repairs it (`verify.ts`, at most three repairs), judges undecided chunk pairs (`pairs.ts`), and falls back to a layout-order draft (`fallback.ts`) if needed. Corrections are listed for the teacher (`CorrectionNotice`). Results are cached in `sheet_interpretations`.
+2. **Write (no model).** `engine.ts` decides what clashes, what can be built and how it reads; `signoff.ts` applies the exam rule (credit anything grammatical that could be true; block only an incomplete or contradictory answer; name at most one thing to fix). `camera.ts` frames the list the student needs next.
+3. **Save.** The browser sends the chosen chunks; `saveSheetAnswer` rebuilds the sentence, stores its Spanish text in `answers.text` (so memorise works unchanged) and the choices in `answers.selection`.
+4. Pick-up view (the sheet lifts over the card) is a setting that is off by default.
 
 ### 9.3 Hear it
 
@@ -794,7 +803,7 @@ Restores a profile from a recovery code and sets the cookie.
 
 ### 15.3 `POST /api/answers`
 
-Saves, and optionally confirms, one answer. The rubric re-checks the text server-side; no model call.
+Saves, and optionally confirms, one answer. The rubric re-checks the text server-side; no model call. For a course with a sentence builder the body carries `selection` (slot to `{ col, i, vi? }`) instead of `text`: the server rebuilds the answer from the sheet, so only words on the sheet can be saved, and confirms only if the exam-rule sign-off passes.
 
 | | |
 |---|---|
