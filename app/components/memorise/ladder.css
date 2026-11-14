@@ -180,3 +180,11 @@ button.ml-tile { cursor: pointer; }
 @media (prefers-reduced-motion: reduce) {
   .ml * { animation: none !important; transition: none !important; }
 }
+
+/* Pronunciation support after a word stays unlit three attempts running (27.6) */
+.ml-fb .ml-pron { grid-column: 1 / -1; grid-row: auto; display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+.ml-fb > .ml-btn[data-testid='lab-pron-offer'] { grid-column: 1 / -1; grid-row: auto; }
+.ml-syl { font-size: 1.3rem; font-weight: 700; margin: 0; }
+.ml-syl [data-stress='true'] { text-decoration: underline; }
+.ml-syl [data-lit='true'] { background: var(--black); color: var(--fb-right); }
+.ml-pron .ml-btn { grid-column: auto; grid-row: auto; min-width: 0; }

@@ -8,9 +8,11 @@ import './practice.css';
  * and never scrolls at 360 by 640. The Sound and Calm switches float at the top right of the band.
  */
 export function PracticeShell({
-  onBack, backLabel = 'Back', tele, caption, meta, children, footer,
+  onBack, backLabel = 'Back', exitHref = '/', tele, caption, meta, children, footer,
 }: {
   onBack?: () => void;
+  /** Where Exit goes. The demo sends it back to the tour, not the desktop. */
+  exitHref?: string;
   backLabel?: string;
   tele: ReactNode;
   caption: ReactNode;
@@ -26,7 +28,7 @@ export function PracticeShell({
             {backLabel}
           </button>
         )}
-        <Link className="btn" href="/" data-testid="section-exit">
+        <Link className="btn" href={exitHref} data-testid="section-exit">
           <span aria-hidden="true">Exit</span>
           <span className="sr-only">Exit to desktop</span>
         </Link>

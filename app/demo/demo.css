@@ -1,0 +1,24 @@
+/* The Demo label floats top centre so the screens underneath keep their own layout. */
+/* The Demo label is a strip along the top, in the page flow, so it never covers a button. The Sound and Calm switches
+   float at the top right of every page, so the label stays at the left. Screens that fill the window give the strip its height. */
+.demo-bar { position: relative; z-index: 60; height: 1.6rem; background: #ffeb00; border-bottom: 2px solid #0b2a4a; font-family: var(--font-atkinson), system-ui, sans-serif; }
+.demo-shell .practice, .demo-shell .ml { height: calc(100dvh - 1.6rem); }
+.demo-bar summary { list-style: none; cursor: pointer; height: 1.6rem; display: inline-flex; align-items: center; gap: 0.35rem; padding: 0 0.7rem; color: #0b2a4a; font-size: 0.85rem; white-space: nowrap; }
+.demo-bar summary::-webkit-details-marker { display: none; }
+.demo-bar summary:focus-visible, .demo-menu a:focus-visible, .demo-menu button:focus-visible, .demo-switch input:focus-visible { outline: 3px solid #0b2a4a; outline-offset: 2px; }
+.demo-menu { position: absolute; top: 100%; left: 0.5rem; width: min(20rem, calc(100vw - 1rem)); z-index: 70; display: grid; gap: 0.6rem; padding: 0.8rem; background: #c0c0c0; color: #000; border: 3px solid #0b2a4a; box-shadow: 4px 4px 0 #0b2a4a; font-size: 0.95rem; }
+.demo-menu ol { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.2rem; }
+.demo-menu a[aria-current='page'] { font-weight: 700; }
+.demo-menu-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.demo-switch { display: flex; gap: 0.5rem; align-items: center; }
+/* Recording mode takes away anything that nags or counts down. */
+:root[data-demo-recording='on'] .window-bar, :root[data-demo-recording='on'] [data-testid='repeat-tip'] { display: none; }
+
+.demo-hub { display: grid; gap: 1rem; max-width: 40rem; margin: 0 auto; padding: 3rem 1rem 2rem; }
+.demo-stops { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
+.demo-stops a { display: grid; gap: 0.15rem; padding: 0.7rem 0.8rem; border: 2px solid #0b2a4a; background: #fff; color: #000; text-decoration: none; }
+.demo-stops a:hover { background: #ddf3ff; }
+.demo-stops a:focus-visible { outline: 3px solid #0b2a4a; outline-offset: 2px; }
+.demo-stops strong { font-size: 1.05rem; }
+.demo-stops span { font-size: 0.9rem; }
+.demo-bar .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }

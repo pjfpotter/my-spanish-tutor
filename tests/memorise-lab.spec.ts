@@ -310,3 +310,33 @@ test('27.9 and 27.12 the tester can copy a device report with timings', async ({
   await expect(text).toContainText('Result to screen: median');
   await expect(text).toContainText('Screen stays awake: supported');
 });
+
+test('27.6 a word left unlit three attempts running brings slow audio and syllables, and not before', async ({ page }) => {
+  test.setTimeout(90_000);
+  await open(page);
+  await page.locator('.ml-tools summary').click();
+  await page.getByRole('button', { name: 'First letters', exact: true }).click();
+  // Say only "lo" each time, so every other word stays unlit. The same bit comes round again after a miss.
+  const offer = page.getByTestId('lab-pron-offer');
+  let attempts = 0;
+  while (attempts < 6 && (await offer.count()) === 0) {
+    await expect(page.getByTestId('lab-listen')).toBeVisible();
+    await hear(page, 'lo');
+    await expect(page.getByTestId('lab-offer')).toBeVisible({ timeout: 8000 });
+    await page.getByTestId('lab-pass').click();
+    attempts++;
+    await expect(page.getByTestId('lab-fb')).toBeVisible();
+    if (attempts < 3) await expect(offer).toHaveCount(0);
+    if ((await offer.count()) === 0) await page.getByTestId('lab-continue').click({ timeout: 3000 }).catch(() => {});
+  }
+  expect(attempts).toBe(3);
+  await expect(offer).toBeVisible();
+  const word = (await offer.innerText()).replace('Practise', '').trim().replace(/\W/g, '');
+  await offer.click();
+  await expect(page.getByTestId('lab-syllables')).toHaveText(new RegExp(`^${word[0]}`, 'i'));
+  await expect(page.getByTestId('lab-pron-hear')).toBeVisible();
+  // The offer waits for the student: nothing moves on by itself.
+  await page.waitForTimeout(2500);
+  await expect(page.getByTestId('lab-fb')).toBeVisible();
+  await page.getByTestId('lab-continue').click();
+});

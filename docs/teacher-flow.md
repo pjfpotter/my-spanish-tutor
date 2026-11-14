@@ -23,7 +23,7 @@ The teacher supplies a title, a test date, a sentence builder (the chunks, with 
 
 Today the developer turns this into a `Course` object by editing `lib/course/seed.ts`. The shape is defined in `lib/course/schema.ts` and checked by `validateCourse`. Question text feeds the audio hashes, so finish editing question wording before step 5.
 
-The current schema holds one sentence builder per course and has no core or extension marking. Both are task 23.2.
+A course can have one or more sentence builders (a chunk's optional `builder` names which) and four or five core questions plus any extension questions, which are practised but never gate the path or count toward readiness (task 23.2, built).
 
 ## Step 2: save the draft
 
@@ -38,7 +38,7 @@ npm run seed
 - **Owner token:** created only the first time a course is inserted. It is printed once, and only its SHA-256 hash is stored. Running the seed again does not print it again.
 - **What is stored:** `courses` (title, test date, calibration, `model_answers`, `unlock_all`), `questions`, `chunks`.
 
-There is no draft or published flag yet. A seeded course is live as soon as its class code is known.
+A new course starts as a **draft**: its status is worked out from its content (see "Moving a course along" below). Courses that existed before status was added count as published and shared. A teacher can load only so many new courses a month (see "Pricing and limits").
 
 ## Step 3: the set-up call
 
@@ -105,14 +105,23 @@ Open question from the task: which steps can run on the server?
 
 No call is made when a student uses the app other than those described in the student specs (transcription fallback and similar). The practice loop makes no language-model call.
 
+## Moving a course along (task 23.3)
+
+`npm run course -- status|review|publish|share <class code>`. A course is **draft**, **set up** (every core question has model answers), **reviewed** (someone signed it off), **published** (ready for students) or **shared** (the class code has been handed out). Status is worked out from the course itself: a sign-off stores a fingerprint of the text it was given for, so editing a question or answer lapses review and publish by themselves. Publishing blocks and names every missing item (model answers, audio, a review sign-off).
+
+Publishing a course whose text has not changed does nothing and calls nothing. After an edit, only the paid step whose output is missing runs again, and only when the caller supplies that step: the script supplies none, so it reports what is missing and which command to run. The overview shows the status. Code: `lib/course/status.ts`.
+
+## Pricing and limits (task 23.7)
+
+- `npm run price-course -- <class code or course file>` prices a course before loading it. Clips are stored by text and speed, so phrases shared with a course already built cost nothing and only new clips are priced.
+- The audio build records its spend against a course (`npm run build-audio -- --yes --course=CODE`, needs `DATABASE_URL`), so `npm run cost-report` and the overview show a course's own cost. The set-up call already recorded its course. A build for a named course removes no clips, because clips are shared between courses.
+- A teacher can load **3 new courses per 30 days**. This number is a placeholder: the owner chooses it in `lib/course/limits.ts`. The refusal says why and when they can load another. There are no teacher accounts, so a teacher is a label the developer gives a course (`teacher` in the course file); a course with no label is not limited.
+
 ## Gaps against the spec
 
 These are the differences between this document and the `teacher-course-setup` spec. They map to open tasks.
 
-- **No per-course status** (draft, set up, reviewed, published, shared). The spec wants the step reached recorded, and publish blocked while items are missing, such as a question with no audio. Task 23.3.
-- **Re-running the set-up call is not guarded.** The spec says re-publishing unchanged text makes no new call. Audio already behaves that way. The set-up call has no equivalent: nothing records what text it last ran on. Task 23.3.
-- **Set-up call not wired to a script**, and no review output. See steps 3 and 4. Task 23.3 covers the status; the script itself needs adding to it or to its own task.
+- **Set-up call not wired to a script**, and no review output beyond the sign-off. See steps 3 and 4. Status and the publish gate are built (23.3) and skip the set-up call when model answers already exist, but nothing yet supplies the real call to `publishCourse`.
 - **Owner link cannot be regenerated.** The token is stored only as a hash and shown once. If it is lost there is no function to replace it. The development database sets a known token from `DEV_OWNER_TOKEN`, which is for local use only. Regenerating the link is part of 23.4.
-- **Audio build covers one course.** `build-audio.mjs` reads `SEED_COURSE`. A second real course would need the script to take a course as input.
-- **One sentence builder, no core or extension marking.** Task 23.2.
+- **Audio build knows only the courses listed in `lib/course/seed.ts`.** `--course=CODE` chooses among them; a course from a file needs adding to that list.
 - **Seed values are placeholders.** `SEED_COURSE` has class code `TELE8` and test date `2026-11-20`, both marked as placeholders in `lib/course/seed.ts`.

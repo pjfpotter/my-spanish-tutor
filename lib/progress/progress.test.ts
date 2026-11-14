@@ -24,7 +24,7 @@ const ok = (itemId: string, sessionId: string) =>
 
 describe('progress from the database', () => {
   it('starts with nothing mastered', async () => {
-    expect(await loadProgress(db, profileId)).toEqual({ answersConfirmed: 0, questionsMastered: 0, answersMemorised: 0, testReady: false });
+    expect(await loadProgress(db, profileId)).toEqual({ answersConfirmed: 0, questionsMastered: 0, answersMemorised: 0, testReady: false, total: 5 });
   });
 
   it('counts a question as mastered only after three correct across two sessions', async () => {

@@ -4,7 +4,7 @@ Draft for a 5-minute demo. Timings are a guess: do a dry run on a stopwatch and 
 
 ## Set-up before starting
 
-- Preview on a phone, joined with the class code and a fresh nickname, mood skipped.
+- Open `/demo` (the "Try the demo" link on the welcome page). It needs no class code and saves nothing. Turn on Recording mode in the Demo menu for a video, and use Reset between runs. Every spoken step has a Pretend button for a noisy room.
 - A second tab with the teacher overview in demo mode (`/owner/<your owner link>?demo=1`).
 - Real cost figure from `npm run cost-report -- TELE8` written on a card once the pilot has run. If there is no pilot yet, say the cost is an estimate and show the sample figure, which is marked sample.
 

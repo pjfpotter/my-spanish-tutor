@@ -6,7 +6,7 @@ How every spoken clip in the app is made. Clips are built once, offline, and the
 
 `planClips()` in `lib/audio/manifest.ts` lists every clip the app needs:
 
-- each of the five course questions at three speeds: slow (0.7), normal (1.0), fast (1.2), using the provider's speed setting and never time-stretching;
+- each course question at three speeds: slow (0.7), normal (1.0), fast (1.2). The provider is asked once per text for the natural voice; slow and fast are made locally from that clip with ffmpeg, which costs nothing (changed 12 Nov 2026, see `scripts/build-audio.mjs`);
 - each phrase-bank line (`lib/tele/phrase-bank.ts`) at normal speed.
 
 There is one voice, Tele's (see `docs/voice-decision.md`). The same text at the same speed is one clip, however many places use it.

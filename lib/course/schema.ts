@@ -1,4 +1,5 @@
-import { QUESTION_COUNT } from '../phases/gate.ts';
+/** A course has four or five core questions. Extension questions are extra and never gate the path. */
+export const CORE_QUESTION_COUNTS = [4, 5] as const;
 import { BASIC_TENSES, validateCalibration, type BasicTense, type Calibration } from './calibration/types.ts';
 
 export { BASIC_TENSES, type BasicTense, type Calibration };
@@ -40,6 +41,8 @@ export interface Chunk {
   featureTags: FeatureTag[];
   /** Recurs across topics; offered first when lifting an answer. */
   recycled: boolean;
+  /** Which sentence builder this chunk came from, when a course has more than one. Leave out for a course with one. */
+  builder?: string;
 }
 
 export interface Question {
@@ -47,8 +50,10 @@ export interface Question {
   spanish: string;
   /** English subtitle, text only. */
   english: string;
-  /** The one question drawn from an earlier topic. */
+  /** The one question drawn from an earlier topic. At most one core question is. */
   recycled: boolean;
+  /** An extra question: practised like the others but never needed to unlock a step or reach test-ready. */
+  extension?: boolean;
   /** Chunk categories that answer this question. An answer is relevant if it uses at least one. */
   topics: string[];
   /** The categories shown as empty slots when a student opens the question. Defaults to all of `topics`. */
@@ -71,6 +76,8 @@ export interface Course {
   classCode: string;
   /** ISO date, YYYY-MM-DD. */
   testDate: string;
+  /** An opaque label for who loaded the course, used only to limit new courses per month. Leave out for the developer's own. */
+  teacher?: string;
   chunks: Chunk[];
   questions: Question[];
   /** Editable calibration data: features and their weights, glue words and the teacher's examples. */
@@ -94,6 +101,7 @@ export function validateCourse(input: unknown): CourseCheck {
 
   if (blank(c.title)) problems.push('title is missing');
   if (c.unlockAll !== undefined && typeof c.unlockAll !== 'boolean') problems.push('unlockAll must be true or false');
+  if (c.teacher !== undefined && blank(c.teacher)) problems.push('the teacher label is empty');
   if (blank(c.classCode)) problems.push('class code is missing');
   else if (!/^[A-Z0-9]{4,8}$/.test(c.classCode!)) problems.push('class code must be 4 to 8 capital letters or digits');
   if (blank(c.testDate) || !/^\d{4}-\d{2}-\d{2}$/.test(c.testDate!) || Number.isNaN(Date.parse(c.testDate!))) {
@@ -112,10 +120,17 @@ export function validateCourse(input: unknown): CourseCheck {
     }
   });
 
-  const questions = Array.isArray(c.questions) ? c.questions : [];
-  if (questions.length !== QUESTION_COUNT) {
-    problems.push(`a course needs exactly ${QUESTION_COUNT} questions, found ${questions.length}`);
+  for (const [i, ch] of chunks.entries()) {
+    if (ch?.builder !== undefined && blank(ch.builder)) problems.push(`chunk ${i + 1} has an empty builder name`);
   }
+
+  const questions = Array.isArray(c.questions) ? c.questions : [];
+  const core = questions.filter((q) => !q?.extension);
+  if (!(CORE_QUESTION_COUNTS as readonly number[]).includes(core.length)) {
+    problems.push(`a course needs 4 or 5 core questions, found ${core.length}`);
+  }
+  const positions = questions.map((q) => q?.position);
+  if (new Set(positions).size !== positions.length) problems.push('two questions share a position');
   const categories = new Set(chunks.map((ch) => ch?.category));
   questions.forEach((q, i) => {
     if (blank(q?.spanish)) problems.push(`question ${i + 1} has no Spanish text`);
@@ -124,8 +139,8 @@ export function validateCourse(input: unknown): CourseCheck {
     else for (const t of q.topics) if (!categories.has(t)) problems.push(`question ${i + 1} names a topic "${t}" that no chunk has`);
     for (const t of q?.template ?? []) if (!(q.topics ?? []).includes(t)) problems.push(`question ${i + 1} has a starting slot "${t}" that is not one of its topics`);
   });
-  if (questions.length === QUESTION_COUNT && questions.filter((q) => q?.recycled).length !== 1) {
-    problems.push('exactly one question must be recycled from an earlier topic');
+  if (core.filter((q) => q?.recycled).length > 1) {
+    problems.push('at most one core question can be recycled from an earlier topic');
   }
 
   problems.push(...validateCalibration(c.calibration));

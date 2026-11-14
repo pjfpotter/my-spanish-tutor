@@ -207,9 +207,9 @@ export function Desktop({ states, unlockAll = false, daysToTest, channels = [], 
           </Win>
         )}
 
-        <Win title="preguntas" label="The five test questions">
+        <Win title="preguntas" label="The test questions">
           <ul className="files">
-            {Array.from({ length: QUESTION_COUNT }, (_, i) => {
+            {Array.from({ length: channels.length || QUESTION_COUNT }, (_, i) => {
               const clarity = channels[i] ?? 0;
               return (
                 <li key={i} className="file" data-testid="question-file" data-clarity={clarityWord(clarity)}>

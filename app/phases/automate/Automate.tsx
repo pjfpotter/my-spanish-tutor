@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { planRound, type RoundItem } from '../../../lib/automate/round';
 import { isRepeatRequest, REPEAT_PHRASE } from '../../../lib/automate/repeat';
-import { RANKS } from '../../../lib/automate/rank';
+import { RANKS, rankFor } from '../../../lib/automate/rank';
+import { recordingOn } from '../../../lib/demo/session';
 import type { AutomateState } from '../../../lib/automate/store';
 import { DEFAULT_AUTOMATE } from '../../../lib/automate/window';
 import type { Chunk } from '../../../lib/course/schema';
@@ -106,7 +107,7 @@ const saveOrder = (ids: string[]) => {
  * with the attempt. Saying nothing is a blank, never a wrong answer, and asking Tele to repeat in Spanish is rewarded.
  * Nothing here calls a language model.
  */
-export function Automate({ items, initial, chunks = [] }: { items: AutomateItem[]; initial: AutomateState; chunks?: Chunk[] }) {
+export function Automate({ items, initial, chunks = [], demo = false }: { items: AutomateItem[]; initial: AutomateState; chunks?: Chunk[]; /** The tour stop: nothing is sent to the server, the microphone is never opened and a Pretend button answers for the visitor. */ demo?: boolean }) {
   const [state, setState] = useState(initial);
   const [stage, setStage] = useState<Stage>('intro');
   const [round, setRound] = useState<RoundItem[]>([]);
@@ -129,6 +130,8 @@ export function Automate({ items, initial, chunks = [] }: { items: AutomateItem[
   const comboTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const sessionId = useRef('');
+  /** Demo only: this visit's counted attempts, so the rank can show without anything being saved. */
+  const demoTimed = useRef<{ accuracy: number | null; responseMs: number | null; blank: boolean }[]>([]);
   const index = useRef<readonly BuiltClip[]>([]);
   const clips = useRef(new Map<string, ClipFile>());
   const lastLine = useRef<string | null>(null);
@@ -193,6 +196,17 @@ export function Automate({ items, initial, chunks = [] }: { items: AutomateItem[
   });
 
   async function post(body: Record<string, unknown>) {
+    if (demo) {
+      // Nothing is written: the effort euros and the rank are worked out here and live only on this page.
+      const blank = body.blank === true;
+      setCoins((c) => c + (blank ? 0 : 2));
+      if (body.assisted !== true) {
+        demoTimed.current.push({ accuracy: body.accuracy as number | null, responseMs: body.responseTimeMs as number | null, blank });
+        const ms = demoTimed.current.filter((t) => !t.blank && t.responseMs !== null).map((t) => t.responseMs as number);
+        setState((s) => ({ ...s, rank: rankFor(demoTimed.current), history: ms.length ? [{ averageMs: Math.round(ms.reduce((a, b) => a + b, 0) / ms.length), answers: ms.length }] : [] }));
+      }
+      return null;
+    }
     try {
       const res = await fetch('/api/respond', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sessionId: sessionId.current, ...body }) });
       if (!res.ok) throw new Error('save failed');
@@ -232,16 +246,17 @@ export function Automate({ items, initial, chunks = [] }: { items: AutomateItem[
           clip = await loadClip(slot);
           clips.current.set(slot, clip);
         } catch {
-          fetch('/api/clip-failure', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ slot }) }).catch(() => {});
+          if (!demo) fetch('/api/clip-failure', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ slot }) }).catch(() => {});
         }
       }
       const open = (at: number) => {
         endedAt.current = at;
         setStage('listening');
-        capture.start();
-        windowTimer.current = setTimeout(() => void onBlank(), windowMs);
+        const quiet = demo && recordingOn(); // recording mode: no countdown and no hint, so a take is never cut short
+        if (!demo) capture.start();
+        if (!quiet) windowTimer.current = setTimeout(() => void onBlank(), windowMs);
         // Still silent after the hint delay: the first words of the next chunk appear. Not in expert mode, and it makes the attempt assisted.
-        if (!expertRef.current) {
+        if (!expertRef.current && !quiet) {
           hintTimer.current = startHintTimer(() => {
             if (onsetSeen.current || stageRef.current !== 'listening') return;
             const asked = current.current.asked.map((p) => p.text);
@@ -281,7 +296,7 @@ export function Automate({ items, initial, chunks = [] }: { items: AutomateItem[
 
   async function start() {
     setMessage(null);
-    if (!(await capture.prepare())) return;
+    if (!demo && !(await capture.prepare())) return;
     sessionId.current = currentSessionId();
     // Starting higher lifts every answer to at least that level, and keeps it there.
     const lifted = { ...ladder };
@@ -393,6 +408,16 @@ export function Automate({ items, initial, chunks = [] }: { items: AutomateItem[
     await post({ itemId: it.id, blank: false, accuracy: score.accuracy, responseTimeMs: responseMs, speed, repeats: repeats.current, assisted: wasAssisted || level !== 'all' });
   }
 
+  /** Demo only: answers with the scripted whole answer, as quickly as a confident student would. */
+  function pretend() {
+    if (stageRef.current !== 'listening') return;
+    onsetSeen.current = true;
+    clearTimeout(windowTimer.current);
+    hintTimer.current?.cancel();
+    const { script } = current.current;
+    void onCapture({ status: 'ok', transcript: script, confidence: 0.95, path: 'browser', clipMs: 1500, onsetAt: endedAt.current + 1100 + Math.round(Math.random() * 900) } as CaptureResult);
+  }
+
   /** Same question again after unclear audio. It is not counted, and the window starts afresh. */
   function retry() {
     const { item: it, speed, windowMs } = current.current;
@@ -467,6 +492,7 @@ export function Automate({ items, initial, chunks = [] }: { items: AutomateItem[
           onToggleEnglish={toggleEnglish}
         />
       }
+      exitHref={demo ? '/demo' : undefined}
       meta={meta}
       footer={footer}
     >
@@ -529,6 +555,7 @@ export function Automate({ items, initial, chunks = [] }: { items: AutomateItem[
               )}
             </>
           )}
+          {demo && stage === 'listening' && <p><button type="button" className="btn" onClick={pretend} data-testid="demo-pretend">Pretend I answered</button></p>}
           {stage === 'speaking' && <p data-testid="speaking" role="status">Listening…</p>}
           {stage === 'checking' && <p data-testid="checking">Checking what you said…</p>}
           {hint && listening && (
@@ -608,7 +635,7 @@ export function Automate({ items, initial, chunks = [] }: { items: AutomateItem[
           <LittleAndOften />
           <div className="controls">
             <button type="button" className="btn btn-primary" onClick={() => { setStage('intro'); setFeedback(null); }} disabled={busy}>Another round</button>
-            <Link className="btn" href="/">Back to the desktop</Link>
+            <Link className="btn" href={demo ? '/demo/tutor' : '/'}>{demo ? 'Next stop: meet Tele' : 'Back to the desktop'}</Link>
           </div>
         </div>
       )}

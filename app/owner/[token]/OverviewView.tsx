@@ -34,6 +34,7 @@ export function OverviewView({ data, cost, sample, cheeky }: { data: OverviewDat
         </p>
       )}
       <Win title="class.exe" label="Class summary">
+        {data.courseStatus && <p data-testid="course-status">Course status: <strong>{data.courseStatus.status.replace('_', ' ')}</strong>{data.courseStatus.missing.length > 0 && <>. Still needed: {data.courseStatus.missing.join('; ')}.</>}</p>}
         <p>Joined: <strong><F>{data.joined}</F></strong>. Started practising: <strong><F>{data.started}</F></strong>.</p>
         <p>Average readiness: <strong>{data.averageReadiness === null ? 'no students yet' : <F>{data.averageReadiness}%</F>}</strong></p>
         <table>

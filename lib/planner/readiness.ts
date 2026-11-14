@@ -15,11 +15,12 @@ export interface Readiness {
   nextAction: { es: string; en: string };
 }
 
-const clamp = (n: number) => Math.max(0, Math.min(QUESTION_COUNT, n));
+const totalOf = (i: Progress) => i.total ?? QUESTION_COUNT;
 
 export function readinessPercent(i: ReadinessInput): number {
-  const parts = [i.questionsMastered, i.answersMemorised, i.questionsAutomated].map(clamp);
-  return Math.round((parts.reduce((a, b) => a + b, 0) / (3 * QUESTION_COUNT)) * 100);
+  const total = totalOf(i);
+  const parts = [i.questionsMastered, i.answersMemorised, i.questionsAutomated].map((n) => Math.max(0, Math.min(total, n)));
+  return Math.round((parts.reduce((a, b) => a + b, 0) / (3 * total)) * 100);
 }
 
 /**
@@ -28,11 +29,12 @@ export function readinessPercent(i: ReadinessInput): number {
  * straight away (writing raises it by unlocking memorisation).
  */
 export function nextPhase(i: ReadinessInput): PhaseId | null {
-  const wrote = i.answersConfirmed >= QUESTION_COUNT;
-  const understood = i.questionsMastered >= QUESTION_COUNT;
-  const memorised = i.answersMemorised >= QUESTION_COUNT;
+  const total = totalOf(i);
+  const wrote = i.answersConfirmed >= total;
+  const understood = i.questionsMastered >= total;
+  const memorised = i.answersMemorised >= total;
   if (wrote && understood && !memorised) return 'memorise';
-  if (memorised && i.questionsAutomated < QUESTION_COUNT) return 'automate';
+  if (memorised && i.questionsAutomated < total) return 'automate';
   if (!understood) return 'understand';
   if (!wrote) return 'write';
   return null;
@@ -40,7 +42,7 @@ export function nextPhase(i: ReadinessInput): PhaseId | null {
 
 const ACTIONS: Record<PhaseId, { es: string; en: string }> = {
   understand: { es: 'Escucha las preguntas', en: 'Listen to the questions until you catch them all.' },
-  write: { es: 'Escribe tus respuestas', en: 'Write and confirm your five answers. That opens the next step.' },
+  write: { es: 'Escribe tus respuestas', en: 'Write and confirm your answers. That opens the next step.' },
   memorise: { es: 'Memoriza tus respuestas', en: 'Say your answers from memory.' },
   automate: { es: 'Responde sin pensar', en: 'Answer against the clock to make it automatic.' },
 };

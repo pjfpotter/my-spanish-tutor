@@ -90,7 +90,7 @@ export interface BuildReport {
 export async function buildClips(
   toBuild: ClipSpec[],
   voice: Voice,
-  deps: { synth: Synthesiser; decoder: Decoder; store: ClipStore; route: Router; stretcher: Stretcher },
+  deps: { synth: Synthesiser; decoder: Decoder; store: ClipStore; route: Router; stretcher: Stretcher; /** The course this build is for, so its spend is recorded against it in the cost log. */ courseId?: string | null },
 ): Promise<BuildReport> {
   const report: BuildReport = { built: [], failed: [], spentGbp: 0 };
   const round = (n: number) => Math.round(n * 1000) / 1000;
@@ -121,7 +121,7 @@ export async function buildClips(
         const tagged = tagSentences(spec.text, voice.tag ?? '');
         const cost = tagged.text.length * COST_PER_CHAR_GBP;
         const result = await deps.route({
-          service: TTS_SERVICE, tier: 'speech', profileId: null, estimateGbp: cost, fallback: () => null,
+          service: TTS_SERVICE, tier: 'speech', courseId: deps.courseId ?? null, profileId: null, estimateGbp: cost, fallback: () => null,
           call: async () => ({ value: await deps.synth.synthesise(tagged.text), units: tagged.text.length, costGbp: cost }),
         });
         if (result.status !== 'ok') {
