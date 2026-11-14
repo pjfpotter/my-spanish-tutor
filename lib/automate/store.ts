@@ -4,70 +4,22 @@ import { awardCoins } from '../coins/ledger';
 import { causeTagsForRecallFailure } from '../diagnostics/recall-store';
 import { logAttempt, type AttemptResult } from '../events/attempts';
 import { practiceAnswerText } from '../memorise/practice-text';
-import { DEFAULT_RANK, rankFor, type RankInfo } from './rank';
-import { DEFAULT_AUTOMATE, foldWindow, isTestReady, meetsTarget, type AutomateConfig, type Timed } from './window';
-
-interface Row {
-  item_id: string;
-  session_id: string;
-  outcome: string;
-  accuracy: string | null;
-  response_time_ms: number | null;
-  assisted: boolean;
-}
-
-export interface SessionSummary {
-  /** Average response time of the answers that counted, in ms. */
-  averageMs: number;
-  answers: number;
-}
-
-export interface AutomateState {
-  /** The response window for the next question, in ms. */
-  windowMs: number;
-  rank: RankInfo;
-  /** The student's own recent sessions, oldest first. */
-  history: SessionSummary[];
-  /** Per question: separate sessions in which it met the accuracy and time target. */
-  sessionsMet: Record<string, number>;
-  ready: boolean;
-}
-
-const toTimed = (r: Row): Timed => ({ accuracy: r.accuracy === null ? null : Number(r.accuracy), responseMs: r.response_time_ms, blank: r.outcome === 'blank' });
+import { automateStateFrom, type AttemptRow, type AutomateState, type SessionSummary } from './state';
+import { DEFAULT_AUTOMATE, type AutomateConfig } from './window';
 
 /**
- * Where the student stands in timed practice, from their stored attempts. Attempts made with the text showing
- * (assisted) never count toward the window, rank or readiness: they are practice, not a test of hearing.
+ * Where the student stands in timed practice, from their stored attempts (rules in `state.ts`, shared with the lab).
  */
 export async function loadAutomateState(db: Db, profileId: string, questionIds: string[], cfg: AutomateConfig = DEFAULT_AUTOMATE): Promise<AutomateState> {
-  const { rows } = await db.query<Row>(
+  const { rows } = await db.query<AttemptRow>(
     `select item_id, session_id, outcome, accuracy, response_time_ms, assisted from attempts
       where profile_id = $1 and phase = 'automate' order by created_at, id`,
     [profileId],
   );
-  const counted = rows.filter((r) => !r.assisted);
-  const timed = counted.map(toTimed);
-
-  const bySession = new Map<string, number[]>();
-  for (const r of counted) {
-    const t = toTimed(r);
-    if (t.blank || t.responseMs === null || t.accuracy === null || t.accuracy < DEFAULT_RANK.minAccuracy) continue;
-    bySession.set(r.session_id, [...(bySession.get(r.session_id) ?? []), t.responseMs]);
-  }
-  const history = [...bySession.values()].slice(-8).map((ms) => ({ averageMs: Math.round(ms.reduce((a, b) => a + b, 0) / ms.length), answers: ms.length }));
-
-  const met = new Map<string, Set<string>>();
-  for (const r of counted) if (meetsTarget(toTimed(r), cfg)) met.set(r.item_id, (met.get(r.item_id) ?? new Set()).add(r.session_id));
-  const sessionsMet = Object.fromEntries(questionIds.map((id) => [id, met.get(id)?.size ?? 0]));
-
-  return {
-    windowMs: foldWindow(timed, cfg).windowMs,
-    rank: rankFor(timed),
-    history,
-    sessionsMet,
-    ready: isTestReady(questionIds.map((id) => ({ sessionsMet: sessionsMet[id] })), questionIds.length, cfg),
-  };
+  return automateStateFrom(rows, questionIds, cfg);
 }
+
+export type { AutomateState, SessionSummary };
 
 export interface ResponseInput {
   profileId: string;

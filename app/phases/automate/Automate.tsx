@@ -7,6 +7,8 @@ import { isRepeatRequest, REPEAT_PHRASE } from '../../../lib/automate/repeat';
 import { RANKS, rankFor } from '../../../lib/automate/rank';
 import { recordingOn } from '../../../lib/demo/session';
 import type { AutomateState } from '../../../lib/automate/store';
+import { automateStateFrom, type AttemptRow } from '../../../lib/automate/state';
+import { ORDER_KEY as LAB_ORDER_KEY, readJson, rowsKey } from '../../../lib/lab/notes';
 import { DEFAULT_AUTOMATE } from '../../../lib/automate/window';
 import type { Chunk } from '../../../lib/course/schema';
 import { feedbackFor } from '../../../lib/memorise/feedback';
@@ -78,21 +80,34 @@ interface Plan {
   levels: LadderLevel[];
 }
 
+/** What the automate lab hears about each attempt and each change of stage (automate-lab). Nothing here is sent anywhere. */
+export interface LabAttempt { position: number; level: string; windowMs: number; responseMs: number | null; accuracy: number | null; assisted: boolean; blank: boolean }
+export interface LabStage { stage: string; position: number | null; level: string | null; windowMs: number | null }
+export interface LabMode {
+  /** The fake student, used to key the attempts the lab keeps on the device. */
+  student: string;
+  onAttempt: (a: LabAttempt) => void;
+  onStage: (s: LabStage) => void;
+  /** Setup choices from the address. */
+  startAt?: number;
+  expert?: boolean;
+}
+
 const seconds = (ms: number) => (ms / 1000).toFixed(1);
 const ORDER_KEY = 'automate-last-order';
 const slotFor = (index: readonly BuiltClip[], text: string, speed: number) => index.find((c) => c.text === text && c.speed === speed)?.slot ?? null;
 const levelName = (l: LadderLevel) => (l === 'all' ? 'The whole answer' : l === 1 ? 'The first chunk' : l === 2 ? 'The first two chunks' : 'The first three chunks');
 
-const readLastOrder = (): string[] | null => {
+const readLastOrder = (key = ORDER_KEY): string[] | null => {
   try {
-    return JSON.parse(sessionStorage.getItem(ORDER_KEY) ?? 'null');
+    return JSON.parse(sessionStorage.getItem(key) ?? 'null');
   } catch {
     return null;
   }
 };
-const saveOrder = (ids: string[]) => {
+const saveOrder = (ids: string[], key = ORDER_KEY) => {
   try {
-    sessionStorage.setItem(ORDER_KEY, JSON.stringify(ids));
+    sessionStorage.setItem(key, JSON.stringify(ids));
   } catch {
     /* private mode: the next round is still shuffled, it just cannot promise to differ */
   }
@@ -107,7 +122,7 @@ const saveOrder = (ids: string[]) => {
  * with the attempt. Saying nothing is a blank, never a wrong answer, and asking Tele to repeat in Spanish is rewarded.
  * Nothing here calls a language model.
  */
-export function Automate({ items, initial, chunks = [], demo = false, unlockAll = false }: { items: AutomateItem[]; initial: AutomateState; chunks?: Chunk[]; /** A testing course: expert mode is available before every answer is at its top level (course-unlock-testing). */ unlockAll?: boolean; /** The tour stop: nothing is sent to the server, the microphone is never opened and a Pretend button answers for the visitor. */ demo?: boolean }) {
+export function Automate({ items, initial, chunks = [], demo = false, unlockAll = false, lab }: { items: AutomateItem[]; initial: AutomateState; chunks?: Chunk[]; /** The automate lab: the real round with the real microphone, but nothing goes to the server and each attempt is reported to the page (automate-lab). */ lab?: LabMode; /** A testing course: expert mode is available before every answer is at its top level (course-unlock-testing). */ unlockAll?: boolean; /** The tour stop: nothing is sent to the server, the microphone is never opened and a Pretend button answers for the visitor. */ demo?: boolean }) {
   const [state, setState] = useState(initial);
   const [stage, setStage] = useState<Stage>('intro');
   const [round, setRound] = useState<RoundItem[]>([]);
@@ -120,8 +135,8 @@ export function Automate({ items, initial, chunks = [], demo = false, unlockAll 
   /** The student has asked Tele to repeat this question, which is good test technique. */
   const [asked, setAsked] = useState(false);
   const [ladder, setLadder] = useState<Record<string, LadderState>>({});
-  const [startAt, setStartAt] = useState(0);
-  const [expert, setExpert] = useState(false);
+  const [startAt, setStartAt] = useState(lab?.startAt ?? 0);
+  const [expert, setExpert] = useState(lab?.expert ?? false);
   const [hint, setHint] = useState<string | null>(null);
   const [burst, setBurst] = useState({ n: 0, big: false });
   const [reaction, setReaction] = useState<'idle' | 'correct' | 'wrong' | 'skipped'>('idle');
@@ -165,6 +180,14 @@ export function Automate({ items, initial, chunks = [], demo = false, unlockAll 
   }, [items, chunks]);
   const item = round[idx] ? byId.get(round[idx].id) ?? null : null;
 
+  // The lab hears about each change of stage, so a note can say what was on screen.
+  useEffect(() => {
+    if (!lab) return;
+    const live = stage !== 'intro' && stage !== 'summary';
+    lab.onStage({ stage, position: live ? current.current.item.position : null, level: live ? levelName(current.current.level) : null, windowMs: live ? current.current.windowMs : state.windowMs });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage, idx]);
+
   const tele = (situation: Parameters<typeof selectLine>[0]): TutorLine => {
     const line = selectLine(situation, { lastId: lastLine.current });
     lastLine.current = line.id;
@@ -172,7 +195,7 @@ export function Automate({ items, initial, chunks = [], demo = false, unlockAll 
   };
 
   useEffect(() => {
-    sessionId.current = currentSessionId();
+    sessionId.current = lab ? `lab-${Date.now()}` : currentSessionId();
     fetch('/api/clips').then((r) => (r.ok ? r.json() : [])).catch(() => []).then((list: BuiltClip[]) => (index.current = list));
     // The ladder lives on this device only.
     setLadder(Object.fromEntries(items.map((i) => [i.id, readLadder(i.id, plans.get(i.id)!.levels.length)])));
@@ -196,6 +219,21 @@ export function Automate({ items, initial, chunks = [], demo = false, unlockAll 
   });
 
   async function post(body: Record<string, unknown>) {
+    if (lab) {
+      // Kept on this device only: the same rules as the server's state, worked out from the lab's own attempts.
+      const blank = body.blank === true;
+      const accuracy = typeof body.accuracy === 'number' ? body.accuracy : null;
+      const responseMs = typeof body.responseTimeMs === 'number' ? body.responseTimeMs : null;
+      const outcome = blank ? 'blank' : body.assisted === true ? 'assisted' : (accuracy ?? 0) >= DEFAULT_AUTOMATE.threshold ? 'correct' : 'wrong';
+      const key = rowsKey(lab.student);
+      const rows = [...readJson<AttemptRow[]>(key, []), { item_id: String(body.itemId), session_id: sessionId.current, outcome, accuracy, response_time_ms: responseMs, assisted: body.assisted === true }];
+      try { localStorage.setItem(key, JSON.stringify(rows)); } catch { /* the state still holds for this visit */ }
+      setState(automateStateFrom(rows, items.map((i) => i.id)));
+      if (!blank) setCoins((c) => c + 2);
+      const now = current.current;
+      lab.onAttempt({ position: now.item.position, level: levelName(now.level), windowMs: now.windowMs, responseMs, accuracy, assisted: now.assisted, blank });
+      return null;
+    }
     if (demo) {
       // Nothing is written: the effort euros and the rank are worked out here and live only on this page.
       const blank = body.blank === true;
@@ -246,7 +284,7 @@ export function Automate({ items, initial, chunks = [], demo = false, unlockAll 
           clip = await loadClip(slot);
           clips.current.set(slot, clip);
         } catch {
-          if (!demo) fetch('/api/clip-failure', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ slot }) }).catch(() => {});
+          if (!demo && !lab) fetch('/api/clip-failure', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ slot }) }).catch(() => {});
         }
       }
       const open = (at: number) => {
@@ -297,7 +335,7 @@ export function Automate({ items, initial, chunks = [], demo = false, unlockAll 
   async function start() {
     setMessage(null);
     if (!demo && !(await capture.prepare())) return;
-    sessionId.current = currentSessionId();
+    sessionId.current = lab ? `lab-${Date.now()}` : currentSessionId();
     // Starting higher lifts every answer to at least that level, and keeps it there.
     const lifted = { ...ladder };
     for (const it of items) {
@@ -308,8 +346,8 @@ export function Automate({ items, initial, chunks = [], demo = false, unlockAll 
     }
     setLadder(lifted);
     combo.current = NO_COMBO;
-    const planned = planRound(items.map((i) => i.id), readLastOrder());
-    saveOrder(planned.map((p) => p.id));
+    const planned = planRound(items.map((i) => i.id), readLastOrder(lab ? LAB_ORDER_KEY : ORDER_KEY));
+    saveOrder(planned.map((p) => p.id), lab ? LAB_ORDER_KEY : ORDER_KEY);
     setRound(planned);
     setResults([]);
     begin(0, planned, state.windowMs, lifted);
@@ -437,7 +475,7 @@ export function Automate({ items, initial, chunks = [], demo = false, unlockAll 
   const counted = results.filter((r) => !r.assisted);
   const answered = counted.filter((r) => !r.blank && r.responseMs !== null);
   const roundAverage = answered.length ? Math.round(answered.reduce((t, r) => t + (r.responseMs as number), 0) / answered.length) : null;
-  const allAtTop = unlockAll || items.every((i) => (ladder[i.id]?.at ?? 0) >= plans.get(i.id)!.levels.length - 1);
+  const allAtTop = unlockAll || !!lab || items.every((i) => (ladder[i.id]?.at ?? 0) >= plans.get(i.id)!.levels.length - 1);
 
   // ---- Panel at the foot of the screen -----------------------------------------------------------------
 
@@ -492,7 +530,7 @@ export function Automate({ items, initial, chunks = [], demo = false, unlockAll 
           onToggleEnglish={toggleEnglish}
         />
       }
-      exitHref={demo ? '/demo' : undefined}
+      exitHref={demo ? '/demo' : lab ? '/lab/automate' : undefined}
       meta={meta}
       footer={footer}
     >
@@ -635,7 +673,7 @@ export function Automate({ items, initial, chunks = [], demo = false, unlockAll 
           <LittleAndOften />
           <div className="controls">
             <button type="button" className="btn btn-primary" onClick={() => { setStage('intro'); setFeedback(null); }} disabled={busy}>Another round</button>
-            <Link className="btn" href={demo ? '/demo/tutor' : '/'}>{demo ? 'Next stop: meet Tele' : 'Back to the desktop'}</Link>
+            <Link className="btn" href={demo ? '/demo/tutor' : lab ? '/lab/automate' : '/'}>{demo ? 'Next stop: meet Tele' : lab ? 'Back to the lab' : 'Back to the desktop'}</Link>
           </div>
         </div>
       )}
