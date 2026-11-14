@@ -395,10 +395,12 @@ flowchart LR
 
 | Phase | Opens when | Counts as done when |
 |---|---|---|
-| `write` | Always | Five answers confirmed |
-| `understand` | Always | Five questions mastered by ear |
-| `memorise` | At least one answer confirmed **and** five questions mastered. Only confirmed answers are practised | Five answers memorised |
-| `automate` | Five answers memorised | `testReady` is true |
+| `write` | Always | Every core answer confirmed (four or five, `Progress.total`) |
+| `understand` | Always | Every core question mastered by ear |
+| `memorise` | At least one answer confirmed **and** every core question mastered. Only confirmed answers are practised | Every core answer memorised |
+| `automate` | Every core answer memorised | `testReady` is true |
+
+Extension questions are practised like the others but are never counted here, in readiness or in the overview (`loadProgress` counts core questions only).
 
 A locked phase appears in Tele's world as static and cannot be opened. The `phaseStates()` function returns, for each phase, `open` or `locked` with a human reason (for example "First confirm an answer and master all five questions by ear.").
 
@@ -996,7 +998,7 @@ Edit the calibration data in `lib/course/calibration/` (for example change a fea
 
 ### 19.2 Add a course
 
-1. Define the course in the form validated by `lib/course/schema.ts`: a sentence builder of tagged chunks, **exactly five questions** each with Spanish text, an English subtitle and answering categories, a test date, and calibration data. Incomplete courses are rejected with the missing items listed.
+1. Define the course in the form validated by `lib/course/schema.ts`: one or more sentence builders of tagged chunks (a chunk's optional `builder` names which one), **four or five core questions** (plus any extension questions, which are practised but never gate the path) each with Spanish text, an English subtitle and answering categories, a test date, and calibration data. Incomplete courses are rejected with the missing items listed.
 2. Add model answers for each question and level. Either generate them with the upload-time set-up call, which validates every word against the allowed set, requires the rubric to place each answer at its intended level, regenerates a mismatch once, then marks it missing, or author them by hand in `courses.model_answers` as the fallback.
 3. Run `npm run seed`, then `npm run build-audio` (dry run) and `-- --yes` for the new questions.
 4. Check the `public/` size against the budget (section 16.2).
@@ -1078,7 +1080,7 @@ Photo import of a sentence builder, meme and reggaeton remix, a virtual-pet wrap
 | **Channel** | One question shown as a TV channel on Tele's desktop; its picture clears from static as mastery rises |
 | **Chunk** | A Spanish phrase from the sentence builder, with a gloss, category and feature tags |
 | **Cost router** | The single wrapper through which every paid call passes |
-| **Course** | One sentence builder, five questions, a test date and calibration data |
+| **Course** | One or more sentence builders, four or five core questions (and optional extension questions), a test date and calibration data |
 | **Feature** | A countable thing an answer does (for example a contrast or a second justifier) that the rubric counts |
 | **Glue word** | A linking word (*y*, *pero*, *también*) allowed in answers that never counts as a feature |
 | **Hotspot** | A chunk missed in three or more attempts |

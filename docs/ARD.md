@@ -247,12 +247,12 @@ Each record states the decision, the alternatives considered, and the consequenc
 - **Status:** Accepted
 - **Decision:** Each item records qualifying successes and the distinct sessions they occurred in. Default threshold: three successes across two sessions, configurable. In-session spaced return, next-session queue.
 - **Alternatives:** Advance on first success (the PRD requires embedding, not one-off recall).
-- **Consequences:** Better retention and a truthful readiness meter, at the cost of slower visible progress, which rewards and mood support must offset.
+- **Consequences:** Better retention and a truthful readiness meter, at the cost of slower visible progress, which rewards and the tutor's encouragement must offset.
 
 ### ADR-11. Diagnostics from small event data and a closed tag list
 
 - **Status:** Accepted
-- **Decision:** Every attempt is an event. Cause tags come from rules over probe variations (slow word alone, normal word alone, word in sentence), timed versus untimed outcomes and the latest mood check-in. The tag set is closed.
+- **Decision:** Every attempt is an event. Cause tags come from rules over probe variations (slow word alone, normal word alone, word in sentence), timed versus untimed outcomes and nothing else (the mood check-in was removed). The tag set is closed.
 - **Alternatives:** Free-form analysis by a model (cost, inconsistency); no causes (misses the "why" the product depends on).
 - **Consequences:** Cheap, testable and sufficient for both adaptation and the teacher overview.
 

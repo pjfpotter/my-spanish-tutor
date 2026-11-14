@@ -78,7 +78,7 @@ Phones are the primary device because nearly every household has one. Old school
 
 ### 5.1 In scope for v1
 
-A single vertical slice for one course at a time: a sentence builder, five test questions and a simplified mark scheme, authored by the developer, with students joining by class code. Four learning phases, shallow speech feedback, a Spanish-only animated tutor, diagnostics, a test-date planner, rewards, cost controls and a read-only teacher overview.
+A single vertical slice for one course at a time: one or more sentence builders, four or five test questions (core or extension) and a simplified mark scheme, set up by the developer on the teacher's behalf, with students joining by class code. Four learning phases, shallow speech feedback, a Spanish-only animated tutor, diagnostics, a test-date countdown and readiness meter, rewards, cost controls, a read-only teacher overview and a demo mode that needs no class.
 
 ### 5.2 Out of scope for v1
 
@@ -91,8 +91,8 @@ Photo import of a student's own sentence builder; meme and reggaeton-style remix
 ## 6. User journey
 
 1. **Join.** Student enters a class code, reads a short privacy notice, picks a nickname and a few interest tags, and receives a recovery code.
-2. **Starting point.** A quick mood check-in ("Spanish is not my favourite" is an allowed answer) and a short test-teach-test baseline on the five questions.
-3. **Plan.** The app shows days to the test, a readiness meter, and a short daily plan based on the minutes the student has.
+2. **Starting point.** A one-pass placement check: hear each question once and choose its meaning. Anything right first time skips that stage. There is no mood check-in (parked).
+3. **Countdown.** The app shows days to the test and a readiness meter that names its next action, with a gentle little-and-often message. It shows no timings and no session plan.
 4. **Write.** The tutor coaches the student to draft an answer to each question using only sentence-builder chunks, pitched at their ability and time, with light personal touches, and encourages aiming one level higher. The student confirms each answer.
 5. **Understand.** The student hears each question at varied speeds and chooses its meaning. A question is mastered only after repeated success across separate sessions.
 6. **Memorise.** The student sees the English meaning, says their answer aloud, and gets a quick percentage with highlighted words.
@@ -107,8 +107,8 @@ Priorities use MoSCoW (Must, Should, Could). Each requirement maps to a capabili
 
 | ID | Requirement | Priority |
 |---|---|---|
-| FR-1 | A course has one sentence builder (chunks with English gloss, category and feature tags), exactly five questions with English subtitles, a test date and a mark scheme | Must |
-| FR-2 | The mark scheme has three named levels, Rock solid, Stepping out and Showing off, defined by countable features per answer from editable calibration data; whole-test targets (three tenses, two justified opinions) are shown but gate nothing; no grade or mark is ever shown | Must |
+| FR-1 | A course has one or more sentence builders (chunks with English gloss, category and feature tags), four or five questions with English subtitles (core or extension), a test date and a mark scheme | Must |
+| FR-2 | The mark scheme is a set of countable features per answer, each with a value that blends how many and how hard, from editable calibration data (the three named levels were replaced, task 26.1a); whole-test targets (three tenses, two justified opinions) are shown but gate nothing; no grade or mark is ever shown | Must |
 | FR-3 | Students join with a class code only | Must |
 | FR-4 | Recycled chunks are tagged and offered first when suggesting upgrades | Should |
 | FR-5 | A photo of a sentence builder can be turned into an editable draft of chunks | Could |
@@ -163,14 +163,14 @@ Priorities use MoSCoW (Must, Should, Could). Each requirement maps to a capabili
 | FR-34 | Every attempt is stored as an event with outcome, timing and cause tags | Must |
 | FR-35 | Comprehension probes distinguish too fast, word not known, sound-spelling gap, and thrown by context | Should |
 | FR-36 | Recall failures are tagged as not known well enough, stress-related, or a chunk hotspot | Should |
-| FR-37 | One-tap mood check-in shapes tone and difficulty | Should |
+| FR-37 | Parked: a one-tap mood check-in. Removed from the product (task 19.4); the requirement text is kept in learning-diagnostics | Won't (v1) |
 
 ### 7.6 Planning, tutor, rewards (`revision-planner`, `tutor-avatar`, `engagement-rewards`)
 
 | ID | Requirement | Priority |
 |---|---|---|
 | FR-38 | Home screen shows days to the test, the current phase and a readiness meter that names its next action | Must |
-| FR-39 | Personal session plan redistributes when sessions are missed; late starters get a shortened plan | Should |
+| FR-39 | Superseded: the timed session plan was removed (task 19.4). Instead the home screen shows a little-and-often message and never a timing | Won't (v1) |
 | FR-40 | Opt-in daily reminder only | Could |
 | FR-41 | The tutor speaks only Spanish; English appears only as subtitles | Must |
 | FR-42 | Tutor lines come from a stored phrase bank generated once per persona | Must |
@@ -214,7 +214,7 @@ This is a feature of a wider language-learning product, not a standalone company
 - **Hypothesis:** an annual per-school licence, with a free pilot term in which the cost-per-student report and teacher overview provide evidence of use.
 - **Why it can be sold:** it targets practice that existing classroom games do not (listening and speaking), it is designed to be habit-forming, and per-student marginal cost is near zero because audio is generated once and shared.
 - **Unit economics:** to be evidenced by the measured cost per student per test cycle from user testing. Prices will be set after that measurement, not before.
-- **Extension:** more courses (topics and years) are content, not engineering, because each course is a sentence builder plus five questions plus a mark scheme.
+- **Extension:** more courses (topics and years) are content, not engineering, because each course is sentence builders plus four or five questions plus a mark scheme.
 
 ## 10. Competitive landscape
 
@@ -237,7 +237,7 @@ The unmet need is a scripted, test-specific, listening-and-speaking trainer aime
 | Scope too large for two weeks | Build the vertical slice first; stretch items are isolated and can be cut |
 | Language model produces Spanish outside the sentence builder | Validate every word against the allowed set; fall back to model answers |
 | Student data concerns | No accounts, no audio storage, fixed tags, delete-everything |
-| Students do not return without coercion | Mood check-in, quick wins, rewards for effort, tutor with personality; test with real students |
+| Students do not return without coercion | Quick wins, rewards for effort, a tutor with personality, a skip-ahead placement check; test with real students |
 | Unofficial prototype voice cannot ship | Production voice chosen by listening test before launch |
 
 ## 12. Validation plan
@@ -256,7 +256,7 @@ The unmet need is a scripted, test-specific, listening-and-speaking trainer aime
 | 5 to 6 | Question comprehension phase |
 | 7 to 8 | Answer writing coach |
 | 9 to 10 | Memorisation and automatisation |
-| 11 | Diagnostics, mood check-in, planner |
+| 11 | Diagnostics, countdown and readiness meter |
 | 12 | Tutor personas, rewards, cost report, teacher overview |
 | 13 | User testing and fixes |
 | 14 | Demo preparation |
