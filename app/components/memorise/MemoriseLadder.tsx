@@ -9,8 +9,11 @@ import {
 } from '../../../lib/memorise/ladder';
 import type { LadderStart, LessonRecall } from '../../../lib/memorise/ladder-store';
 import { DEFAULT_MEMORISE } from '../../../lib/memorise/fade';
+import { MEMORISE_DEMO_KEY, recordingOn } from '../../../lib/demo/session';
 import { SOUND_KEY, soundOn } from '../../../lib/practice/sound';
 import { firstUnsaid, liveMatch, type Focus, type LiveMatch } from '../../../lib/speech/live-match';
+import { newRepeatMiss, recordAttempt, type RepeatMiss } from '../../../lib/memorise/repeat-miss';
+import { syllabify } from '../../../lib/spanish/syllables';
 import { tokenise } from '../../../lib/speech/score';
 import { LATENCY_BUDGET, LatencyLog, budgetVerdict, deviceReport } from '../../../lib/speech/latency';
 import { listenCall } from '../../../lib/speech/pause';
@@ -20,10 +23,12 @@ import { Tele } from '../../components/Tele';
 import { useLiveSpeech } from '../../components/useLiveSpeech';
 import { useSfx } from '../../components/useSfx';
 import { useWakeLock } from '../../components/useWakeLock';
+import { useWordAudio } from '../../components/useWordAudio';
 import { TELE } from '../../../lib/memorise/tele-lines';
 import './ladder.css';
 
 const KEY = 'memorise-lab-v1';
+
 /** The real phase keeps only the student's two settings in the browser; their progress is saved to the server. */
 const PREFS_KEY = 'memorise-prefs-v1';
 type Line = readonly [string, string];
@@ -96,8 +101,11 @@ interface Ui {
   returning: boolean;
   /** While returning: only this bit is matched, against words heard after the point the student was sent back. */
   focus: Focus | null;
+  /** A word that has stayed unlit on three attempts in this lesson: slow audio and syllables are on offer (27.6). */
+  pron: string | null;
+  pronOpen: boolean;
 }
-const newUi = (): Ui => ({ phase: 'cue', match: null, helped: false, shown: new Set(), offer: false, heard: '', fb: null, line: null, showQ: false, blocks: false, note: '', opts: [], right: '', picked: null, built: [], pool: [], wrong: null, errors: 0, startedAt: 0, lastProgressAt: null, lastVoiceAt: null, kind: 'speak', raw: '', pointer: null, returning: false, focus: null });
+const newUi = (): Ui => ({ phase: 'cue', match: null, helped: false, shown: new Set(), offer: false, heard: '', fb: null, line: null, showQ: false, blocks: false, note: '', opts: [], right: '', picked: null, built: [], pool: [], wrong: null, errors: 0, startedAt: 0, lastProgressAt: null, lastVoiceAt: null, kind: 'speak', raw: '', pointer: null, returning: false, focus: null, pron: null, pronOpen: false });
 
 const freshWorld = (A: readonly LadderAnswer[]): World => ({ answers: A, day: 1, euros: 0, states: A.map(freshState) });
 const pick = <T,>(list: readonly T[]): T => list[Math.floor(Math.random() * list.length)];
@@ -194,16 +202,20 @@ export interface SaveReply { paid: number; euros: number; memorised: string[] }
 
 export function MemoriseLadder({ answers: A, variant, start, save: saveRemote }: {
   answers: LadderAnswer[];
-  /** `lab` keeps progress in this browser and shows the tester tools; `real` is the memorise phase, saved to the server. */
-  variant: 'lab' | 'real';
+  /** `lab` keeps progress in this browser and shows the tester tools; `real` is the memorise phase, saved to the server; `demo` is the tour stop: this browser only, a Pretend button on every spoken screen and no tester tools. */
+  variant: 'lab' | 'real' | 'demo';
   start?: Pick<LadderStart, 'day' | 'euros' | 'states' | 'testDays'>;
   /** Real phase: saves progress and pays what was earned. Resolves null if the save could not be made. */
   save?: (body: SaveBody) => Promise<SaveReply | null>;
 }) {
   const real = variant === 'real';
+  const demo = variant === 'demo';
+  const localKey = real ? PREFS_KEY : demo ? MEMORISE_DEMO_KEY : KEY;
   const [, bump] = useReducer((n: number) => n + 1, 0);
   const world = useRef<World>(start ? { answers: A, day: start.day, euros: start.euros, states: start.states } : freshWorld(A));
   const recallLog = useRef<LessonRecall[]>([]);
+  const repeats = useRef<RepeatMiss>(newRepeatMiss());
+  const wordAudio = useWordAudio();
   const sentEarned = useRef(0);
   const queue = useRef<Promise<unknown>>(Promise.resolve());
   const ses = useRef<Session | null>(null);
@@ -229,11 +241,11 @@ export function MemoriseLadder({ answers: A, variant, start, save: saveRemote }:
   // ---- Saved progress: this browser only ---------------------------------------------------------------
   const save = useCallback((extra: { selfMark?: boolean; meter?: boolean } = {}) => {
     try {
-      const old = JSON.parse(localStorage.getItem(real ? PREFS_KEY : KEY) ?? '{}');
+      const old = JSON.parse(localStorage.getItem(localKey) ?? '{}');
       const progress = real ? {} : { day: world.current.day, euros: world.current.euros, states: world.current.states };
-      localStorage.setItem(real ? PREFS_KEY : KEY, JSON.stringify({ ...old, ...progress, ...extra }));
+      localStorage.setItem(localKey, JSON.stringify({ ...old, ...progress, ...extra }));
     } catch { /* storage is a convenience only */ }
-  }, [real]);
+  }, [real, localKey]);
   /**
    * Real phase: sends where each answer is, the whole-answer attempts since the last send, and the euros earned since
    * then. Sends run one at a time. If one fails the attempts go back on the list and are sent with the next.
@@ -270,7 +282,7 @@ export function MemoriseLadder({ answers: A, variant, start, save: saveRemote }:
   useEffect(() => {
     let m = !isPhone();
     try {
-      const j = JSON.parse(localStorage.getItem(real ? PREFS_KEY : KEY) ?? 'null');
+      const j = JSON.parse(localStorage.getItem(localKey) ?? 'null');
       if (!real && j?.states?.length === A.length) world.current = { answers: A, day: j.day ?? 1, euros: j.euros ?? 0, states: j.states };
       if (typeof j?.selfMark === 'boolean') setSelfMark(j.selfMark);
       if (typeof j?.meter === 'boolean') m = j.meter;
@@ -281,38 +293,49 @@ export function MemoriseLadder({ answers: A, variant, start, save: saveRemote }:
 
   // ---- Live listening -----------------------------------------------------------------------------------
   const spanChunks = (s: SayStep) => s.span.map((i) => A[s.a].chunks[i].t);
+  /** The recogniser's running transcript, or the scripted one from the Pretend button. */
+  function handleTranscript(text: string) {
+    const u = ui.current;
+    const s = ses.current?.cur;
+    if (u.phase !== 'listening' || !s || s.t !== 'say') return;
+    const t0 = performance.now();
+    if (lastResultAt.current !== null) lat.current.add('gap', t0 - lastResultAt.current);
+    lastResultAt.current = t0;
+    const before = u.match?.matched ?? 0;
+    const heard = text.split(/\s+/).slice(-6).join(' ');
+    // Interim results often repeat. If nothing the student can see has changed, there is nothing to draw.
+    if (text === u.raw && u.match) return;
+    u.raw = text;
+    const m = liveMatch(spanChunks(s), text, u.match, u.focus ?? undefined);
+    const lit = m.matched > before;
+    if (u.focus && m.said[u.focus.chunk]) {
+      // The bit they were sent back to is said. If another is still missing, send them to that one next.
+      const more = firstUnsaid(m);
+      u.focus = more === null ? null : { chunk: more, after: tokenise(text).length };
+    }
+    if (u.returning) u.pointer = firstUnsaid(m);
+    else if (lit) u.pointer = null;
+    if (lit) {
+      u.lastProgressAt = t0;
+      u.offer = false;
+      if (before === 0 && speechStartAt.current !== null) lat.current.add('first-word', t0 - speechStartAt.current);
+    }
+    u.match = m;
+    u.heard = heard;
+    bump();
+    if (lit) requestAnimationFrame(() => setTimeout(() => lat.current.add('paint', performance.now() - t0), 0));
+  }
+  /** Demo only: say the screen's words for the student, as if the recogniser had heard them (so the demo works with no microphone). */
+  function pretend() {
+    const u = ui.current;
+    const s = ses.current?.cur;
+    if (!s || s.t !== 'say' || u.phase !== 'listening') return;
+    const all = spanChunks(s).join(' ');
+    // Sent back to one bit: only words after the point they were sent back count, so add that bit to what was heard.
+    handleTranscript(u.focus ? `${u.raw} ${spanChunks(s)[u.focus.chunk]}`.trim() : all);
+  }
   const live = useLiveSpeech({
-    onTranscript: (text) => {
-      const u = ui.current;
-      const s = ses.current?.cur;
-      if (u.phase !== 'listening' || !s || s.t !== 'say') return;
-      const t0 = performance.now();
-      if (lastResultAt.current !== null) lat.current.add('gap', t0 - lastResultAt.current);
-      lastResultAt.current = t0;
-      const before = u.match?.matched ?? 0;
-      const heard = text.split(/\s+/).slice(-6).join(' ');
-      // Interim results often repeat. If nothing the student can see has changed, there is nothing to draw.
-      if (text === u.raw && u.match) return;
-      u.raw = text;
-      const m = liveMatch(spanChunks(s), text, u.match, u.focus ?? undefined);
-      const lit = m.matched > before;
-      if (u.focus && m.said[u.focus.chunk]) {
-        // The bit they were sent back to is said. If another is still missing, send them to that one next.
-        const more = firstUnsaid(m);
-        u.focus = more === null ? null : { chunk: more, after: tokenise(text).length };
-      }
-      if (u.returning) u.pointer = firstUnsaid(m);
-      else if (lit) u.pointer = null;
-      if (lit) {
-        u.lastProgressAt = t0;
-        u.offer = false;
-        if (before === 0 && speechStartAt.current !== null) lat.current.add('first-word', t0 - speechStartAt.current);
-      }
-      u.match = m;
-      u.heard = heard;
-      bump();
-      if (lit) requestAnimationFrame(() => setTimeout(() => lat.current.add('paint', performance.now() - t0), 0));
-    },
+    onTranscript: handleTranscript,
     onSpeechStart: () => { if (speechStartAt.current === null) speechStartAt.current = performance.now(); },
     onResume: () => {
       // Back from a lock: the student has been away, so the pause clock starts again and no hint is pushed at them.
@@ -346,6 +369,11 @@ export function MemoriseLadder({ answers: A, variant, start, save: saveRemote }:
     const whole = isWhole(w, step);
     // A whole-answer go is a recall. It is kept as numbers only (task 27.4), and only the unaided, clean ones from memory count toward memorising.
     if (real && whole && A[step.a].id) recallLog.current.push(recallOf(A[step.a], step, o, u.match, u.helped));
+    // Count the words the recogniser did not understand; the same one three attempts running earns pronunciation support (27.6).
+    if (u.match && !fallback.current) {
+      const words = step.span.flatMap((ci, c) => A[step.a].chunks[ci].t.split(' ').map((word, k) => ({ word, lit: u.match!.hit[c]?.[k] === true })));
+      u.pron = recordAttempt(repeats.current, step.a, words);
+    }
     const fb = resolveSay(w, s, o);
     u.phase = 'result';
     u.fb = fb;
@@ -355,7 +383,7 @@ export function MemoriseLadder({ answers: A, variant, start, save: saveRemote }:
     save();
     if (whole) void flush(s.earned);
     bump();
-    if (fb.auto) autoTimer.current = setTimeout(() => { if (ui.current === u) nextStep(); }, fb.auto);
+    if (fb.auto && !u.pron) autoTimer.current = setTimeout(() => { if (ui.current === u) nextStep(); }, fb.auto);
   }
   /** The student has reached the end with a bit missing: point at that bit and let them say it before the screen ends (27.8). */
   function sendBack() {
@@ -400,7 +428,7 @@ export function MemoriseLadder({ answers: A, variant, start, save: saveRemote }:
       if (call.kind === 'finish') {
         if (call.why === 'trailed' && !u.returning && u.match && firstUnsaid(u.match) !== null) sendBack();
         else conclude();
-      } else if (call.kind === 'offer' && !u.offer) { u.offer = true; markNext(); bump(); }
+      } else if (call.kind === 'offer' && !u.offer && !(demo && recordingOn())) { u.offer = true; markNext(); bump(); }
     }, 150);
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -485,6 +513,7 @@ export function MemoriseLadder({ answers: A, variant, start, save: saveRemote }:
   function startLesson(L: Lesson) {
     fallback.current = false;
     sentEarned.current = 0;
+    repeats.current = newRepeatMiss();
     ses.current = newSession(w, L);
     setView('lesson');
     nextStep();
@@ -640,7 +669,7 @@ export function MemoriseLadder({ answers: A, variant, start, save: saveRemote }:
     const line = (memo === A.length ? TELE.all : rec?.type === 'lock' ? TELE.morning : !rec ? TELE.rest : started ? TELE.back : TELE.hello) as Line;
     return (
       <main className="ml ml-home" data-testid="lab-home">
-        <div className="ml-titlebar"><span>memorise.exe</span>{real && <Link href="/" className="ml-link" data-testid="section-exit">Desktop</Link>}{real ? (start?.testDays != null && <span className="ml-when" data-testid="ml-countdown">{start.testDays} {start.testDays === 1 ? 'day' : 'days'} to the test</span>) : <span className="ml-when">{Math.max(0, 9 - w.day)} days to the test</span>}</div>
+        <div className="ml-titlebar"><span>memorise.exe</span>{real && <Link href="/" className="ml-link" data-testid="section-exit">Desktop</Link>}{demo && <Link href="/demo" className="ml-link" data-testid="section-exit">Tour</Link>}{real ? (start?.testDays != null && <span className="ml-when" data-testid="ml-countdown">{start.testDays} {start.testDays === 1 ? 'day' : 'days'} to the test</span>) : <span className="ml-when">{Math.max(0, 9 - w.day)} days to the test</span>}</div>
         {saveFailed && <p className="ml-note" role="status" data-testid="ml-save-failed">Your progress could not be saved just now. It will be sent with your next answer, so keep this page open.</p>}
         {teleRow(line, undefined)}
         <section className="ml-paper ml-today" aria-label="Up next">
@@ -674,7 +703,7 @@ export function MemoriseLadder({ answers: A, variant, start, save: saveRemote }:
             <li><button type="button" className="ml-row" onClick={() => startLesson({ type: 'mix', a: null })}><span className="ml-n">?</span><span><strong>Mix-up.</strong> Tele asks any question you know.</span><strong>Start</strong></button></li>
           )}
         </ol>
-        {real ? (
+        {demo ? null : real ? (
           <details className="ml-tools">
             <summary>Settings</summary>
             <div className="ml-toolbody">
@@ -843,7 +872,20 @@ export function MemoriseLadder({ answers: A, variant, start, save: saveRemote }:
       <div className="ml-fb" data-ok={fb.ok ? '1' : '0'} role="status" data-testid="lab-fb">
         <h2><span className="ml-sym" aria-hidden="true">{fb.ok ? '✓' : '↻'}</span>{fb.head}{fb.gain ? <span> +€{fb.gain}</span> : null}</h2>
         {fb.body && <p>{fb.body}</p>}
-        {!fb.auto && <button type="button" className="ml-btn ml-primary" onClick={nextStep} autoFocus data-testid="lab-continue">{fb.btn ?? 'Continue'}</button>}
+        {u.pron && (() => {
+          const syl = syllabify(u.pron);
+          return u.pronOpen ? (
+            <div className="ml-pron" data-testid="lab-pron">
+              <p className="ml-syl" lang="es" data-testid="lab-syllables" aria-label={`${u.pron}, split into syllables`}>
+                {syl.syllables.map((x, i) => <span key={i} data-lit={wordAudio.active === i} data-stress={syl.stress === i}>{x}{i < syl.syllables.length - 1 ? '-' : ''}</span>)}
+              </p>
+              <button type="button" className="ml-btn" onClick={() => wordAudio.play(u.pron!)} data-testid="lab-pron-hear">Hear it slowly</button>
+            </div>
+          ) : (
+            <button type="button" className="ml-btn" onClick={() => { u.pronOpen = true; wordAudio.play(u.pron!); bump(); }} data-testid="lab-pron-offer">Practise <span lang="es">{u.pron}</span></button>
+          );
+        })()}
+        {(!fb.auto || u.pron) && <button type="button" className="ml-btn ml-primary" onClick={nextStep} autoFocus data-testid="lab-continue">{fb.btn ?? 'Continue'}</button>}
       </div>
     );
   } else if (sayStep && u.phase === 'cue') {
@@ -859,6 +901,7 @@ export function MemoriseLadder({ answers: A, variant, start, save: saveRemote }:
             <button type="button" className="ml-btn" onClick={conclude} data-testid="lab-pass">Move on</button>
           </div>
         )}
+        {demo && !tap && <button type="button" className="ml-btn" onClick={pretend} data-testid="demo-pretend">Pretend I said it</button>}
         {tap ? (
           <button type="button" className="ml-btn ml-primary ml-big" onClick={() => live.start()}>Tap, then speak</button>
         ) : (
