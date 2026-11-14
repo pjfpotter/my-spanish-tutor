@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
-import { SEED_COURSE, simplestSeedAnswer } from '../lib/course/seed';
-import { installCuedMic, SEED_CLASS_CODE, stubQuestionAudio, unlockAutomate, unlockMemorise } from './helpers';
+import { SEED_COURSE } from '../lib/course/seed';
+import { installCuedMic, SEED_CLASS_CODE, stubQuestionAudio, unlockAutomate, unlockMemorise, sheetAnswer } from './helpers';
 
 // Task 16.1: one scripted pass of all four phases on the seeded course, from joining to test-ready, on the phone and
 // Chromebook profiles. Joining and the final timed round go through the real screens; the writing, hearing and
@@ -23,7 +23,7 @@ test('join, write, understand, memorise and automate on the seeded course, then 
   await stubQuestionAudio(page, (spanish) => asked.push(spanish));
   await page.route('**/api/transcribe', (r) => {
     const q = SEED_COURSE.questions.find((x) => x.spanish === asked.at(-1))!;
-    const text = simplestSeedAnswer(q.position);
+    const text = sheetAnswer(q.position);
     return r.fulfill({ json: { status: 'ok', text, confidence: 0.9 } });
   });
 

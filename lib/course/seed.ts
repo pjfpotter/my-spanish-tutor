@@ -1,5 +1,6 @@
 import { assessAnswer } from '../coach/rubric.ts';
 import goingOut from './calibration/going-out.json' with { type: 'json' };
+import { FREE_TIME, FREE_TIME_SHEET } from '../sheets/samples/free-time.ts';
 import type { Calibration, Chunk, Course, FeatureTag, ModelAnswer } from './schema';
 
 /**
@@ -184,6 +185,8 @@ export const SEED_COURSE: Course = {
   // Draft calibration for this course; edit lib/course/calibration/going-out.json, not this file.
   calibration: goingOut as Calibration,
   modelAnswers,
+  // Stands in for a teacher's upload until a course is created from a real sheet: the free-time sentence builder.
+  sheet: { sheet: FREE_TIME_SHEET, interpretation: FREE_TIME },
 };
 
 /**

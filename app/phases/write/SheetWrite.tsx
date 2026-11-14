@@ -16,9 +16,9 @@ import '../../components/screens.css';
  * re-checks it from the chosen chunks. No model is called here. Pick-up view is off unless a student
  * turns it on (task 5.3).
  */
-export function SheetWrite({ course, saved, pickup = false }: { course: WritingCourse; saved: SavedAnswer[]; pickup?: boolean }) {
+export function SheetWrite({ course, saved, pickup = false, focus = 0 }: { course: WritingCourse; saved: SavedAnswer[]; pickup?: boolean; focus?: number }) {
   const B = useMemo(() => builderFor(course)!, [course]);
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(focus);
   const [confirmed, setConfirmed] = useState(() => new Set(saved.filter((s) => s.confirmed).map((s) => s.questionId)));
   const [error, setError] = useState<string | null>(null);
   const q = course.questions[index];

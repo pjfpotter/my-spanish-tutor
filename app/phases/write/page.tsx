@@ -1,11 +1,8 @@
 import { redirect } from 'next/navigation';
-import { simplerVersion, type Simplification } from '../../../lib/coach/simplify';
 import { getDb } from '../../../lib/db';
-import { loadMemoriseItems } from '../../../lib/memorise/store';
 import { loadSavedAnswers, loadWritingCourse } from '../../../lib/progress/writing-store';
 import { currentProfile } from '../../../lib/server/session';
 import { SheetWrite } from './SheetWrite';
-import { Write } from './Write';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,17 +11,10 @@ export default async function WritePage({ searchParams }: { searchParams: Promis
   if (!profile) redirect('/welcome');
   const db = await getDb();
   const [course, saved] = await Promise.all([loadWritingCourse(db, profile.courseId), loadSavedAnswers(db, profile.id)]);
-  // A course with a teacher's sentence builder writes on the sheet; any other course keeps the slot-builder flow.
-  if (course.sheet) return <SheetWrite course={course} saved={saved} />;
-  // An answer the student keeps failing to recall gets a simpler version to offer, never to force.
-  const stalled = (await loadMemoriseItems(db, profile.id, profile.courseId)).filter((i) => i.stalled);
-  const suggestions: Record<string, Simplification> = {};
-  for (const item of stalled) {
-    const own = saved.find((s) => s.questionId === item.id && s.confirmed);
-    const s = own && simplerVersion(course, own.text);
-    if (s) suggestions[item.id] = s;
-  }
+  // Every course has a teacher's sentence builder; there is no other way to write.
+  if (!course.sheet) throw new Error('This course has no sentence builder sheet.');
+  // The memorise phase links to one question to rebuild it with fewer parts.
   const wanted = Number((await searchParams).question);
   const focus = Math.max(0, course.questions.findIndex((q) => q.position === wanted));
-  return <Write course={course} saved={saved} suggestions={suggestions} focus={focus} />;
+  return <SheetWrite course={course} saved={saved} focus={focus} />;
 }

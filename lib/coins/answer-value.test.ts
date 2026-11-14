@@ -2,12 +2,12 @@ import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { recordResponse } from '../automate/store';
 import { seedCourse } from '../course/seed-db';
-import { SEED_COURSE, simplestSeedAnswer } from '../course/seed';
+import { SEED_COURSE } from '../course/seed';
 import { newTestDb } from '../db/test-db';
 import { recordRecall } from '../memorise/store';
 import { createProfile, nicknameOptions } from '../profile/profile';
-import { loadWritingCourse, saveAnswer, type WritingCourse } from '../progress/writing-store';
-import { assessAnswer } from '../coach/rubric';
+import { loadWritingCourse, saveSheetAnswer, type WritingCourse } from '../progress/writing-store';
+import { LONG, SHORT } from '../sheets/samples/free-time-selections';
 import { earnedValue, EFFORT_SESSIONS, payAnswerValue } from './answer-value';
 import { balance } from './ledger';
 
@@ -48,9 +48,9 @@ describe('paying through learning, from stored progress', () => {
     const p = await createProfile(db, { courseId, nickname: nicknameOptions(++n + 1)[n % 5], interests: [] });
     if (!p.ok) throw new Error('profile');
     const q = course.questions[0];
-    const text = simplestSeedAnswer(1);
-    await saveAnswer(db, course, p.profile.id, q.id, text, true);
-    return { pid: p.profile.id, q, value: assessAnswer(course.calibration, text).value };
+    const r = await saveSheetAnswer(db, course, p.profile.id, q.id, SHORT, true);
+    if (!r.ok) throw new Error(r.error);
+    return { pid: p.profile.id, q, value: r.value };
   }
   const recall = (pid: string, qid: string, accuracy: number, sessionId: string, level = 0) =>
     recordRecall(db, { profileId: pid, courseId, itemId: qid, sessionId, accuracy, level });
@@ -91,8 +91,8 @@ describe('paying through learning, from stored progress', () => {
     const [a, b] = [randomUUID(), randomUUID()];
     for (const s of [a, a, b]) await recall(pid, q.id, 95, s, 1);
     const before = await answerEuros(pid);
-    const rich = SEED_COURSE.modelAnswers.filter((m) => m.questionPosition === 1).sort((x, y) => assessAnswer(course.calibration, y.text).value - assessAnswer(course.calibration, x.text).value)[0].text;
-    await saveAnswer(db, course, pid, q.id, rich, true); // a change: progress resets, earnings stay
+    const changed = await saveSheetAnswer(db, course, pid, q.id, LONG, true); // a change: progress resets, earnings stay
+    expect(changed).toMatchObject({ ok: true });
     expect(await answerEuros(pid)).toBe(before);
     expect(await balance(db, pid)).toBeGreaterThanOrEqual(before);
     for (const s of [randomUUID(), randomUUID(), randomUUID()]) await recall(pid, q.id, 95, s, 1);

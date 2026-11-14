@@ -434,7 +434,7 @@ If a course has no model answer for a question, the starter option says so and t
 
 ### 9.2a Write it on a teacher's sentence builder
 
-When a course has a stored sheet and interpretation (`courses.sheet`, `courses.interpretation`, migration 0013) the write phase renders `app/components/sheets/WriteSheet.tsx` instead of the chunk-swap screen.
+Every course carries a stored sheet and interpretation (`courses.sheet`, `courses.interpretation`, migration 0020), and the write phase always renders `app/components/sheets/WriteSheet.tsx`. There is no other write screen: `validateCourse` refuses a course without a sheet, `seedCourse` writes it, and publishing is blocked if it is missing. A sheet answer is stored as its Spanish sentence and valued by the rubric on that sentence.
 
 1. **Upload (model, once).** `lib/sheets/ingest.ts` reads the .docx (`read-docx.ts`), has a model draft an Interpretation through the cost router (`sheet-ingest`), verifies and repairs it (`verify.ts`, at most three repairs), judges undecided chunk pairs (`pairs.ts`), and falls back to a layout-order draft (`fallback.ts`) if needed. Corrections are listed for the teacher (`CorrectionNotice`). Results are cached in `sheet_interpretations`.
 2. **Write (no model).** `engine.ts` decides what clashes, what can be built and how it reads; `signoff.ts` applies the exam rule (credit anything grammatical that could be true; block only an incomplete or contradictory answer; name at most one thing to fix). `camera.ts` frames the list the student needs next.

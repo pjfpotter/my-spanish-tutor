@@ -1,5 +1,4 @@
-import { tokens } from '../coach/rubric';
-import { viewAnswer } from '../coach/writing';
+import { assessAnswer, tokens } from '../coach/rubric';
 import { awardCoins } from '../coins/ledger';
 import { buildBuilder, type Builder } from '../sheets/builder';
 import { prepare, sentences } from '../sheets/engine';
@@ -15,7 +14,7 @@ export interface WritingCourse {
   chunks: Chunk[];
   calibration: Calibration;
   modelAnswers: ModelAnswer[];
-  /** The teacher's sentence builder, when the course has one. Without it the original chunk-swap flow is used. */
+  /** The teacher's sentence builder. Every course made through the seed has one; null only for bare test fixtures. */
   sheet: { sheet: Sheet; interpretation: Interpretation } | null;
 }
 
@@ -77,32 +76,7 @@ async function payBonusIfComplete(db: Db, course: WritingCourse, profileId: stri
   return amount;
 }
 
-/**
- * Saves an answer. The server re-checks it, so a confirmed answer always passes the word bank. Any edit
- * un-confirms the answer until the student confirms it again (they can change a confirmed answer later), and
- * changing the words of a confirmed answer resets its progress.
- */
-export async function saveAnswer(db: Db, course: WritingCourse, profileId: string, questionId: string, text: string, confirm: boolean): Promise<SaveResult> {
-  if (!course.questions.some((q) => q.id === questionId)) return { ok: false, error: 'Unknown question.' };
-  if (text.length > 1500) return { ok: false, error: 'That answer is too long.' };
-  const view = viewAnswer(course, text);
-  if (confirm && (!view.canConfirm || !text.trim())) return { ok: false, error: 'This answer has words outside the sentence builder.' };
-
-  const before = await db.query<{ text: string; confirmed_at: Date | null }>('select text, confirmed_at from answers where profile_id = $1 and question_id = $2', [profileId, questionId]);
-  const progressReset = !!before.rows[0]?.confirmed_at && !sameWords(before.rows[0].text, text);
-  if (progressReset) await resetAnswerProgress(db, profileId, questionId);
-
-  await db.query(
-    `insert into answers (profile_id, question_id, text, value, confirmed_at) values ($1,$2,$3,$4, case when $5 then now() else null end)
-     on conflict (profile_id, question_id) do update set text = excluded.text, value = excluded.value,
-       confirmed_at = case when $5 then now() else null end`,
-    [profileId, questionId, text, view.assessment.value, confirm],
-  );
-  const bonus = confirm ? await payBonusIfComplete(db, course, profileId) : 0;
-  return { ok: true, confirmed: confirm, value: view.assessment.value, bonus, progressReset };
-}
-
-/** The prepared builder for a course that has a sheet, or null. Built the same way on the server and in the browser. */
+/** The prepared builder for the course's sheet, or null for a course row that has none (only test fixtures).  Built the same way on the server and in the browser. */
 export function builderFor(course: WritingCourse): Builder | null {
   return course.sheet ? prepare(buildBuilder('course', course.sheet.sheet, course.sheet.interpretation)) : null;
 }
@@ -110,7 +84,7 @@ export function builderFor(course: WritingCourse): Builder | null {
 /**
  * Saves an answer built on the sheet. The server rebuilds it from the chosen chunks, so nothing the browser
  * sends can put words on the card that are not on the sheet. It is confirmed only when the exam-rule
- * sign-off passes. The stored text is the Spanish sentence; no value is kept for a sheet answer.
+ * sign-off passes. The stored text is the Spanish sentence, and its value comes from the rubric on that sentence.
  */
 export async function saveSheetAnswer(db: Db, course: WritingCourse, profileId: string, questionId: string, selection: unknown, confirm: boolean): Promise<SaveResult> {
   const B = builderFor(course);
@@ -120,21 +94,18 @@ export async function saveSheetAnswer(db: Db, course: WritingCourse, profileId: 
   if (!a) return { ok: false, error: 'That answer is not from your sentence builder.' };
   const text = sentences(B, a, 'es').join(' ');
   if (text.length > 1500) return { ok: false, error: 'That answer is too long.' };
+  const value = assessAnswer(course.calibration, text).value;
   const ok = signOff(B, a).code === 'ok';
   if (confirm && (!ok || !text.trim())) return { ok: false, error: 'This answer is not finished yet.' };
   const before = await db.query<{ text: string; confirmed_at: Date | null }>('select text, confirmed_at from answers where profile_id = $1 and question_id = $2', [profileId, questionId]);
   const progressReset = !!before.rows[0]?.confirmed_at && !sameWords(before.rows[0].text, text);
   if (progressReset) await resetAnswerProgress(db, profileId, questionId);
   await db.query(
-    `insert into answers (profile_id, question_id, text, value, selection, confirmed_at) values ($1,$2,$3,0,$4, case when $5 then now() else null end)
-     on conflict (profile_id, question_id) do update set text = excluded.text, value = 0, selection = excluded.selection,
+    `insert into answers (profile_id, question_id, text, value, selection, confirmed_at) values ($1,$2,$3,$6,$4, case when $5 then now() else null end)
+     on conflict (profile_id, question_id) do update set text = excluded.text, value = excluded.value, selection = excluded.selection,
        confirmed_at = case when $5 then now() else null end`,
-    [profileId, questionId, text, JSON.stringify(selection), confirm],
+    [profileId, questionId, text, JSON.stringify(selection), confirm, value],
   );
-  return { ok: true, confirmed: confirm, value: 0, bonus: 0, progressReset };
-}
-
-/** Attaches a processed sentence builder to a course (the teacher's upload, once checked). Teacher content only. */
-export async function attachSheet(db: Db, courseId: string, sheet: Sheet, interpretation: Interpretation): Promise<void> {
-  await db.query('update courses set sheet = $2, interpretation = $3 where id = $1', [courseId, JSON.stringify(sheet), JSON.stringify(interpretation)]);
+  const bonus = confirm ? await payBonusIfComplete(db, course, profileId) : 0;
+  return { ok: true, confirmed: confirm, value, bonus, progressReset };
 }
