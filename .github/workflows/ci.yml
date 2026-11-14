@@ -1,8 +1,13 @@
 name: CI
 on:
+  # Push to main, and pull requests into main. Listing every push as well ran each pull request's checks twice.
   push:
+    branches: [ main ]
   pull_request:
     branches: [ main ]
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   check:
     timeout-minutes: 10

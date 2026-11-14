@@ -4,24 +4,35 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
+# A new push to the same branch cancels the run still going for the old one.
+concurrency:
+  group: playwright-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   test:
-    timeout-minutes: 60
+    timeout-minutes: 30
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      # The full suite on both device profiles took about 17 minutes on one worker. Four shards run side by side.
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*
+        cache: npm
     - name: Install dependencies
       run: npm ci
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
+    # The suite only uses Chromium (the phone and Chromebook profiles are both Chromium).
+    - name: Install Playwright browser
+      run: npx playwright install --with-deps chromium
     - name: Run Playwright tests
-      run: npx playwright test
+      run: npx playwright test --shard=${{ matrix.shard }}/4
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
       with:
-        name: playwright-report
+        name: playwright-report-${{ matrix.shard }}
         path: playwright-report/
-        retention-days: 30
+        retention-days: 14
