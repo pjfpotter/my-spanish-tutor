@@ -5,16 +5,18 @@ import { QUESTION_COUNT, type PhaseId } from '../phases/gate';
 import { loadReadinessInput } from '../planner/load';
 import { readinessPercent, type ReadinessInput } from '../planner/readiness';
 import { loadQuestions } from '../progress/progress';
+import { courseSummary, type CourseStatus } from '../course/status';
 
 /** Where a student is working now: the first step of the path they have not finished, or ready for the test. */
 export type Stage = PhaseId | 'ready';
 export const STAGES: Stage[] = ['write', 'understand', 'memorise', 'automate', 'ready'];
 
 export function stageOf(p: ReadinessInput): Stage {
-  if (p.answersConfirmed < QUESTION_COUNT) return 'write';
-  if (p.questionsMastered < QUESTION_COUNT) return 'understand';
-  if (p.answersMemorised < QUESTION_COUNT) return 'memorise';
-  return p.testReady || p.questionsAutomated >= QUESTION_COUNT ? 'ready' : 'automate';
+  const total = p.total ?? QUESTION_COUNT;
+  if (p.answersConfirmed < total) return 'write';
+  if (p.questionsMastered < total) return 'understand';
+  if (p.answersMemorised < total) return 'memorise';
+  return p.testReady || p.questionsAutomated >= total ? 'ready' : 'automate';
 }
 
 export interface Hotspot { label: string; misses: number }
@@ -32,6 +34,8 @@ export interface OverviewData {
   questionHotspots: Hotspot[];
   chunkHotspots: Hotspot[];
   causes: { tag: CauseTag; count: number }[];
+  /** Where the course is on the way to a class (draft, set up, reviewed, published, shared). Left out for sample data. */
+  courseStatus?: { status: CourseStatus; missing: string[] };
 }
 
 /** Owner links carry a random token; only its hash is stored. */
@@ -48,7 +52,8 @@ const TOP = 5;
 export async function loadOverview(db: Db, courseId: string): Promise<OverviewData> {
   const course = (await db.query<{ title: string; test_date: Date | string }>('select title, test_date from courses where id = $1', [courseId])).rows[0];
   const questions = await loadQuestions(db, courseId);
-  const qids = questions.map((q) => q.id);
+  // Readiness counts the core questions only; extension questions are optional extras.
+  const qids = questions.filter((q) => !q.extension).map((q) => q.id);
   const profiles = (await db.query<{ id: string; nickname: string }>('select id, nickname from profiles where course_id = $1 order by created_at, id', [courseId])).rows;
   const startedIds = new Set((await db.query<{ profile_id: string }>(
     `select profile_id from attempts where profile_id in (select id from profiles where course_id = $1)
@@ -85,6 +90,7 @@ export async function loadOverview(db: Db, courseId: string): Promise<OverviewDa
     students,
     questionHotspots: qMiss.rows.map((r) => ({ label: qText.get(r.item_id) ?? 'A question', misses: Number(r.n) })),
     chunkHotspots: cMiss.rows.map((r) => ({ label: r.spanish, misses: Number(r.n) })),
+    courseStatus: await courseSummary(db, courseId).then(({ status, missing }) => ({ status, missing })),
     causes: causes.rows.filter((r) => (CAUSE_TAGS as readonly string[]).includes(r.tag)).map((r) => ({ tag: r.tag as CauseTag, count: Number(r.n) })),
   };
 }

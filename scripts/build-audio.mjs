@@ -11,6 +11,7 @@
 // also removes every file in the clips folder that no current clip wants: old voices, old text, anything left over.
 // The dry run says how many it would remove.
 //   npm run build-audio -- --only=lines, --only=questions or --only=bits
+//   npm run build-audio -- --yes --course=CODE   builds for that course and records the spend against it (needs DATABASE_URL); removes nothing
 //
 // Clips are stored in public/audio/clips/<slot>.mp3 and .json, where the slot is a hash of the text and
 // speed. A clip is skipped when its stored source hash (text, voice, model, speed) matches, so a rerun
@@ -23,7 +24,7 @@ import { MPEGDecoder } from 'mpg123-decoder';
 import { buildClips, planBuild, TTS_SERVICE } from '../lib/audio/build.ts';
 import { planClips } from '../lib/audio/manifest.ts';
 import { CHEEKY_POOL } from '../lib/tele/cheeky.ts';
-import { SEED_COURSE } from '../lib/course/seed.ts';
+import { SEED_COURSE, TESTING_COURSE } from '../lib/course/seed.ts';
 import { bitsFor } from '../lib/audio/bits.ts';
 import { teleLines } from '../lib/memorise/tele-lines.ts';
 import { ffmpegStretcher } from '../lib/audio/ffmpeg.ts';
@@ -37,6 +38,13 @@ const args = process.argv.slice(2);
 const yes = args.includes('--yes');
 const force = args.includes('--force');
 const only = args.find((a) => a.startsWith('--only='))?.slice(7);
+// Which course the spend is recorded against in the cost log (task 23.7). Defaults to the main course.
+const courseArg = args.find((a) => a.startsWith('--course='))?.slice(9)?.toUpperCase();
+const course = [SEED_COURSE, TESTING_COURSE].find((c) => c.classCode === (courseArg ?? SEED_COURSE.classCode));
+if (!course) {
+  console.error(`No course with class code ${courseArg}. Known: ${[SEED_COURSE, TESTING_COURSE].map((c) => c.classCode).join(', ')}.`);
+  process.exit(2);
+}
 const limit = Number(args.find((a) => a.startsWith('--limit='))?.slice(8)) || null;
 
 const voiceId = process.env.ELEVENLABS_VOICE_TELE;
@@ -74,8 +82,8 @@ const store = {
 
 // Bits Tele can say in the memorise ladder: the course chunks, the pieces of the model answers that match no chunk, and
 // the memorise lab's sample bits, so the lab sounds like the real phase.
-const bits = bitsFor(SEED_COURSE, LAB_ANSWERS.flatMap((a) => a.chunks.map((c) => ({ t: c.t, en: c.en }))));
-let specs = planClips(SEED_COURSE.questions, [...PHRASE_BANK, ...CHEEKY_POOL], bits, teleLines());
+const bits = bitsFor(course, LAB_ANSWERS.flatMap((a) => a.chunks.map((c) => ({ t: c.t, en: c.en }))));
+let specs = planClips(course.questions, [...PHRASE_BANK, ...CHEEKY_POOL], bits, teleLines());
 if (only === 'lines') specs = specs.filter((s) => s.kind === 'line');
 if (only === 'questions') specs = specs.filter((s) => s.kind === 'question');
 if (only === 'bits') specs = specs.filter((s) => s.kind === 'bit');
@@ -84,7 +92,8 @@ const plan = await planBuild(specs, voice, store, force);
 if (limit) plan.toBuild = plan.toBuild.slice(0, limit);
 const wanted = new Set(specs.map((s) => s.slot));
 const onDisk = existsSync(dir) ? [...new Set((await readdir(dir)).filter((f) => /\.(mp3|json)$/.test(f)).map((f) => f.replace(/\.(mp3|json)$/, '')))] : [];
-const orphans = only || limit ? [] : onDisk.filter((slot) => !wanted.has(slot));
+// Clips are shared between courses, so a build for one named course never removes clips another course may use.
+const orphans = only || limit || courseArg ? [] : onDisk.filter((slot) => !wanted.has(slot));
 console.log(`Clips wanted: ${specs.length}. Already built and up to date: ${plan.upToDate.length}. To build: ${plan.toBuild.length}.`);
 for (const s of plan.toBuild) console.log(`  + ${s.label.padEnd(28)} ${String(s.text.length).padStart(3)} chars  ${s.text}`);
 console.log(`Characters to synthesise: ${plan.characters}. Estimated cost: £${plan.estimateGbp.toFixed(3)} (the rate is an unverified estimate).`);
@@ -137,7 +146,9 @@ if (process.env.DATABASE_URL) {
 }
 const route = createCostRouter(costStore, SERVICE_LIMITS);
 
-const report = await buildClips(plan.toBuild, voice, { synth, decoder, store, route, stretcher: ffmpegStretcher }).finally(() => pool?.end());
+// Record the spend against the course, when there is a database to look it up in.
+const courseId = pool ? (await pool.query('select id from courses where class_code = $1', [course.classCode])).rows[0]?.id ?? null : null;
+const report = await buildClips(plan.toBuild, voice, { synth, decoder, store, route, stretcher: ffmpegStretcher, courseId }).finally(() => pool?.end());
 mpg.free();
 if (!report.failed.length) await prune();
 else console.log('Some clips failed, so nothing was removed.');

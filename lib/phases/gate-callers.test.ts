@@ -17,7 +17,7 @@ describe('every phaseStates call passes the course flag', () => {
   const calls = sources.flatMap((f) =>
     readFileSync(f, 'utf8')
       .split('\n')
-      .map((line, i) => ({ file: path.relative(root, f), line: i + 1, text: line }))
+      .map((line, i) => ({ file: path.relative(root, f).split(path.sep).join('/'), line: i + 1, text: line }))
       .filter((l) => /phaseStates\(/.test(l.text) && !/^\s*(import|\/\/|\*)/.test(l.text)),
   );
 

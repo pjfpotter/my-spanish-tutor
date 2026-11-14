@@ -29,12 +29,21 @@ describe('validateCourse', () => {
     expect(validateCourse(good()).ok).toBe(true);
   });
 
-  it('rejects fewer or more than five questions and lists them', () => {
+  it('rejects fewer than four or more than five core questions and lists them', () => {
     const few = good();
+    few.questions.pop();
     few.questions.pop();
     const many = good();
     many.questions.push({ position: 6, spanish: 'x', english: 'y', recycled: false, topics: ['opinion'] });
-    for (const c of [few, many]) expect(problems(c).join()).toMatch(/exactly 5 questions/);
+    for (const c of [few, many]) expect(problems(c).join()).toMatch(/4 or 5 core questions/);
+  });
+
+  it('accepts four core questions', () => {
+    const four = good();
+    four.questions.pop();
+    four.modelAnswers = four.modelAnswers.filter((a) => a.questionPosition <= 4);
+    four.questions[3].recycled = true;
+    expect(validateCourse(four).ok).toBe(true);
   });
 
   it('rejects a question without an English subtitle', () => {
@@ -47,7 +56,7 @@ describe('validateCourse', () => {
     expect(problems({ ...good(), testDate: '', chunks: [] }).length).toBeGreaterThanOrEqual(2);
   });
 
-  it('needs exactly one recycled question', () => {
+  it('allows at most one recycled question', () => {
     const c = good();
     c.questions[0].recycled = true;
     expect(validateCourse(c).ok).toBe(false);

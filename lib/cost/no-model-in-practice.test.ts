@@ -51,7 +51,7 @@ describe('the practice loop makes no language-model calls (task 14.3)', () => {
   const files = reachable();
 
   it('reaches the real practice code, so the check is not empty', () => {
-    const rel = files.map((f) => path.relative(ROOT, f));
+    const rel = files.map((f) => path.relative(ROOT, f).split(path.sep).join('/'));
     expect(rel.length).toBeGreaterThan(40);
     expect(rel).toEqual(expect.arrayContaining(['lib/automate/store.ts', 'lib/transcription/transcribe.ts', 'lib/cost-router/router.ts']));
   });

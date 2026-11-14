@@ -1,7 +1,7 @@
 import type { Db } from '../db/types';
 import { DEFAULT_MASTERY, isMastered, masteryFraction, NO_MASTERY, type MasteryState } from '../mastery/mastery';
 import { loadAutomateState } from '../automate/store';
-import type { Progress } from '../phases/gate';
+import { QUESTION_COUNT, type Progress } from '../phases/gate';
 import { knownAtStart, loadBaseline } from '../diagnostics/baseline';
 
 export interface QuestionRow {
@@ -10,15 +10,17 @@ export interface QuestionRow {
   spanish: string;
   english: string;
   recycled: boolean;
+  /** An extra question: practised like the others, never needed to unlock a step. */
+  extension: boolean;
   keyWord: { spanish: string; english: string } | null;
 }
 
 export async function loadQuestions(db: Db, courseId: string): Promise<QuestionRow[]> {
-  const { rows } = await db.query<{ id: string; position: number; spanish: string; english_subtitle: string; recycled: boolean; key_word: string | null; key_word_english: string | null }>(
-    'select id, position, spanish, english_subtitle, recycled, key_word, key_word_english from questions where course_id = $1 order by position',
+  const { rows } = await db.query<{ id: string; position: number; spanish: string; english_subtitle: string; recycled: boolean; extension: boolean; key_word: string | null; key_word_english: string | null }>(
+    'select id, position, spanish, english_subtitle, recycled, extension, key_word, key_word_english from questions where course_id = $1 order by position',
     [courseId],
   );
-  return rows.map((r) => ({ id: r.id, position: r.position, spanish: r.spanish, english: r.english_subtitle, recycled: r.recycled,
+  return rows.map((r) => ({ id: r.id, position: r.position, spanish: r.spanish, english: r.english_subtitle, recycled: r.recycled, extension: r.extension,
     keyWord: r.key_word && r.key_word_english ? { spanish: r.key_word, english: r.key_word_english } : null,
   }));
 }
@@ -36,21 +38,25 @@ export async function loadMastery(db: Db, profileId: string, phase: string): Pro
 
 /** Where the student stands, from the database. Drives which phases are open. */
 export async function loadProgress(db: Db, profileId: string, courseId?: string): Promise<Progress> {
-  const confirmed = await db.query<{ n: string }>('select count(*) as n from answers where profile_id = $1 and confirmed_at is not null', [profileId]);
+  // Only the course's core questions count toward unlocking and readiness; extension questions are optional extras.
+  const course = courseId ?? (await db.query<{ course_id: string }>('select course_id from profiles where id = $1', [profileId])).rows[0]?.course_id;
+  const core = course
+    ? (await db.query<{ id: string }>('select id from questions where course_id = $1 and not extension', [course])).rows.map((r) => r.id)
+    : null;
+  const isCore = (id: string) => core === null || core.includes(id);
+  const confirmed = await db.query<{ question_id: string }>('select question_id from answers where profile_id = $1 and confirmed_at is not null', [profileId]);
   const understood = await loadMastery(db, profileId, 'understand');
   const memorised = await loadMastery(db, profileId, 'memorise');
-  const count = (m: Map<string, MasteryState>) => [...m.values()].filter((s) => isMastered(s, DEFAULT_MASTERY)).length;
+  const masteredIds = (m: Map<string, MasteryState>) => [...m].filter(([id, s]) => isMastered(s, DEFAULT_MASTERY) && isCore(id)).map(([id]) => id);
   // A question proved in the placement check counts as understood for this stage only (learning-diagnostics: Skipping by proof).
-  const understoodIds = new Set([...understood].filter(([, s]) => isMastered(s, DEFAULT_MASTERY)).map(([id]) => id));
-  for (const id of knownAtStart(await loadBaseline(db, profileId))) understoodIds.add(id);
-  const memorisedCount = count(memorised);
+  const understoodIds = new Set(masteredIds(understood));
+  for (const id of knownAtStart(await loadBaseline(db, profileId))) if (isCore(id)) understoodIds.add(id);
+  const memorisedCount = masteredIds(memorised).length;
+  const total = core ? core.length : QUESTION_COUNT;
   // Test-ready only matters once the answers are memorised, so skip the extra query before then.
   let testReady = false;
-  if (memorisedCount >= 5 && courseId) {
-    const ids = (await db.query<{ id: string }>('select id from questions where course_id = $1', [courseId])).rows.map((r) => r.id);
-    testReady = (await loadAutomateState(db, profileId, ids)).ready;
-  }
-  return { answersConfirmed: Number(confirmed.rows[0].n), questionsMastered: understoodIds.size, answersMemorised: memorisedCount, testReady };
+  if (memorisedCount >= total && core) testReady = (await loadAutomateState(db, profileId, core)).ready;
+  return { answersConfirmed: confirmed.rows.filter((r) => isCore(r.question_id)).length, questionsMastered: understoodIds.size, answersMemorised: memorisedCount, testReady, total };
 }
 
 /** How clear each question's channel is, 0 (static) to 1 (clear and locked in). In question order. */

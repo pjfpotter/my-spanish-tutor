@@ -14,7 +14,9 @@
 export const PHASES = ['write', 'understand', 'memorise', 'automate'] as const;
 export type PhaseId = (typeof PHASES)[number];
 
+/** How many core questions a course has when nothing says otherwise. A course can have four or five. */
 export const QUESTION_COUNT = 5;
+const NUMBER_WORDS: Record<number, string> = { 4: 'four', 5: 'five' };
 
 export interface Progress {
   /** Answers the student has confirmed, 0 to 5. */
@@ -25,6 +27,8 @@ export interface Progress {
   answersMemorised: number;
   /** Every question answered accurately and quickly on separate sessions (response-automatisation). */
   testReady?: boolean;
+  /** How many core questions the course has (4 or 5). Left out, it is five. Extension questions are never counted. */
+  total?: number;
 }
 
 export type PhaseState =
@@ -42,10 +46,12 @@ export interface GateOptions {
 }
 
 export function phaseStates(p: Progress, opts: GateOptions = {}): Record<PhaseId, PhaseState> {
-  const wrote = p.answersConfirmed >= QUESTION_COUNT;
+  const total = p.total ?? QUESTION_COUNT;
+  const words = NUMBER_WORDS[total] ?? String(total);
+  const wrote = p.answersConfirmed >= total;
   const hasAnswer = p.answersConfirmed >= 1;
-  const understood = p.questionsMastered >= QUESTION_COUNT;
-  const memorised = p.answersMemorised >= QUESTION_COUNT;
+  const understood = p.questionsMastered >= total;
+  const memorised = p.answersMemorised >= total;
 
   // Only which phases are open changes. `done` still comes from progress, so ticks and meters stay honest.
   if (opts.unlockAll) {
@@ -57,7 +63,7 @@ export function phaseStates(p: Progress, opts: GateOptions = {}): Record<PhaseId
     };
   }
 
-  const memoriseMissing = [!hasAnswer && 'confirm an answer', !understood && 'master all five questions by ear'].filter(
+  const memoriseMissing = [!hasAnswer && 'confirm an answer', !understood && `master all ${words} questions by ear`].filter(
     Boolean,
   ) as string[];
 
@@ -70,7 +76,7 @@ export function phaseStates(p: Progress, opts: GateOptions = {}): Record<PhaseId
         : { status: 'locked', done: false, reason: `First ${memoriseMissing.join(' and ')}.` },
     automate: memorised
       ? { status: 'open', done: p.testReady === true }
-      : { status: 'locked', done: false, reason: 'First memorise all five answers.' },
+      : { status: 'locked', done: false, reason: `First memorise all ${words} answers.` },
   };
 }
 

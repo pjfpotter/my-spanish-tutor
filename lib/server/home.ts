@@ -41,7 +41,7 @@ export async function loadHome(): Promise<HomeData> {
   const db = await getDb();
   const questions = course ? await loadQuestions(db, profile?.courseId ?? course.id) : [];
   // One load serves the phase gates and the readiness meter.
-  const readinessInput: ReadinessInput = profile ? await loadReadinessInput(db, profile.id, profile.courseId, questions.map((q) => q.id)) : { ...NO_PROGRESS, questionsAutomated: 0 };
+  const readinessInput: ReadinessInput = profile ? await loadReadinessInput(db, profile.id, profile.courseId, questions.filter((q) => !q.extension).map((q) => q.id)) : { ...NO_PROGRESS, questionsAutomated: 0 };
   const progress: Progress = readinessInput;
   // The only place the flag is read for the desktop; a device with no profile sees the gated course.
   const unlockAll = profile ? await courseUnlockAll(db, profile.courseId) : false;
