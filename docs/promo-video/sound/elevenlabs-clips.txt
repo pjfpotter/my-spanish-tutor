@@ -1,0 +1,86 @@
+MY SPANISH TUTOR - PROMO VIDEO "BLANK"
+ElevenLabs voice clips
+
+SETUP
+- Model: Eleven v3 (it is the model that understands [audio tags]).
+- Stability: Creative or Natural, so the tags have room to act.
+- Generate each clip as its own file, named by its ID (V1.mp3, V2.mp3, ...).
+- Make 3 to 4 takes of each and pick the best. V5 matters most.
+- Commercial use needs a paid plan. Do not use the free tier.
+- TELE: use one voice for every TELE clip. If it will become the app voice,
+  choose it as the production voice (edge-tts is prototype-only).
+- Teacher and Dolores need a Spanish-capable voice. Use different voices.
+- TELE says "we", never "I". Dolores is they/them.
+- Do not change a clip's words after the mouth animation is made from it.
+
+----------------------------------------------------------------------
+V1 | TELE shot 2 | TEACHER (Spanish voice)
+Distort in the edit: low-pass filter, slow it about 10 percent, add reverb.
+
+[calm, slightly stern] ¿Qué haces en tu tiempo libre?
+
+----------------------------------------------------------------------
+V2 | shot 4 | TELE
+Dry and knowing, a little warm. Not dramatic.
+
+[quietly] You've been here. [short pause] [wry] Everyone has.
+
+----------------------------------------------------------------------
+V3 | shot 6 | TELE
+Flat and deadpan, like handing over bad news.
+
+[deadpan] It started with this.
+
+----------------------------------------------------------------------
+V4 | shots 9-13 | TELE
+Four short hits, each a beat apart. Speeds up, then drops at the end.
+Cut to the beat of each shot in the edit.
+
+[brisk, listing] Silent revision. [short pause] Lost paper. [short pause]
+Nobody to check the answers. [short pause] [sighs, dry] No wonder they blank.
+
+----------------------------------------------------------------------
+V5 | shot 15 | TELE (the key clip: record the most takes)
+The mood lifts here. Warm, cheeky, confident.
+Keep a clear pause between the three short phrases so they land
+on screen beats.
+
+[warm, upbeat] So we made them something better. [short pause]
+[playful] Hear it. [short pause] Say it. [short pause] Again.
+[long pause] [confident] Until it's automatic.
+
+ALT TAKE (a touch more cheeky):
+[smiling] So we made them something better. [short pause]
+Hear it. [short pause] Say it. [short pause] Again. [short pause]
+[sly] Until it's automatic.
+
+----------------------------------------------------------------------
+V6a | shot 16 | DOLORES (Spanish voice, teen, muffled under the music)
+Confident, a bit cheeky, said out loud for practice. Used quietly.
+
+[confident, cheeky] En mi tiempo libre juego al fútbol y veo vídeos con mis amigos.
+
+V6b | shot 18 | DOLORES (Spanish voice, teen, same voice as V6a)
+FAST. Starts before the teacher has finished the question.
+Cut it so it overlaps the end of V1.
+
+[quick, assured] En mi tiempo libre juego al fútbol y veo vídeos con mis amigos.
+
+----------------------------------------------------------------------
+V7 | shot 20 | TELE
+A smile in the voice. Land the last word and stop.
+
+[smirking] Next time? [short pause] [warm, sure] They won't blank.
+
+----------------------------------------------------------------------
+AUDIO TAG CHEAT SHEET (if a tag does not work, delete it and re-take)
+[short pause]  [long pause]  [sighs]  [whispers]  [excited]  [curious]
+[sarcastic]  [laughs]  [deadpan]  [wry]  [warm]  [playful]
+Tags are suggestions to the model, not commands. Re-roll takes until
+the delivery matches the note above each clip.
+Do not stack more than 2 tags in a row.
+
+DURATION CHECK
+Target about 30 s total. TELE clips V2-V5 plus V7 should come to about
+18 to 20 seconds with pauses. If it runs over, drop the V4 "Nobody to
+check the answers" line first, then the third take of V5.
