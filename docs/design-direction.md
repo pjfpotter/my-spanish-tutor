@@ -208,3 +208,15 @@ Planned 14 Nov 2026 with the frontend-design skill, inside the system above: sam
 **Nickname greeting.** A dusk-sky strip at the top of Tele's area: deep violet to pink to peach, a few pixel stars, one pixel cloud drifting slowly, and a cream nameplate (ink-navy text, 12.9:1) reading "Good evening," over the nickname in Fredoka. The greeting word comes from the device clock after load; before that it says "Hello". It is dreamy, not eerie: no faces, no flicker, no sound. The strip is self-contained, like the windows, so it looks the same in light and dark. The cloud stops under reduced motion and the calm switch, and the strip is decoration (`aria-hidden`); the nickname stays real text.
 
 **Reviewed against the brief.** First draft used a progress bar per question and a rainbow sky; both dropped. The bar hid the four-step structure the app is built around, and the rainbow competed with Tele's own sky. One bold element only: the sticker.
+
+## Dreamcore corridor game (`/lab/dreamcore`)
+
+A standalone on-rails chase. Proposed 15 Nov 2026 by the owner; not yet wired into practice. Design plan from the frontend-design pass.
+
+- **Concept.** A 2003 cover-disc game: a 320 by 180 software-rendered pink backrooms, upscaled with hard pixels, reduced to a dithered 6-level-per-channel "VGA" palette. Doors lead to places they should not (cloud tops, pool tiles, a lit bedroom). Something follows you and is never fully seen.
+- **Palette.** Wallpaper pink `#e9a3c9`, carpet rose `#b85c8e`, fluorescent cream `#fff1d6`, fog plum `#3a1646`, window sky `#8fd0ff`. The plaque on each door is cream on ink navy so the prompt always reaches 4.5:1.
+- **Type.** Pixelify Sans for door plaques (already loaded), VT323 for the small readouts, Atkinson Hyperlegible for everything else.
+- **Layout.** Full-height phone column. The picture fills the width; the door plaque sits on the door; one microphone readout and one distance bar sit under it. Left aligned text, nothing scrolls.
+- **Spend the boldness on one thing:** the dithered corridor and the glitching of it. Everything else stays quiet.
+- **Ladder.** Doors climb the memorise ladder: read a bit, read two bits, first letters, empty blocks, English clue, Spanish question.
+- **Safety, differs from "never scary" above.** The owner asked for a darker, creepy-cute catch (FNAF influence). It is built as a short zoom and glitch, no flashing faster than 3 per second, and a quiet low thump that follows the Sound switch. Calm mode and reduced motion replace it with a slow fade. This overrides the "no jump scares" line above for this game only and needs the owner to confirm after testing with students. Being caught never costs anything: the run ends and effort rewards follow.
