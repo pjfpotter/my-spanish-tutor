@@ -1,0 +1,59 @@
+/*
+ * El Pasillo. A portrait column, picture on top, one dock below. Everything is prefixed dc-.
+ * The picture is 200 by 300 and scaled with hard pixels. Door text is cream on ink navy (reaches 4.5:1).
+ */
+.dc {
+  --dc-ink: #1b0f2e; --dc-cream: #fff1d6; --dc-pink: #e9a3c9; --dc-rose: #b85c8e; --dc-lemon: #ffeb00;
+  min-height: 100dvh; background: #12081f; color: var(--dc-cream); font-family: var(--font-read);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.dc-stage { position: relative; width: min(100vw, calc((100dvh - 7rem) * 2 / 3), 28rem); aspect-ratio: 2 / 3; overflow: hidden; background: #000; }
+.dc-frame { position: absolute; inset: 0; will-change: transform; }
+.dc-canvas { width: 100%; height: 100%; display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
+.dc-vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 45%, rgba(20, 0, 30, calc(0.35 + var(--dc-fear, 0) * 0.55)) 100%); }
+.dc-fade { position: absolute; inset: 0; background: #12081f; opacity: 0; pointer-events: none; }
+.dc-hud { position: absolute; top: 0.5rem; left: 0.6rem; right: 0.6rem; display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
+.dc-rec { font-family: var(--font-vt323), monospace; font-size: 1.15rem; color: #fff; text-shadow: 1px 0 #f0f, -1px 0 #0ff; letter-spacing: 0.04em; }
+.dc-meter { display: flex; gap: 3px; margin-top: 2.2rem; }
+.dc-meter i { width: 0.7rem; height: 0.5rem; background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.55); }
+.dc-meter i[data-on='true'] { background: var(--dc-lemon); }
+.dc-plaque {
+  position: absolute; left: 5%; right: 5%; transform: translateY(-50%) rotate(-0.8deg); padding: 0.55rem 0.7rem 0.65rem;
+  background: var(--dc-ink); border: 2px solid var(--dc-cream); box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.45), -2px 0 0 #ff1fa9, 2px 0 0 #00e5e5;
+  animation: dc-jitter 3.2s steps(1) infinite;
+}
+.dc-plaque p { margin: 0; }
+.dc-rung { font-size: 0.8rem; color: var(--dc-pink); margin-bottom: 0.25rem !important; }
+.dc-main { font-family: var(--font-ui); font-size: 1.25rem; line-height: 1.2; margin-bottom: 0.3rem !important; }
+.dc-sub { font-size: 0.85rem; color: #d9c9ea; margin-bottom: 0.3rem !important; }
+.dc-words { font-family: var(--font-ui); font-size: 1.5rem; line-height: 1.3; }
+.dc-word { color: #cdb9e6; }
+.dc-word[data-lit='yes'] { color: var(--dc-cream); font-weight: 600; background: linear-gradient(transparent 62%, rgba(255, 235, 0, 0.55) 62%); }
+.dc-dock { width: min(100vw, 28rem); padding: 0.6rem 1rem max(0.8rem, env(safe-area-inset-bottom)); display: grid; gap: 0.5rem; justify-items: center; min-height: 6.5rem; }
+.dc-status { margin: 0; font-size: 1rem; text-align: center; }
+.dc-row { display: flex; gap: 0.6rem; width: 100%; }
+.dc-row .dc-btn { flex: 1; }
+.dc-btn {
+  min-height: var(--tap-min, 44px); min-width: var(--tap-min, 44px); padding: 0.4rem 1.1rem; cursor: pointer; font: inherit; font-weight: 700;
+  color: var(--dc-ink); background: var(--dc-pink); border: 2px solid var(--dc-cream); box-shadow: 3px 3px 0 #000;
+}
+.dc-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #000; }
+.dc-small-btn { font-weight: 400; background: #2a1a3a; color: var(--dc-cream); }
+.dc-btn:focus-visible, .dc-link:focus-visible { outline: 3px solid var(--dc-lemon); outline-offset: 2px; }
+.dc-link { color: var(--dc-cream); text-underline-offset: 3px; min-height: var(--tap-min, 44px); display: inline-flex; align-items: center; }
+.dc-card {
+  position: absolute; inset: 0; display: grid; align-content: center; justify-items: start; gap: 0.7rem; padding: 1.4rem;
+  background: rgba(18, 8, 31, 0.86);
+}
+.dc-card h1 { margin: 0; font-family: var(--font-ui); font-size: 2.2rem; line-height: 1.05; text-shadow: 2px 0 #ff1fa9, -2px 0 #00e5e5; }
+.dc-card ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.3rem; max-width: 22rem; }
+.dc-card p { margin: 0; }
+.dc-tag { font-family: var(--font-vt323), monospace; font-size: 1.25rem; color: var(--dc-pink); }
+.dc-small { font-size: 0.85rem; color: #d9c9ea; max-width: 22rem; }
+.dc-mirror { width: 9rem; height: 9rem; image-rendering: pixelated; border: 2px solid var(--dc-cream); }
+.dc-souvenir { font-size: 1.05rem; max-width: 22rem; }
+.dc-effort { color: var(--dc-cream); }
+
+@keyframes dc-jitter { 0%, 92% { translate: 0 0; } 93% { translate: 2px -1px; } 95% { translate: -2px 1px; } 97% { translate: 0 0; } }
+:root[data-calm='on'] .dc-plaque { animation: none; }
+@media (prefers-reduced-motion: reduce) { .dc-plaque { animation: none; } }
