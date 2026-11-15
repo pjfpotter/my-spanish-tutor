@@ -1,7 +1,7 @@
 import { PGlite } from '@electric-sql/pglite';
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import { SEED_COURSE, TESTING_COURSE } from '../course/seed';
+import { ALL_MATCHED_COURSE, SEED_COURSE, TESTING_COURSE } from '../course/seed';
 import { seedCourse } from '../course/seed-db';
 import { hashOwnerToken } from '../overview/overview';
 import type { Db } from './types';
@@ -18,9 +18,11 @@ export async function createDevDb(): Promise<Db> {
   const db: Db = { query: (sql, params) => pg.query(sql, params as unknown[]) as never };
   await seedCourse(db, SEED_COURSE);
   await seedCourse(db, TESTING_COURSE);
-  // Tests need to know the owner link, which is otherwise random and shown once. Only ever on this throwaway database.
+  // Tests that write all five answers join this one: every question has a sheet question (see seed.ts).
+  await seedCourse(db, ALL_MATCHED_COURSE);
+  // Tests need to know the owner link, which is otherwise random and shown once. Only ever on this throwaway database. It goes on the course the tests join.
   if (process.env.DEV_OWNER_TOKEN) {
-    await db.query('update courses set owner_token_hash = $1 where class_code = $2', [hashOwnerToken(process.env.DEV_OWNER_TOKEN), SEED_COURSE.classCode]);
+    await db.query('update courses set owner_token_hash = $1 where class_code = $2', [hashOwnerToken(process.env.DEV_OWNER_TOKEN), ALL_MATCHED_COURSE.classCode]);
   }
   return db;
 }

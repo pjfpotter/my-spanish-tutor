@@ -47,6 +47,12 @@ export interface ChunkProps {
   choice?: { es: string; en: string }[];
   /** A connector that reverses polarity ("aunque"). */
   flip?: boolean;
+  /**
+   * A reason that is about how the activity feels (fun, boring, relaxing), as opposed to a practical one (cost, health).
+   * A contrast word can set a cost against an opinion ("I love it even though it is tiring"), but not a feeling that
+   * contradicts it ("I love it even though it is boring"), so an affect reason is refused after a flip.
+   */
+  affect?: boolean;
   /** A connector that begins a new sentence ("sin embargo"). */
   lead?: boolean;
   branch?: string;

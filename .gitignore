@@ -35,3 +35,8 @@ tests/local/
 playwright.local.config.ts
 .neon
 .claude/worktrees/
+
+# brag skill and its output
+.agents/skills/brag/
+.claude/skills/brag/
+brag-output/

@@ -78,6 +78,8 @@ export const activeLines = (B: Builder, Q?: Question): Frame[] => B.frames.filte
 function polOK(s: Item, c: Item | null, r: Item): boolean {
   if (!s.pol || s.pol === '0' || !r.pol || r.pol === '*' || r.pol === '0') return true;
   const need = c?.flip ? (s.pol === '+' ? '-' : '+') : s.pol;
+  // A contrast can bring in a practical cost or benefit, not a feeling that contradicts the opinion.
+  if (c?.flip && r.affect) return false;
   return r.pol === need;
 }
 function holds(c: Condition, a: Answer): boolean {

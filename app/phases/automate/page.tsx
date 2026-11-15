@@ -21,5 +21,5 @@ export default async function AutomatePage() {
   const items = await loadMemoriseItems(db, profile.id, profile.courseId);
   if (!items.length) return <NothingToPractise heading="Answer fast" windowTitle="Answer fast" />;
   const state = await loadAutomateState(db, profile.id, items.map((i) => i.id));
-  return <Automate items={items.map(({ id, position, question, english, answer }) => ({ id, position, question, english, answer }))} initial={state} chunks={await loadCourseChunks(db, profile.courseId)} />;
+  return <Automate items={items.map(({ id, position, question, english, answer }) => ({ id, position, question, english, answer }))} initial={state} chunks={await loadCourseChunks(db, profile.courseId)} unlockAll={unlockAll} />;
 }

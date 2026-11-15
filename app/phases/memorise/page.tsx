@@ -20,5 +20,5 @@ export default async function MemorisePage() {
   if (phaseStates(await loadProgress(db, profile.id), { unlockAll }).memorise.status === 'locked') redirect('/');
   const start = await loadLadder(db, profile.id, profile.courseId, await loadCourseChunks(db, profile.courseId));
   if (!start.answers.length) return <NothingToPractise heading="Say it from memory" windowTitle="Say it from memory" />;
-  return <MemorisePhase answers={start.answers} start={{ day: start.day, euros: start.euros, states: start.states, testDays: start.testDays }} />;
+  return <MemorisePhase answers={start.answers} start={{ day: start.day, euros: start.euros, states: start.states, testDays: start.testDays }} unlockAll={unlockAll} />;
 }

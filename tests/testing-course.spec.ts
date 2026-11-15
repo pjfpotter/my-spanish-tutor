@@ -75,3 +75,42 @@ test('delete everything works for a tester like any student (4.3)', async ({ pag
   expect((await other.request.post('/api/profile/restore', { data: { code } })).status()).toBe(404);
   await other.close();
 });
+
+// question-sheet-match and course-unlock-testing: the sheet is shown only for a question it answers, and a
+// testing course opens the gates inside the phases.
+
+test('a question the sheet does not cover shows a notice, never another question\'s sheet (real course)', async ({ page }) => {
+  await signUp(page, SEED_COURSE.classCode);
+  await page.goto('/phases/write');
+  await expect(page.getByTestId('no-sheet-for-question')).toContainText('no sentence builder for this question yet');
+  await expect(page.locator('.ws-cell')).toHaveCount(0);
+  await expect(page.getByTestId('skip-question')).toHaveCount(0);
+  const refused = await page.request.post('/api/answers', { data: { questionId: (await page.content()).match(/"id\?":\?"([0-9a-f-]{36})\?",\?"position\?":1/)?.[1] ?? 'x', selection: {}, confirm: true } });
+  expect(refused.ok()).toBe(false);
+  // The question the sheet does cover (the fifth) shows it.
+  await page.goto('/phases/write?question=5');
+  await expect(page.getByTestId('no-sheet-for-question')).toHaveCount(0);
+  await expect(page.locator('.ws-cell').first()).toBeVisible();
+});
+
+test('in the testing course a question with no sheet can be skipped, and the gates inside the phases are open', async ({ page }) => {
+  await signUp(page, TESTING);
+  await page.goto('/phases/write');
+  await expect(page.getByTestId('no-sheet-for-question')).toBeVisible();
+  await page.getByTestId('skip-question').click();
+  await expect(page.getByText(SEED_COURSE.questions[1].spanish).first()).toBeVisible();
+
+  await page.goto('/phases/automate');
+  await expect(page.getByTestId('expert-locked')).toHaveCount(0);
+  await expect(page.getByTestId('expert-choice').locator('input')).toBeEnabled();
+
+  await page.goto('/phases/memorise');
+  await page.getByText('Settings').click();
+  await expect(page.getByTestId('ml-open-lessons')).toBeVisible();
+});
+
+test('a real course keeps its in-phase gates', async ({ page }) => {
+  await signUp(page, SEED_COURSE.classCode);
+  await page.goto('/phases/write');
+  await expect(page.getByTestId('skip-question')).toHaveCount(0);
+});

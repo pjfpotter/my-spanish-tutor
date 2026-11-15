@@ -56,7 +56,9 @@ for (const es of ['porque', 'dado que', 'ya que']) set('connector', es, { roles:
 set('connector', 'aunque', { roles: ['link'], flip: true });
 set('connector', 'sin embargo', { roles: ['lead'], flip: true, lead: true });
 const reasons: Record<string, '+' | '-'> = { 'es divertido': '+', 'es relajante': '+', 'es emocionante': '+', 'es aburrido': '-', 'es caro': '-', 'es barato': '+', 'es bueno para la salud': '+', 'me hace reír': '+', 'me relaja': '+' };
-for (const [es, pol] of Object.entries(reasons)) set('reason', es, { pol });
+// How it feels (affect) cannot be set against the opposite opinion with a contrast word; cost and health can.
+const FEELINGS = ['es divertido', 'es relajante', 'es emocionante', 'es aburrido', 'me hace reír', 'me relaja'];
+for (const [es, pol] of Object.entries(reasons)) set('reason', es, { pol, ...(FEELINGS.includes(es) ? { affect: true } : {}) });
 set('reason', 'es caro', { pol: '-', needs: { slot: 'activity', tag: 'spend' } });
 set('reason', 'es bueno para la salud', { pol: '+', needs: { slot: 'activity', tag: 'phys' } });
 set('who', 'mi mejor amigo/a', { choice: [{ es: 'mi mejor amigo', en: 'my best friend (boy)' }, { es: 'mi mejor amiga', en: 'my best friend (girl)' }] });

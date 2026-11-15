@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { recordResponse } from '../automate/store';
 import { seedCourse } from '../course/seed-db';
-import { SEED_COURSE } from '../course/seed';
+import { ALL_MATCHED_COURSE as SEED_COURSE } from '../course/seed';
 import { newTestDb } from '../db/test-db';
 import { recordRecall } from '../memorise/store';
 import { createProfile, nicknameOptions } from '../profile/profile';

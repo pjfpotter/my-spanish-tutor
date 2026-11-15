@@ -18,6 +18,8 @@ Optional manual check. Skip it if there is no time; nothing else depends on it.
 
 A profile belongs to one course. After tasks 1 and 2, open **Privacy** and use **Delete everything**, then join again with `PRBA7K3M`. If time is short, use `PRBA7K3M` from the start (joining works the same way).
 
+- **The seeded course has one sentence builder, for free time (question 5).** Questions 1 to 4 are about films, the cinema and clothes, and there is no going-out sentence builder yet. On the write screen those four say "There is no sentence builder for this question yet", and in the testing course a **Skip this question** button moves on. Only question 5 can be built and confirmed. This is intended: a sentence builder is never offered for a question it was not written for.
+- The testing course also opens the gates inside the steps: expert mode in the timed round is available straight away, and **Settings** on the memorise screen opens any step of any answer.
 - In the testing course the child has not written any answers, so the memorise and timed-round steps use the model answers. Their own answers are never needed. Read findings about "saying my answer" with that in mind.
 - Attempts in the testing course are real attempts: they earn coins and count towards that profile's mastery. Treat every tester profile as throwaway and delete it afterwards.
 - Do not give `PRBA7K3M` to students. It opens every step early. Nothing is lost, but the class would skip the gated order.
@@ -29,6 +31,16 @@ A profile belongs to one course. After tasks 1 and 2, open **Privacy** and use *
 3. (`PRBA7K3M`) Write one answer, then hear one question. Do they know what to do next without being told?
 4. (`PRBA7K3M`) One timed round. Do they notice the clock? Does it feel fair?
 5. (`PRBA7K3M`) Open the shop. Do they come back to practice, or stay on the desktop?
+
+## Testing the timed round on its own (the automate lab)
+
+Open `/lab/automate` on the site (there is no link to it). It runs the real timed round on a made-up student, so nothing needs writing or memorising first, and nothing is saved to the server.
+
+- Pick a fake student: short answers, a mix, or long answers. **Start again** returns the level, response window and personal bests to their start, as often as you like.
+- Skip setup with the address: `?student=long&startAt=2&expert=1`.
+- Tap **Notes** at any moment. The note is stamped with the question, level, window, response time and accuracy on screen, so you only need to say what you noticed. Every attempt is also logged without typing.
+- **Copy notes** gives plain text to paste back. Notes and the log stay on that device until cleared.
+- It uses real speech recognition, which costs a little each time, through the cost router.
 
 ## Questions afterwards (ask, then be quiet)
 

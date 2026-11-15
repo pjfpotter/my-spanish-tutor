@@ -1,0 +1,530 @@
+frame:0    pts:0       pts_time:0
+lavfi.astats.Overall.RMS_level=-89.329011
+frame:1    pts:1470    pts_time:0.0333333
+lavfi.astats.Overall.RMS_level=-53.687084
+frame:2    pts:2940    pts_time:0.0666667
+lavfi.astats.Overall.RMS_level=-39.350396
+frame:3    pts:4410    pts_time:0.1
+lavfi.astats.Overall.RMS_level=-37.976497
+frame:4    pts:5880    pts_time:0.133333
+lavfi.astats.Overall.RMS_level=-36.690925
+frame:5    pts:7350    pts_time:0.166667
+lavfi.astats.Overall.RMS_level=-36.124072
+frame:6    pts:8820    pts_time:0.2
+lavfi.astats.Overall.RMS_level=-19.520911
+frame:7    pts:10290   pts_time:0.233333
+lavfi.astats.Overall.RMS_level=-14.802299
+frame:8    pts:11760   pts_time:0.266667
+lavfi.astats.Overall.RMS_level=-17.726353
+frame:9    pts:13230   pts_time:0.3
+lavfi.astats.Overall.RMS_level=-19.281987
+frame:10   pts:14700   pts_time:0.333333
+lavfi.astats.Overall.RMS_level=-14.053065
+frame:11   pts:16170   pts_time:0.366667
+lavfi.astats.Overall.RMS_level=-13.554139
+frame:12   pts:17640   pts_time:0.4
+lavfi.astats.Overall.RMS_level=-15.530399
+frame:13   pts:19110   pts_time:0.433333
+lavfi.astats.Overall.RMS_level=-15.449865
+frame:14   pts:20580   pts_time:0.466667
+lavfi.astats.Overall.RMS_level=-21.761272
+frame:15   pts:22050   pts_time:0.5
+lavfi.astats.Overall.RMS_level=-27.320544
+frame:16   pts:23520   pts_time:0.533333
+lavfi.astats.Overall.RMS_level=-25.584602
+frame:17   pts:24990   pts_time:0.566667
+lavfi.astats.Overall.RMS_level=-18.521703
+frame:18   pts:26460   pts_time:0.6
+lavfi.astats.Overall.RMS_level=-12.748046
+frame:19   pts:27930   pts_time:0.633333
+lavfi.astats.Overall.RMS_level=-15.629711
+frame:20   pts:29400   pts_time:0.666667
+lavfi.astats.Overall.RMS_level=-19.384328
+frame:21   pts:30870   pts_time:0.7
+lavfi.astats.Overall.RMS_level=-18.940715
+frame:22   pts:32340   pts_time:0.733333
+lavfi.astats.Overall.RMS_level=-17.288493
+frame:23   pts:33810   pts_time:0.766667
+lavfi.astats.Overall.RMS_level=-17.267549
+frame:24   pts:35280   pts_time:0.8
+lavfi.astats.Overall.RMS_level=-17.133045
+frame:25   pts:36750   pts_time:0.833333
+lavfi.astats.Overall.RMS_level=-16.092496
+frame:26   pts:38220   pts_time:0.866667
+lavfi.astats.Overall.RMS_level=-15.049099
+frame:27   pts:39690   pts_time:0.9
+lavfi.astats.Overall.RMS_level=-13.611250
+frame:28   pts:41160   pts_time:0.933333
+lavfi.astats.Overall.RMS_level=-22.812766
+frame:29   pts:42630   pts_time:0.966667
+lavfi.astats.Overall.RMS_level=-27.856488
+frame:30   pts:44100   pts_time:1
+lavfi.astats.Overall.RMS_level=-31.001839
+frame:31   pts:45570   pts_time:1.033333
+lavfi.astats.Overall.RMS_level=-14.682419
+frame:32   pts:47040   pts_time:1.066667
+lavfi.astats.Overall.RMS_level=-17.179179
+frame:33   pts:48510   pts_time:1.1
+lavfi.astats.Overall.RMS_level=-15.076830
+frame:34   pts:49980   pts_time:1.133333
+lavfi.astats.Overall.RMS_level=-17.164997
+frame:35   pts:51450   pts_time:1.166667
+lavfi.astats.Overall.RMS_level=-26.054192
+frame:36   pts:52920   pts_time:1.2
+lavfi.astats.Overall.RMS_level=-30.174317
+frame:37   pts:54390   pts_time:1.233333
+lavfi.astats.Overall.RMS_level=-30.744293
+frame:38   pts:55860   pts_time:1.266667
+lavfi.astats.Overall.RMS_level=-14.560936
+frame:39   pts:57330   pts_time:1.3
+lavfi.astats.Overall.RMS_level=-15.535445
+frame:40   pts:58800   pts_time:1.333333
+lavfi.astats.Overall.RMS_level=-21.100692
+frame:41   pts:60270   pts_time:1.366667
+lavfi.astats.Overall.RMS_level=-21.952614
+frame:42   pts:61740   pts_time:1.4
+lavfi.astats.Overall.RMS_level=-28.280032
+frame:43   pts:63210   pts_time:1.433333
+lavfi.astats.Overall.RMS_level=-31.706179
+frame:44   pts:64680   pts_time:1.466667
+lavfi.astats.Overall.RMS_level=-21.370194
+frame:45   pts:66150   pts_time:1.5
+lavfi.astats.Overall.RMS_level=-12.601982
+frame:46   pts:67620   pts_time:1.533333
+lavfi.astats.Overall.RMS_level=-20.672664
+frame:47   pts:69090   pts_time:1.566667
+lavfi.astats.Overall.RMS_level=-19.477190
+frame:48   pts:70560   pts_time:1.6
+lavfi.astats.Overall.RMS_level=-21.996617
+frame:49   pts:72030   pts_time:1.633333
+lavfi.astats.Overall.RMS_level=-29.576601
+frame:50   pts:73500   pts_time:1.666667
+lavfi.astats.Overall.RMS_level=-32.525228
+frame:51   pts:74970   pts_time:1.7
+lavfi.astats.Overall.RMS_level=-31.755376
+frame:52   pts:76440   pts_time:1.733333
+lavfi.astats.Overall.RMS_level=-13.450131
+frame:53   pts:77910   pts_time:1.766667
+lavfi.astats.Overall.RMS_level=-15.813603
+frame:54   pts:79380   pts_time:1.8
+lavfi.astats.Overall.RMS_level=-19.970020
+frame:55   pts:80850   pts_time:1.833333
+lavfi.astats.Overall.RMS_level=-25.549803
+frame:56   pts:82320   pts_time:1.866667
+lavfi.astats.Overall.RMS_level=-29.422803
+frame:57   pts:83790   pts_time:1.9
+lavfi.astats.Overall.RMS_level=-31.438369
+frame:58   pts:85260   pts_time:1.933333
+lavfi.astats.Overall.RMS_level=-31.320566
+frame:59   pts:86730   pts_time:1.966667
+lavfi.astats.Overall.RMS_level=-18.913126
+frame:60   pts:88200   pts_time:2
+lavfi.astats.Overall.RMS_level=-14.889230
+frame:61   pts:89670   pts_time:2.033333
+lavfi.astats.Overall.RMS_level=-21.037838
+frame:62   pts:91140   pts_time:2.066667
+lavfi.astats.Overall.RMS_level=-27.161833
+frame:63   pts:92610   pts_time:2.1
+lavfi.astats.Overall.RMS_level=-30.245465
+frame:64   pts:94080   pts_time:2.133333
+lavfi.astats.Overall.RMS_level=-33.322413
+frame:65   pts:95550   pts_time:2.166667
+lavfi.astats.Overall.RMS_level=-37.621488
+frame:66   pts:97020   pts_time:2.2
+lavfi.astats.Overall.RMS_level=-40.003416
+frame:67   pts:98490   pts_time:2.233333
+lavfi.astats.Overall.RMS_level=-43.399204
+frame:68   pts:99960   pts_time:2.266667
+lavfi.astats.Overall.RMS_level=-47.781429
+frame:69   pts:101430  pts_time:2.3
+lavfi.astats.Overall.RMS_level=-52.641284
+frame:70   pts:102900  pts_time:2.333333
+lavfi.astats.Overall.RMS_level=-56.244212
+frame:71   pts:104370  pts_time:2.366667
+lavfi.astats.Overall.RMS_level=-65.065311
+frame:72   pts:105840  pts_time:2.4
+lavfi.astats.Overall.RMS_level=-68.951092
+frame:73   pts:107310  pts_time:2.433333
+lavfi.astats.Overall.RMS_level=-77.172500
+frame:74   pts:108780  pts_time:2.466667
+lavfi.astats.Overall.RMS_level=-83.990570
+frame:75   pts:110250  pts_time:2.5
+lavfi.astats.Overall.RMS_level=-85.932091
+frame:76   pts:111720  pts_time:2.533333
+lavfi.astats.Overall.RMS_level=-85.739086
+frame:77   pts:113190  pts_time:2.566667
+lavfi.astats.Overall.RMS_level=-86.148785
+frame:78   pts:114660  pts_time:2.6
+lavfi.astats.Overall.RMS_level=-86.328152
+frame:79   pts:116130  pts_time:2.633333
+lavfi.astats.Overall.RMS_level=-86.458876
+frame:80   pts:117600  pts_time:2.666667
+lavfi.astats.Overall.RMS_level=-83.200712
+frame:81   pts:119070  pts_time:2.7
+lavfi.astats.Overall.RMS_level=-49.421160
+frame:82   pts:120540  pts_time:2.733333
+lavfi.astats.Overall.RMS_level=-42.156365
+frame:83   pts:122010  pts_time:2.766667
+lavfi.astats.Overall.RMS_level=-41.536985
+frame:84   pts:123480  pts_time:2.8
+lavfi.astats.Overall.RMS_level=-18.748704
+frame:85   pts:124950  pts_time:2.833333
+lavfi.astats.Overall.RMS_level=-13.416825
+frame:86   pts:126420  pts_time:2.866667
+lavfi.astats.Overall.RMS_level=-14.165267
+frame:87   pts:127890  pts_time:2.9
+lavfi.astats.Overall.RMS_level=-13.114998
+frame:88   pts:129360  pts_time:2.933333
+lavfi.astats.Overall.RMS_level=-13.796013
+frame:89   pts:130830  pts_time:2.966667
+lavfi.astats.Overall.RMS_level=-14.661718
+frame:90   pts:132300  pts_time:3
+lavfi.astats.Overall.RMS_level=-13.000282
+frame:91   pts:133770  pts_time:3.033333
+lavfi.astats.Overall.RMS_level=-13.675728
+frame:92   pts:135240  pts_time:3.066667
+lavfi.astats.Overall.RMS_level=-15.301647
+frame:93   pts:136710  pts_time:3.1
+lavfi.astats.Overall.RMS_level=-18.414800
+frame:94   pts:138180  pts_time:3.133333
+lavfi.astats.Overall.RMS_level=-25.710464
+frame:95   pts:139650  pts_time:3.166667
+lavfi.astats.Overall.RMS_level=-30.159631
+frame:96   pts:141120  pts_time:3.2
+lavfi.astats.Overall.RMS_level=-32.182205
+frame:97   pts:142590  pts_time:3.233333
+lavfi.astats.Overall.RMS_level=-34.767755
+frame:98   pts:144060  pts_time:3.266667
+lavfi.astats.Overall.RMS_level=-36.791694
+frame:99   pts:145530  pts_time:3.3
+lavfi.astats.Overall.RMS_level=-38.143839
+frame:100  pts:147000  pts_time:3.333333
+lavfi.astats.Overall.RMS_level=-47.686169
+frame:101  pts:148470  pts_time:3.366667
+lavfi.astats.Overall.RMS_level=-50.331804
+frame:102  pts:149940  pts_time:3.4
+lavfi.astats.Overall.RMS_level=-54.416077
+frame:103  pts:151410  pts_time:3.433333
+lavfi.astats.Overall.RMS_level=-58.050500
+frame:104  pts:152880  pts_time:3.466667
+lavfi.astats.Overall.RMS_level=-65.258822
+frame:105  pts:154350  pts_time:3.5
+lavfi.astats.Overall.RMS_level=-78.330585
+frame:106  pts:155820  pts_time:3.533333
+lavfi.astats.Overall.RMS_level=-83.802949
+frame:107  pts:157290  pts_time:3.566667
+lavfi.astats.Overall.RMS_level=-85.541462
+frame:108  pts:158760  pts_time:3.6
+lavfi.astats.Overall.RMS_level=-85.568158
+frame:109  pts:160230  pts_time:3.633333
+lavfi.astats.Overall.RMS_level=-86.197807
+frame:110  pts:161700  pts_time:3.666667
+lavfi.astats.Overall.RMS_level=-86.001666
+frame:111  pts:163170  pts_time:3.7
+lavfi.astats.Overall.RMS_level=-85.600011
+frame:112  pts:164640  pts_time:3.733333
+lavfi.astats.Overall.RMS_level=-85.693932
+frame:113  pts:166110  pts_time:3.766667
+lavfi.astats.Overall.RMS_level=-86.510316
+frame:114  pts:167580  pts_time:3.8
+lavfi.astats.Overall.RMS_level=-61.308464
+frame:115  pts:169050  pts_time:3.833333
+lavfi.astats.Overall.RMS_level=-45.112155
+frame:116  pts:170520  pts_time:3.866667
+lavfi.astats.Overall.RMS_level=-40.784983
+frame:117  pts:171990  pts_time:3.9
+lavfi.astats.Overall.RMS_level=-39.410059
+frame:118  pts:173460  pts_time:3.933333
+lavfi.astats.Overall.RMS_level=-36.475251
+frame:119  pts:174930  pts_time:3.966667
+lavfi.astats.Overall.RMS_level=-18.545554
+frame:120  pts:176400  pts_time:4
+lavfi.astats.Overall.RMS_level=-13.041505
+frame:121  pts:177870  pts_time:4.033333
+lavfi.astats.Overall.RMS_level=-15.713955
+frame:122  pts:179340  pts_time:4.066667
+lavfi.astats.Overall.RMS_level=-15.702750
+frame:123  pts:180810  pts_time:4.1
+lavfi.astats.Overall.RMS_level=-14.709400
+frame:124  pts:182280  pts_time:4.133333
+lavfi.astats.Overall.RMS_level=-13.304156
+frame:125  pts:183750  pts_time:4.166667
+lavfi.astats.Overall.RMS_level=-16.932866
+frame:126  pts:185220  pts_time:4.2
+lavfi.astats.Overall.RMS_level=-23.436341
+frame:127  pts:186690  pts_time:4.233333
+lavfi.astats.Overall.RMS_level=-28.363045
+frame:128  pts:188160  pts_time:4.266667
+lavfi.astats.Overall.RMS_level=-31.668739
+frame:129  pts:189630  pts_time:4.3
+lavfi.astats.Overall.RMS_level=-34.248749
+frame:130  pts:191100  pts_time:4.333333
+lavfi.astats.Overall.RMS_level=-41.181096
+frame:131  pts:192570  pts_time:4.366667
+lavfi.astats.Overall.RMS_level=-40.908073
+frame:132  pts:194040  pts_time:4.4
+lavfi.astats.Overall.RMS_level=-40.888412
+frame:133  pts:195510  pts_time:4.433333
+lavfi.astats.Overall.RMS_level=-37.761222
+frame:134  pts:196980  pts_time:4.466667
+lavfi.astats.Overall.RMS_level=-50.091234
+frame:135  pts:198450  pts_time:4.5
+lavfi.astats.Overall.RMS_level=-54.594191
+frame:136  pts:199920  pts_time:4.533333
+lavfi.astats.Overall.RMS_level=-58.674753
+frame:137  pts:201390  pts_time:4.566667
+lavfi.astats.Overall.RMS_level=-66.379205
+frame:138  pts:202860  pts_time:4.6
+lavfi.astats.Overall.RMS_level=-73.015267
+frame:139  pts:204330  pts_time:4.633333
+lavfi.astats.Overall.RMS_level=-77.492681
+frame:140  pts:205800  pts_time:4.666667
+lavfi.astats.Overall.RMS_level=-82.475825
+frame:141  pts:207270  pts_time:4.7
+lavfi.astats.Overall.RMS_level=-84.783624
+frame:142  pts:208740  pts_time:4.733333
+lavfi.astats.Overall.RMS_level=-84.151451
+frame:143  pts:210210  pts_time:4.766667
+lavfi.astats.Overall.RMS_level=-80.876683
+frame:144  pts:211680  pts_time:4.8
+lavfi.astats.Overall.RMS_level=-81.278942
+frame:145  pts:213150  pts_time:4.833333
+lavfi.astats.Overall.RMS_level=-76.333945
+frame:146  pts:214620  pts_time:4.866667
+lavfi.astats.Overall.RMS_level=-76.213313
+frame:147  pts:216090  pts_time:4.9
+lavfi.astats.Overall.RMS_level=-27.987821
+frame:148  pts:217560  pts_time:4.933333
+lavfi.astats.Overall.RMS_level=-14.953055
+frame:149  pts:219030  pts_time:4.966667
+lavfi.astats.Overall.RMS_level=-15.933551
+frame:150  pts:220500  pts_time:5
+lavfi.astats.Overall.RMS_level=-27.206852
+frame:151  pts:221970  pts_time:5.033333
+lavfi.astats.Overall.RMS_level=-29.045322
+frame:152  pts:223440  pts_time:5.066667
+lavfi.astats.Overall.RMS_level=-12.718697
+frame:153  pts:224910  pts_time:5.1
+lavfi.astats.Overall.RMS_level=-13.174372
+frame:154  pts:226380  pts_time:5.133333
+lavfi.astats.Overall.RMS_level=-14.360110
+frame:155  pts:227850  pts_time:5.166667
+lavfi.astats.Overall.RMS_level=-17.619186
+frame:156  pts:229320  pts_time:5.2
+lavfi.astats.Overall.RMS_level=-19.585970
+frame:157  pts:230790  pts_time:5.233333
+lavfi.astats.Overall.RMS_level=-20.022677
+frame:158  pts:232260  pts_time:5.266667
+lavfi.astats.Overall.RMS_level=-23.593905
+frame:159  pts:233730  pts_time:5.3
+lavfi.astats.Overall.RMS_level=-29.001383
+frame:160  pts:235200  pts_time:5.333333
+lavfi.astats.Overall.RMS_level=-31.471630
+frame:161  pts:236670  pts_time:5.366667
+lavfi.astats.Overall.RMS_level=-35.537649
+frame:162  pts:238140  pts_time:5.4
+lavfi.astats.Overall.RMS_level=-38.760495
+frame:163  pts:239610  pts_time:5.433333
+lavfi.astats.Overall.RMS_level=-42.741232
+frame:164  pts:241080  pts_time:5.466667
+lavfi.astats.Overall.RMS_level=-42.398655
+frame:165  pts:242550  pts_time:5.5
+lavfi.astats.Overall.RMS_level=-50.214398
+frame:166  pts:244020  pts_time:5.533333
+lavfi.astats.Overall.RMS_level=-56.418750
+frame:167  pts:245490  pts_time:5.566667
+lavfi.astats.Overall.RMS_level=-60.114250
+frame:168  pts:246960  pts_time:5.6
+lavfi.astats.Overall.RMS_level=-64.149040
+frame:169  pts:248430  pts_time:5.633333
+lavfi.astats.Overall.RMS_level=-70.459972
+frame:170  pts:249900  pts_time:5.666667
+lavfi.astats.Overall.RMS_level=-74.642876
+frame:171  pts:251370  pts_time:5.7
+lavfi.astats.Overall.RMS_level=-79.061119
+frame:172  pts:252840  pts_time:5.733333
+lavfi.astats.Overall.RMS_level=-81.163395
+frame:173  pts:254310  pts_time:5.766667
+lavfi.astats.Overall.RMS_level=-82.253401
+frame:174  pts:255780  pts_time:5.8
+lavfi.astats.Overall.RMS_level=-83.362980
+frame:175  pts:257250  pts_time:5.833333
+lavfi.astats.Overall.RMS_level=-82.073193
+frame:176  pts:258720  pts_time:5.866667
+lavfi.astats.Overall.RMS_level=-82.404877
+frame:177  pts:260190  pts_time:5.9
+lavfi.astats.Overall.RMS_level=-82.625323
+frame:178  pts:261660  pts_time:5.933333
+lavfi.astats.Overall.RMS_level=-82.647540
+frame:179  pts:263130  pts_time:5.966667
+lavfi.astats.Overall.RMS_level=-82.817894
+frame:180  pts:264600  pts_time:6
+lavfi.astats.Overall.RMS_level=-81.913825
+frame:181  pts:266070  pts_time:6.033333
+lavfi.astats.Overall.RMS_level=-82.846947
+frame:182  pts:267540  pts_time:6.066667
+lavfi.astats.Overall.RMS_level=-82.523284
+frame:183  pts:269010  pts_time:6.1
+lavfi.astats.Overall.RMS_level=-82.292877
+frame:184  pts:270480  pts_time:6.133333
+lavfi.astats.Overall.RMS_level=-82.222996
+frame:185  pts:271950  pts_time:6.166667
+lavfi.astats.Overall.RMS_level=-82.942330
+frame:186  pts:273420  pts_time:6.2
+lavfi.astats.Overall.RMS_level=-82.589711
+frame:187  pts:274890  pts_time:6.233333
+lavfi.astats.Overall.RMS_level=-82.507080
+frame:188  pts:276360  pts_time:6.266667
+lavfi.astats.Overall.RMS_level=-82.389584
+frame:189  pts:277830  pts_time:6.3
+lavfi.astats.Overall.RMS_level=-82.940163
+frame:190  pts:279300  pts_time:6.333333
+lavfi.astats.Overall.RMS_level=-81.913825
+frame:191  pts:280770  pts_time:6.366667
+lavfi.astats.Overall.RMS_level=-82.236790
+frame:192  pts:282240  pts_time:6.4
+lavfi.astats.Overall.RMS_level=-82.044019
+frame:193  pts:283710  pts_time:6.433333
+lavfi.astats.Overall.RMS_level=-82.161457
+frame:194  pts:285180  pts_time:6.466667
+lavfi.astats.Overall.RMS_level=-82.222537
+frame:195  pts:286650  pts_time:6.5
+lavfi.astats.Overall.RMS_level=-82.098994
+frame:196  pts:288120  pts_time:6.533333
+lavfi.astats.Overall.RMS_level=-82.713854
+frame:197  pts:289590  pts_time:6.566667
+lavfi.astats.Overall.RMS_level=-82.404398
+frame:198  pts:291060  pts_time:6.6
+lavfi.astats.Overall.RMS_level=-81.889523
+frame:199  pts:292530  pts_time:6.633333
+lavfi.astats.Overall.RMS_level=-81.658137
+frame:200  pts:294000  pts_time:6.666667
+lavfi.astats.Overall.RMS_level=-81.602465
+frame:201  pts:295470  pts_time:6.7
+lavfi.astats.Overall.RMS_level=-82.207415
+frame:202  pts:296940  pts_time:6.733333
+lavfi.astats.Overall.RMS_level=-80.616921
+frame:203  pts:298410  pts_time:6.766667
+lavfi.astats.Overall.RMS_level=-64.727585
+frame:204  pts:299880  pts_time:6.8
+lavfi.astats.Overall.RMS_level=-23.060241
+frame:205  pts:301350  pts_time:6.833333
+lavfi.astats.Overall.RMS_level=-19.180776
+frame:206  pts:302820  pts_time:6.866667
+lavfi.astats.Overall.RMS_level=-23.303164
+frame:207  pts:304290  pts_time:6.9
+lavfi.astats.Overall.RMS_level=-23.652495
+frame:208  pts:305760  pts_time:6.933333
+lavfi.astats.Overall.RMS_level=-27.779425
+frame:209  pts:307230  pts_time:6.966667
+lavfi.astats.Overall.RMS_level=-37.549529
+frame:210  pts:308700  pts_time:7
+lavfi.astats.Overall.RMS_level=-34.760762
+frame:211  pts:310170  pts_time:7.033333
+lavfi.astats.Overall.RMS_level=-30.649840
+frame:212  pts:311640  pts_time:7.066667
+lavfi.astats.Overall.RMS_level=-32.529783
+frame:213  pts:313110  pts_time:7.1
+lavfi.astats.Overall.RMS_level=-17.076811
+frame:214  pts:314580  pts_time:7.133333
+lavfi.astats.Overall.RMS_level=-13.541280
+frame:215  pts:316050  pts_time:7.166667
+lavfi.astats.Overall.RMS_level=-14.012202
+frame:216  pts:317520  pts_time:7.2
+lavfi.astats.Overall.RMS_level=-12.892261
+frame:217  pts:318990  pts_time:7.233333
+lavfi.astats.Overall.RMS_level=-13.346924
+frame:218  pts:320460  pts_time:7.266667
+lavfi.astats.Overall.RMS_level=-14.572736
+frame:219  pts:321930  pts_time:7.3
+lavfi.astats.Overall.RMS_level=-17.297153
+frame:220  pts:323400  pts_time:7.333333
+lavfi.astats.Overall.RMS_level=-26.892679
+frame:221  pts:324870  pts_time:7.366667
+lavfi.astats.Overall.RMS_level=-32.694138
+frame:222  pts:326340  pts_time:7.4
+lavfi.astats.Overall.RMS_level=-31.953420
+frame:223  pts:327810  pts_time:7.433333
+lavfi.astats.Overall.RMS_level=-32.800763
+frame:224  pts:329280  pts_time:7.466667
+lavfi.astats.Overall.RMS_level=-32.546983
+frame:225  pts:330750  pts_time:7.5
+lavfi.astats.Overall.RMS_level=-44.532874
+frame:226  pts:332220  pts_time:7.533333
+lavfi.astats.Overall.RMS_level=-45.913977
+frame:227  pts:333690  pts_time:7.566667
+lavfi.astats.Overall.RMS_level=-47.842711
+frame:228  pts:335160  pts_time:7.6
+lavfi.astats.Overall.RMS_level=-48.438541
+frame:229  pts:336630  pts_time:7.633333
+lavfi.astats.Overall.RMS_level=-18.092757
+frame:230  pts:338100  pts_time:7.666667
+lavfi.astats.Overall.RMS_level=-16.240334
+frame:231  pts:339570  pts_time:7.7
+lavfi.astats.Overall.RMS_level=-15.045581
+frame:232  pts:341040  pts_time:7.733333
+lavfi.astats.Overall.RMS_level=-17.131329
+frame:233  pts:342510  pts_time:7.766667
+lavfi.astats.Overall.RMS_level=-32.312327
+frame:234  pts:343980  pts_time:7.8
+lavfi.astats.Overall.RMS_level=-28.855325
+frame:235  pts:345450  pts_time:7.833333
+lavfi.astats.Overall.RMS_level=-29.834351
+frame:236  pts:346920  pts_time:7.866667
+lavfi.astats.Overall.RMS_level=-21.089498
+frame:237  pts:348390  pts_time:7.9
+lavfi.astats.Overall.RMS_level=-19.176623
+frame:238  pts:349860  pts_time:7.933333
+lavfi.astats.Overall.RMS_level=-19.906189
+frame:239  pts:351330  pts_time:7.966667
+lavfi.astats.Overall.RMS_level=-21.150566
+frame:240  pts:352800  pts_time:8
+lavfi.astats.Overall.RMS_level=-22.676245
+frame:241  pts:354270  pts_time:8.033333
+lavfi.astats.Overall.RMS_level=-15.113324
+frame:242  pts:355740  pts_time:8.066667
+lavfi.astats.Overall.RMS_level=-19.519562
+frame:243  pts:357210  pts_time:8.1
+lavfi.astats.Overall.RMS_level=-25.156446
+frame:244  pts:358680  pts_time:8.133333
+lavfi.astats.Overall.RMS_level=-28.604352
+frame:245  pts:360150  pts_time:8.166667
+lavfi.astats.Overall.RMS_level=-32.748436
+frame:246  pts:361620  pts_time:8.2
+lavfi.astats.Overall.RMS_level=-34.059246
+frame:247  pts:363090  pts_time:8.233333
+lavfi.astats.Overall.RMS_level=-35.632030
+frame:248  pts:364560  pts_time:8.266667
+lavfi.astats.Overall.RMS_level=-28.609170
+frame:249  pts:366030  pts_time:8.3
+lavfi.astats.Overall.RMS_level=-33.113014
+frame:250  pts:367500  pts_time:8.333333
+lavfi.astats.Overall.RMS_level=-39.837765
+frame:251  pts:368970  pts_time:8.366667
+lavfi.astats.Overall.RMS_level=-43.741924
+frame:252  pts:370440  pts_time:8.4
+lavfi.astats.Overall.RMS_level=-51.276839
+frame:253  pts:371910  pts_time:8.433333
+lavfi.astats.Overall.RMS_level=-38.833330
+frame:254  pts:373380  pts_time:8.466667
+lavfi.astats.Overall.RMS_level=-38.783164
+frame:255  pts:374850  pts_time:8.5
+lavfi.astats.Overall.RMS_level=-42.423961
+frame:256  pts:376320  pts_time:8.533333
+lavfi.astats.Overall.RMS_level=-45.963507
+frame:257  pts:377790  pts_time:8.566667
+lavfi.astats.Overall.RMS_level=-53.017895
+frame:258  pts:379260  pts_time:8.6
+lavfi.astats.Overall.RMS_level=-59.336212
+frame:259  pts:380730  pts_time:8.633333
+lavfi.astats.Overall.RMS_level=-64.338434
+frame:260  pts:382200  pts_time:8.666667
+lavfi.astats.Overall.RMS_level=-72.905107
+frame:261  pts:383670  pts_time:8.7
+lavfi.astats.Overall.RMS_level=-78.932480
+frame:262  pts:385140  pts_time:8.733333
+lavfi.astats.Overall.RMS_level=-82.033019
+frame:263  pts:386610  pts_time:8.766667
+lavfi.astats.Overall.RMS_level=-82.121359
+frame:264  pts:388080  pts_time:8.8
+lavfi.astats.Overall.RMS_level=-84.479967

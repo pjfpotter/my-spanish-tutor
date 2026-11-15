@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { seedCourse } from '../course/seed-db';
-import { SEED_COURSE } from '../course/seed';
+import { ALL_MATCHED_COURSE as SEED_COURSE } from '../course/seed';
 import { newTestDb } from '../db/test-db';
 import { createProfile, nicknameOptions } from '../profile/profile';
 import { buildBuilder } from '../sheets/builder';

@@ -6,8 +6,11 @@ export const sheetAnswer = (_position: number): string => SHORT_TEXT;
 /** A longer confirmed answer: the same sentence with a closing line. */
 export const longSheetAnswer = (): string => LONG_TEXT;
 
-/** The class code of the seeded course the tests join. */
-export const SEED_CLASS_CODE = 'TELE8';
+/**
+ * The class code of the course the tests join: the seeded course with every question matched to the sheet, so a test
+ * can write all five answers. The real seed (TELE8) has no sheet for four of its questions; see lib/course/seed.ts.
+ */
+export const SEED_CLASS_CODE = 'MATCH5';
 
 /** Creates an anonymous profile through the real sign-up screen and returns its recovery code. Only the sign-up tests need this. */
 export async function signUpThroughForm(page: Page): Promise<string> {

@@ -14,7 +14,7 @@ describe('sign-off by the exam rule (task 5.2)', () => {
 
   it('credits a strange but possible answer', () => {
     expect(signOff(B, ans({ starter: 'Me gusta', activity: 'jugar al baloncesto', connector: 'porque', reason: 'es relajante' }))).toEqual({ code: 'ok' });
-    expect(signOff(B, ans({ starter: 'Me encanta', activity: 'leer libros', connector: 'aunque', reason: 'es aburrido' }))).toEqual({ code: 'ok' });
+    expect(signOff(B, ans({ starter: 'Me encanta', activity: 'ir al cine', connector: 'aunque', reason: 'es caro' }))).toEqual({ code: 'ok' });
   });
 
   it('says an answer with nothing in it is incomplete, naming one thing', () => {
