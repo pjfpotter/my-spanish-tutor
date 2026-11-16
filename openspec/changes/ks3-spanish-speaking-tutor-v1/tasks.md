@@ -290,7 +290,7 @@ Built in cloud sessions or direct commits and folded back without a task. Record
 - [x] 30.8 Make the sentence builder sheet mandatory and remove the old write flow: a course cannot be created or published without a sheet, the write phase is the sheet only, and the slot-builder screen and its text save path are deleted **Built 14 Nov (b62447c).** Overtakes the slot-builder parts of sections 7 and 26.
 - [x] 30.9 Seed attaches the sentence builder sheet to every seeded course, with plain SQL so the script runs under node **Built 14 Nov (f09b066, 2441c9c).**
 - [x] 30.10 Show a message instead of crashing when a course has no sheet (React error 441 in production on the write page) **Fixed 14 Nov (3334490).**
-- [x] 30.11 Add El Pasillo, a dreamcore corridor speaking game at `/lab/dreamcore`, which uses the student's own answers when there is a profile **Built 15 Nov in a cloud session (90d5e35).** `docs/game-proposals.md` (25.5) said to build nothing until approved, and no approval is recorded. Owner to confirm the game is wanted and whether it ships.
+- [x] 30.11 Add El Pasillo, a dreamcore corridor speaking game at `/lab/dreamcore`, which uses the student's own answers when there is a profile **Built 15 Nov in a cloud session (90d5e35).** Live at `/lab/dreamcore` (owner confirmed 16 Nov).
 - [x] 30.12 Add Neon CLI config and a branch policy (`neon.ts`: 7-day TTL for new non-default branches) **Built 14 Nov (6427aaf).**
 - [x] 30.13 Add promo video assets under `docs/promo-video/` (about 140 files, not part of the app) **Added 15 Nov (66e4982, af811c6).**
 
