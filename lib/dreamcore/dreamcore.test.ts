@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { LAB_ANSWERS } from '../../app/lab/memorise/content';
-import { START_GAP, closingRate, push, startChase, tick } from './chase';
+import { LOOK_COOLDOWN, START_GAP, TRYING_WINDOW, closingRate, fear, isTrying, lookChance, push, startChase, tick, wantsLookBehind } from './chase';
 import { RUN_LENGTH, buildRun, emptyBlocks, firstLetters, plaqueOf, rungOf } from './doors';
 import { fresh, load, settle } from './rewards';
 
@@ -12,6 +12,13 @@ describe('doors', () => {
     expect(run).toHaveLength(RUN_LENGTH);
     expect(run.map((d) => d.rung)).toEqual([1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6]);
     expect(rungOf(11)).toBe(6);
+  });
+  it('carries the question id and sends the last rung to questions that have not met the target', () => {
+    const own = LAB_ANSWERS.map((a, i) => ({ ...a, id: `q${i}` }));
+    const run = buildRun(own, seeded(), new Set(['q3']));
+    expect(run.every((d) => d.itemId?.startsWith('q'))).toBe(true);
+    expect(run.filter((d) => d.rung === 6).every((d) => d.itemId === 'q3')).toBe(true);
+    expect(buildRun(LAB_ANSWERS, seeded())[0].itemId).toBeUndefined();
   });
   it('never makes an empty door', () => {
     for (const d of buildRun(LAB_ANSWERS, seeded())) expect(d.bits.every((b) => b.length > 0)).toBe(true);
@@ -49,6 +56,30 @@ describe('chase', () => {
     expect(closingRate(11)).toBeGreaterThan(closingRate(0));
     expect(push({ gap: 0.5, caught: false }, 2).gap).toBeGreaterThan(0.5);
     expect(push({ gap: 0.95, caught: false }, 4).gap).toBe(1);
+  });
+});
+
+describe('pressure', () => {
+  it('only a recent matched word counts as trying', () => {
+    expect(isTrying(10, 9)).toBe(true);
+    expect(isTrying(10, 10 - TRYING_WINDOW - 0.1)).toBe(false);
+    // Noise never moves lastProgress, so ten seconds of it closes at the full rate.
+    const noise = tick(startChase(), { dt: 10, doorIndex: 0, trying: isTrying(10, 0), micOk: true, paused: false });
+    expect(noise.gap).toBeCloseTo(START_GAP - closingRate(0) * 10, 5);
+  });
+  it('fear builds from two thirds of the gap and is strongest when caught', () => {
+    expect(fear(0.9)).toBe(0);
+    expect(fear(0.3)).toBeGreaterThan(3 * fear(0.7));
+    expect(fear(0.3)).toBeGreaterThan(3 * fear(0.6));
+    expect(fear(0)).toBe(1);
+  });
+  it('the look-behind gets likelier as the gap closes, and respects the cooldown', () => {
+    expect(lookChance(0.2, 60)).toBeGreaterThanOrEqual(5 * lookChance(0.9, 60));
+    expect(lookChance(0.2, LOOK_COOLDOWN - 1)).toBe(0);
+    const c = { gap: 0.2, caught: false };
+    expect(wantsLookBehind(c, 60, 0.033, 0)).toBe(true);
+    expect(wantsLookBehind(c, 60, 0.033, 0.99)).toBe(false);
+    expect(wantsLookBehind({ gap: 0.2, caught: true }, 60, 0.033, 0)).toBe(false);
   });
 });
 

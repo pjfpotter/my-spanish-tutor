@@ -57,3 +57,4 @@
 @keyframes dc-jitter { 0%, 92% { translate: 0 0; } 93% { translate: 2px -1px; } 95% { translate: -2px 1px; } 97% { translate: 0 0; } }
 :root[data-calm='on'] .dc-plaque { animation: none; }
 @media (prefers-reduced-motion: reduce) { .dc-plaque { animation: none; } }
+.dc-copy { font-size: 0.95rem; color: var(--dc-cream); max-width: 22rem; margin: 0.4rem 0; }

@@ -22,3 +22,4 @@
 .demo-stops strong { font-size: 1.05rem; }
 .demo-stops span { font-size: 0.9rem; }
 .demo-bar .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.demo-steps { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.5rem; }

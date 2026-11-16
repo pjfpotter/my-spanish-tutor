@@ -314,3 +314,7 @@
   line-height: 1.1;
   overflow-wrap: anywhere;
 }
+.phase-why {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}

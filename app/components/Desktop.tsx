@@ -18,17 +18,18 @@ import { WhatsNext } from './WhatsNext';
 import type { NextStep } from '../../lib/planner/next-step';
 import type { ReadinessInput } from '../../lib/planner/readiness';
 import { WINDOW_TITLES } from '../../lib/ui/window-titles';
+import { STEP_COPY } from '../../lib/ui/step-copy';
 import { CanDo } from './CanDo';
 import { Greeting } from './Greeting';
 import { Win } from './Win';
 import './desktop.css';
 import './screens.css';
 
-const PHASE_TEXT: Record<PhaseId, { title: string; en: string }> = {
-  write: { title: 'Write', en: 'Write your answers' },
-  understand: { title: 'Understand', en: 'Understand the questions' },
-  memorise: { title: 'Memorise', en: 'Say your answers from memory' },
-  automate: { title: 'Answer fast', en: 'Answer without thinking' },
+const PHASE_TEXT: Record<PhaseId, { title: string; en: string; why: string }> = {
+  write: { title: 'Write', en: STEP_COPY.write.what, why: STEP_COPY.write.why },
+  understand: { title: 'Understand', en: STEP_COPY.understand.what, why: STEP_COPY.understand.why },
+  memorise: { title: 'Memorise', en: STEP_COPY.memorise.what, why: STEP_COPY.memorise.why },
+  automate: { title: 'El Pasillo', en: STEP_COPY.automate.what, why: STEP_COPY.automate.why },
 };
 
 export interface DesktopProps {
@@ -149,6 +150,7 @@ export function Desktop({ states, unlockAll = false, daysToTest, canDo = null, p
                     <Link href={`/phases/${id}`} className="phase phase-open" data-phase={id} data-state="open">
                       <span className="phase-title">{text.title}</span>
                       <span className="phase-en">{text.en}</span>
+                      <span className="phase-why">{text.why}</span>
                       {state.done && <Status kind="done" label="Done" />}
                     </Link>
                   </li>

@@ -10,7 +10,7 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-const ALL = 'Me encantan las películas de miedo porque son muy divertidas, aunque me dan miedo. Lo siento, no puedo porque tengo que hacer los deberes. Normalmente llevo unos vaqueros negros y una camiseta blanca porque quiero estar cómodo. Voy a llevar una camiseta blanca para la fiesta porque quiero estar guay.';
+const ALL = 'Me encantan las películas de miedo porque son muy divertidas, aunque me dan miedo. Lo siento, no puedo porque tengo que hacer los deberes. Normalmente llevo unos vaqueros negros y una camiseta blanca porque quiero estar cómodo. Voy a llevar una camiseta blanca para la fiesta porque quiero estar guay. Los fines de semana juego a los videojuegos y escucho música.';
 
 test('the corridor game opens doors by speech and the look-behind toggle works', async ({ page }) => {
   await page.goto('/lab/dreamcore');
@@ -40,4 +40,19 @@ test('with no speech recogniser the chase waits and the student can carry on', a
   expect(await page.getByTestId('dc-gap').getAttribute('aria-valuenow')).toBe(before);
   await page.getByTestId('dc-nomic').click();
   await expect(page.getByTestId('dreamcore')).not.toHaveAttribute('data-phase', 'ready');
+});
+
+test('sound that matches no word of the door does not slow the monster', async ({ page }) => {
+  await page.goto('/lab/dreamcore');
+  await page.getByTestId('dc-start').click();
+  const game = page.getByTestId('dreamcore');
+  await expect(game).toHaveAttribute('data-phase', 'ready', { timeout: 20_000 });
+  const gap = async () => Number(await page.getByTestId('dc-gap').getAttribute('aria-valuenow'));
+  const before = await gap();
+  // Keep "talking" for six seconds with words that are not on the door: the old rule would have slowed the chase to a quarter.
+  for (let i = 0; i < 6; i++) {
+    await page.evaluate(() => (window as any).__say('blah blah zzz blah'));
+    await page.waitForTimeout(1000);
+  }
+  expect(before - (await gap())).toBeGreaterThanOrEqual(4);
 });

@@ -37,8 +37,8 @@ test('a tester can run a timed round straight away, and the attempt is recorded 
   await stubQuestionAudio(page, (spanish) => asked.push(spanish));
   await page.route('**/api/transcribe', (r) => r.fulfill({ json: { status: 'ok', text: modelAnswer(asked.at(-1)!), confidence: 0.9 } }));
 
-  await page.goto('/phases/automate');
-  await expect(page).toHaveURL('/phases/automate');
+  await page.goto('/phases/automate/round');
+  await expect(page).toHaveURL('/phases/automate/round');
   await expect(page.getByTestId('nothing-to-practise')).toHaveCount(0);
   const respond = page.waitForResponse((r) => r.url().endsWith('/api/respond'), { timeout: 30_000 });
   await page.getByRole('button', { name: 'Start a round' }).click();
@@ -100,7 +100,7 @@ test('in the testing course a question with no sheet can be skipped, and the gat
   await page.getByTestId('skip-question').click();
   await expect(page.getByText(SEED_COURSE.questions[1].spanish).first()).toBeVisible();
 
-  await page.goto('/phases/automate');
+  await page.goto('/phases/automate/round');
   await expect(page.getByTestId('expert-locked')).toHaveCount(0);
   await expect(page.getByTestId('expert-choice').locator('input')).toBeEnabled();
 

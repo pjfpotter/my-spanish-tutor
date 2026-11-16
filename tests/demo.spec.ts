@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
 /**
- * Demo mode (tasks 24.1 to 24.3, design D22): one tap in, six stops, a Pretend button on every spoken step, nothing
+ * Demo mode (tasks 24.1 to 24.3, design D22): one tap in, six stops, real voice on every spoken step with a labelled fallback, nothing
  * written to the server, a Demo label on every screen, and a reset. No microphone is available in these tests.
  */
 const writes: string[] = [];
@@ -14,7 +14,7 @@ test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => { try { localStorage.setItem('sound', 'off'); localStorage.setItem('memorise-demo-v1', JSON.stringify({ meter: false })); } catch { /* no storage */ } });
 });
 
-const STOPS = ['hear', 'memorise', 'round', 'tutor', 'rewards', 'teacher'];
+const STOPS = ['hear', 'memorise', 'pasillo', 'tutor', 'rewards', 'teacher'];
 
 test('24.1 the front page offers the demo, which opens with no class code, and every stop is reachable directly', async ({ page }) => {
   await page.goto('/welcome');
@@ -29,26 +29,39 @@ test('24.1 the front page offers the demo, which opens with no class code, and e
   expect(writes).toEqual([]);
 });
 
-test('24.1 the hear stop works with the pretend button and scores by rules', async ({ page }) => {
+// A recogniser that hears the visitor say the answer, so the demo is driven by voice and not by a button.
+const SAY = (words: string) => `
+  class Fake {
+    continuous = true; interimResults = true; lang = 'es-ES'; maxAlternatives = 1;
+    onstart = null; onend = null; onresult = null; onerror = null; onspeechstart = null; onsoundstart = null;
+    start() { setTimeout(() => { this.onstart && this.onstart(); this.onspeechstart && this.onspeechstart();
+      const r = [{ 0: { transcript: ${JSON.stringify(words)}, confidence: 0.9 }, isFinal: true, length: 1 }];
+      this.onresult && this.onresult({ resultIndex: 0, results: r }); }, 50); }
+    stop() { this.onend && this.onend(); } abort() {}
+  }
+  Object.assign(window, { SpeechRecognition: Fake, webkitSpeechRecognition: Fake });
+`;
+
+test('24.1 the hear stop listens to the visitor and scores by rules', async ({ page }) => {
+  await page.addInitScript(SAY('Me llamo Ana y tengo trece años'));
   await page.goto('/demo/hear');
   await page.getByTestId('hear-play').click();
-  await page.getByTestId('pretend').click();
+  await expect(page.getByTestId('pretend')).toHaveCount(0);
+  await page.getByTestId('hear-answer').click();
+  await expect(page.getByTestId('hear-heard')).toContainText('Ana');
+  await page.getByTestId('hear-done').click();
   await expect(page.getByTestId('hear-result')).toBeVisible();
   await expect(page.getByTestId('accuracy')).toBeVisible();
-  await expect(page.getByTestId('fix')).toContainText('One thing to fix');
   expect(writes).toEqual([]);
 });
 
-test('24.2 the memorise stop: the pretend button says the screen for the visitor, and with no recogniser at all the screen still moves on', async ({ page }) => {
-  // A recogniser that opens but never hears anything: the visitor is in a noisy room.
-  await page.addInitScript(() => {
-    class Deaf { onstart: (() => void) | null = null; onend: (() => void) | null = null; start() { setTimeout(() => this.onstart?.(), 0); } stop() { this.onend?.(); } abort() {} }
-    Object.assign(window, { SpeechRecognition: Deaf, webkitSpeechRecognition: Deaf });
-  });
-  await page.goto('/demo/memorise');
-  await page.getByTestId('lab-start').click();
-  await page.getByTestId('demo-pretend').click({ timeout: 15_000 });
-  await expect(page.getByTestId('lab-fb')).toBeVisible();
+test('24.1 the hear stop with no speech recognition offers a labelled example, not a pretend', async ({ page }) => {
+  await page.addInitScript(() => { Object.assign(window, { SpeechRecognition: undefined, webkitSpeechRecognition: undefined }); });
+  await page.goto('/demo/hear');
+  await page.getByTestId('hear-play').click();
+  await expect(page.getByTestId('hear-nomic')).toContainText('example answer, not you');
+  await page.getByTestId('pretend').click();
+  await expect(page.getByTestId('hear-result')).toContainText('Example answer');
   expect(writes).toEqual([]);
 });
 
@@ -61,16 +74,11 @@ test('24.2 the memorise stop with no speech recognition at all marks itself and 
   expect(writes).toEqual([]);
 });
 
-test('24.2 a timed round runs from the pretend button with no microphone and saves nothing', async ({ page }) => {
-  await page.goto('/demo/round');
-  await page.getByRole('button', { name: 'Start a round' }).click();
-  for (let i = 0; i < 5; i++) {
-    await page.getByTestId('demo-pretend').click({ timeout: 20_000 });
-    await expect(page.getByTestId('feedback')).toBeVisible();
-    await page.getByRole('button', { name: /Next question|See how I did/ }).click();
-  }
-  await expect(page.getByTestId('summary')).toBeVisible();
-  await expect(page.getByTestId('rank')).toContainText('speed rank');
+test('24.2 El Pasillo opens on the sample answers with the real microphone prompt and saves nothing', async ({ page }) => {
+  await page.goto('/demo/pasillo');
+  await expect(page.getByTestId('dc-title')).toBeVisible();
+  await page.getByTestId('dc-start').click();
+  await expect(page.getByTestId('dreamcore')).toHaveAttribute('data-phase', /travel|ready/);
   expect(writes).toEqual([]);
 });
 
@@ -99,17 +107,11 @@ test('24.3 reset returns to the hub and clears what the demo kept; recording mod
   await expect(page.getByTestId('demo-hub')).toBeVisible();
   expect(await page.evaluate(() => [localStorage.getItem('ladder:demo-1'), localStorage.getItem('ladder:keep'), sessionStorage.getItem('demo-recording')])).toEqual([null, '{"at":1,"met":0}', 'on']);
 
-  await page.goto('/demo/round');
-  await page.getByRole('button', { name: 'Start a round' }).click();
-  await expect(page.getByTestId('demo-pretend')).toBeVisible({ timeout: 20_000 });
-  await expect(page.locator('.window-bar')).toBeHidden();
-  await page.waitForTimeout(5000); // past the first window: nothing times out in recording mode
-  await expect(page.getByTestId('demo-pretend')).toBeVisible();
 });
 
 test('24.1 demo screens fit a 360 by 640 phone with the Demo label showing', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 640 });
-  for (const id of ['hear', 'round']) {
+  for (const id of ['hear', 'pasillo']) {
     await page.goto(`/demo/${id}`);
     await expect(page.getByTestId('demo-bar')).toBeVisible();
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);

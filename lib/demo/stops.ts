@@ -3,7 +3,7 @@
  * the database. Progress through the tour is the page the visitor is on, so there is nothing to store.
  */
 export interface Stop {
-  id: 'hear' | 'memorise' | 'round' | 'tutor' | 'rewards' | 'teacher';
+  id: 'hear' | 'memorise' | 'pasillo' | 'tutor' | 'rewards' | 'teacher';
   title: string;
   /** One plain sentence on what this stop shows, for the hub. */
   blurb: string;
@@ -13,7 +13,7 @@ export interface Stop {
 export const STOPS: readonly Stop[] = [
   { id: 'hear', title: 'Hear a question', blurb: 'Tele asks in Spanish. English only shows as a subtitle.', path: '/demo/hear' },
   { id: 'memorise', title: 'Memorise an answer', blurb: 'Say an answer a bit at a time. Words light up as Tele hears them.', path: '/demo/memorise' },
-  { id: 'round', title: 'Answer against the clock', blurb: 'Chunks appear in colour as they are said. No hearts, no lives.', path: '/demo/round' },
+  { id: 'pasillo', title: 'El Pasillo', blurb: 'Say each answer to open the next door. Something is behind you, and only matching words keep it back.', path: '/demo/pasillo' },
   { id: 'tutor', title: 'Meet Tele', blurb: 'Poke the tutor and try its feelings.', path: '/demo/tutor' },
   { id: 'rewards', title: 'Rewards', blurb: 'Euros for effort, a streak that never threatens, no real money.', path: '/demo/rewards' },
   { id: 'teacher', title: 'Teacher overview', blurb: 'Sample class data: counts by step and where the class struggles.', path: '/demo/teacher' },

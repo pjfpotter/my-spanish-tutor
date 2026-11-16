@@ -60,7 +60,7 @@ test('join, write, understand, memorise and automate on the seeded course, then 
   await expect(page.getByTestId('readiness')).toHaveText('Readiness: 67%');
 
   // 4. A real timed round through the screen: five questions, each answered by voice against the clock.
-  await page.goto('/phases/automate');
+  await page.goto('/phases/automate/round');
   await page.getByRole('button', { name: 'Start a round' }).click();
   for (let i = 0; i < 5; i++) {
     await expect(page.getByTestId('feedback')).toBeVisible({ timeout: 20_000 });

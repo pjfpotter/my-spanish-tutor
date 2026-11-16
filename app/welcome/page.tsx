@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { nicknameOptions } from '../../lib/profile/profile';
 import { currentProfile } from '../../lib/server/session';
+import { WELCOME_COPY } from '../../lib/ui/step-copy';
 import { Win } from '../components/Win';
 import '../components/screens.css';
 import { WelcomeForm } from './WelcomeForm';
@@ -13,6 +14,13 @@ export default async function Welcome() {
   return (
     <main className="screen">
       <h1>Welcome</h1>
+      <Win title="How it works">
+        <div className="stack" data-testid="welcome-copy">
+          <p><strong>{WELCOME_COPY.what}</strong></p>
+          <p>{WELCOME_COPY.why}</p>
+          <p>{WELCOME_COPY.next}</p>
+        </div>
+      </Win>
       <Win title="Make your profile">
         <WelcomeForm nicknames={nicknameOptions(6)} />
       </Win>

@@ -4,27 +4,27 @@ Draft for a 5-minute demo. Timings are a guess: do a dry run on a stopwatch and 
 
 ## Set-up before starting
 
-- Open `/demo` (the "Try the demo" link on the welcome page). It needs no class code and saves nothing. Turn on Recording mode in the Demo menu for a video, and use Reset between runs. Every spoken step has a Pretend button for a noisy room.
-- A second tab with the teacher overview in demo mode (`/owner/<your owner link>?demo=1`).
-- Real cost figure from `npm run cost-report -- TELE8` written on a card once the pilot has run. If there is no pilot yet, say the cost is an estimate and show the sample figure, which is marked sample.
+- Open `/demo` (the "Try the demo" link on the welcome page). It needs no class code and saves nothing. Allow the microphone: every spoken stop listens for real. If a room is too noisy, each stop falls back to a clearly labelled example.
+- A second tab with the teacher stop (`/demo/teacher`).
+- Real cost figure from `npm run cost-report -- TELE8` on a card. If there is no pilot yet, say the cost is an estimate and show the sample figure, which is marked sample.
 
 ## Script
 
-**0:00 The problem (education).** Year 8 students dislike speaking tests and feel self-conscious saying Spanish aloud. Revision is lonely and badly timed. The test is one short conversation, so five questions can be learned properly if the practice is private, short and forgiving.
+**0:00 The problem (education).** Read the hub: Year 8 students dislike speaking tests and avoid practising aloud. Five questions, answered from memory. The four steps, each with its why.
 
-**0:30 Meet Tele (creativity).** Poke Tele. A CRT television with one eye and no mouth, speaking only Spanish, with English as subtitles. Its feelings are in the eye, antennae and the world behind it. It was designed with a 13-year-old, so it is deliberately odd.
+**0:45 Hear a question (stop 1).** Tele asks in Spanish with no text, English only as a subtitle. Say an answer into the microphone. The score comes from matching words, with one thing to fix and no penalty for a recognition failure.
 
-**1:15 The path.** Show the desktop: four steps in a fixed order, locked steps shown as static not as a blocked screen, five question files that clear from static as they are learned. Say: play is a reward and never a way to skip practice. Looking around earns no coins.
+**1:30 Memorise (stop 2).** Say an answer a bit at a time. Words light up as they are heard. The help fades as the student gets it.
 
-**1:45 Hear it, then say it.** Play a question with the words hidden. Answer by voice. Show feedback that names one thing to fix and a score from rules, not a model. A recognition failure is never held against the student.
+**2:15 El Pasillo (stop 3).** The last step, as a corridor game. Say what is on each door to open it. Stay silent or make noise and the monster closes in; only matching words push it back. The student's own answers are the doors in the real app. A caught student wakes up with a souvenir and effort-based praise, never a game-over.
 
-**2:45 Against the clock.** One timed round. Show the response-time rank, the student's own history, no public ranking, no hearts or lives.
+**3:00 Meet Tele and rewards (stops 4 and 5).** Poke Tele and try its feelings. Euros for effort, a streak that never threatens, no real money.
 
-**3:15 Readiness and the plan.** Show the readiness meter naming its next action and the short daily plan from the minutes they chose.
+**3:30 Teacher view (stop 6).** Sample class data, nicknames only: counts by step, where the class struggles.
 
 **3:45 Privacy by design (technical).** No names, no emails, no recordings stored. Join by class code, a nickname from a list, interests as fixed tags. One button deletes everything. The notice is written for a 13-year-old and checked for reading level.
 
-**4:15 The teacher's view and the cost (technical).** Open the demo overview: counts by step, class hotspots, nicknames only, every figure marked sample. Then the cost: the practice loop makes no language-model calls, and a test fails if one is added. Every paid call goes through one cost router with a cap and a fallback. Cost per student: say the measured number.
+**4:15 The cost (technical).** the practice loop makes no language-model calls, and a test fails if one is added. Every paid call goes through one cost router with a cap and a fallback. Cost per student: say the measured number.
 
 **4:45 Close.** Built to be adopted by a department in one step with one class code. Next: the open questions below.
 

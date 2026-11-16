@@ -49,7 +49,7 @@ async function seedDevice(page: Page, ids: string[], ladder: { at: number; met?:
 const topAt = SEED_COURSE.questions.map((q) => levelsFor(PIECES(q.spanish).length).length - 1);
 
 const open = async (page: Page) => {
-  await page.goto('/phases/automate');
+  await page.goto('/phases/automate/round');
   await expect(page.getByTestId('intro')).toBeVisible();
 };
 const startRound = (page: Page) => page.getByRole('button', { name: 'Start a round' }).click();
