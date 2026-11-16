@@ -293,6 +293,11 @@ Built in cloud sessions or direct commits and folded back without a task. Record
 - [x] 30.11 Add El Pasillo, a dreamcore corridor speaking game at `/lab/dreamcore`, which uses the student's own answers when there is a profile **Built 15 Nov in a cloud session (90d5e35).** Live at `/lab/dreamcore` (owner confirmed 16 Nov).
 - [x] 30.12 Add Neon CLI config and a branch policy (`neon.ts`: 7-day TTL for new non-default branches) **Built 14 Nov (6427aaf).**
 - [x] 30.13 Add promo video assets under `docs/promo-video/` (about 140 files, not part of the app) **Added 15 Nov (66e4982, af811c6).**
+- [ ] 30.14 Remake the promo video in HyperFrames with real footage in place of the `/brag` output, using the `product-launch-video` route with a storyboard the owner approves before the build (planned 16 Nov; supersedes the `/brag` attempt in `docs/promo-video/`)
+  - [ ] 30.14a Owner records, on a phone in portrait with Do Not Disturb on, volume about 70% and mic off in the recorder: a few seconds of the memorise phase, of El Pasillo (`/lab/dreamcore`, live) and of Tele talking with the app's own sound. Separate takes with about 5 seconds of padding each end; iPhone captures app audio, on Android test 5 seconds first
+  - [ ] 30.14b Footage goes in a new `promo/footage/` folder (not in the app bundle); demo content only, no real student data, and Tele on the rebuilt `eleven_v4` voice (30.5), never edge-tts
+  - [ ] 30.14c Settle audience, length and format (vertical or 16:9), and voiceover, captions or music only, before the storyboard
+  - [ ] 30.14d Storyboard approved by the owner, then build, preview in Studio and render
 
 **Superseded by `rework-home-screen` (14 Nov):** 6.2 (the mastery rule is now three correct answers, with no two-session gate), 10.4 (the baseline page and start.exe are removed and the placement check moved into Understand), 11.3 (the daily reminder is removed) and 13.4 (My progress, own history and the class goal are removed). The ticked boxes stay as history. **Overlaps `upload-sentence-builder-pipeline`:** 17.1 and 23.6 (photo import and scan-to-start) now sit with that change's 5.1c and 8.1.
 
