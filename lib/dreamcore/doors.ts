@@ -10,6 +10,8 @@ export type Scene = 'clouds' | 'pool' | 'bedroom' | 'grass' | 'sunset' | 'static
 export type Zone = 'pink' | 'yellow' | 'pool' | 'sky';
 
 export interface Door {
+  /** The question this door practises, for a student's own answers. Absent for sample answers. */
+  itemId?: string;
   rung: Rung;
   /** What the student must say, as bits. The live matcher lines the transcript up against these. */
   bits: string[];
@@ -45,9 +47,10 @@ export function firstSentence(a: LadderAnswer): LadderAnswer['chunks'] {
 
 /**
  * Builds a run from the student's answers. Doors are spread across the answers so one answer is not hammered, and
- * each rung draws bits from a different answer than the door before it where it can.
+ * each rung draws bits from a different answer than the door before it where it can. The last rung is the one that
+ * counts towards being test ready, so its doors go to questions that have not met the target yet (`unmet`) first.
  */
-export function buildRun(answers: readonly LadderAnswer[], rng: Rng = Math.random): Door[] {
+export function buildRun(answers: readonly LadderAnswer[], rng: Rng = Math.random, unmet: ReadonlySet<string> = new Set()): Door[] {
   const usable = answers.filter((a) => a.chunks.length > 0);
   if (!usable.length) return [];
   const doors: Door[] = [];
@@ -56,6 +59,13 @@ export function buildRun(answers: readonly LadderAnswer[], rng: Rng = Math.rando
   for (let i = 0; i < RUN_LENGTH; i++) {
     let ai = Math.floor(rng() * usable.length);
     if (usable.length > 1 && ai === last) ai = (ai + 1) % usable.length;
+    if (rungOf(i) === 6) {
+      const all = usable.map((a, n) => (a.id && unmet.has(a.id) ? n : -1)).filter((n) => n >= 0);
+      // Avoid asking the same question twice running, unless it is the only one left to meet.
+      const wanted = all.filter((n) => n !== last);
+      const pool = wanted.length ? wanted : all;
+      if (pool.length) ai = pool[Math.floor(rng() * pool.length)];
+    }
     last = ai;
     const a = usable[ai];
     const bits = firstSentence(a);
@@ -66,6 +76,7 @@ export function buildRun(answers: readonly LadderAnswer[], rng: Rng = Math.rando
     else if (rung === 2) pick = bits.length > 1 ? bits.slice(Math.min(at, bits.length - 2), Math.min(at, bits.length - 2) + 2) : bits;
     else pick = [bits[at]];
     doors.push({
+      itemId: a.id,
       rung,
       bits: pick.map((c) => c.t),
       english: pick.map((c) => c.en).filter(Boolean).join(' ') || a.qen,

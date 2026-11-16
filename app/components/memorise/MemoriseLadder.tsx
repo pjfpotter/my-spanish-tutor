@@ -202,7 +202,7 @@ export interface SaveReply { paid: number; euros: number; memorised: string[] }
 
 export function MemoriseLadder({ answers: A, variant, start, save: saveRemote, unlockAll = false }: {
   answers: LadderAnswer[];
-  /** `lab` keeps progress in this browser and shows the tester tools; `real` is the memorise phase, saved to the server; `demo` is the tour stop: this browser only, a Pretend button on every spoken screen and no tester tools. */
+  /** `lab` keeps progress in this browser and shows the tester tools; `real` is the memorise phase, saved to the server; `demo` is the tour stop: this browser only, real voice recognition like the real phase, and no tester tools. */
   variant: 'lab' | 'real' | 'demo';
   start?: Pick<LadderStart, 'day' | 'euros' | 'states' | 'testDays'>;
   /** Real phase: saves progress and pays what was earned. Resolves null if the save could not be made. */
@@ -326,15 +326,6 @@ export function MemoriseLadder({ answers: A, variant, start, save: saveRemote, u
     u.heard = heard;
     bump();
     if (lit) requestAnimationFrame(() => setTimeout(() => lat.current.add('paint', performance.now() - t0), 0));
-  }
-  /** Demo only: say the screen's words for the student, as if the recogniser had heard them (so the demo works with no microphone). */
-  function pretend() {
-    const u = ui.current;
-    const s = ses.current?.cur;
-    if (!s || s.t !== 'say' || u.phase !== 'listening') return;
-    const all = spanChunks(s).join(' ');
-    // Sent back to one bit: only words after the point they were sent back count, so add that bit to what was heard.
-    handleTranscript(u.focus ? `${u.raw} ${spanChunks(s)[u.focus.chunk]}`.trim() : all);
   }
   const live = useLiveSpeech({
     onTranscript: handleTranscript,
@@ -903,7 +894,6 @@ export function MemoriseLadder({ answers: A, variant, start, save: saveRemote, u
             <button type="button" className="ml-btn" onClick={conclude} data-testid="lab-pass">Move on</button>
           </div>
         )}
-        {demo && !tap && <button type="button" className="ml-btn" onClick={pretend} data-testid="demo-pretend">Pretend I said it</button>}
         {tap ? (
           <button type="button" className="ml-btn ml-primary ml-big" onClick={() => live.start()}>Tap, then speak</button>
         ) : (

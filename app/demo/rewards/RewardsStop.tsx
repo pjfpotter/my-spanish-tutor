@@ -37,7 +37,7 @@ export function RewardsStop() {
           <p className="coins" data-testid="demo-euros">€{euros}</p>
           <p data-testid="streak">You have practised {days} days in a row.</p>
           <p className="muted">Euros come from effort: every spoken go earns some, whatever the score. They are pretend, and nothing here costs real money.</p>
-          <button type="button" className="btn btn-primary" onClick={practise} data-testid="demo-practise">Pretend I practised</button>
+          <button type="button" className="btn btn-primary" onClick={practise} data-testid="demo-practise">Add a practice go</button>
           {praise && <p role="status" data-testid="demo-praise">{praise} +€{PRACTICE_EUROS} for trying.</p>}
         </div>
       </Win>

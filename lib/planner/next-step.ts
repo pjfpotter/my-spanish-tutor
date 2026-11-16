@@ -23,7 +23,7 @@ const TITLE: Record<PhaseId, string> = {
   understand: 'Understand the questions',
   write: 'Write your answers',
   memorise: 'Memorise your answers',
-  automate: 'Answer fast',
+  automate: 'El Pasillo, the corridor game',
 };
 
 /** What the student was doing, said so it follows "Last time you were". */
@@ -31,7 +31,7 @@ const LAST: Record<PhaseId, string> = {
   understand: 'working out what the questions mean',
   write: 'writing your answers',
   memorise: 'saying your answers from memory',
-  automate: 'answering against the clock',
+  automate: 'running the corridor',
 };
 
 /** What to do now, said so it follows "Now let's do". */
@@ -39,7 +39,7 @@ const NOW: Record<PhaseId, string> = {
   understand: 'learn what the questions mean',
   write: 'write your answers',
   memorise: 'say your answers from memory',
-  automate: 'answer fast',
+  automate: 'run the corridor, saying your answers before it catches you',
 };
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;

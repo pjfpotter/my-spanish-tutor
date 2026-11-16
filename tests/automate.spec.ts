@@ -43,7 +43,7 @@ const seed = (page: Page, itemId: string, sessionId: string, over: Record<string
   page.request.post('/api/respond', { data: { itemId, sessionId, blank: false, accuracy: 95, responseTimeMs: 1000, speed: 1, repeats: 0, assisted: false, ...over } });
 
 const startRound = async (page: Page) => {
-  await page.goto('/phases/automate');
+  await page.goto('/phases/automate/round');
   await page.getByRole('button', { name: 'Start a round' }).click();
 };
 
@@ -54,7 +54,9 @@ test('automate stays locked until the answers are memorised, then opens', async 
   await unlockAutomate(page);
   await page.goto('/phases/automate');
   await expect(page).toHaveURL('/phases/automate');
-  await expect(page.getByTestId('intro')).toBeVisible();
+  await expect(page.getByTestId('dc-title')).toBeVisible(); // the fourth step is El Pasillo
+  await page.goto('/phases/automate/round');
+  await expect(page.getByTestId('intro')).toBeVisible(); // the old timed round is still there, unlinked
 });
 
 test('a round asks all five questions with no text shown, and the next round is in a different order (9.1)', async ({ page }) => {
@@ -108,12 +110,12 @@ test('response time is measured from the end of the question to the start of spe
 test('the window shortens after several fast, accurate answers (9.3)', async ({ page }) => {
   const t = await setup(page); // never speaks: the test only reads the window
   const session = crypto.randomUUID();
-  await page.goto('/phases/automate');
+  await page.goto('/phases/automate/round');
   await page.getByRole('button', { name: 'Start a round' }).click();
   await expect(page.getByTestId('listening')).toContainText('You have 8.0 seconds');
   void t;
   for (let i = 0; i < 3; i++) expect((await seed(page, t.ids[0], session)).ok()).toBe(true);
-  await page.goto('/phases/automate');
+  await page.goto('/phases/automate/round');
   await page.getByRole('button', { name: 'Start a round' }).click();
   await expect(page.getByTestId('listening')).toContainText('You have 6.8 seconds'); // 8.0 s x 0.85
 });
@@ -164,7 +166,7 @@ test('an unclear recording is not scored or saved, and the question is asked aga
 test('test-ready needs every question accurate and quick, in one sitting if need be, and the rank ladder shows the student\'s own history (9.4, 9.5)', async ({ page }) => {
   const t = await setup(page);
   const [a, b] = [crypto.randomUUID(), crypto.randomUUID()];
-  await page.goto('/phases/automate');
+  await page.goto('/phases/automate/round');
   await expect(page.getByTestId('rank')).toContainText('No speed rank yet');
   await expect(page.getByTestId('rank')).toContainText('3 more timed answers');
 

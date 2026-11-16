@@ -19,8 +19,8 @@ describe('demo sample course', () => {
 
 describe('demo tour', () => {
   it('has six stops in order, each reachable directly', () => {
-    expect(STOPS.map((s) => s.id)).toEqual(['hear', 'memorise', 'round', 'tutor', 'rewards', 'teacher']);
-    expect(stopAt('/demo/round')?.index).toBe(2);
+    expect(STOPS.map((s) => s.id)).toEqual(['hear', 'memorise', 'pasillo', 'tutor', 'rewards', 'teacher']);
+    expect(stopAt('/demo/pasillo')?.index).toBe(2);
     expect(stopAt('/demo')).toBeNull();
   });
   it('moves to the next and previous stop and ends at the last', () => {

@@ -1,10 +1,53 @@
 # My Spanish Tutor
 
-A phone-first web app that helps UK Year 8 students revise for a KS3 Spanish speaking test. Built with Next.js, TypeScript, Neon Postgres and Vercel.
+**A phone-first revision game that makes 12 and 13 year olds talk.** Students in England sit a short Spanish speaking test, and most dislike it and feel self-conscious saying Spanish out loud, so they avoid practising the only skill it measures. My Spanish Tutor gives them a private, forgiving, game-like place to practise speaking, on their own phone or a school Chromebook.
+
+- **Live app:** https://my-spanish-tutor-phi.vercel.app
+- **Try the demo (no sign-up, nothing saved, uses your microphone):** https://my-spanish-tutor-phi.vercel.app/demo
+- **What is next:** [`docs/roadmap.md`](docs/roadmap.md)
+
+## The problem, for people outside teaching
+
+In a typical English secondary school, Spanish in Year 8 (ages 12 to 13) is taught from a **sentence builder**: a one-page table of phrases that students combine into sentences. About three times a year each student takes a **speaking test**: a teacher asks five questions out loud and the student answers from memory. Students write their answers in advance and have about a week to revise.
+
+Revision is where it goes wrong. Popular homework games (Quizlet, Blooket, Kahoot) test reading and tapping, not listening or speaking, so they are false practice for a speaking test. And practising aloud is embarrassing. The result is students who walk in having never said their answers out loud.
+
+## What the student does: four steps
+
+| Step | What happens | Why it is there |
+|---|---|---|
+| **Understand** | Tele, a Spanish-only television, asks each test question with the words hidden. The student picks what it means. | In the test the question is spoken, so they must understand it by ear. |
+| **Write** | They build one answer from their teacher's sentence builder, in words they can actually say. | An answer you can say beats a fancy one you cannot. |
+| **Memorise** | They say the answer aloud, a bit at a time, while the help fades from full text to first letters to empty blocks to an English clue to just the question. Words light up as the app hears them. | This is the learning step: speaking it is what moves it into memory. |
+| **El Pasillo** | A dreamcore corridor game. Each door shows the answer with less help. Say it to open the door. Something is behind you, and only words that match the answer keep it back. | The test gives no time to think. This makes the answer come out fast, under pressure, without notes. |
+
+Scores come from rules, not a model. A word counts if the recogniser understood it. A recognition failure or a noisy room is **never** held against the student, and there are no hearts or lives and no public ranking. The tutor never speaks English: Spanish audio, English only as subtitles.
+
+## Design choices worth knowing
+
+- **Privacy by design.** No student accounts. No names, emails or recordings are stored. A student gets a made-up nickname and a recovery code. Interests are fixed tags, never free text. The data protection impact assessment is in [`docs/dpia.md`](docs/dpia.md).
+- **No language model in the practice loop.** Models are used only when a teacher uploads a sentence builder (to read it, correct errors and draft answers). Student speech is scored by plain rules, so practice is fast, free to run and predictable. A test fails if a model call is added to the loop.
+- **Cost router.** Every paid call goes through one router that logs and caps it. The cost per student is measured from that log with `npm run cost-report`.
+- **Built for a cheap phone and an old Chromebook.** Light canvas drawing at 30 frames a second, reduced-motion and light and dark themes respected, keyboard focus always visible.
+- **Original characters only.** Tele and the corridor are our own designs, not copyrighted characters.
+
+## How it is built
+
+Next.js (App Router) and TypeScript on Vercel, Neon Postgres for data, the browser's built-in speech recogniser for live listening with a server transcription fallback, and pre-built Spanish audio clips for Tele. Planning and requirements are in [OpenSpec](openspec/) change folders, so every feature has a written requirement with test scenarios. See [`docs/PRD.md`](docs/PRD.md) for what we are building and [`docs/ARD.md`](docs/ARD.md) for how.
+
+The edge-tts voice used while prototyping must not ship. A licensed production voice is chosen before a wider launch ([`docs/voice-decision.md`](docs/voice-decision.md)).
+
+## Evidence
+
+Tested with a real student, whose feedback drove the current El Pasillo: the clock only stops for matching words, fear builds faster, and the look-over-the-shoulder moment now happens by itself. Findings and what is next are in [`docs/roadmap.md`](docs/roadmap.md) and [`docs/user-testing-notes.md`](docs/user-testing-notes.md).
+
+---
+
+# For developers
 
 - What we are building: [`docs/PRD.md`](docs/PRD.md)
 - How it is built: [`docs/ARD.md`](docs/ARD.md)
-- Requirements and tasks: [`openspec/changes/ks3-spanish-speaking-tutor-v1/`](openspec/changes/ks3-spanish-speaking-tutor-v1/)
+- Requirements and tasks: [`openspec/changes/`](openspec/changes/)
 
 ## Setup
 

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { startChase, tick, push, wantsLookBehind, type Chase } from '../../../lib/dreamcore/chase';
+import { startChase, tick, push, wantsLookBehind, fear, isTrying, type Chase } from '../../../lib/dreamcore/chase';
 import { RUNG_NAME, buildRun, emptyBlocks, firstLetters, plaqueOf, type Door } from '../../../lib/dreamcore/doors';
 import { DOOR_STOP, H, W, drawMirror, image, render, type DoorRect } from '../../../lib/dreamcore/render';
 import { KEY as SAVE_KEY, MUTATIONS, load, settle, type Reward, type Saved } from '../../../lib/dreamcore/rewards';
@@ -12,6 +12,7 @@ import { liveMatch, type LiveMatch } from '../../../lib/speech/live-match';
 import { tokenise } from '../../../lib/speech/score';
 import { useLiveSpeech } from '../useLiveSpeech';
 import { useWakeLock } from '../useWakeLock';
+import { PASILLO_COPY } from '../../../lib/ui/step-copy';
 import './dreamcore.css';
 
 type Phase = 'title' | 'travel' | 'ready' | 'opening' | 'through' | 'scare' | 'result';
@@ -19,6 +20,7 @@ interface G {
   phase: Phase; t: number; camZ: number; doorZ: number; open: number; doorIndex: number; doors: Door[];
   chase: Chase; match: LiveMatch | null; baseline: number; words: number; lastVoice: number; lastProgress: number; readyAt: number;
   bits: number; tries: number; triedThisDoor: boolean; look: number; lookHeld: boolean; lookUntil: number; lastLook: number; scare: number;
+  lastMatch: number; firstMatchAt: number; assisted: boolean; sessionId: string;
   flick: number; burst: number; fade: number; reveal: { until: number; from: number }; beat: number; escaped: boolean; started: number; rect: DoorRect | null;
 }
 
@@ -30,7 +32,15 @@ interface Ui {
   phase: Phase; index: number; door: Door | null; lit: boolean[]; showReal: number; gap: number; looking: boolean; clock: string; rect: DoorRect | null; hint: boolean;
 }
 
-export function DreamcoreGame({ answers, source }: { answers: readonly LadderAnswer[]; source: 'course' | 'sample' }) {
+export function DreamcoreGame({ answers, source, record = false, unmet = [], exit = { href: '/', label: 'Back to the desktop' } }: {
+  answers: readonly LadderAnswer[]; source: 'course' | 'sample';
+  /** Report each cleared top-rung door to the server as a timed attempt (numbers only). Off in the lab and the demo. */
+  record?: boolean;
+  /** Question ids that have not met the timed target yet: the last doors of a run go to these first. */
+  unmet?: readonly string[];
+  /** Where the links out of the game go: the desktop, or the tour in the demo. */
+  exit?: { href: string; label: string };
+}) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const frame = useRef<HTMLDivElement>(null);
   const fadeEl = useRef<HTMLDivElement>(null);
@@ -102,7 +112,10 @@ export function DreamcoreGame({ answers, source }: { answers: readonly LadderAns
       if (s.phase !== 'ready') return;
       const door = s.doors[s.doorIndex];
       const next = liveMatch(door.bits, heard.slice(s.baseline).join(' '), s.match);
-      if (next.matched > (s.match?.matched ?? 0)) s.lastProgress = s.t;
+      if (next.matched > (s.match?.matched ?? 0)) {
+        s.lastProgress = s.lastMatch = s.t;
+        if (s.firstMatchAt < 0) s.firstMatchAt = s.t;
+      }
       s.match = next;
       if (next.complete) succeed();
       else sync();
@@ -129,6 +142,9 @@ export function DreamcoreGame({ answers, source }: { answers: readonly LadderAns
     s.baseline = s.words;
     s.readyAt = s.lastProgress = s.t;
     s.triedThisDoor = false;
+    s.lastMatch = -1e9;
+    s.firstMatchAt = -1;
+    s.assisted = false;
     if (speech.state === 'idle') speech.start();
     sync();
   }
@@ -145,6 +161,18 @@ export function DreamcoreGame({ answers, source }: { answers: readonly LadderAns
     const door = s.doors[s.doorIndex];
     s.bits += door.bits.length;
     if (!skipped) s.chase = push(s.chase, door.bits.length);
+    // The top rung is the one that counts towards being test ready. Only numbers leave the device: never audio or words.
+    if (record && !skipped && door.rung === 6 && door.itemId) {
+      const total = tokenise(door.bits.join(' ')).length;
+      const lit = s.match ? s.match.hit.flat().filter(Boolean).length : 0;
+      void fetch('/api/respond', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          itemId: door.itemId, sessionId: s.sessionId, blank: false, accuracy: total ? Math.round((lit / total) * 100) : 100,
+          responseTimeMs: Math.round(((s.firstMatchAt < 0 ? s.t : s.firstMatchAt) - s.readyAt) * 1000), speed: null, repeats: 0, assisted: s.assisted,
+        }),
+      }).catch(() => { /* not recorded this time: the run carries on */ });
+    }
     s.phase = 'opening';
     s.look = 0;
     s.lookHeld = false;
@@ -171,12 +199,12 @@ export function DreamcoreGame({ answers, source }: { answers: readonly LadderAns
   function begin() {
     openAudio();
     void audio.current?.ctx.resume();
-    const doors = buildRun(answers);
+    const doors = buildRun(answers, Math.random, new Set(unmet));
     if (!doors.length) return;
     const t = performance.now() / 1000;
     g.current = {
       phase: 'travel', t, camZ: 0, doorZ: DOOR_STOP + TRAVEL, open: 0, doorIndex: 0, doors, chase: startChase(), match: null, baseline: 0, words: 0,
-      lastVoice: -1e9, lastProgress: t, readyAt: t, bits: 0, tries: 0, triedThisDoor: false, look: 0, lookHeld: false, lookUntil: 0, lastLook: t, scare: -1,
+      lastVoice: -1e9, lastProgress: t, lastMatch: -1e9, firstMatchAt: -1, assisted: false, sessionId: crypto.randomUUID(), readyAt: t, bits: 0, tries: 0, triedThisDoor: false, look: 0, lookHeld: false, lookUntil: 0, lastLook: t, scare: -1,
       flick: 0, burst: 0.5, fade: 1, reveal: { until: 0, from: 0 }, beat: 0, escaped: false, started: t, rect: null,
     };
     setReward(null);
@@ -227,7 +255,8 @@ export function DreamcoreGame({ answers, source }: { answers: readonly LadderAns
         }
         // The chase runs while walking and while a door waits, and waits for a student whose microphone is not working.
         const waiting = s.phase === 'ready';
-        const trying = performance.now() - s.lastVoice < 1500;
+        // Only a recently matched word slows the chase. Noise, coughs and wrong words do not.
+        const trying = isTrying(t, s.lastMatch);
         s.chase = tick(s.chase, { dt: step, doorIndex: s.doorIndex, trying, micOk: !waiting || micRef.current, paused: s.phase === 'opening' || s.phase === 'through' || s.phase === 'scare' });
         if (s.chase.caught && s.phase !== 'scare') {
           s.phase = 'scare';
@@ -238,7 +267,7 @@ export function DreamcoreGame({ answers, source }: { answers: readonly LadderAns
           api.current.sync();
         }
         // Turning round: the thing makes you, now and then, and you can choose to look.
-        if (s.phase === 'ready' && s.look < 0.5 && wantsLookBehind(s.chase, t - s.lastLook, Math.random()) && !isCalm) { s.lookUntil = t + 1.6; s.lastLook = t; api.current.sfx('beat'); }
+        if (s.phase === 'ready' && s.look < 0.5 && wantsLookBehind(s.chase, t - s.lastLook, step, Math.random()) && !isCalm) { s.lookUntil = t + 1.6; s.lastLook = t; api.current.sfx('beat'); }
         if (s.phase === 'scare') {
           s.scare = Math.min(1, s.scare + step / (isCalm ? 2.4 : 1.1));
           if (s.scare >= 1) { s.scare = 1; api.current.endRun(false); }
@@ -246,11 +275,12 @@ export function DreamcoreGame({ answers, source }: { answers: readonly LadderAns
         const wantLook = s.phase === 'scare' || t < s.lookUntil || s.lookHeld;
         s.look += ((wantLook ? 1 : 0) - s.look) * Math.min(1, step * 9);
         // Light and glitch: always a little, more as it gets close and when a door opens.
-        if (Math.random() < 0.02 + (1 - gap) * 0.04) s.flick = 0.6 + Math.random() * 0.4;
+        const fr = fear(gap);
+        if (Math.random() < 0.02 + fr * 0.3) s.flick = 0.6 + Math.random() * 0.4;
         s.flick *= 0.8;
         s.burst *= 0.9;
         s.beat -= step;
-        if (s.beat <= 0 && gap < 0.5 && s.phase !== 'scare') { api.current.sfx('beat'); s.beat = 0.55 + gap * 1.3; }
+        if (s.beat <= 0 && fr > 0.02 && s.phase !== 'scare') { api.current.sfx('beat'); s.beat = 0.3 + gap * 0.9; }
         if (s.fade > 0) s.fade = Math.max(0, s.fade - step * 2.2);
         if (s.phase === 'ready' && t - s.lastProgress > 9 && t > s.reveal.until + 4) s.reveal = { from: s.match?.matched ?? 0, until: t + 3.5 };
       }
@@ -260,7 +290,7 @@ export function DreamcoreGame({ answers, source }: { answers: readonly LadderAns
       const rect = render({
         t, camZ: s?.camZ ?? t * 3, dir: back ? -1 : 1, doorZ: s && s.phase !== 'scare' && s.doorIndex < s.doors.length ? s.doorZ : null, open: s?.open ?? 0,
         scene: door?.scene ?? 'clouds', zone: door?.zone ?? 'pink', gap, flick: s?.flick ?? 0,
-        glitch: Math.min(1, 0.05 + (1 - gap) * 0.12 + (s?.burst ?? 0) + (s?.phase === 'scare' ? (s.scare ?? 0) * 0.9 : 0)),
+        glitch: Math.min(1, 0.04 + fear(gap) * 0.6 + (s?.burst ?? 0) + (s?.phase === 'scare' ? (s.scare ?? 0) * 0.9 : 0)),
         scare: s ? s.scare : -1, seen: back ? 0.3 + 0.7 * Math.abs(Math.sin(t * 1.7) * Math.sin(t * 0.43)) : 0, calm: isCalm,
       });
       ctx.putImageData(image(), 0, 0);
@@ -269,15 +299,15 @@ export function DreamcoreGame({ answers, source }: { answers: readonly LadderAns
       if (el) {
         // Handheld camera: always a slow sway, a footstep bob when moving, and more shake as it closes in.
         const k = isCalm ? 0.15 : 1;
-        const fear = 1 + Math.max(0, 0.5 - gap) * 7;
+        const scared = 1 + fear(gap) * 12;
         const moving = s && (s.phase === 'travel' || s.phase === 'through') ? 1 : 0;
-        const sx = (Math.sin(t * 1.3) * 1.1 + Math.sin(t * 7.1) * 0.35 * fear) * k;
+        const sx = (Math.sin(t * 1.3) * 1.1 + Math.sin(t * 7.1) * 0.35 * scared + Math.sin(t * 23) * fear(gap) * 2.5) * k;
         const sy = (Math.sin(t * 2.1) * 0.9 + moving * Math.abs(Math.sin(t * 7)) * 2.2) * k;
-        const rot = (Math.sin(t * 0.8) * 0.5 + Math.sin(t * 5.3) * 0.15 * fear) * k;
+        const rot = (Math.sin(t * 0.8) * 0.5 + Math.sin(t * 5.3) * 0.15 * scared) * k;
         el.style.transform = `translate(${sx.toFixed(2)}px,${sy.toFixed(2)}px) rotate(${rot.toFixed(2)}deg) scale(1.05)`;
       }
       if (fadeEl.current) fadeEl.current.style.opacity = String(s ? Math.min(1, s.fade) : 0);
-      if (frame.current) frame.current.style.setProperty('--dc-fear', String(Math.max(0, 1 - gap * 1.4).toFixed(2)));
+      if (frame.current) frame.current.style.setProperty('--dc-fear', String(fear(gap).toFixed(2)));
       idle += step;
       if (s && idle > 0.12) { idle = 0; api.current.sync(); }
     };
@@ -302,7 +332,7 @@ export function DreamcoreGame({ answers, source }: { answers: readonly LadderAns
   const showPlaque = door && (ui.phase === 'ready') && !ui.looking;
   const noMic = speech.state === 'unsupported' || speech.state === 'denied' || speech.state === 'unavailable';
   const lookBack = () => { const s = g.current; if (s && s.phase === 'ready') { s.lookHeld = !s.lookHeld; s.lastLook = s.t; sync(); } };
-  const peek = () => { const s = g.current; if (s) { s.reveal = { from: s.match?.matched ?? 0, until: s.t + 4 }; s.tries++; sync(); } };
+  const peek = () => { const s = g.current; if (s) { s.assisted = true; s.reveal = { from: s.match?.matched ?? 0, until: s.t + 4 }; s.tries++; sync(); } };
   const skip = () => { const s = g.current; if (s) { s.tries++; succeed(true); } };
 
   const masked = (w: string, i: number): string => {
@@ -349,6 +379,7 @@ export function DreamcoreGame({ answers, source }: { answers: readonly LadderAns
           <section className="dc-card dc-title" data-testid="dc-title">
             <h1>El Pasillo</h1>
             <p className="dc-tag">Disc 2 of 2. Do not scratch.</p>
+            <p className="dc-copy" data-testid="dc-copy">{PASILLO_COPY.what} {PASILLO_COPY.why}</p>
             <ul>
               <li>Say what is on each door to open it.</li>
               <li>Something is behind you. Talking keeps it back.</li>
@@ -357,7 +388,7 @@ export function DreamcoreGame({ answers, source }: { answers: readonly LadderAns
             <p className="dc-small">Uses your microphone to hear you. Nothing is recorded. {source === 'sample' ? 'Practice sentences are samples here.' : 'Doors come from your own answers.'}</p>
             <button type="button" className="dc-btn" onClick={begin} data-testid="dc-start">Go in</button>
             <p className="dc-small">{saved.runs ? `Furthest: door ${saved.best}. Souvenirs: ${saved.mutations.length} of ${MUTATIONS.length}.` : 'First time in.'}</p>
-            <Link href="/" className="dc-link">Back to the desktop</Link>
+            <Link href={exit.href} className="dc-link" data-testid="section-exit">{exit.label}</Link>
           </section>
         )}
         {ui.phase === 'result' && reward && (
@@ -368,7 +399,7 @@ export function DreamcoreGame({ answers, source }: { answers: readonly LadderAns
             <ul className="dc-effort">{reward.lines.map((l) => <li key={l}>{l}</li>)}</ul>
             <p className="dc-small">Souvenirs: {saved.mutations.length} of {MUTATIONS.length}{reward.newMutation ? ' (new)' : ''}. Stored on this device only.</p>
             <button type="button" className="dc-btn" onClick={begin} data-testid="dc-again">Go in again</button>
-            <Link href="/" className="dc-link">Back to the desktop</Link>
+            <Link href={exit.href} className="dc-link" data-testid="section-exit">{exit.label}</Link>
           </section>
         )}
       </div>

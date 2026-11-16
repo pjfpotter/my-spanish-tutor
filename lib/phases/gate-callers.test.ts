@@ -21,10 +21,11 @@ describe('every phaseStates call passes the course flag', () => {
       .filter((l) => /phaseStates\(/.test(l.text) && !/^\s*(import|\/\/|\*)/.test(l.text)),
   );
 
-  it('finds the five known call sites', () => {
+  it('finds the six known call sites', () => {
     expect(calls.map((c) => c.file).sort()).toEqual([
       'app/phases/[phase]/page.tsx',
       'app/phases/automate/page.tsx',
+      'app/phases/automate/round/page.tsx',
       'app/phases/memorise/classic/page.tsx',
       'app/phases/memorise/page.tsx',
       'lib/server/home.ts',
