@@ -219,7 +219,7 @@ Note: task 7.x level work (names, thresholds) is superseded by 26.1a. Tasks 10.4
 
 - [x] 25.1 Write docs/api-map.md: every route under app/api, its trigger, caller, target, auth, cost-router use, and when it is not called, with a sequence diagram per main flow; verify against the route files **Done 13 Nov:** `docs/api-map.md`, 16 handlers in 15 route files, checked against the files, with four sequence diagrams.
 - [x] 25.2 Write an evaluation plan that answers each success criterion in proposal.md from test notes or the cost log **Written 13 Nov:** `docs/evaluation-plan.md`. Every result is blank until the user testing session; fill them from the notes and `npm run cost-report`.
-- [ ] 25.3 Run a voice audition (three or more voices, clarity and pace) with a Year 8 student; record the decision in docs/voice-decision.md
+- [x] 25.3 Run a voice audition (three or more voices, clarity and pace) with a Year 8 student; record the decision in docs/voice-decision.md **Not needed (16 Nov):** the owner moved to a new voice on `eleven_v4` on 13 Nov because they judged it better; no student audition. Recorded in docs/voice-decision.md.
 - [x] 25.4 Write the one-page character reaction spec (states, variants, when the tutor speaks); verify it matches practice-session-feel **Done 13 Nov:** `docs/character-reaction-spec.md`, checked against the screens that call Tele. It lists the phrase-bank situations no screen uses yet.
 - [x] 25.5 Write game-mode proposals for memorise and automatise for the owner to approve; build nothing until approved **Written 13 Nov:** `docs/game-proposals.md` for the owner. Nothing built. Recommends M1 (clear the static) and A1 (beat your own ghost).
 - [x] 25.6 Update docs/PRD.md and docs/ARD.md where they still describe the mood check-in, the session plan, exactly five questions or one sentence builder; verify with a search **Done 13 Nov:** PRD and ARD no longer describe the mood check-in, the session plan, exactly five questions or one sentence builder (FR-37 and FR-39 are marked parked and superseded). `docs/technical-documentation.md` still says five questions in places; it follows task 23.2.
@@ -261,6 +261,28 @@ The owner redrew Tele (television with a realistic eye, turtleneck and corduroy 
 - [ ] 28.3 Re-measure the drawing cost and frame rate on the school Chromebook and the reference phone (the redesign draws more images per frame than the old procedural body) and update docs/performance-budget.md; if it is slow, cache the static world and body to an offscreen canvas first **Owner will check when live (13 Nov).**
 - [x] 28.4 Owner to confirm where the sprites came from and their licence (docs/asset-credits.md rows are marked "to confirm"), and whether the photo-real television is acceptable under the asset rules **Done 13 Nov:** the sprites were generated with Gemini (Nano Banana) and are credited so in docs/asset-credits.md.
 - [ ] 28.5 Check every screen that shows Tele at 360 by 640 now that the picture is shorter (400 by 360): practice screens, home, memorise lab; verify with `expectFits` in `tests/helpers.ts` **Owner will check when live (13 Nov).**
+
+## 29. Use the testing course for an end-to-end run (16 Nov)
+
+The testing course (change `course-unlock-testing-mode`, merged 6 Nov) opens all four phases and lets a tester practise the model answers, so the timed round can be tested now. It practises model answers, not a student's own, so it does not exercise the memorise ladder on confirmed answers (27.4); 29.2 covers that with one pass through `TELE8`.
+
+- [ ] 29.1 Confirm production has the testing course: run the seed against production if it has not been run since 6 Nov, join the testing code and check all four steps are open, then join `TELE8` and check memorise is still locked **Owner check.**
+- [ ] 29.2 Run one full student workflow end to end on the phone: hear, write, memorise, then the timed round to the result screen. Do it once in the testing course and once in `TELE8` with real written answers. Write each problem as one line in docs/user-testing-notes.md, and each becomes a task **Owner check.**
+- [ ] 29.3 Repeat 29.2 once on the school Chromebook with a headset **Owner check.**
+- [ ] 29.4 After 29.1, sync the testing change's specs and archive `course-unlock-testing-mode` (`openspec/specs/` is empty, so there is nothing yet to merge into)
+- [ ] 29.5 Decide what to do with demo mode (tasks 24.1 to 24.3): remove it or rebuild it. **Deferred by the owner on 16 Nov; they dislike it.** Until decided, change nothing, and treat the demo script (16.4) as on hold.
+
+## 30. Work done outside the spec (recorded 16 Nov)
+
+Built in cloud sessions or direct commits and folded back without a task. Recorded here so the history matches the code.
+
+- [x] 30.1 Audio build makes one natural-speed call per text, and the slow and fast versions are made locally with ffmpeg **Built 13 Nov (0b69a2a).**
+- [x] 30.2 Audio build writes 64 kbps output, has `--limit` for a listening test, removes old clips after a full build and allows the voice tag on newer models **Built 13 Nov (963f68c).**
+- [x] 30.3 Optional per-sentence voice tag in the audio build, with the setting noted in `.env.example` **Built 13 Nov (8b60f10, 94bdc9b).**
+- [x] 30.4 The clip index lists only clips that are in git, and a full rebuild regenerates it **Built 13 Nov (94bdc9b).**
+- [x] 30.5 Rebuild all 309 clips on `eleven_v4`, with bit clips and Tele's fixed lesson lines, replacing the `eleven_v3` clips **Built 13 Nov (7cc3236), about 0.65 GBP.**
+- [x] 30.6 Measure the JavaScript budget on real student and teacher screens (leaving out `/lab` and `/spike`) and raise it from 300 KB to 400 KB by the owner's choice **Built 12 Nov (3fc2ace).**
+- [x] 30.7 Speed up CI: shard Playwright four ways, install Chromium only, cache npm, cancel superseded runs and stop running CI twice per push; the full suite took about 17 minutes on one worker **Built 14 Nov (5f2c047).**
 
 ## Workflow follow-up
 

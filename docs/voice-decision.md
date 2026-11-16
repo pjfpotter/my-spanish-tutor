@@ -4,7 +4,7 @@
 |---|---|
 | **Status** | **Decided** for the student project. A launch gate applies (see Decision). |
 | **Date** | 2026-11-01 |
-| **Voice** | ElevenLabs Voice Design voice `UwUfvuU7dZdSX47WuYCC`, made by the developer (Tele's character voice) |
+| **Voice** | ElevenLabs voice `01EL79JZueiJl1jDb743` on model `eleven_v4`, from 13 Nov 2026 (see "Voice change, 13 Nov 2026"). Originally Voice Design voice `UwUfvuU7dZdSX47WuYCC`, made by the developer (Tele's character voice) |
 | **Plan** | ElevenLabs Starter (paid, so commercial use is permitted by the terms) |
 
 ## Decision
@@ -52,3 +52,7 @@ Tele's voice is being redesigned to be clearer and slower. `ELEVENLABS_TAG` (for
 - The tag characters are billed, so the dry run's estimate includes them.
 - Not yet checked: whether `eleven_v3` honours the `speed` setting the slow variants (0.7) use, or whether `[very slowly]` makes that redundant. Listen to a few clips before a full build.
 - Nothing has been built with the tag yet. All 309 clips were rebuilt on 13 Nov 2026 in the new voice (`eleven_v4`, no tag), including the bit clips for the memorise ladder (27.4) and Tele's fixed lesson lines.
+
+## Voice change, 13 Nov 2026
+
+All 309 clips were rebuilt on model `eleven_v4` with voice `01EL79JZueiJl1jDb743` (task 30.5). The earlier clips used `eleven_v3`. The owner changed the voice because they judged the new one better. There was no student audition, and none is planned (task 25.3 is closed as not needed). The written-approval launch gate in "Decision" above is unchanged and still open.
