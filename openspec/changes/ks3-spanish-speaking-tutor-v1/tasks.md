@@ -67,7 +67,7 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 ## 6. Question comprehension phase
 
 - [x] 6.1 Build the hear-then-choose screen with speed progression, replay, slow and reveal; verify a revealed attempt does not count toward mastery
-- [x] 6.2 Implement the mastery rule (three correct across two sessions, configurable) and in-session spaced return; verify unit tests including the single-session case
+- [x] 6.2 Implement the mastery rule (three correct across two sessions, configurable) and in-session spaced return; verify unit tests including the single-session case **Superseded 14 Nov** by `rework-home-screen`: three correct answers now master a question, with no two-session gate.
 - [x] 6.3 Gate progression until all five questions are mastered; verify the next phase stays locked until then
 - [x] 6.4 Show comprehension mastery as Tele's channels: the picture clears from static as mastery rises and locks only after the second session day; verify with seeded mastery records
 
@@ -102,14 +102,14 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 - [x] 10.1 Implement attempt event logging and the closed cause-tag list; verify events carry all specified fields
 - [x] 10.2 Implement comprehension probes and tag rules (too fast, word not known, sound-spelling gap, thrown by context); verify unit tests for each pattern
 - [x] 10.3 Implement recall cause tags and chunk hotspot detection; verify unit tests including the stress pattern
-- [x] 10.4 Build the mood check-in and the baseline test-teach-test at course start; verify the dislike option leads to an easy quick win
+- [x] 10.4 Build the mood check-in and the baseline test-teach-test at course start; verify the dislike option leads to an easy quick win **Superseded 14 Nov** by `rework-home-screen`: the baseline page is removed; the placement check is an optional quick check inside Understand.
 - [x] 10.5 Feed tags into session planning so tagged items get adjusted support; verify the too-fast case starts slower
 
 ## 11. Revision planner
 
 - [x] 11.1 Build the countdown, phase display and readiness meter that names its next action; verify unit tests for the readiness calculation
 - [x] 11.2 Build the session plan from minutes and days left, with redistribution on missed days and late-starter mode; verify unit tests for each case
-- [x] 11.3 Add opt-in reminders and the after-test-date state; verify no notification is sent without opt-in
+- [x] 11.3 Add opt-in reminders and the after-test-date state; verify no notification is sent without opt-in **Superseded 14 Nov** by `rework-home-screen`: the daily reminder is removed.
 
 ## 12. Tutor character, phrase bank and calm mode
 
@@ -125,7 +125,7 @@ Task ids are stable and are not renumbered. Work through the milestones in this 
 - [x] 13.1 Implement the append-only coin ledger and effort-based awards; verify a low-scoring attempt still earns coins
 - [x] 13.2 Implement the response-time rank from rolling averages; verify unit tests at rank boundaries
 - [x] 13.3 Implement fixed-price desktop unlocks (wallpapers, objects), stickers and streak freezes; verify there is no payment path or random draw in the codebase and that exploring the desktop earns no coins
-- [x] 13.4 Implement own-history progress and class-total goals with no individual names; verify the class goal shows only totals
+- [x] 13.4 Implement own-history progress and class-total goals with no individual names; verify the class goal shows only totals **Superseded 14 Nov** by `rework-home-screen`: My progress, own history and the class goal are removed.
 - [x] 13.5 Add the curated cheeky pool with a course-level switch; verify it disappears when switched off
 
 ## 14. Cost control and reporting
@@ -219,7 +219,7 @@ Note: task 7.x level work (names, thresholds) is superseded by 26.1a. Tasks 10.4
 
 - [x] 25.1 Write docs/api-map.md: every route under app/api, its trigger, caller, target, auth, cost-router use, and when it is not called, with a sequence diagram per main flow; verify against the route files **Done 13 Nov:** `docs/api-map.md`, 16 handlers in 15 route files, checked against the files, with four sequence diagrams.
 - [x] 25.2 Write an evaluation plan that answers each success criterion in proposal.md from test notes or the cost log **Written 13 Nov:** `docs/evaluation-plan.md`. Every result is blank until the user testing session; fill them from the notes and `npm run cost-report`.
-- [ ] 25.3 Run a voice audition (three or more voices, clarity and pace) with a Year 8 student; record the decision in docs/voice-decision.md
+- [x] 25.3 Run a voice audition (three or more voices, clarity and pace) with a Year 8 student; record the decision in docs/voice-decision.md **Not needed (16 Nov):** the owner moved to a new voice on `eleven_v4` on 13 Nov because they judged it better; no student audition. Recorded in docs/voice-decision.md.
 - [x] 25.4 Write the one-page character reaction spec (states, variants, when the tutor speaks); verify it matches practice-session-feel **Done 13 Nov:** `docs/character-reaction-spec.md`, checked against the screens that call Tele. It lists the phrase-bank situations no screen uses yet.
 - [x] 25.5 Write game-mode proposals for memorise and automatise for the owner to approve; build nothing until approved **Written 13 Nov:** `docs/game-proposals.md` for the owner. Nothing built. Recommends M1 (clear the static) and A1 (beat your own ghost).
 - [x] 25.6 Update docs/PRD.md and docs/ARD.md where they still describe the mood check-in, the session plan, exactly five questions or one sentence builder; verify with a search **Done 13 Nov:** PRD and ARD no longer describe the mood check-in, the session plan, exactly five questions or one sentence builder (FR-37 and FR-39 are marked parked and superseded). `docs/technical-documentation.md` still says five questions in places; it follows task 23.2.
@@ -261,6 +261,52 @@ The owner redrew Tele (television with a realistic eye, turtleneck and corduroy 
 - [ ] 28.3 Re-measure the drawing cost and frame rate on the school Chromebook and the reference phone (the redesign draws more images per frame than the old procedural body) and update docs/performance-budget.md; if it is slow, cache the static world and body to an offscreen canvas first **Owner will check when live (13 Nov).**
 - [x] 28.4 Owner to confirm where the sprites came from and their licence (docs/asset-credits.md rows are marked "to confirm"), and whether the photo-real television is acceptable under the asset rules **Done 13 Nov:** the sprites were generated with Gemini (Nano Banana) and are credited so in docs/asset-credits.md.
 - [ ] 28.5 Check every screen that shows Tele at 360 by 640 now that the picture is shorter (400 by 360): practice screens, home, memorise lab; verify with `expectFits` in `tests/helpers.ts` **Owner will check when live (13 Nov).**
+
+## 29. Test the whole student journey (16 Nov)
+
+Three ways to reach the final phase exist on `main`: (a) the testing course (code in `lib/course/seed.ts`), where every phase and every gate inside a phase is open and the tester practises the model answers (changes `course-unlock-testing-mode` and `question-sheet-match-and-open-testing`); (b) `/lab/automate`, which runs the real timed round on three fake students and sends nothing to the server (change `automate-lab`); (c) the real course `TELE8` with real written answers. The steps today are Understand, Write (the sentence builder sheet), Memorise, Automate.
+
+- [x] 29.1 Confirm production has the testing course and that it is current **Done 16 Nov:** read-only queries on the production database found the testing course with `unlock_all` true, the sheet attached and published, and all 20 migrations applied (up to `0020_course_sheet.sql`). `TELE8` is present and locked as designed in the data (`unlock_all` false). No seed was needed; seed from `main`, never from an old branch, because the seed attaches sheets since 14 Nov.
+- [ ] 29.2 Check by hand on production: join the testing code and see all four steps open, then join `TELE8` and see memorise and automate still locked **Owner check.**
+- [ ] 29.3 In one sitting on the phone, run the manual walkthroughs already written in other changes: `question-sheet-match-and-open-testing` 8.2 (write journey on the testing course), `rework-home-screen` 10.2 (first visit, quick check, all four steps in one sitting, signed-out view) and `upload-sentence-builder-pipeline` 5.4 (re-run the first testing walkthrough). Tick each in its own change and write each problem as one line in docs/user-testing-notes.md **Owner check.**
+- [ ] 29.4 Run the timed round on `/lab/automate` once for each fake student, then once for real through the testing course to the result screen **Owner check. This is the final phase that has never been tested end to end.**
+- [ ] 29.5 Repeat 29.3 and 29.4 on the school Chromebook with a headset **Owner check.**
+- [ ] 29.6 Run one pass through `TELE8` with real written answers, because the testing course practises model answers and does not exercise the memorise ladder on a student's own answers (27.4) **Owner check.**
+- [ ] 29.7 Archive finished changes: `course-unlock-testing-mode` (17 of 17) and `automate-lab` (12 of 12) now, and the others as their open tasks close. `openspec/specs/` is empty, so the first archive has to sync delta specs; `rework-home-screen` 9.4 says to sync after this change
+- [ ] 29.8 Decide what to do with demo mode (24.1 to 24.3): remove it or rebuild it **Deferred by the owner on 16 Nov; they dislike it.** `/demo` and the "Try the demo" link on `/welcome` are still on `main`. Change nothing until decided, and treat the demo script (16.4) as on hold.
+
+## 30. Work done outside the spec (recorded 16 Nov)
+
+Built in cloud sessions or direct commits and folded back without a task. Recorded here so the history matches the code.
+
+- [x] 30.1 Audio build makes one natural-speed call per text, and the slow and fast versions are made locally with ffmpeg **Built 13 Nov (0b69a2a).**
+- [x] 30.2 Audio build writes 64 kbps output, has `--limit` for a listening test, removes old clips after a full build and allows the voice tag on newer models **Built 13 Nov (963f68c).**
+- [x] 30.3 Optional per-sentence voice tag in the audio build, with the setting noted in `.env.example` **Built 13 Nov (8b60f10, 94bdc9b).**
+- [x] 30.4 The clip index lists only clips that are in git, and a full rebuild regenerates it **Built 13 Nov (94bdc9b).**
+- [x] 30.5 Rebuild all 309 clips on `eleven_v4`, with bit clips and Tele's fixed lesson lines, replacing the `eleven_v3` clips **Built 13 Nov (7cc3236), about 0.65 GBP.**
+- [x] 30.6 Measure the JavaScript budget on real student and teacher screens (leaving out `/lab` and `/spike`) and raise it from 300 KB to 400 KB by the owner's choice **Built 12 Nov (3fc2ace).**
+- [x] 30.7 Speed up CI: shard Playwright four ways, install Chromium only, cache npm, cancel superseded runs and stop running CI twice per push; the full suite took about 17 minutes on one worker **Built 14 Nov (5f2c047).**
+
+- [x] 30.8 Make the sentence builder sheet mandatory and remove the old write flow: a course cannot be created or published without a sheet, the write phase is the sheet only, and the slot-builder screen and its text save path are deleted **Built 14 Nov (b62447c).** Overtakes the slot-builder parts of sections 7 and 26.
+- [x] 30.9 Seed attaches the sentence builder sheet to every seeded course, with plain SQL so the script runs under node **Built 14 Nov (f09b066, 2441c9c).**
+- [x] 30.10 Show a message instead of crashing when a course has no sheet (React error 441 in production on the write page) **Fixed 14 Nov (3334490).**
+- [x] 30.11 Add El Pasillo, a dreamcore corridor speaking game at `/lab/dreamcore`, which uses the student's own answers when there is a profile **Built 15 Nov in a cloud session (90d5e35).** Live at `/lab/dreamcore` (owner confirmed 16 Nov).
+- [x] 30.12 Add Neon CLI config and a branch policy (`neon.ts`: 7-day TTL for new non-default branches) **Built 14 Nov (6427aaf).**
+- [x] 30.13 Add promo video assets under `docs/promo-video/` (about 140 files, not part of the app) **Added 15 Nov (66e4982, af811c6).**
+
+**Superseded by `rework-home-screen` (14 Nov):** 6.2 (the mastery rule is now three correct answers, with no two-session gate), 10.4 (the baseline page and start.exe are removed and the placement check moved into Understand), 11.3 (the daily reminder is removed) and 13.4 (My progress, own history and the class goal are removed). The ticked boxes stay as history. **Overlaps `upload-sentence-builder-pipeline`:** 17.1 and 23.6 (photo import and scan-to-start) now sit with that change's 5.1c and 8.1.
+
+## 31. Other OpenSpec changes on main (state on 16 Nov)
+
+Cloud sessions made these as their own changes. None is archived and the list was not linked here until now.
+
+| Change | Tasks done | Open |
+|---|---|---|
+| `course-unlock-testing-mode` | 17 of 17 | none, ready to archive |
+| `automate-lab` | 12 of 12 | none, ready to archive |
+| `question-sheet-match-and-open-testing` | 26 of 27 | 8.2, a manual walkthrough (in 29.3) |
+| `rework-home-screen` | 50 of 52 | 9.4 (sync specs at archive), 10.2 (manual walkthrough, in 29.3) |
+| `upload-sentence-builder-pipeline` | 26 of 35 | 5.1c, 5.3, 5.4, 6.1 to 6.3, 7.3, 8.1, 8.2; 5.1c and 6.2 need a model key |
 
 ## Workflow follow-up
 

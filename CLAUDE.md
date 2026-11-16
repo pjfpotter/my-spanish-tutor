@@ -6,6 +6,7 @@ Phone-first web app (Next.js, TypeScript, Neon Postgres, Vercel) that helps UK Y
 
 - Use the OpenSpec skills for planning and implementation. Implement only when asked to apply a change.
 - Work through `tasks.md` in order. The speech and device spike comes first.
+- Work folded back from cloud sessions must update `tasks.md` in the same commit: tick the task it completes, or add a ticked task that records it.
 
 ## Skills
 
