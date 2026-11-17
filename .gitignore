@@ -40,3 +40,6 @@ playwright.local.config.ts
 .agents/skills/brag/
 .claude/skills/brag/
 brag-output/
+
+# promo video work files (large images, local only)
+docs/promo-video/
