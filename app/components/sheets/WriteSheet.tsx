@@ -218,10 +218,18 @@ export function WriteSheet({ builder: B, sheet, question: Q, pickup = false, onS
 
   /* ---------- the sheet ---------- */
   const colByCell = useMemo(() => new Map(B.columns.map((c) => [c.cell, c])), [B]);
+  // A sheet that holds several builders (a merged course sheet) draws only the tables of the question's own blocks,
+  // under the question's own title. A sheet with no blocks is drawn whole, as before.
+  const own = Q?.blocks;
+  const shows = (t: Sheet['tables'][number]) => !own || t.cells.some((c) => {
+    const col = colByCell.get(c.id);
+    const slots = col ? B.slots.filter((s) => s.cols.includes(col.key)) : [];
+    return slots.length ? slots.some((s) => s.block == null || own.includes(s.block)) : false;
+  });
   const paper = (interactive: boolean) => (
     <>
-      <div className="ws-title"><div><h2 lang="es">{B.title}</h2><p>{B.subtitle}</p></div></div>
-      {sheet.tables.map((t) => {
+      <div className="ws-title"><div><h2 lang="es">{own ? Q?.es : B.title}</h2><p>{own ? Q?.en : B.subtitle}</p></div></div>
+      {sheet.tables.filter(shows).map((t) => {
         const total = t.grid.reduce((x, y) => x + y, 0) || 1;
         const title = t.index === 0 ? null : null;
         return (

@@ -14,11 +14,12 @@ Optional manual check. Skip it if there is no time; nothing else depends on it.
 | Code | What it is | Use it for |
 |---|---|---|
 | `TELE8` | The real class. The learning path is gated, exactly as for students. | Tasks 1 and 2: joining, the notice and Tele. |
-| `PRBA7K3M` | The testing course: the same questions and sentence builder, with every step open. A "Testing course" label shows on the desktop. | Tasks 3 to 5: hearing a question, the timed round and the shop. |
+| `PRBA7K3M` | The testing course: five questions (films, free time, clothes, last year's holiday, your bedroom), each with its own sentence builder, with every step open. A "Testing course" label shows on the desktop. | Tasks 3 to 5: hearing a question, the timed round and the shop. |
 
 A profile belongs to one course. After tasks 1 and 2, open **Privacy** and use **Delete everything**, then join again with `PRBA7K3M`. If time is short, use `PRBA7K3M` from the start (joining works the same way).
 
-- **The seeded course has one sentence builder, for free time (question 5).** Questions 1 to 4 are about films, the cinema and clothes, and there is no going-out sentence builder yet. On the write screen those four say "There is no sentence builder for this question yet", and in the testing course a **Skip this question** button moves on. Only question 5 can be built and confirmed. This is intended: a sentence builder is never offered for a question it was not written for.
+- **`TELE8` has one sentence builder, for free time (question 5).** Questions 1 to 4 are about films, the cinema and clothes, and there is no going-out sentence builder yet. On the write screen those four say "There is no sentence builder for this question yet". This is intended: a sentence builder is never offered for a question it was not written for.
+- **`PRBA7K3M` has a sentence builder for every question** (from five of the teacher's Year 8 sheets), so all five answers can be written and confirmed. Each question shows only its own sheet. This applies once the testing course has been seeded from the local data (see the technical documentation, "Testing course"); until then `PRBA7K3M` behaves like `TELE8`, with one question writable and a **Skip this question** button for the rest.
 - The testing course also opens the gates inside the steps: expert mode in the timed round is available straight away, and **Settings** on the memorise screen opens any step of any answer.
 - In the testing course the child has not written any answers, so the memorise and timed-round steps use the model answers. Their own answers are never needed. Read findings about "saying my answer" with that in mind.
 - Attempts in the testing course are real attempts: they earn coins and count towards that profile's mastery. Treat every tester profile as throwaway and delete it afterwards.

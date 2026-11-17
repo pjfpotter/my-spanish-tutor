@@ -1,7 +1,8 @@
 // Seeds the hand-authored course into the database (task 3.2). Safe to run again: it updates in place.
 //   npm run seed
 import pg from 'pg';
-import { SEED_COURSE, TESTING_COURSE } from '../lib/course/seed.ts';
+import { SEED_COURSE } from '../lib/course/seed.ts';
+import { loadTestingCourse } from '../lib/course/testing-course.ts';
 import { seedCourse } from '../lib/course/seed-db.ts';
 import { unmatchedQuestions } from '../lib/sheets/question-match.ts';
 
@@ -11,8 +12,11 @@ if (!url) {
   process.exit(1);
 }
 const pool = new pg.Pool({ connectionString: url, max: 1 });
+// The testing course comes from local, gitignored data when it is there (testing-course-five-builders).
+const testing = loadTestingCourse();
+console.log(testing.note);
 try {
-  for (const course of [SEED_COURSE, TESTING_COURSE]) {
+  for (const course of [SEED_COURSE, testing.course]) {
     const r = await seedCourse(pool, course);
     console.log(`${r.created ? 'Created' : 'Updated'} course ${course.classCode} (${r.courseId}).`);
     // A question the sheet does not cover cannot be written; say so here, not when a student finds it.
