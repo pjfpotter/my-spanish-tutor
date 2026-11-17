@@ -138,8 +138,13 @@ export interface TestAssessment {
   checklist: { tenses: ChecklistItem; justifiedOpinions: ChecklistItem };
 }
 
-export function assessTest(cal: Calibration, answers: { questionPosition: number; text: string }[]): TestAssessment {
-  const assessed = answers.map((a) => ({ ...assessAnswer(cal, a.text), questionPosition: a.questionPosition }));
+/**
+ * The whole-test checklist. `cal` is the course's calibration: it holds the targets, and is the calibration for an
+ * answer that gives none. An answer written on a sentence builder gives that builder's calibration, so its tenses
+ * and justified opinions are counted against that builder's own phrases (question-builder-assignment).
+ */
+export function assessTest(cal: Calibration, answers: { questionPosition: number; text: string; cal?: Calibration }[]): TestAssessment {
+  const assessed = answers.map((a) => ({ ...assessAnswer(a.cal ?? cal, a.text), questionPosition: a.questionPosition }));
   const tenses = BASIC_TENSES.filter((t) => assessed.some((a) => a.tenses.includes(t)));
   const justifiedOpinions = assessed.reduce((n, a) => n + a.justifiedOpinions, 0);
   const item = (label: string, have: number, need: number): ChecklistItem => ({ label, have, need, met: have >= need });

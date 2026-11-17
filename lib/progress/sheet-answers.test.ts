@@ -25,10 +25,10 @@ const B = prepare(buildBuilder('free', FREE_TIME_SHEET, FREE_TIME));
 const item = (slot: string, es: string) => B.cols[B.slotMap[slot].cols.find((c) => B.cols[c].items.some((i) => i.es.includes(es)))!].items.find((i) => i.es.includes(es))!;
 
 describe('sentence-builder answers', () => {
-  it('a course always carries its sheet, so there is a builder to write on', async () => {
+  it('every question of this course names the one builder, so there is a builder to write on', async () => {
     const c = await loadWritingCourse(db, courseId);
-    expect(c.sheet).not.toBeNull();
-    expect(builderFor(c)).not.toBeNull();
+    expect(c.builders).toHaveLength(1);
+    for (const q of c.questions) expect(builderFor(c, q), `question ${q.position}`).not.toBeNull();
     expect((await saveSheetAnswer(db, c, profileId, qids[0], {}, false)).ok).toBe(true);
   });
 

@@ -52,7 +52,7 @@ The migration runner (`scripts/migrate.mjs`) applies plain SQL files once each, 
 - **Ordering with deploy:** the migration is additive and runs during the build, before the new code serves traffic. Old code keeps reading `courses.sheet`, which is untouched. New code reads only `course_builders`.
 
 ### D6. The merge workaround goes away
-`lib/sheets/merge.ts` and its test are deleted. The `own` filter in `WriteSheet.tsx` that shows only tables whose columns belong to the question's blocks is removed, because each builder's sheet is now only its own. `parseText`'s optional question argument and the engine's `blocks` support stay: they are used by a single sheet with two halves (D3) and are covered by tests. `scripts/build-testing-course.mjs` stops merging and writes `course.json` with five builders and each question's `builder` key; the interpretations and `content.json` are reused as they are, minus the prefix.
+`lib/sheets/merge.ts` and its test are deleted. The `own` filter in `WriteSheet.tsx` that shows only the tables whose columns belong to the question's blocks **stays** (decision made while applying): a builder with two halves serving two questions needs exactly that to show only its own half, and a sheet with no blocks is drawn whole as before. `parseText`'s optional question argument and the engine's `blocks` support also stay, for the same reason, and are covered by tests. `scripts/build-testing-course.mjs` stops merging and writes `course.json` with five builders and each question's `builder` key; the interpretations and `content.json` are reused as they are, minus the prefix.
 - The local `interpretations/*.json` were written for the merge; the prefix is added by the merge and not in the files, so they are reused unchanged.
 
 ### D7. Ingest and cost
@@ -63,7 +63,7 @@ Each builder is a separate upload, so one model call per builder, cached by docu
 
 ## Risks / Trade-offs
 
-- **Content hash.** `contentHash` (review and publish) does not cover the sheet today. It should also cover every builder and each question's assignment, or a changed or reassigned builder would not ask for a new review sign-off. This changes the hash of every existing course once, so a published course would read as changed. The first run after migration stores the new hash for courses that were already reviewed or published, so no course is sent back for review by this change. Covered by a test.
+- **Content hash (decision while applying).** `contentHash` reads question text, chunks, model answers and calibration, which is what the paid steps read. Which builder a question uses is not read by a paid step, so the hash is left as it was (the builder columns are removed from the hashed question rows) and no existing review or publish lapses. A builder's own calibration is likewise not hashed: the paid steps use the course's.
 - **Backfill mismatch.** A question that matched only by chance of wording would be assigned. This is the same match that already controls what students see today, so behaviour does not change.
 - **Two copies of a shared builder.** In v1, reusing a builder across courses means uploading it again (no library). Accepted.
 - **Per-builder calibration** means each builder must be calibrated when it is uploaded; a builder without one is refused at seed. The calibration regression fixtures (`examples`) are per builder too.

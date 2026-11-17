@@ -16,7 +16,8 @@ export async function practiceAnswerText(db: Db, profileId: string, courseId: st
   if (own.rows[0]) return own.rows[0].text;
   if (!(await courseUnlockAll(db, courseId))) return null;
   const q = await db.query<{ position: number; model_answers: ModelAnswer[]; calibration: Calibration }>(
-    'select q.position, c.model_answers, c.calibration from questions q join courses c on c.id = q.course_id where q.id = $1 and q.course_id = $2',
+    // The calibration is the question's builder's, or the course's when it has none (question-builder-assignment).
+    'select q.position, c.model_answers, coalesce(b.calibration, c.calibration) as calibration from questions q join courses c on c.id = q.course_id left join course_builders b on b.id = q.builder_id where q.id = $1 and q.course_id = $2',
     [questionId, courseId],
   );
   const row = q.rows[0];

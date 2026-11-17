@@ -17,7 +17,7 @@ export default async function WritePage({ searchParams }: { searchParams: Promis
   const [course, saved] = await Promise.all([loadWritingCourse(db, profile.courseId), loadSavedAnswers(db, profile.id)]);
   // Every course should have a teacher's sentence builder; there is no other way to write. A course without
   // one gets a plain message instead of a crash.
-  if (!course.sheet) {
+  if (!course.builders.length) {
     return (
       <main className="screen">
         <h1>Write</h1>

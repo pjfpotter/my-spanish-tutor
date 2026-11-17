@@ -54,16 +54,18 @@ export async function loadMemoriseItems(db: Db, profileId: string, courseId: str
   );
   let rows = own.rows;
   if (await courseUnlockAll(db, courseId)) {
-    const course = await db.query<{ model_answers: ModelAnswer[]; calibration: Calibration }>('select model_answers, calibration from courses where id = $1', [courseId]);
+    const course = await db.query<{ model_answers: ModelAnswer[] }>('select model_answers from courses where id = $1', [courseId]);
     const models = course.rows[0]?.model_answers ?? [];
-    const cal = course.rows[0]?.calibration;
     const have = new Set(rows.map((r) => r.id));
-    const all = await db.query<{ id: string; position: number; spanish: string; english_subtitle: string }>(
-      'select id, position, spanish, english_subtitle from questions where course_id = $1 order by position',
+    // Each question is scored with its own builder's calibration, or the course's when it has no builder.
+    const all = await db.query<{ id: string; position: number; spanish: string; english_subtitle: string; calibration: Calibration }>(
+      `select q.id, q.position, q.spanish, q.english_subtitle, coalesce(b.calibration, c.calibration) as calibration
+         from questions q join courses c on c.id = q.course_id left join course_builders b on b.id = q.builder_id
+        where q.course_id = $1 order by q.position`,
       [courseId],
     );
-    const stand = all.rows.flatMap((q) => {
-      const model = cal ? simplestModelAnswer(models, q.position, cal) : null;
+    const stand = all.rows.flatMap(({ calibration, ...q }) => {
+      const model = calibration ? simplestModelAnswer(models, q.position, calibration) : null;
       return have.has(q.id) || !model ? [] : [{ ...q, text: model.text }];
     });
     rows = [...rows, ...stand].sort((a, b) => a.position - b.position);
