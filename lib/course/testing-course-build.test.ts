@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { assessAnswer } from '../coach/rubric';
-import { mergeSheets } from '../sheets/merge';
+import { FOOD, FOOD_SHEET } from '../sheets/samples/food';
 import { FREE_TIME, FREE_TIME_SHEET } from '../sheets/samples/free-time';
 import { assembleTestingCourse, calibrationFromChunks, tagsFor, type TestingContent } from './testing-course-build';
 import { validateCalibration } from './calibration/types';
@@ -27,13 +27,13 @@ describe('tagsFor', () => {
 });
 
 describe('assembleTestingCourse', () => {
-  const merged = mergeSheets([{ prefix: 'free', sheet: FREE_TIME_SHEET, interpretation: FREE_TIME }], { name: 'T', title: 'T', subtitle: 'T' });
+  const parts = [{ prefix: 'free', sheet: FREE_TIME_SHEET, interpretation: FREE_TIME }];
   const content: TestingContent = {
     title: 'Test', testDate: '2026-12-18', labels: { free: 'free time' },
     questions: [{ position: 1, prefix: 'free', keyWord: { spanish: 'tiempo libre', english: 'free time' }, template: ['starter', 'activity', 'connector', 'reason'] }],
     modelAnswers: [{ questionPosition: 1, text: 'Me gusta montar en bici porque es divertido.' }],
   };
-  const data = assembleTestingCourse(content, merged);
+  const data = assembleTestingCourse(content, parts);
 
   it('derives one chunk per offered Spanish text, labelled with its builder, each with English', () => {
     const texts = data.chunks.map((c) => c.spanish.toLowerCase());
@@ -56,8 +56,30 @@ describe('assembleTestingCourse', () => {
   });
 
   it('refuses a missing label or a question the sheet does not have', () => {
-    expect(() => assembleTestingCourse({ ...content, labels: {} }, merged)).toThrow(/No label/);
-    expect(() => assembleTestingCourse({ ...content, questions: [{ ...content.questions[0], position: 2 }] }, merged)).toThrow(/no sheet question/);
+    expect(() => assembleTestingCourse({ ...content, labels: {} }, parts)).toThrow(/No label/);
+    expect(() => assembleTestingCourse({ ...content, questions: [{ ...content.questions[0], builderQuestion: 5 }] }, parts)).toThrow(/no question 5/);
+    expect(() => assembleTestingCourse({ ...content, questions: [{ ...content.questions[0], prefix: 'nope' }] }, parts)).toThrow(/not among the parts/);
+  });
+
+  it('names the question\'s builder and gives each builder a calibration of its own', () => {
+    expect(data.questions[0].builder).toBe('free');
+    expect(data.builders.map((b) => b.key)).toEqual(['free']);
+    expect(data.builders[0].calibration.frame.starters).toContain('me gusta');
+  });
+
+  it('with two builders, scores an answer only with its own builder\'s phrases and shares a chunk the builders have in common', () => {
+    const two = assembleTestingCourse(
+      { ...content, labels: { free: 'free time', food: 'food' }, questions: [content.questions[0], { position: 2, prefix: 'food', keyWord: { spanish: 'pan', english: 'bread' }, template: ['verb', 'food'] }] },
+      [...parts, { prefix: 'food', sheet: FOOD_SHEET, interpretation: FOOD }],
+    );
+    expect(two.builders.map((b) => b.key)).toEqual(['free', 'food']);
+    expect(two.questions.map((q) => q.builder)).toEqual(['free', 'food']);
+    expect(two.questions[1].spanish).toBe('¿Qué comes?');
+    const [free, food] = two.builders;
+    expect(assessAnswer(free.calibration, 'Como pan por la mañana').value).toBe(0);
+    expect(assessAnswer(food.calibration, 'Como pan por la mañana').value).toBeGreaterThan(0);
+    const texts = two.chunks.map((c) => c.spanish.toLowerCase());
+    expect(new Set(texts).size).toBe(texts.length);
   });
 
   it('is accepted by the course check once it has the fields the loader adds', () => {

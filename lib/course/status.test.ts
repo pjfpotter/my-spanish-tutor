@@ -113,3 +113,18 @@ describe('course status', () => {
     expect((await courseSummary(db, id, [])).status).toBe('shared');
   });
 });
+
+describe('questions without a sentence builder', () => {
+  it('are listed as a notice and never block a step', async () => {
+    const { withoutBuilder, ...rest } = await courseSummary(db, courseId, ALL);
+    expect(withoutBuilder).toEqual(twoBuilderCourse().questions.filter((q) => q.builder === undefined).map((q) => q.position));
+    expect(rest.missing.join()).not.toMatch(/sentence builder/);
+  });
+
+  it('a course with no builder at all cannot publish, and says so', async () => {
+    const { courseId: bare } = await seedCourse(db, { ...twoBuilderCourse(), classCode: 'NOBLD01' });
+    await db.query('delete from course_builders where course_id = $1', [bare]);
+    expect((await courseSummary(db, bare, ALL)).missing.join()).toMatch(/sentence builder/);
+  });
+});
+

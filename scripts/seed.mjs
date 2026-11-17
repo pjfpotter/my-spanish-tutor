@@ -4,7 +4,7 @@ import pg from 'pg';
 import { SEED_COURSE } from '../lib/course/seed.ts';
 import { loadTestingCourse } from '../lib/course/testing-course.ts';
 import { seedCourse } from '../lib/course/seed-db.ts';
-import { unmatchedQuestions } from '../lib/sheets/question-match.ts';
+import { assignments } from '../lib/course/assignments.ts';
 
 const url = process.env.DATABASE_URL_UNPOOLED ?? process.env.DATABASE_URL;
 if (!url) {
@@ -19,8 +19,8 @@ try {
   for (const course of [SEED_COURSE, testing.course]) {
     const r = await seedCourse(pool, course);
     console.log(`${r.created ? 'Created' : 'Updated'} course ${course.classCode} (${r.courseId}).`);
-    // A question the sheet does not cover cannot be written; say so here, not when a student finds it.
-    for (const q of unmatchedQuestions(course.questions, course.sheet.interpretation)) console.log(`  No sentence builder for question ${q.position}: ${q.spanish}`);
+    // Say here which builder each question uses and which part of it, so a gap or a wrong assignment is seen now and not by a student.
+    for (const a of assignments(course)) console.log(a.builder ? `  Question ${a.position}: ${a.builder}, ${a.part}` : `  Question ${a.position} has no sentence builder yet: ${a.spanish}`);
     if (r.ownerToken) console.log(`Owner token for ${course.classCode} (shown once, keep it): ${r.ownerToken}`);
   }
 } finally {

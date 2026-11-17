@@ -1,7 +1,7 @@
 import { assessAnswer } from '../coach/rubric.ts';
 import goingOut from './calibration/going-out.json' with { type: 'json' };
 import { FREE_TIME, FREE_TIME_SHEET } from '../sheets/samples/free-time.ts';
-import type { Calibration, Chunk, Course, FeatureTag, ModelAnswer } from './schema';
+import type { Calibration, Chunk, Course, CourseBuilder, FeatureTag, ModelAnswer } from './schema';
 
 /**
  * The one hand-authored course for v1 (task 3.2): Year 8 "Going out", with one question recycled
@@ -140,6 +140,8 @@ const modelAnswers: ModelAnswer[] = [
   m(5, 'Los fines de semana juego a los videojuegos y escucho música. Me gusta montar en bici porque es divertido, aunque a veces me gusta salir con mis amigos.'),
 ];
 
+const FREE_TIME_BUILDER: CourseBuilder = { key: 'free-time', name: 'Free time', sheet: FREE_TIME_SHEET, interpretation: FREE_TIME, calibration: goingOut as Calibration };
+
 export const SEED_COURSE: Course = {
   title: 'Year 8: Going out',
   classCode: 'TELE8', // placeholder
@@ -176,6 +178,7 @@ export const SEED_COURSE: Course = {
     },
     {
       position: 5, spanish: '¿Qué haces en tu tiempo libre?', english: 'What do you do in your free time?',
+      builder: 'free-time',
       recycled: true,
       topics: ['free time', 'free time opinion', 'free time activity', 'frequency', 'reason', 'reason adjective', 'connective'],
       template: ['free time opinion', 'free time activity', 'frequency', 'reason'],
@@ -186,7 +189,8 @@ export const SEED_COURSE: Course = {
   calibration: goingOut as Calibration,
   modelAnswers,
   // Stands in for a teacher's upload until a course is created from a real sheet: the free-time sentence builder.
-  sheet: { sheet: FREE_TIME_SHEET, interpretation: FREE_TIME },
+  // Only question 5 names it; the four going-out questions have no builder yet (question-builder-assignment).
+  builders: [FREE_TIME_BUILDER],
 };
 
 /**
@@ -217,11 +221,13 @@ export const ALL_MATCHED_COURSE: Course = {
   ...SEED_COURSE,
   // Same title as the real course so tests that look for it on screen still find it.
   classCode: 'MATCH5',
-  sheet: {
-    sheet: FREE_TIME_SHEET,
+  builders: [{
+    ...FREE_TIME_BUILDER,
     interpretation: {
       ...FREE_TIME,
       questions: [...FREE_TIME.questions, ...SEED_COURSE.questions.filter((q) => !q.recycled).map((q) => ({ es: q.spanish, en: q.english }))],
     },
-  },
+  }],
+  // Every question names the free-time builder; each is linked to its own builder question by its text.
+  questions: SEED_COURSE.questions.map((q) => ({ ...q, builder: 'free-time' })),
 };

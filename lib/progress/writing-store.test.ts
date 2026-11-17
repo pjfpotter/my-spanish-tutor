@@ -131,18 +131,19 @@ describe('changing a confirmed answer resets its progress', () => {
   });
 });
 
-describe('a question with no sheet question (question-sheet-match)', () => {
-  it('is refused, and nothing is stored, for every question the sheet does not cover', async () => {
+describe('a question with no sentence builder (question-builder-assignment)', () => {
+  it('is refused, and nothing is stored, for every question that names no builder', async () => {
     const { courseId } = await seedCourse(db, { ...SEED_REAL, classCode: 'REAL1' });
     const real = await loadWritingCourse(db, courseId);
-    expect(real.questions.map((x) => x.sheetQuestion)).toEqual([null, null, null, null, 0]);
+    expect(real.questions.map((x) => x.builderId === null)).toEqual([true, true, true, true, false]);
+    expect(real.questions.map((x) => x.builderQuestion)).toEqual([null, null, null, null, 0]);
     const p = await createProfile(db, { courseId, nickname: nicknameOptions(3)[2], interests: [] });
     if (!p.ok) throw new Error('profile');
     const r = await saveSheetAnswer(db, real, p.profile.id, real.questions[0].id, SHORT, true);
     expect(r).toEqual({ ok: false, error: NO_SHEET_FOR_QUESTION });
     const stored = await db.query('select 1 from answers where profile_id = $1', [p.profile.id]);
     expect(stored.rows).toHaveLength(0);
-    // The one question the sheet does cover still works.
+    // The one question that names the builder still works.
     expect(await saveSheetAnswer(db, real, p.profile.id, real.questions[4].id, SHORT, true)).toMatchObject({ ok: true, confirmed: true });
   });
 });
@@ -157,9 +158,16 @@ describe('a sheet whose parts answer different questions', () => {
       frames: base.frames.map((f, i) => ({ ...f, block: i === 1 ? 1 : 0 })),
       questions: [{ es: qa.spanish, en: qa.english, blocks: [0] }, { es: qb.spanish, en: qb.english, blocks: [1], required: ['lohago'] }],
     };
-    const { courseId } = await seedCourse(db, { ...SEED_COURSE, classCode: 'BLK1', sheet: { sheet: FREE_TIME_SHEET, interpretation } });
+    // Two questions name the one builder; each is linked to its own half by its text.
+    const { courseId } = await seedCourse(db, {
+      ...SEED_COURSE, classCode: 'BLK1',
+      builders: [{ ...SEED_COURSE.builders[0], sheet: FREE_TIME_SHEET, interpretation }],
+      questions: SEED_COURSE.questions.map((x, i) => ({ ...x, builder: i < 2 ? 'free-time' : undefined })),
+    });
     const c = await loadWritingCourse(db, courseId);
-    expect(c.questions.slice(0, 2).map((x) => x.sheetQuestion)).toEqual([0, 1]);
+    expect(c.builders).toHaveLength(1);
+    expect(c.questions.slice(0, 2).map((x) => x.builderQuestion)).toEqual([0, 1]);
+    expect(c.questions[0].builderId).toBe(c.questions[1].builderId);
     const p = await createProfile(db, { courseId, nickname: nicknameOptions(4)[3], interests: [] });
     if (!p.ok) throw new Error('profile');
     // The opinion sentence is for the first question only.

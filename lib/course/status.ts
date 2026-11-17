@@ -24,6 +24,8 @@ export interface CourseSummary {
   missing: string[];
   publishedAt: string | null;
   sharedAt: string | null;
+  /** Questions that have no sentence builder yet. A notice for the teacher; it never blocks a step (question-builder-assignment). */
+  withoutBuilder: number[];
 }
 
 interface CourseRow {
@@ -31,32 +33,32 @@ interface CourseRow {
   test_date: Date | string;
   calibration: unknown;
   model_answers: { questionPosition: number }[] | null;
-  has_sheet: boolean;
+  builder_count: number;
   reviewed_hash: string | null;
   published_hash: string | null;
   published_at: Date | string | null;
   shared_at: Date | string | null;
 }
-interface QuestionRow { position: number; spanish: string; english_subtitle: string; extension: boolean; topics: string[]; template: string[]; key_word: string | null }
+interface QuestionRow { builder_id: string | null; position: number; spanish: string; english_subtitle: string; extension: boolean; topics: string[]; template: string[]; key_word: string | null }
 interface ChunkRow { spanish: string; english_gloss: string; category: string; feature_tags: string[]; builder: string | null }
 
 const iso = (d: Date | string | null) => (d === null ? null : new Date(d).toISOString());
 
 async function load(db: Db, courseId: string) {
   const course = (await db.query<CourseRow>(
-    'select title, test_date, calibration, model_answers, (sheet is not null and interpretation is not null) as has_sheet, reviewed_hash, published_hash, published_at, shared_at from courses where id = $1', [courseId])).rows[0];
+    'select title, test_date, calibration, model_answers, (select count(*)::int from course_builders b where b.course_id = courses.id) as builder_count, reviewed_hash, published_hash, published_at, shared_at from courses where id = $1', [courseId])).rows[0];
   if (!course) throw new Error('No such course.');
   const questions = (await db.query<QuestionRow>(
-    'select position, spanish, english_subtitle, extension, topics, template, key_word from questions where course_id = $1 order by position', [courseId])).rows;
+    'select builder_id, position, spanish, english_subtitle, extension, topics, template, key_word from questions where course_id = $1 order by position', [courseId])).rows;
   const chunks = (await db.query<ChunkRow>(
     'select spanish, english_gloss, category, feature_tags, builder from chunks where course_id = $1 order by spanish', [courseId])).rows;
   return { course, questions, chunks };
 }
 
-/** A fingerprint of what the paid steps read. Changing any of it changes the hash. */
+/** A fingerprint of what the paid steps read. Changing any of it changes the hash. Which builder a question uses is not read by a paid step, so it is left out and existing hashes stay valid. */
 export async function contentHash(db: Db, courseId: string): Promise<string> {
   const { course, questions, chunks } = await load(db, courseId);
-  const body = JSON.stringify({ t: course.title, d: iso(course.test_date)?.slice(0, 10), c: course.calibration, m: course.model_answers ?? [], q: questions, k: chunks });
+  const body = JSON.stringify({ t: course.title, d: iso(course.test_date)?.slice(0, 10), c: course.calibration, m: course.model_answers ?? [], q: questions.map(({ builder_id: _builder, ...q }) => q), k: chunks });
   return createHash('sha256').update(body).digest('hex');
 }
 
@@ -67,7 +69,7 @@ export async function missingForPublish(db: Db, courseId: string, clips: readonl
   const core = questions.filter((q) => !q.extension);
   if (![4, 5].includes(core.length)) missing.push(`4 or 5 core questions (it has ${core.length})`);
   if (!chunks.length) missing.push('a sentence builder with chunks');
-  if (!course.has_sheet) missing.push("the teacher's uploaded sentence builder sheet");
+  if (!course.builder_count) missing.push("a sentence builder uploaded by the teacher");
   const answered = new Set((course.model_answers ?? []).map((a) => a.questionPosition));
   const noAnswers = core.filter((q) => !answered.has(q.position)).map((q) => q.position);
   if (noAnswers.length) missing.push(`model answers for question${noAnswers.length > 1 ? 's' : ''} ${noAnswers.join(', ')} (run the course set-up)`);
@@ -93,7 +95,7 @@ export async function courseSummary(db: Db, courseId: string, clips: readonly Bu
   const shared = published && course.shared_at !== null;
   const status: CourseStatus = shared ? 'shared' : published ? 'published' : reviewed ? 'reviewed' : setUp ? 'set_up' : 'draft';
   const missing = status === 'published' || status === 'shared' ? [] : await missingForPublish(db, courseId, clips);
-  return { status, missing, publishedAt: published ? iso(course.published_at) : null, sharedAt: shared ? iso(course.shared_at) : null };
+  return { status, missing, publishedAt: published ? iso(course.published_at) : null, sharedAt: shared ? iso(course.shared_at) : null, withoutBuilder: questions.filter((q) => q.builder_id === null).map((q) => q.position) };
 }
 
 /** Signs off the course as it stands now. Needs the course set up first. Any later edit lapses it. */

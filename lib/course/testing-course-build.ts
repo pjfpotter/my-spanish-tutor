@@ -4,19 +4,20 @@ import type { Interpretation } from '../sheets/interpretation.ts';
 import type { Sheet } from '../sheets/types.ts';
 import { tokens } from '../coach/rubric.ts';
 import { GOING_OUT, type Calibration, type FeatureDef } from './calibration/index.ts';
-import type { Chunk, Course, FeatureTag, ModelAnswer, Question } from './schema.ts';
+import type { Chunk, Course, CourseBuilder, FeatureTag, ModelAnswer, Question } from './schema.ts';
 
 /**
- * Builds the testing course (testing-course-five-builders) from the merged sentence builder and a small content
- * file: chunks come from the builder, so they are exactly what the write screen offers, and only the questions'
- * key words, starting slots and model answers are written by hand. Pure: the build script reads and writes the files.
+ * Builds the testing course from its sentence builders and a small content file (course-builder-per-question):
+ * one builder per question, each with its own calibration. Chunks come from the builders, so they are exactly what
+ * the write screen offers, and only the questions' key words, starting slots and model answers are written by hand.
+ * Pure: the build script reads and writes the files.
  */
 export interface TestingContent {
   title: string;
   testDate: string;
-  /** Block prefix to the name shown with its chunks, for example `film` to `films`. */
+  /** Builder key to the name shown with its chunks, for example `film` to `films`. */
   labels: Record<string, string>;
-  questions: { position: number; prefix: string; keyWord: { spanish: string; english: string }; template: string[] }[];
+  questions: { position: number; prefix: string; /** Which of the builder's own questions, when it has several. Defaults to the first. */ builderQuestion?: number; keyWord: { spanish: string; english: string }; template: string[] }[];
   modelAnswers: ModelAnswer[];
   /** Overrides for the heuristic tags, keyed by the chunk's Spanish text. */
   tagOverrides?: Record<string, FeatureTag[]>;
@@ -56,12 +57,11 @@ export function tagsFor(kind: string, spanish: string, title: string): FeatureTa
 }
 
 /** The course chunks: every chunk the write screen offers, once by Spanish text (the seed keys chunks by it). */
-export function chunksFromBuilder(B: Builder, content: Pick<TestingContent, 'labels' | 'tagOverrides'>): Chunk[] {
+export function chunksFromBuilder(B: Builder, prefix: string, content: Pick<TestingContent, 'labels' | 'tagOverrides'>): Chunk[] {
   const offered = new Set<string>();
   for (const sd of B.slots) for (const it of slotItems(B, sd)) offered.add(it.id);
   const seen = new Set<string>(), out: Chunk[] = [];
   for (const col of B.columns) {
-    const prefix = col.key.split('_')[0];
     const label = content.labels[prefix];
     if (!label) throw new Error(`No label for the "${prefix}" builder.`);
     for (const it of col.items as Item[]) {
@@ -113,25 +113,40 @@ export function calibrationFromChunks(chunks: Chunk[], base: Calibration = GOING
 
 export type TestingCourseData = Omit<Course, 'classCode' | 'unlockAll'>;
 
-export function assembleTestingCourse(content: TestingContent, merged: { sheet: Sheet; interpretation: Interpretation }): TestingCourseData {
-  const B = prepare(buildBuilder('testing', merged.sheet, merged.interpretation));
-  const chunks = chunksFromBuilder(B, content);
+/** One uploaded sentence builder of the testing course: its key, the reader's sheet and the reviewed interpretation. */
+export interface TestingPart { prefix: string; sheet: Sheet; interpretation: Interpretation }
+
+export function assembleTestingCourse(content: TestingContent, parts: TestingPart[]): TestingCourseData {
+  const prepared = new Map(parts.map((p) => [p.prefix, prepare(buildBuilder(p.prefix, p.sheet, p.interpretation))]));
+  const builderChunks = new Map(parts.map((p) => [p.prefix, chunksFromBuilder(prepared.get(p.prefix)!, p.prefix, content)]));
+  // The course's chunks are unique by Spanish text (the seed keys them by it), so a word two builders share is one chunk.
+  const seen = new Set<string>(), chunks: Chunk[] = [];
+  for (const own of builderChunks.values()) for (const c of own) if (!seen.has(c.spanish.toLowerCase())) { seen.add(c.spanish.toLowerCase()); chunks.push(c); }
+
   const questions: Question[] = content.questions.map((q) => {
-    const sq = B.questions[q.position - 1];
-    if (!sq) throw new Error(`Question ${q.position} has no sheet question.`);
+    const B = prepared.get(q.prefix);
+    if (!B) throw new Error(`Question ${q.position} names the "${q.prefix}" builder, which is not among the parts.`);
+    const index = q.builderQuestion ?? 0;
+    const sq = B.questions[index];
+    if (!sq) throw new Error(`Question ${q.position} has no question ${index} in its sentence builder.`);
     const label = content.labels[q.prefix];
     const cat = (key: string) => {
-      const col = B.cols[`${q.prefix}_${key}`];
+      const col = B.cols[key];
       if (!col) throw new Error(`Question ${q.position}: no column "${key}" in the "${q.prefix}" builder.`);
       return `${label} ${col.title.toLowerCase()}`;
     };
-    const own = [...new Set(B.columns.filter((c) => c.key.startsWith(`${q.prefix}_`) && !c.static).map((c) => `${label} ${c.title.toLowerCase()}`))];
+    const own = [...new Set(B.columns.filter((c) => !c.static).map((c) => `${label} ${c.title.toLowerCase()}`))];
     return {
       position: q.position, spanish: sq.es, english: sq.en, recycled: false,
+      builder: q.prefix, ...(q.builderQuestion !== undefined ? { builderQuestion: q.builderQuestion } : {}),
       topics: own.filter((t) => chunks.some((c) => c.category === t)),
       template: [...new Set(q.template.map(cat))],
       keyWord: q.keyWord,
     };
   });
-  return { title: content.title, testDate: content.testDate, chunks, questions, calibration: calibrationFromChunks(chunks), modelAnswers: content.modelAnswers, sheet: merged };
+  const builders: CourseBuilder[] = parts.map((p) => ({
+    key: p.prefix, name: content.labels[p.prefix], sheet: p.sheet, interpretation: p.interpretation,
+    calibration: calibrationFromChunks(builderChunks.get(p.prefix)!),
+  }));
+  return { title: content.title, testDate: content.testDate, chunks, questions, calibration: calibrationFromChunks(chunks), modelAnswers: content.modelAnswers, builders };
 }
