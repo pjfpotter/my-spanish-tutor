@@ -3,6 +3,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import pg from 'pg';
+import { backfillBuilders } from '../lib/course/backfill-builders.ts';
 
 const url = process.env.DATABASE_URL_UNPOOLED ?? process.env.DATABASE_URL;
 if (!url && process.argv.includes('--if-configured') && !process.env.VERCEL) {
@@ -39,6 +40,9 @@ try {
       throw err;
     }
   }
+  // Data steps that SQL cannot do. Each is safe to run again.
+  const carried = await backfillBuilders({ query: (sql, params) => client.query(sql, params) });
+  if (carried) console.log(`carried ${carried} course(s) over to sentence builders`);
   console.log('database is up to date');
 } finally {
   await client.end();

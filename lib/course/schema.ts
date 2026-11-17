@@ -3,6 +3,7 @@ export const CORE_QUESTION_COUNTS = [4, 5] as const;
 import { BASIC_TENSES, validateCalibration, type BasicTense, type Calibration } from './calibration/types.ts';
 import type { Interpretation } from '../sheets/interpretation.ts';
 import { validateInterpretation } from '../sheets/validate.ts';
+import { resolveBuilderQuestion } from '../sheets/question-match.ts';
 import type { Sheet } from '../sheets/types.ts';
 
 export { BASIC_TENSES, type BasicTense, type Calibration };
@@ -48,11 +49,29 @@ export interface Chunk {
   builder?: string;
 }
 
+/**
+ * One of a course's sentence builders (course-builder-per-question): a teacher's uploaded sheet and its checked
+ * interpretation, with the calibration that scores answers written on it. A course holds one or more.
+ */
+export interface CourseBuilder {
+  /** A short id used by questions to name this builder. Unique within the course. */
+  key: string;
+  /** A label for the teacher, such as "Free time". */
+  name: string;
+  sheet: Sheet;
+  interpretation: Interpretation;
+  calibration: Calibration;
+}
+
 export interface Question {
   position: number;
   spanish: string;
   /** English subtitle, text only. */
   english: string;
+  /** The key of the one sentence builder this question is written on. Leave out when it has none yet. */
+  builder?: string;
+  /** Which of that builder's own questions (a section of the sheet) this question uses. Filled in from the text when they match; give it when the wording differs and the builder has several. */
+  builderQuestion?: number;
   /** The one question drawn from an earlier topic. At most one core question is. */
   recycled: boolean;
   /** An extra question: practised like the others but never needed to unlock a step or reach test-ready. */
@@ -86,8 +105,8 @@ export interface Course {
   /** Editable calibration data: features and their weights, glue words and the teacher's examples. */
   calibration: Calibration;
   modelAnswers: ModelAnswer[];
-  /** The teacher's sentence builder: the re-typeset sheet and its checked interpretation. Every course has one; it is the only way students write. */
-  sheet: { sheet: Sheet; interpretation: Interpretation };
+  /** The teacher's sentence builders, one or more. A question names at most one of them; several questions may name the same one. */
+  builders: CourseBuilder[];
   /**
    * A testing course: every phase is open from the first visit (course-unlock-testing). Off unless the
    * seed says so, so a real class keeps the gated order.
@@ -148,8 +167,27 @@ export function validateCourse(input: unknown): CourseCheck {
     problems.push('at most one core question can be recycled from an earlier topic');
   }
 
-  if (!c.sheet?.sheet || !c.sheet?.interpretation) problems.push('the sentence builder sheet is missing: a course cannot be created without an uploaded sheet');
-  else problems.push(...validateInterpretation(c.sheet.sheet, c.sheet.interpretation).map((p) => `sentence builder ${p.path}: ${p.message}`));
+  const builders = Array.isArray(c.builders) ? c.builders : [];
+  if (!builders.length) problems.push('the course has no sentence builder: a course cannot be created without an uploaded one');
+  if (new Set(builders.map((b) => b?.key)).size !== builders.length) problems.push('two sentence builders share a key');
+  builders.forEach((b, i) => {
+    const at = `sentence builder ${i + 1}${b?.name ? ` (${b.name})` : ''}`;
+    if (blank(b?.key) || blank(b?.name)) problems.push(`${at} needs a key and a name`);
+    if (!b?.sheet || !b?.interpretation) { problems.push(`${at} is missing its sheet or interpretation`); return; }
+    problems.push(...validateInterpretation(b.sheet, b.interpretation).map((p) => `${at} ${p.path}: ${p.message}`));
+    problems.push(...validateCalibration(b.calibration).map((p) => `${at} ${p}`));
+  });
+  for (const q of questions) {
+    if (q?.builder === undefined) {
+      if (q?.builderQuestion !== undefined) problems.push(`question ${q.position} gives a builderQuestion but names no builder`);
+      continue;
+    }
+    const b = builders.find((x) => x?.key === q.builder);
+    if (!b) { problems.push(`question ${q.position} names the sentence builder "${q.builder}", which the course does not have`); continue; }
+    if (!b.interpretation) continue;
+    const link = resolveBuilderQuestion(b.interpretation, q);
+    if (!link.ok) problems.push(`question ${q.position}: ${link.error}`);
+  }
 
   problems.push(...validateCalibration(c.calibration));
 

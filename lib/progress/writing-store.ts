@@ -4,23 +4,34 @@ import { buildBuilder, type Builder } from '../sheets/builder';
 import { prepare, sentences } from '../sheets/engine';
 import type { Interpretation } from '../sheets/interpretation';
 import { fromSelection, type Selection } from '../sheets/selection';
-import { matchSheetQuestion } from '../sheets/question-match';
 import { signOff } from '../sheets/signoff';
 import type { Sheet } from '../sheets/types';
 import type { Db } from '../db/types';
 import type { Calibration, Chunk, ModelAnswer } from '../course/schema';
 
+/** One sentence builder of a course, as stored: the sheet, its interpretation and the calibration for answers written on it. */
+export interface WritingBuilder {
+  id: string;
+  name: string;
+  sheet: Sheet;
+  interpretation: Interpretation;
+  calibration: Calibration;
+}
+
 export interface WritingCourse {
   questions: {
     id: string; position: number; spanish: string; english: string; topics: string[]; template: string[];
-    /** Index of the sheet question this one is answered from, or null when the sheet has none (question-sheet-match). */
-    sheetQuestion: number | null;
+    /** The sentence builder this question is written on, or null when it has none yet (question-builder-assignment). */
+    builderId: string | null;
+    /** Which of that builder's own questions it uses, or null for the whole builder. Fixed when the course was seeded. */
+    builderQuestion: number | null;
   }[];
   chunks: Chunk[];
+  /** The course's own calibration: the whole-test targets, and the fallback for a question with no builder. */
   calibration: Calibration;
   modelAnswers: ModelAnswer[];
-  /** The teacher's sentence builder. Every course made through the seed has one; null only for bare test fixtures. */
-  sheet: { sheet: Sheet; interpretation: Interpretation } | null;
+  /** The course's sentence builders, in order. Empty only for bare test fixtures. */
+  builders: WritingBuilder[];
 }
 
 export interface SavedAnswer {
@@ -32,18 +43,19 @@ export interface SavedAnswer {
 }
 
 export async function loadWritingCourse(db: Db, courseId: string): Promise<WritingCourse> {
-  const course = await db.query<{ calibration: Calibration; model_answers: ModelAnswer[]; sheet: Sheet | null; interpretation: Interpretation | null }>('select calibration, model_answers, sheet, interpretation from courses where id = $1', [courseId]);
-  const questions = await db.query<{ id: string; position: number; spanish: string; english_subtitle: string; topics: string[]; template: string[] }>(
-    'select id, position, spanish, english_subtitle, topics, template from questions where course_id = $1 order by position', [courseId]);
+  const course = await db.query<{ calibration: Calibration; model_answers: ModelAnswer[] }>('select calibration, model_answers from courses where id = $1', [courseId]);
+  const questions = await db.query<{ id: string; position: number; spanish: string; english_subtitle: string; topics: string[]; template: string[]; builder_id: string | null; builder_question: number | null }>(
+    'select id, position, spanish, english_subtitle, topics, template, builder_id, builder_question from questions where course_id = $1 order by position', [courseId]);
   const chunks = await db.query<{ spanish: string; english_gloss: string; category: string; feature_tags: string[]; recycled: boolean }>(
     'select spanish, english_gloss, category, feature_tags, recycled from chunks where course_id = $1 order by spanish', [courseId]);
-  const interpretation = course.rows[0].interpretation;
+  const builders = await db.query<{ id: string; name: string; sheet: Sheet; interpretation: Interpretation; calibration: Calibration }>(
+    'select id, name, sheet, interpretation, calibration from course_builders where course_id = $1 order by position', [courseId]);
   return {
-    questions: questions.rows.map((q) => ({ id: q.id, position: q.position, spanish: q.spanish, english: q.english_subtitle, topics: q.topics, template: q.template.length ? q.template : q.topics, sheetQuestion: matchSheetQuestion(interpretation, q.spanish) })),
+    questions: questions.rows.map((q) => ({ id: q.id, position: q.position, spanish: q.spanish, english: q.english_subtitle, topics: q.topics, template: q.template.length ? q.template : q.topics, builderId: q.builder_id, builderQuestion: q.builder_question })),
     chunks: chunks.rows.map((c) => ({ spanish: c.spanish, english: c.english_gloss, category: c.category, featureTags: c.feature_tags as Chunk['featureTags'], recycled: c.recycled })),
     calibration: course.rows[0].calibration,
     modelAnswers: course.rows[0].model_answers,
-    sheet: course.rows[0].sheet && course.rows[0].interpretation ? { sheet: course.rows[0].sheet, interpretation: course.rows[0].interpretation } : null,
+    builders: builders.rows,
   };
 }
 
@@ -84,9 +96,26 @@ async function payBonusIfComplete(db: Db, course: WritingCourse, profileId: stri
   return amount;
 }
 
-/** The prepared builder for the course's sheet, or null for a course row that has none (only test fixtures).  Built the same way on the server and in the browser. */
-export function builderFor(course: WritingCourse): Builder | null {
-  return course.sheet ? prepare(buildBuilder('course', course.sheet.sheet, course.sheet.interpretation)) : null;
+const prepared = new WeakMap<WritingBuilder, Builder>();
+
+/**
+ * The prepared builder for a question's sentence builder, or null when the question has none (or a bare test
+ * fixture has no builders). Built the same way on the server and in the browser, and kept per builder.
+ */
+export function builderFor(course: WritingCourse, question: WritingCourse['questions'][number]): Builder | null {
+  const wb = question.builderId === null ? undefined : course.builders.find((b) => b.id === question.builderId);
+  if (!wb) return null;
+  let B = prepared.get(wb);
+  if (!B) { B = prepare(buildBuilder(wb.id, wb.sheet, wb.interpretation)); prepared.set(wb, B); }
+  return B;
+}
+
+/** The builder's own question a course question is written against, or undefined for the whole builder. */
+export const builderQuestionFor = (B: Builder, question: WritingCourse['questions'][number]) => (question.builderQuestion === null ? undefined : B.questions[question.builderQuestion]);
+
+/** The calibration that scores answers to a question: its builder's, or the course's when it has none (question-builder-assignment). */
+export function calibrationFor(course: Pick<WritingCourse, 'calibration' | 'builders'>, question: { builderId: string | null }): Calibration {
+  return course.builders.find((b) => b.id === question.builderId)?.calibration ?? course.calibration;
 }
 
 /**
@@ -95,18 +124,17 @@ export function builderFor(course: WritingCourse): Builder | null {
  * sign-off passes. The stored text is the Spanish sentence, and its value comes from the rubric on that sentence.
  */
 export async function saveSheetAnswer(db: Db, course: WritingCourse, profileId: string, questionId: string, selection: unknown, confirm: boolean): Promise<SaveResult> {
-  const B = builderFor(course);
-  if (!B) return { ok: false, error: 'This course has no sentence builder.' };
   const question = course.questions.find((q) => q.id === questionId);
   if (!question) return { ok: false, error: 'Unknown question.' };
-  // A question with no sheet question is never answered from another question's sheet.
-  if (question.sheetQuestion === null) return { ok: false, error: NO_SHEET_FOR_QUESTION };
-  const Q = B.questions[question.sheetQuestion];
+  // A question with no builder is never answered from another question's builder.
+  const B = builderFor(course, question);
+  if (!B) return { ok: false, error: NO_SHEET_FOR_QUESTION };
+  const Q = builderQuestionFor(B, question);
   const a = fromSelection(B, selection);
   if (!a) return { ok: false, error: 'That answer is not from your sentence builder.' };
   const text = sentences(B, a, 'es', Q).join(' ');
   if (text.length > 1500) return { ok: false, error: 'That answer is too long.' };
-  const value = assessAnswer(course.calibration, text).value;
+  const value = assessAnswer(calibrationFor(course, question), text).value;
   const ok = signOff(B, a, Q).code === 'ok';
   if (confirm && (!ok || !text.trim())) return { ok: false, error: 'This answer is not finished yet.' };
   const before = await db.query<{ text: string; confirmed_at: Date | null }>('select text, confirmed_at from answers where profile_id = $1 and question_id = $2', [profileId, questionId]);

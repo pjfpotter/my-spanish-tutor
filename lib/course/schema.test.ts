@@ -14,7 +14,7 @@ const good = (): Course => ({
     position: n, spanish: `Pregunta ${n}`, english: `Question ${n}`, recycled: n === 5, topics: ['opinion'],
   })),
   calibration: structuredClone(FREE_TIME),
-  sheet: { sheet: FREE_TIME_SHEET, interpretation: FREE_TIME_INTERPRETATION },
+  builders: [{ key: 'free', name: 'Free time', sheet: FREE_TIME_SHEET, interpretation: FREE_TIME_INTERPRETATION, calibration: structuredClone(FREE_TIME) }],
   modelAnswers: [1, 2, 3, 4, 5].flatMap((n): ModelAnswer[] => [
     { questionPosition: n, text: 'Me gusta.' },
     { questionPosition: n, text: 'Me gusta porque es.' },
@@ -27,10 +27,31 @@ const problems = (c: unknown) => {
 };
 
 describe('validateCourse', () => {
-  it('refuses a course with no sentence builder sheet', () => {
+  it('refuses a course with no sentence builder', () => {
     const c: Partial<Course> = good();
-    delete c.sheet;
-    expect(problems(c).join()).toMatch(/sentence builder sheet is missing/);
+    delete c.builders;
+    expect(problems(c).join()).toMatch(/no sentence builder/);
+    expect(problems({ ...good(), builders: [] }).join()).toMatch(/no sentence builder/);
+  });
+
+  it('refuses two builders with one key, a question naming a builder the course lacks, and a bad link', () => {
+    const c = good();
+    expect(problems({ ...c, builders: [c.builders[0], c.builders[0]] }).join()).toMatch(/share a key/);
+    expect(problems({ ...c, questions: c.questions.map((q) => ({ ...q, builder: q.position === 2 ? 'nope' : undefined })) }).join()).toMatch(/question 2 names the sentence builder "nope"/);
+    expect(problems({ ...c, questions: c.questions.map((q) => ({ ...q, builder: 'free', builderQuestion: q.position === 1 ? 9 : undefined })) }).join()).toMatch(/question 1: it links to question 9/);
+    expect(problems({ ...c, questions: c.questions.map((q) => ({ ...q, builderQuestion: 0 })) }).join()).toMatch(/gives a builderQuestion but names no builder/);
+  });
+
+  it('accepts a question that names a builder and one that names none', () => {
+    const c = good();
+    expect(validateCourse({ ...c, questions: c.questions.map((q) => (q.position === 1 ? { ...q, builder: 'free', spanish: '¿Qué haces en tu tiempo libre?' } : q)) }).ok).toBe(true);
+  });
+
+  it('stops when a builder has several questions and a question matches none', () => {
+    const c = good();
+    const two = { ...c.builders[0], interpretation: { ...c.builders[0].interpretation, questions: [{ es: 'Uno', en: '1' }, { es: 'Dos', en: '2' }] } };
+    const r = problems({ ...c, builders: [two], questions: c.questions.map((q) => (q.position === 1 ? { ...q, builder: 'free' } : q)) }).join();
+    expect(r).toMatch(/question 1: its sentence builder has 2 questions and none matches/);
   });
 
   it('accepts a complete course', () => {

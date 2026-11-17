@@ -22,6 +22,8 @@
 ## Decisions
 
 ### D1. Merge five builders into one sheet and one interpretation
+
+> **Superseded 17 Nov 2026 by change `course-builder-per-question`.** A course now holds several builders and each question names its own, so the merge (`lib/sheets/merge.ts`, prefixed keys, one block per builder) was removed. D8 and D9 stay: they are what a builder with two halves needs. D2 to D7 still apply.
 A pure helper, `mergeSheets(parts)`, takes the five `{ sheet, interpretation }` pairs and returns one. Tables are renumbered 0 to 5 (the holiday sheet has two), so cell ids (`t3r0c1`) stay unique. Column and slot keys get a short prefix per builder (`film_`, `free_`, `wear_`, `trip_`, `bed_`), and `props` and `corrections` references are rewritten to match. Each builder's slots and frames get `block` set to its builder number, and each question lists its `blocks`. Interpretation `questions` becomes the five, with `es` equal to the course question's Spanish.
 
 *Why:* the schema, `validateCourse`, the seed, the matcher and the write screen already handle exactly this shape, so nothing outside content changes. *Alternative:* several sheets per course (a schema, DB and write-screen change, and it overlaps `upload-sentence-builder-pipeline`). Rejected as a large change for a testing aid. *Risk:* a merge bug could cross-wire two builders, so the merge has a test that every chunk of a block is reachable only from its own question.

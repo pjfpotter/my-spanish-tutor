@@ -129,6 +129,24 @@ describe('whole test', () => {
   });
 });
 
+describe('whole test across several builders', () => {
+  // Another builder's calibration: it knows "como pan" as a present-tense opinion, which the course's own calibration does not.
+  const other = structuredClone(cal);
+  other.frame.starters = ['como pan'];
+  other.tenses = { ...cal.tenses, present: ['como pan'] };
+
+  it('counts each answer against its own builder\'s phrases, with the targets from the course', () => {
+    const t = assessTest(cal, [
+      { questionPosition: 1, text: 'Me gusta bailar porque es divertido.' },
+      { questionPosition: 2, text: 'Como pan porque es rico.', cal: other },
+    ]);
+    expect(t.justifiedOpinions).toBe(2);
+    expect(t.checklist.justifiedOpinions).toMatchObject({ have: 2, need: cal.wholeTest.justifiedOpinions });
+    // With only the course's calibration the second answer is not an opinion with a reason.
+    expect(assessTest(cal, [{ questionPosition: 2, text: 'Como pan porque es rico.' }]).justifiedOpinions).toBe(0);
+  });
+});
+
 describe('matchChunks', () => {
   it('takes the longest chunk and uses each word once', () => {
     const m = matchChunks('Me gusta salir con mis amigos', FREE_TIME_CHUNKS);

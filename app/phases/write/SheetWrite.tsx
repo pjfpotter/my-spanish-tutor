@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useMemo, useState } from 'react';
 import type { SavedAnswer, WritingCourse } from '../../../lib/progress/writing-store';
-import { builderFor } from '../../../lib/progress/writing-store';
+import { builderFor, builderQuestionFor } from '../../../lib/progress/writing-store';
 import type { Answer } from '../../../lib/sheets/engine';
 import { fromSelection, toSelection } from '../../../lib/sheets/selection';
 import { SectionNav } from '../../components/SectionNav';
@@ -17,17 +17,19 @@ import '../../components/screens.css';
  * turns it on (task 5.3).
  */
 export function SheetWrite({ course, saved, pickup = false, focus = 0, unlockAll = false }: { course: WritingCourse; saved: SavedAnswer[]; pickup?: boolean; focus?: number; /** A testing course: a question can be passed without confirming it (course-unlock-testing). */ unlockAll?: boolean }) {
-  const B = useMemo(() => builderFor(course)!, [course]);
   const [index, setIndex] = useState(focus);
   const [confirmed, setConfirmed] = useState(() => new Set(saved.filter((s) => s.confirmed).map((s) => s.questionId)));
   const [error, setError] = useState<string | null>(null);
   const q = course.questions[index];
-  // The sheet question this one is answered from. With none, no sheet is shown at all (question-sheet-match).
-  const sheetQ = q.sheetQuestion === null ? null : B.questions[q.sheetQuestion];
+  // The sentence builder this question is written on, and the part of it the question uses. With no builder,
+  // no sheet is shown at all (question-builder-assignment).
+  const B = useMemo(() => builderFor(course, q), [course, q]);
+  const sheet = course.builders.find((b) => b.id === q.builderId)?.sheet ?? null;
+  const sheetQ = B ? builderQuestionFor(B, q) : undefined;
   const last = index === course.questions.length - 1;
   const initial = useMemo(() => {
     const mine = saved.find((s) => s.questionId === q.id);
-    return mine?.selection ? (fromSelection(B, mine.selection) ?? {}) : {};
+    return B && mine?.selection ? (fromSelection(B, mine.selection) ?? {}) : {};
   }, [B, saved, q.id]);
 
   const post = useCallback(async (questionId: string, a: Answer, confirm: boolean) => {
@@ -64,7 +66,7 @@ export function SheetWrite({ course, saved, pickup = false, focus = 0, unlockAll
         ))}
       </ol>
       {error && <p className="error" role="alert">{error}</p>}
-      {sheetQ === undefined || sheetQ === null ? (
+      {!B || !sheet ? (
         <section className="stack" data-testid="no-sheet-for-question" aria-live="polite">
           <p lang="es"><strong>{q.spanish}</strong></p>
           <p>{q.english}</p>
@@ -77,7 +79,7 @@ export function SheetWrite({ course, saved, pickup = false, focus = 0, unlockAll
           key={q.id}
           builder={B}
           question={sheetQ}
-          sheet={course.sheet!.sheet}
+          sheet={sheet}
           heading={{ es: q.spanish, en: q.english }}
           initial={initial}
           pickup={pickup}
@@ -86,7 +88,7 @@ export function SheetWrite({ course, saved, pickup = false, focus = 0, unlockAll
         />
       </div>
       )}
-      {unlockAll && sheetQ && !confirmed.has(q.id) && !last && <button type="button" className="btn" onClick={() => setIndex(index + 1)} data-testid="skip-question">Skip this question</button>}
+      {unlockAll && B && !confirmed.has(q.id) && !last && <button type="button" className="btn" onClick={() => setIndex(index + 1)} data-testid="skip-question">Skip this question</button>}
       <div className="controls">
         {all ? <Link className="btn btn-primary" href="/">All five confirmed. Back to the desktop</Link> : <Link className="btn" href="/">Back to the desktop</Link>}
       </div>

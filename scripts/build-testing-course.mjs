@@ -7,13 +7,12 @@
 // Reads  docs/teaching-resources/testing-course/sources.json  (which sheets, in question order, and their interpretations)
 //        docs/teaching-resources/testing-course/interpretations/*.json  (one reviewed interpretation per sheet)
 //        docs/teaching-resources/testing-course/content.json  (questions, model answers; optional until written)
-// Checks every interpretation with the validator and the verification gate, merges the five into one sheet and one
-// interpretation, checks that again, and writes sheet.json, interpretation.json and (when content.json exists) course.json.
+// Checks every interpretation with the validator and the verification gate, and writes course.json (when content.json
+// exists): five sentence builders, each with its own sheet, interpretation and calibration, and one builder per question.
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { buildBuilder } from '../lib/sheets/builder.ts';
 import { prepare } from '../lib/sheets/engine.ts';
-import { mergeSheets } from '../lib/sheets/merge.ts';
 import { readDocx } from '../lib/sheets/read-docx.ts';
 import { validateInterpretation } from '../lib/sheets/validate.ts';
 import { verifyBuilder } from '../lib/sheets/verify.ts';
@@ -44,22 +43,11 @@ for (const p of sources.parts) {
 }
 if (failed) { console.log('\nFix the interpretations above first.'); process.exit(1); }
 
-const merged = mergeSheets(parts, { name: 'Testing course', title: 'Testing course', subtitle: 'Five sentence builders' });
-console.log('merged:');
-report('validates', validateInterpretation(merged.sheet, merged.interpretation).map((x) => `${x.path}: ${x.message}`));
-const B = prepare(buildBuilder('testing', merged.sheet, merged.interpretation));
-report('verification gate (300 walks)', verifyBuilder(B, { walks: 300, sheet: merged.sheet }).failures);
-if (failed) process.exit(1);
-
-writeFileSync(path.join(dir, 'sheet.json'), JSON.stringify(merged.sheet));
-writeFileSync(path.join(dir, 'interpretation.json'), JSON.stringify(merged.interpretation));
-console.log(`wrote sheet.json and interpretation.json (${merged.interpretation.questions.length} questions)`);
-
 const contentFile = path.join(dir, 'content.json');
 if (existsSync(contentFile)) {
-  const course = assembleTestingCourse(JSON.parse(readFileSync(contentFile, 'utf8')), merged);
+  const course = assembleTestingCourse(JSON.parse(readFileSync(contentFile, 'utf8')), parts);
   writeFileSync(path.join(dir, 'course.json'), JSON.stringify(course));
-  console.log(`wrote course.json (${course.chunks.length} chunks, ${course.questions.length} questions, ${course.modelAnswers.length} model answers)`);
+  console.log(`wrote course.json (${course.builders.length} builders, ${course.chunks.length} chunks, ${course.questions.length} questions, ${course.modelAnswers.length} model answers)`);
 } else {
   console.log('no content.json yet, so course.json was not written');
 }
