@@ -5,6 +5,7 @@
 - **Live app:** https://my-spanish-tutor-phi.vercel.app
 - **Try the demo (no sign-up, nothing saved, uses your microphone):** https://my-spanish-tutor-phi.vercel.app/demo
 - **What is next:** [`docs/roadmap.md`](docs/roadmap.md)
+- **Coursework slides** (architecture, data flow, design, security, reflection): https://claude.ai/artifact/RgKkTDGR536xU9sf9DuYhF
 
 ## The problem, for people outside teaching
 

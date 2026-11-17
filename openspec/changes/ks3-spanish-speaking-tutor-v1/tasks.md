@@ -304,6 +304,8 @@ Built in cloud sessions or direct commits and folded back without a task. Record
 **Superseded by `rework-home-screen` (14 Nov):** 6.2 (the mastery rule is now three correct answers, with no two-session gate), 10.4 (the baseline page and start.exe are removed and the placement check moved into Understand), 11.3 (the daily reminder is removed) and 13.4 (My progress, own history and the class goal are removed). The ticked boxes stay as history. **Overlaps `upload-sentence-builder-pipeline`:** 17.1 and 23.6 (photo import and scan-to-start) now sit with that change's 5.1c and 8.1.
 - [x] 30.15 Make El Pasillo the fourth step in place of the timed round, with mounting pressure (only matched words slow the monster), steeper escalation, automatic look-behind, runs recorded as timed attempts, the rebuilt voice demo, welcome and desktop copy, the public README and `docs/roadmap.md` **Done 16 Nov in change `el-pasillo-final-step-and-voice-demo`.** The old timed round stays at the unlinked `/phases/automate/round`. Postponed items are in `docs/roadmap.md`.
 
+- [x] 30.16 Add the coursework slide deck (architecture and data-flow diagrams, evidence for each marking criterion, reflection) and link it from the README. **Done 17 Nov.** The per-student cost slide was dropped, so 16.3 stays open. The promo video link is still to add once it is hosted.
+
 ## 31. Other OpenSpec changes on main (state on 16 Nov)
 
 Cloud sessions made these as their own changes. None is archived and the list was not linked here until now.
