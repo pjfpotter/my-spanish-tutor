@@ -5,7 +5,7 @@
 - **Live app:** https://my-spanish-tutor-phi.vercel.app
 - **Try the demo (no sign-up, nothing saved, uses your microphone):** https://my-spanish-tutor-phi.vercel.app/demo
 - **What is next:** [`docs/roadmap.md`](docs/roadmap.md)
-- **Promo video:** [`docs/promo-video/my-spanish-tutor-promo-small.mp4`](docs/promo-video/my-spanish-tutor-promo-small.mp4) (click to play on GitHub)
+- **Promo video:** [`docs/promo-video/my-spanish-tutor-promo-small.mp4`](docs/promo-video/my-spanish-tutor-promo-small.mp4) (click to download)
 - **Coursework slides** (architecture, data flow, design, security, reflection): https://claude.ai/artifact/RgKkTDGR536xU9sf9DuYhF
 - **Coursework slides as a PDF:** [`docs/My Spanish Tutor Distinction evidence.pdf`](docs/My%20Spanish%20Tutor%20Distinction%20evidence.pdf)
 
