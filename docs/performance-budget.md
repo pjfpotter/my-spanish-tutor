@@ -9,7 +9,7 @@ The app must stay light on an old school Chromebook and a mid-range phone (CLAUD
 | JavaScript that real screens can load, gzipped (see below) | 400 KB | 255 KB on 2026-11-12 | `npm run check:budget` in CI |
 | CSS, gzipped | 20 KB | 4 KB | same |
 | Web fonts as shipped | 250 KB | 117 KB | same |
-| Everything under `public/` (wallpapers, icons, audio clips, Tele sprites) | 7 MB (raised from 3 MB on 13 Nov 2026; optimise at the end of the build) | 2.9 MB on 2026-11-12 (67 clips 2.3 MB, Tele sprites 0.3 MB) | same |
+| Everything under `public/` (wallpapers, icons, audio clips, Tele sprites) | 12 MB (raised from 3 MB on 13 Nov 2026 and from 7 MB on 17 Nov 2026 for the testing course's 396 extra clips; a stopgap until change `clip-storage-and-sharing` moves clips out of `public/`) | 2.9 MB on 2026-11-12 (67 clips 2.3 MB, Tele sprites 0.3 MB) | same |
 | Tele animation rate | at most 30 frames a second | 30 | `TELE_MAX_FPS` in `lib/tele/draw.ts`, checked by a unit test |
 | Tele canvas pixel ratio | at most 1.5 | 1.5 | `TELE_MAX_DPR`, same test |
 
