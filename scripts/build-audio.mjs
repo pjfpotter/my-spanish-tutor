@@ -24,7 +24,8 @@ import { MPEGDecoder } from 'mpg123-decoder';
 import { buildClips, planBuild, TTS_SERVICE } from '../lib/audio/build.ts';
 import { planClips } from '../lib/audio/manifest.ts';
 import { CHEEKY_POOL } from '../lib/tele/cheeky.ts';
-import { SEED_COURSE, TESTING_COURSE } from '../lib/course/seed.ts';
+import { SEED_COURSE } from '../lib/course/seed.ts';
+import { loadTestingCourse } from '../lib/course/testing-course.ts';
 import { bitsFor } from '../lib/audio/bits.ts';
 import { teleLines } from '../lib/memorise/tele-lines.ts';
 import { ffmpegStretcher } from '../lib/audio/ffmpeg.ts';
@@ -40,6 +41,7 @@ const force = args.includes('--force');
 const only = args.find((a) => a.startsWith('--only='))?.slice(7);
 // Which course the spend is recorded against in the cost log (task 23.7). Defaults to the main course.
 const courseArg = args.find((a) => a.startsWith('--course='))?.slice(9)?.toUpperCase();
+const TESTING_COURSE = loadTestingCourse().course;
 const course = [SEED_COURSE, TESTING_COURSE].find((c) => c.classCode === (courseArg ?? SEED_COURSE.classCode));
 if (!course) {
   console.error(`No course with class code ${courseArg}. Known: ${[SEED_COURSE, TESTING_COURSE].map((c) => c.classCode).join(', ')}.`);

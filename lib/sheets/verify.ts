@@ -78,7 +78,7 @@ export function verifyBuilder(B: Builder, opts: VerifyOptions = {}): Verificatio
     for (const k of Object.keys(a)) { const x = a[k]; if (x && x.en == null && !B.cols[x.col]?.static) flag('spanish-in-english', `“${x.es}” has no English on the sheet, so the subtitle shows Spanish: ${en}`); }
     for (const c of new Set(lintSpanish(es))) flag(c, es);
     for (const c of new Set(lintEnglish(en))) flag(c, `${en}   ⇐   ${es}`);
-    const r = parseText(B, es), again = compose(B, r.ans, 'es', Q);
+    const r = parseText(B, es, Q), again = compose(B, r.ans, 'es', Q);
     if (again !== es || r.off.length || r.fixes.length) flag('round-trip', `“${es}” read back as “${again}”${r.off.length ? ' with words not on the sheet: ' + r.off.join(', ') : ''}`);
   };
   const expand = (it: Item): Item[] => (it.choice ? it.choice.map((_, vi) => derive(it, vi)) : [it]);

@@ -5,7 +5,8 @@
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import built from '../lib/audio/built.ts';
-import { SEED_COURSE, TESTING_COURSE } from '../lib/course/seed.ts';
+import { SEED_COURSE } from '../lib/course/seed.ts';
+import { loadTestingCourse } from '../lib/course/testing-course.ts';
 import { validateCourse } from '../lib/course/schema.ts';
 import { priceCourse } from '../lib/course/pricing.ts';
 
@@ -14,7 +15,7 @@ if (!arg) {
   console.error('Usage: npm run price-course -- <class code | path to a course file>');
   process.exit(2);
 }
-const known = [SEED_COURSE, TESTING_COURSE].find((c) => c.classCode === arg.toUpperCase());
+const known = [SEED_COURSE, loadTestingCourse().course].find((c) => c.classCode === arg.toUpperCase());
 const course = known ?? (await import(pathToFileURL(path.resolve(arg)).href)).default;
 const check = validateCourse(course);
 if (!check.ok) {

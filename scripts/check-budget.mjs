@@ -14,7 +14,7 @@ const BUDGET = {
   jsGzipKb: 400,
   cssGzipKb: 20, // all CSS, gzipped (measured 4 KB)
   fontsKb: 250, // web fonts as shipped (measured 117 KB)
-  publicKb: 7168, // everything under public/ (7 MB; raised from 3 MB on 2026-11-13, optimise at the end of the build)
+  publicKb: 12288, // everything under public/ (12 MB; raised from 7 MB on 2026-11-17 for the testing course clips, a stopgap until change `clip-storage-and-sharing` moves clips out of public/)
 };
 
 function files(dir) {

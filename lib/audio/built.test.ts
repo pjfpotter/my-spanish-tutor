@@ -9,6 +9,7 @@ import { PHRASE_BANK } from '../tele/phrase-bank';
 import { LAB_ANSWERS } from '../../app/lab/memorise/content';
 import { teleLines } from '../memorise/tele-lines';
 import { bitsFor } from './bits';
+import stopgap from './stopgap-clips.json';
 import { planClips, slotFor, SPEEDS } from './manifest';
 
 // Tasks 4.4 and 12.2: every clip the app needs exists, with audio and a complete timeline (word times,
@@ -55,6 +56,19 @@ describe('every planned clip is built', () => {
     const bits = bitsFor(SEED_COURSE, LAB_ANSWERS.flatMap((a) => a.chunks.map((c) => ({ t: c.t, en: c.en }))));
     const wanted = new Set(planClips(SEED_COURSE.questions, [...PHRASE_BANK, ...CHEEKY_POOL], bits, teleLines()).map((s) => s.slot));
     const onDisk = existsSync(dir) ? (readFileSync(path.join(dir, '..', '..', '..', 'lib/audio/built.ts'), 'utf8').match(/"slot": "([0-9a-f]{12})"/g) ?? []) : [];
-    for (const m of onDisk) expect(wanted.has(m.slice(-13, -1)), m).toBe(true);
+    // Clips for a course whose data is kept local (the testing course) are listed by id in stopgap-clips.json,
+    // because a fresh clone cannot plan them. Remove this when clips move to object storage.
+    const allowed = new Set([...wanted, ...(stopgap as string[])]);
+    for (const m of onDisk) expect(allowed.has(m.slice(-13, -1)), m).toBe(true);
+  });
+
+  it('keeps the stopgap list honest: every id in it is a built clip that no committed course plans', () => {
+    const built = new Set((readFileSync(path.join(dir, '..', '..', '..', 'lib/audio/built.ts'), 'utf8').match(/"slot": "([0-9a-f]{12})"/g) ?? []).map((m) => m.slice(-13, -1)));
+    const bits = bitsFor(SEED_COURSE, LAB_ANSWERS.flatMap((a) => a.chunks.map((c) => ({ t: c.t, en: c.en }))));
+    const wanted = new Set(planClips(SEED_COURSE.questions, [...PHRASE_BANK, ...CHEEKY_POOL], bits, teleLines()).map((s) => s.slot));
+    for (const id of stopgap as string[]) {
+      expect(built.has(id), `${id} is not built`).toBe(true);
+      expect(wanted.has(id), `${id} is planned by a committed course, so it should not be listed`).toBe(false);
+    }
   });
 });

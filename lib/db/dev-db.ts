@@ -3,6 +3,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { ALL_MATCHED_COURSE, SEED_COURSE, TESTING_COURSE } from '../course/seed';
 import { seedCourse } from '../course/seed-db';
+import { loadTestingCourse } from '../course/testing-course';
 import { hashOwnerToken } from '../overview/overview';
 import type { Db } from './types';
 
@@ -17,7 +18,8 @@ export async function createDevDb(): Promise<Db> {
   for (const file of readdirSync(dir).filter((f) => f.endsWith('.sql')).sort()) await pg.exec(readFileSync(path.join(dir, file), 'utf8'));
   const db: Db = { query: (sql, params) => pg.query(sql, params as unknown[]) as never };
   await seedCourse(db, SEED_COURSE);
-  await seedCourse(db, TESTING_COURSE);
+  // The committed tests expect the default testing course. TESTING_COURSE_LOCAL=1 swaps in the five-builder course from local data, for trying it by hand.
+  await seedCourse(db, process.env.TESTING_COURSE_LOCAL === '1' ? loadTestingCourse().course : TESTING_COURSE);
   // Tests that write all five answers join this one: every question has a sheet question (see seed.ts).
   await seedCourse(db, ALL_MATCHED_COURSE);
   // Tests need to know the owner link, which is otherwise random and shown once. Only ever on this throwaway database. It goes on the course the tests join.

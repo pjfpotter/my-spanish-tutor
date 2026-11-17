@@ -207,7 +207,11 @@ export function fragment(B: Builder, a: Answer, Q?: Question): { missing: string
 
 export interface Reading { ans: Answer; off: string[]; extra: string[]; fixes: string[] }
 /** Reads typed text back onto the sheet: which chunks it used, which words are not on the sheet, which agreements were fixed. */
-export function parseText(B: Builder, text: string): Reading {
+export function parseText(B: Builder, text: string, Q?: Question): Reading {
+  // With a question, only the parts of the sheet that belong to it can be read, as everywhere else in the engine (a merged sheet has several).
+  const open = (sd: Slot) => !(Q?.blocks && sd.block != null && !Q.blocks.includes(sd.block));
+  const cols = Q?.blocks ? new Set(B.slots.filter(open).flatMap((s) => s.cols)) : null;
+  const patterns = cols ? B.patterns.filter((p) => cols.has(p.it.col)) : B.patterns;
   const orig = text.match(/[\p{L}\p{M}]+/gu) ?? [], t = orig.map(norm);
   const out: Reading = { ans: {}, off: [], extra: [], fixes: [] };
   const typed: Record<string, string> = {};
@@ -223,15 +227,15 @@ export function parseText(B: Builder, text: string): Reading {
   while (i < t.length) {
     const skip = fixedAfter();
     if (skip) { i += skip; continue; }
-    const first = B.patterns.find((p) => i + p.t.length <= t.length && p.t.every((x, j) => t[i + j] === x));
+    const first = patterns.find((p) => i + p.t.length <= t.length && p.t.every((x, j) => t[i + j] === x));
     if (first) {
-      const hits = B.patterns.filter((p) => p.t.length === first.t.length && i + p.t.length <= t.length && p.t.every((x, j) => t[i + j] === x));
+      const hits = patterns.filter((p) => p.t.length === first.t.length && i + p.t.length <= t.length && p.t.every((x, j) => t[i + j] === x));
       let chosen: Pattern | null = null, chosenSlot: string | null = null;
       for (const h of hits) {
-        const free = B.slots.filter((s) => s.cols.includes(h.it.col) && accepts(s, h.it) && !out.ans[s.key]);
+        const free = B.slots.filter((s) => open(s) && s.cols.includes(h.it.col) && accepts(s, h.it) && !out.ans[s.key]);
         if (!free.length) continue;
         const sk = (free.find((s) => s.after && s.after === lastKey) ?? free.find((s) => lastKey && lineOf(s.key) === lineOf(lastKey) && (!s.after || out.ans[s.after])) ?? free.find((s) => !s.after || out.ans[s.after]) ?? free[0]).key;
-        if (!clash(B, out.ans, sk, h.it)) { chosen = h; chosenSlot = sk; break; }
+        if (!clash(B, out.ans, sk, h.it, Q)) { chosen = h; chosenSlot = sk; break; }
         if (!chosen) { chosen = h; chosenSlot = sk; }
       }
       const rep = orig.slice(i, i + first.t.length).join(' ');
