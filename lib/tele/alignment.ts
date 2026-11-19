@@ -10,7 +10,7 @@ export interface CharAlignment {
 /**
  * Groups character timings into words. A word runs from the start of its first character to the
  * start of the next word, and keeps its punctuation (so "¡Hola!" is one word). Spaces separate
- * words. Returns word start times and the end of the last spoken character.
+ * words. Each word also keeps `t1`, the end of its last character. Returns the words and the end of the last spoken character.
  */
 export function wordsFromAlignment(a: CharAlignment): { words: WordTime[]; end: number } {
   const { characters, character_start_times_seconds: starts, character_end_times_seconds: ends } = a;
@@ -20,14 +20,16 @@ export function wordsFromAlignment(a: CharAlignment): { words: WordTime[]; end: 
   const words: WordTime[] = [];
   let text = '';
   let t0 = 0;
+  let t1 = 0;
   const flush = () => {
-    if (text) words.push({ text, t0 });
+    if (text) words.push({ text, t0, t1 });
     text = '';
   };
   characters.forEach((ch, i) => {
     if (/\s/.test(ch)) return flush();
     if (!text) t0 = starts[i];
     text += ch;
+    t1 = ends[i];
   });
   flush();
   return { words, end: ends.length ? Math.max(...ends) : 0 };

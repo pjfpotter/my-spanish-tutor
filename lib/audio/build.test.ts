@@ -98,6 +98,10 @@ describe('the build', () => {
     const [slow, normal] = [specs[0], specs[1]].map((s) => f.files.get(s.slot)!);
     expect(specs[0].speed).toBe(0.7);
     expect(slow.words.at(-1)!.t0).toBeCloseTo(normal.words.at(-1)!.t0 / 0.7, 2);
+    // The word end time is kept and moves with the stretch, like the start.
+    expect(normal.words.at(-1)!.t1).toBeDefined();
+    expect(slow.words.at(-1)!.t1).toBeCloseTo(normal.words.at(-1)!.t1! / 0.7, 2);
+    expect(slow.words.every((w) => w.t1! >= w.t0)).toBe(true);
     expect(slow.source.speed).toBe(0.7);
     expect(slow.source.hash).not.toBe(normal.source.hash);
   });

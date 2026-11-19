@@ -17,11 +17,19 @@ describe('wordsFromAlignment', () => {
   it('groups characters into words, keeping punctuation, with the first character time', () => {
     const { words, end } = wordsFromAlignment(align('¡Hola! Soy Tele.'));
     expect(words).toEqual([
-      { text: '¡Hola!', t0: 0 },
-      { text: 'Soy', t0: expect.closeTo(0.7) },
-      { text: 'Tele.', t0: expect.closeTo(1.1) },
+      { text: '¡Hola!', t0: 0, t1: expect.closeTo(0.6) },
+      { text: 'Soy', t0: expect.closeTo(0.7), t1: expect.closeTo(1.0) },
+      { text: 'Tele.', t0: expect.closeTo(1.1), t1: expect.closeTo(1.6) },
     ]);
     expect(end).toBeCloseTo(1.6);
+  });
+
+  it('keeps each word\'s end time: the end of its own last character, not the start of the next word', () => {
+    // Two spaces between the words leave a gap, which t1 must not swallow.
+    const { words } = wordsFromAlignment(align('vivo  en'));
+    expect(words[0].t1).toBeCloseTo(0.4);
+    expect(words[1].t0).toBeCloseTo(0.6);
+    expect(words[1].t1).toBeCloseTo(0.8);
   });
 
   it('copes with repeated and trailing spaces', () => {
@@ -79,6 +87,15 @@ const good: ClipFile = {
 describe('parseClipFile', () => {
   it('accepts a good clip file', () => {
     expect(parseClipFile(JSON.parse(JSON.stringify(good)))).toEqual(good);
+  });
+
+  it('still reads clips made before word end times were stored, and rejects a bad end time', () => {
+    expect(good.words.every((w) => w.t1 === undefined)).toBe(true);
+    expect(parseClipFile(JSON.parse(JSON.stringify(good))).words[0].t1).toBeUndefined();
+    const withEnds = { ...good, words: good.words.map((w) => ({ ...w, t1: w.t0 + 0.2 })) };
+    expect(parseClipFile(JSON.parse(JSON.stringify(withEnds))).words[0].t1).toBeCloseTo(good.words[0].t0 + 0.2);
+    expect(() => parseClipFile({ ...good, words: [{ text: 'a', t0: 0.5, t1: 0.2 }] })).toThrow('word end time');
+    expect(() => parseClipFile({ ...good, words: [{ text: 'a', t0: 0.5, t1: 'x' }] })).toThrow('word end time');
   });
 
   it('lets a bit clip have no English subtitle, but never a question or line', () => {

@@ -36,6 +36,15 @@ export const DOORS_PER_STAGE = 2;
 export const FIXED_DOORS = 4 * DOORS_PER_STAGE;
 /** Clean no-help doors that earn the way out. */
 export const ESCAPE_AFTER = 3;
+/** Ghost whispers a student gets in one run. Each costs chase time (`WHISPER_CHASE_COST` in chase.ts). A starting value, tuned by playing. */
+export const WHISPERS_PER_RUN = 3;
+
+export interface WhisperState { used: number }
+export const whispersLeft = (used: number): number => Math.max(0, WHISPERS_PER_RUN - used);
+/** Uses one whisper if there is one. With none left nothing changes and `spent` is false, so nothing is played or charged. */
+export function spendWhisper(s: WhisperState): { state: WhisperState; spent: boolean } {
+  return whispersLeft(s.used) > 0 ? { state: { used: s.used + 1 }, spent: true } : { state: s, spent: false };
+}
 const SCENES: Scene[] = ['clouds', 'pool', 'bedroom', 'grass', 'sunset', 'static'];
 const ZONES: Zone[] = ['pink', 'yellow', 'pool', 'sky'];
 
@@ -113,10 +122,11 @@ export function nextNoHelpDoor(
 }
 
 /**
- * Does this door count towards the way out? Only a no-help door cleared without Show me. A door passed by tap because
- * the microphone cannot hear (recognition failure is never penalised) counts too, so nobody is stuck for it.
+ * Does this door count towards the way out? Only a no-help door cleared without Show me and without a ghost whisper, which
+ * is help too: it plays the answer's word. A door passed by tap because the microphone cannot hear (recognition failure is
+ * never penalised) counts too, so nobody is stuck for it.
  */
-export const countsAsClean = (d: Door, assisted: boolean): boolean => d.stage === 5 && !assisted;
+export const countsAsClean = (d: Door, assisted: boolean, whispered = false): boolean => d.stage === 5 && !assisted && !whispered;
 export const escapeEarned = (clean: number): boolean => clean >= ESCAPE_AFTER;
 
 function shuffled<T>(list: readonly T[], rng: Rng): T[] {
@@ -158,6 +168,16 @@ export function maskedWords(d: Door): string[] {
 export function plaqueOf(d: Door): { main: string; sub: string; lang: 'es' } {
   if (d.stage <= 2) return { main: d.bits.join(' '), sub: '', lang: 'es' };
   return { main: d.question, sub: d.questionEnglish, lang: 'es' };
+}
+
+/**
+ * The word a ghost whisper would speak: the first word of the door the recogniser has not understood yet. With nothing
+ * heard it is the door's first word; once every word is understood there is none.
+ */
+export function nextUnsaidWord(d: Pick<Door, 'bits'>, match: { next: { chunk: number; word: number } | null } | null): string | null {
+  const next = match ? match.next : { chunk: 0, word: 0 };
+  if (!next) return null;
+  return tokenise(d.bits[next.chunk] ?? '')[next.word] ?? null;
 }
 
 /** A hint after a pause: the next words that have not been said, never a penalty. */

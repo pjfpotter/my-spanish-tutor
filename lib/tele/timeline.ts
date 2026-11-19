@@ -4,6 +4,8 @@ import type { Feelings } from './feelings';
 export interface WordTime {
   text: string;
   t0: number;
+  /** When the word's last character ends. Optional: clips built before the ghost whisper do not have it. */
+  t1?: number;
 }
 
 /**

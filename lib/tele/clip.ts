@@ -34,6 +34,7 @@ export function parseClipFile(input: unknown, opts: { allowNoSubtitle?: boolean 
   let last = -1;
   for (const w of c.words) {
     if (typeof w?.text !== 'string' || !w.text || !isNum(w.t0)) throw new Error('clip file has a bad word');
+    if (w.t1 !== undefined && (!isNum(w.t1) || w.t1 < w.t0)) throw new Error('clip file has a bad word end time');
     if (w.t0 < last) throw new Error('clip file words are out of order');
     last = w.t0;
   }

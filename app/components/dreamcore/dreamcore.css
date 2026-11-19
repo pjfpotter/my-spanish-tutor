@@ -60,3 +60,6 @@
 :root[data-calm='on'] .dc-plaque { animation: none; }
 @media (prefers-reduced-motion: reduce) { .dc-plaque { animation: none; } }
 .dc-copy { font-size: 0.95rem; color: var(--dc-cream); max-width: 22rem; margin: 0.4rem 0; }
+
+.dc-note { margin: 0; opacity: 0.85; }
+.dc-whisper:disabled { opacity: 0.55; }

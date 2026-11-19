@@ -2,6 +2,7 @@ import { buildFeelingTrack } from '../tele/feeling-track.ts';
 import { wordsFromAlignment, type CharAlignment } from '../tele/alignment.ts';
 import { parseClipFile, type ClipFile } from '../tele/clip.ts';
 import { envelopeFromSamples } from '../tele/envelope.ts';
+import type { WordTime } from '../tele/timeline.ts';
 import { slotFor, sourceHash, type ClipSpec } from './manifest.ts';
 import { tagSentences, withoutAdded } from './tags.ts';
 import type { createCostRouter } from '../cost-router/router.ts';
@@ -94,10 +95,10 @@ export async function buildClips(
 ): Promise<BuildReport> {
   const report: BuildReport = { built: [], failed: [], spentGbp: 0 };
   const round = (n: number) => Math.round(n * 1000) / 1000;
-  const natural = new Map<string, { source: Buffer; words: { text: string; t0: number }[] }>();
+  const natural = new Map<string, { source: Buffer; words: WordTime[] }>();
   const ordered = [...toBuild.filter(isBase), ...toBuild.filter((s) => !isBase(s))];
 
-  const write = async (spec: ClipSpec, source: Buffer, words: { text: string; t0: number }[], rate: number) => {
+  const write = async (spec: ClipSpec, source: Buffer, words: WordTime[], rate: number) => {
     const mp3 = await deps.stretcher.process(source, rate);
     const { samples, sampleRate } = await deps.decoder.decode(mp3);
     const clip = parseClipFile({
@@ -105,7 +106,8 @@ export async function buildClips(
       text: spec.text,
       en: spec.en,
       end: round(samples.length / sampleRate),
-      words: words.map((w) => ({ text: w.text, t0: round(w.t0 / rate) })),
+      // The end time moves with the stretch, like the start. It is only there when the natural clip had character timings.
+      words: words.map((w) => ({ text: w.text, t0: round(w.t0 / rate), ...(w.t1 === undefined ? {} : { t1: round(w.t1 / rate) }) })),
       envelope: envelopeFromSamples(samples, sampleRate, HOP),
       envelopeHop: HOP,
       feelings: buildFeelingTrack(words.map((w) => ({ text: w.text, t0: w.t0 / rate })), spec.feelings),

@@ -11,6 +11,12 @@
 // also removes every file in the clips folder that no current clip wants: old voices, old text, anything left over.
 // The dry run says how many it would remove.
 //   npm run build-audio -- --only=lines, --only=questions or --only=bits
+//   npm run build-audio -- --only=ghost         the ghost whisper step on its own (free, see below). Dry run by default; --yes builds; --force rebuilds every ghost word; --limit=3 builds three; --words=quiero,tengo builds just those (a listening test).
+//
+// Ghost whisper step: after the clips, each distinct word of the slow clips already on disk is cut out and turned into a short ghost
+// MP3 (public/audio/ghost/<slot>.mp3, with a .json note), with local ffmpeg. It is free: no key, no cost router, no paid call, and it
+// needs no voice settings. A word is rebuilt only when its source clip or the ghost recipe (GHOST in lib/audio/ghost.ts) changes, and
+// a full build removes ghost files nothing wants. The dry run lists what it would build and remove. See scripts/ghost-step.mjs.
 //   npm run build-audio -- --yes --course=CODE   builds for that course and records the spend against it (needs DATABASE_URL); removes nothing
 //
 // Clips are stored in public/audio/clips/<slot>.mp3 and .json, where the slot is a hash of the text and
@@ -31,6 +37,7 @@ import { teleLines } from '../lib/memorise/tele-lines.ts';
 import { ffmpegStretcher } from '../lib/audio/ffmpeg.ts';
 import { LAB_ANSWERS } from '../app/lab/memorise/content.ts';
 import { PHRASE_BANK } from '../lib/tele/phrase-bank.ts';
+import { ghostStep } from './ghost-step.mjs';
 import { createCostRouter } from '../lib/cost-router/router.ts';
 import { SERVICE_LIMITS } from '../lib/cost-router/limits.ts';
 import { createPgCostStore } from '../lib/cost-router/pg-store.ts';
@@ -39,6 +46,13 @@ const args = process.argv.slice(2);
 const yes = args.includes('--yes');
 const force = args.includes('--force');
 const only = args.find((a) => a.startsWith('--only='))?.slice(7);
+// The ghost whisper step is free and local (it only reads clips already on disk), so it needs no voice, key or course.
+const limitArg = Number(args.find((a) => a.startsWith('--limit='))?.slice(8)) || null;
+if (only === 'ghost') {
+  const words = args.find((a) => a.startsWith('--words='))?.slice(8)?.split(',').filter(Boolean) ?? null;
+  const r = await ghostStep({ yes, force, limit: limitArg, prune: true, only: words });
+  process.exit(r.failed.length ? 1 : 0);
+}
 // Which course the spend is recorded against in the cost log (task 23.7). Defaults to the main course.
 const courseArg = args.find((a) => a.startsWith('--course='))?.slice(9)?.toUpperCase();
 const TESTING_COURSE = loadTestingCourse().course;
@@ -100,6 +114,8 @@ console.log(`Clips wanted: ${specs.length}. Already built and up to date: ${plan
 for (const s of plan.toBuild) console.log(`  + ${s.label.padEnd(28)} ${String(s.text.length).padStart(3)} chars  ${s.text}`);
 console.log(`Characters to synthesise: ${plan.characters}. Estimated cost: £${plan.estimateGbp.toFixed(3)} (the rate is an unverified estimate).`);
 
+// The ghost step follows the clips in a full build. A build for one named course shares the clips folder, so it removes nothing.
+const runGhost = async (prune) => (only || limit ? { failed: [] } : ghostStep({ yes, prune: prune && !courseArg }));
 const prune = async () => {
   for (const slot of orphans) for (const ext of ['mp3', 'json']) await rm(path.join(dir, `${slot}.${ext}`), { force: true });
   if (orphans.length) console.log(`Removed ${orphans.length} old clips that nothing wants any more.`);
@@ -107,10 +123,12 @@ const prune = async () => {
 if (orphans.length) console.log(`Old clips no current clip wants: ${orphans.length}. A full build with --yes removes them.`);
 if (!plan.toBuild.length) {
   if (yes) await prune();
-  process.exit(0);
+  const g = await runGhost(true);
+  process.exit(g.failed.length ? 1 : 0);
 }
 if (!yes) {
   console.log('\nDry run only. Nothing was spent and nothing was removed. Add --yes to build.');
+  await runGhost(true);
   process.exit(0);
 }
 
@@ -169,4 +187,5 @@ await writeFile(
 
 console.log(`\nBuilt ${report.built.length}, failed ${report.failed.length}. Spent about £${report.spentGbp.toFixed(3)}.`);
 for (const f of report.failed) console.log(`  ! ${f.label}: ${f.status}`);
-process.exit(report.failed.length ? 1 : 0);
+const ghost = await runGhost(!report.failed.length);
+process.exit(report.failed.length || ghost.failed.length ? 1 : 0);
