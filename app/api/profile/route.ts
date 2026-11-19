@@ -1,11 +1,12 @@
 import { findCourseByCode } from '../../../lib/course/join';
 import { getDb } from '../../../lib/db';
 import { deleteProfile } from '../../../lib/profile/delete';
-import { createProfile } from '../../../lib/profile/profile';
+import { joinClass } from '../../../lib/profile/profile';
 import { clearProfileCookie, currentProfile, setProfileCookie } from '../../../lib/server/session';
 
 /**
- * Creates an anonymous profile in the course the class code names: a listed nickname. Interest tags are not collected at sign-up.
+ * Creates an anonymous profile in the course the class code names: a nickname made from the lists and not already used in the class
+ * (409 with fresh options if it was just taken). Interest tags are not collected at sign-up.
  * The privacy notice must have been acknowledged. Returns the recovery code once.
  */
 export async function POST(req: Request) {
@@ -20,9 +21,9 @@ export async function POST(req: Request) {
   const course = typeof body.classCode === 'string' ? await findCourseByCode(db, body.classCode) : null;
   if (!course) return Response.json({ error: 'We could not find that class code. Check it with your teacher.' }, { status: 404 });
 
-  const result = await createProfile(db, {
-    courseId: course.id, nickname: body.nickname, interests: [],
-  });
+  const result = await joinClass(db, { courseId: course.id, nickname: body.nickname });
+  // A nickname a classmate took in the meantime: say so and offer fresh ones, so the form can carry on.
+  if (!result.ok && result.taken) return Response.json({ error: result.error, nicknames: result.nicknames }, { status: 409 });
   if (!result.ok) return Response.json({ error: result.error }, { status: 400 });
   await setProfileCookie(result.profile.id);
   return Response.json({ profile: result.profile, recoveryCode: result.recoveryCode }, { headers: { 'Cache-Control': 'no-store' } });

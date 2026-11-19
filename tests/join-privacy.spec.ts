@@ -36,7 +36,8 @@ test('a repeat code makes no second profile, and a profile cannot be made withou
   expect(refused.status()).toBe(400);
   const a = await page.request.post('/api/join', { data: { code: SEED_CLASS_CODE } });
   const b = await page.request.post('/api/join', { data: { code: SEED_CLASS_CODE } });
-  expect(await a.json()).toEqual(await b.json());
+  // Finding the class only reads: the same course comes back each time. The nickname options are drawn afresh, so they are not compared.
+  expect((await a.json()).course).toEqual((await b.json()).course);
   const bad = await page.request.post('/api/profile', { data: { ...data, classCode: 'NOPE99', privacyAcknowledged: true } });
   expect(bad.status()).toBe(404);
 });

@@ -306,6 +306,7 @@ Built in cloud sessions or direct commits and folded back without a task. Record
 - [x] 30.16 Turn El Pasillo's flat six-rung run into a five-stage scaffolding ladder with an earned no-help escape, the question spoken from stage 3, and a stage-and-one-suggestion result screen **Built 19 Nov in change `el-pasillo-scaffolding-ladder`. The owner's phone play-through (its task 4.1) is still to do.**
 
 - [x] 30.16 Add the coursework slide deck (architecture and data-flow diagrams, evidence for each marking criterion, reflection) and link it from the README. **Done 17 Nov.** The per-student cost slide was dropped, so 16.3 stays open.
+- [x] 30.17 Make nicknames unique within a class and generate them from a much bigger closed vocabulary (40 adjectives, 40 nouns, two or three parts, about 64,000 names instead of 144), offered when the class is found and refused if taken, with the teacher overview safe for old duplicates **Done 19 Nov in change `unique-class-nicknames`, after the owner overview e2e failed in a full run on a nickname collision.**
 
 ## 31. Other OpenSpec changes on main (state on 16 Nov)
 

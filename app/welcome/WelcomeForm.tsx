@@ -6,16 +6,17 @@ import { PrivacyNotice } from '../components/PrivacyNotice';
 
 /**
  * Joining in three steps: the class code, the privacy notice (which must be acknowledged), then a nickname
- * from a list. Interests are not asked for (student-flow-principles). The class code and the recovery code are the only things
+ * from a list. The list comes back with the class, so it leaves out nicknames classmates already have. Interests are not asked for (student-flow-principles). The class code and the recovery code are the only things
  * typed, and both are codes, not words. No name, no email (student-identity-privacy).
  */
-export function WelcomeForm({ nicknames }: { nicknames: string[] }) {
+export function WelcomeForm() {
   const router = useRouter();
   const [step, setStep] = useState<'code' | 'notice' | 'pick'>('code');
   const [classCode, setClassCode] = useState('');
   const [course, setCourse] = useState<{ title: string; testDate: string } | null>(null);
   const [acknowledged, setAcknowledged] = useState(false);
   const [nickname, setNickname] = useState('');
+  const [nicknames, setNicknames] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [code, setCode] = useState<string | null>(null);
@@ -29,6 +30,7 @@ export function WelcomeForm({ nicknames }: { nicknames: string[] }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Something went wrong.');
       setCourse(data.course);
+      setNicknames(data.nicknames ?? []);
       setStep('notice');
     } catch (err) {
       setError((err as Error).message);
@@ -48,6 +50,11 @@ export function WelcomeForm({ nicknames }: { nicknames: string[] }) {
         body: JSON.stringify({ classCode, privacyAcknowledged: acknowledged, nickname }),
       });
       const data = await res.json();
+      if (res.status === 409 && Array.isArray(data.nicknames)) {
+        // A classmate took it first: show fresh nicknames and ask again.
+        setNicknames(data.nicknames);
+        setNickname('');
+      }
       if (!res.ok) throw new Error(data.error ?? 'Something went wrong.');
       setCode(data.recoveryCode);
     } catch (err) {

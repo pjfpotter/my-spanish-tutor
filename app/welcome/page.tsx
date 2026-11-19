@@ -1,13 +1,12 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { nicknameOptions } from '../../lib/profile/profile';
 import { currentProfile } from '../../lib/server/session';
 import { WELCOME_COPY } from '../../lib/ui/step-copy';
 import { Win } from '../components/Win';
 import '../components/screens.css';
 import { WelcomeForm } from './WelcomeForm';
 
-export const dynamic = 'force-dynamic'; // a new list of nicknames each visit
+export const dynamic = 'force-dynamic'; // reads the profile cookie on every visit
 
 export default async function Welcome() {
   if (await currentProfile()) redirect('/');
@@ -22,7 +21,7 @@ export default async function Welcome() {
         </div>
       </Win>
       <Win title="Make your profile">
-        <WelcomeForm nicknames={nicknameOptions(6)} />
+        <WelcomeForm />
       </Win>
       <p className="muted">Not in a class? <Link href="/demo" data-testid="demo-entry">Try the demo</Link>. It needs no sign-up and saves nothing.</p>
     </main>

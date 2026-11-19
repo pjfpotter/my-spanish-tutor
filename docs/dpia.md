@@ -8,7 +8,7 @@ Help Year 8 students (age 12 to 13) revise for a KS3 Spanish speaking test. Stud
 
 ## Data we hold
 
-- **Profile:** a random id, a nickname picked from a generated list, and a hash of the recovery code. No name, email, phone number or school identifier. No free-text field exists in sign-up.
+- **Profile:** a random id, a nickname picked from a generated list, and a hash of the recovery code. A nickname is made up from a closed list of friendly words (an adjective or two and a noun, for example "Sleepy Cosmic Llama"; about 64,000 are possible) and is unique within a class: the options offered leave out nicknames a classmate already has. It is never typed, so it cannot hold a real name. No name, email, phone number or school identifier. No free-text field exists in sign-up.
 - **Practice:** the answers a student writes (limited to the course vocabulary), attempts with scores, response times, mastery, coins and purchases. There is no mood check-in; the table that held it is no longer written to or read from.
 - **Never held:** audio recordings, photographs, location, or contact details. A student's own drawing, if added later, stays on their device.
 - **On the device:** a session id and display settings. There is no reminder and no class-wide total: the class goal, which was the only combined figure drawn from several students' attempts, was removed in version one.
