@@ -56,3 +56,55 @@ test('sound that matches no word of the door does not slow the monster', async (
   }
   expect(before - (await gap())).toBeGreaterThanOrEqual(4);
 });
+
+test('help fades in stages, the question can be heard again, and the way out is three clean no-help doors', async ({ page }) => {
+  test.setTimeout(240_000);
+  // A recogniser that keeps what it heard, so each door counts the words said after it opened. Sound is off: the question shows as text.
+  await page.addInitScript(() => {
+    const w = window as any;
+    localStorage.setItem('sound', 'off');
+    localStorage.setItem('calm', 'on');
+    w.__heard = '';
+    w.__say = (text: string) => { w.__heard = `${w.__heard} ${text}`.trim(); w.__rec.onresult({ results: [Object.assign([{ transcript: w.__heard }], { isFinal: false })] }); };
+  });
+  await page.goto('/lab/dreamcore');
+  await page.getByTestId('dc-start').click();
+  const game = page.getByTestId('dreamcore');
+  const plaque = page.getByTestId('dc-plaque');
+  const clear = async (help = false) => {
+    await expect(game).toHaveAttribute('data-phase', 'ready', { timeout: 30_000 });
+    if (help) await page.getByTestId('dc-help').click();
+    await page.evaluate((t) => (window as any).__say(t), ALL);
+    await expect(game).not.toHaveAttribute('data-phase', 'ready');
+  };
+  const stages = ['Read it out', 'Read it out', 'Read the whole answer', 'Read the whole answer', 'Hear it, see the ends', 'Hear it, see the ends', 'Hear it, see the start', 'Hear it, see the start'];
+  for (const [i, name] of stages.entries()) {
+    await expect(game).toHaveAttribute('data-phase', 'ready', { timeout: 30_000 });
+    await expect(plaque).toContainText(name);
+    if (i >= 4) {
+      await expect(page.getByTestId('dc-hear')).toBeVisible();
+      await expect(plaque.locator('.dc-main')).toContainText('?'); // sound is off, so the Spanish question is shown as text
+      await expect(plaque.locator('.dc-sub')).toBeVisible(); // its English subtitle
+    } else {
+      await expect(page.getByTestId('dc-hear')).toHaveCount(0);
+    }
+    await clear();
+  }
+  // From here only no-help doors come, until three are cleared without Show me. One cleared with help does not count.
+  const sequence = [true, false, false];
+  for (const help of sequence) {
+    await expect(game).toHaveAttribute('data-phase', 'ready', { timeout: 30_000 });
+    await expect(plaque).toContainText('No help');
+    await expect(page.getByTestId('dc-hear')).toBeVisible();
+    await clear(help);
+  }
+  // Two clean doors and one with help: the way out is not earned yet, so another no-help door follows.
+  await expect(game).toHaveAttribute('data-phase', 'ready', { timeout: 30_000 });
+  await expect(plaque).toContainText('No help');
+  await expect(page.getByTestId('dc-result')).toHaveCount(0);
+  await clear();
+  await expect(page.getByTestId('dc-result')).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByTestId('dc-result')).toContainText('You wake up.');
+  await expect(page.getByTestId('dc-stage-line')).toContainText('all five stages');
+  await expect(page.getByTestId('dc-try')).toHaveCount(0); // got out: nothing to fix
+});

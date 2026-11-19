@@ -2,6 +2,9 @@
  * Effort rewards, kept on the device only. Being caught ends the run and never costs anything: every run gives a
  * souvenir, and the screen says what improved. No names, no ranking, no network.
  */
+import { STAGE_NAME, type Stage } from './doors';
+import { STAGE_TRY } from '../ui/step-copy';
+
 export const MUTATIONS = [
   { id: 'ears', line: 'Your reflection has rabbit ears now. They twitch when you say hola.' },
   { id: 'eye', line: 'There is a third eye on your reflection. It blinks a beat late.' },
@@ -31,8 +34,20 @@ export function load(raw: string | null): Saved {
   }
 }
 
-export interface Outcome { doors: number; bits: number; escaped: boolean; tries: number }
-export interface Reward { saved: Saved; mutation: (typeof MUTATIONS)[number]; newMutation: boolean; lines: string[] }
+export interface Outcome {
+  doors: number; bits: number; escaped: boolean; tries: number;
+  /** The stage of the door the run ended on (5 when the student got out). */
+  stage: Stage;
+  /** No-help doors cleared without Show me. */
+  clean: number;
+}
+export interface Reward {
+  saved: Saved; mutation: (typeof MUTATIONS)[number]; newMutation: boolean; lines: string[];
+  /** Where the student got to, as a line to show. */
+  stageLine: string;
+  /** The one thing to try next, only when the student was caught. */
+  suggestion: string | null;
+}
 
 /** What this run earned. Always at least a souvenir and one kind line; improvements are named. */
 export function settle(prev: Saved, o: Outcome, pick: number): Reward {
@@ -40,7 +55,7 @@ export function settle(prev: Saved, o: Outcome, pick: number): Reward {
   const pool = unseen.length ? unseen : MUTATIONS;
   const mutation = pool[Math.min(pool.length - 1, Math.floor(pick * pool.length))];
   const lines: string[] = [];
-  if (o.escaped) lines.push('You got through every door.');
+  if (o.escaped) lines.push(`You got out. ${o.clean} no-help door${o.clean === 1 ? '' : 's'} cleared.`);
   else if (o.doors > prev.best) lines.push(prev.best ? `${o.doors - prev.best} door${o.doors - prev.best === 1 ? '' : 's'} further than ever before.` : `${o.doors} door${o.doors === 1 ? '' : 's'} opened on your first run.`);
   else if (o.doors > 0) lines.push(`${o.doors} door${o.doors === 1 ? '' : 's'} opened.`);
   if (o.bits > prev.bestBits && prev.bestBits) lines.push(`More bits said than your last best (${o.bits}).`);
@@ -53,5 +68,6 @@ export function settle(prev: Saved, o: Outcome, pick: number): Reward {
     bestBits: Math.max(prev.bestBits, o.bits),
     mutations: prev.mutations.includes(mutation.id) ? prev.mutations : [...prev.mutations, mutation.id],
   };
-  return { saved, mutation, newMutation: !prev.mutations.includes(mutation.id), lines };
+  const stageLine = o.escaped ? 'You made it through all five stages.' : `You got as far as stage ${o.stage} of 5: ${STAGE_NAME[o.stage]}.`;
+  return { saved, mutation, newMutation: !prev.mutations.includes(mutation.id), lines, stageLine, suggestion: o.escaped ? null : STAGE_TRY[o.stage] };
 }

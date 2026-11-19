@@ -8,10 +8,10 @@ El Pasillo is the final step, but its run is a flat staircase of six help levels
 
 - **Five stages replace the six rungs.** Read the Spanish chunk; read the whole answer; hear the question and see only the first and last letters of each answer word; hear the question and see only the first chunk; no help (hear the question, say the answer).
 - **Hearing the question comes in at stage 3.** Tele speaks the Spanish question aloud from stage 3 on. English stays a subtitle only.
-- **The escape is earned.** The student escapes after clearing three no-help doors without pressing Show me. No-help doors keep coming until they do. Doors cleared with help, or skipped, do not count towards the escape.
+- **The escape is earned.** The student escapes after clearing three no-help doors without pressing Show me. No-help doors keep coming until they do. Doors cleared with Show me do not count towards the escape; a door passed by tap because the microphone cannot hear does, so nobody is stuck for a recognition failure.
 - **The chase stops growing without limit.** Because the final stage has no fixed length, the closing rate stops rising after the last fixed door.
 - **Stage shown to the student.** Each door names its stage, and the result screen says how far up the ladder they got and what to try next, in an effort-first tone.
-- **Readiness unchanged.** Only unassisted no-help doors are recorded as timed attempts, exactly as top-rung doors are today.
+- **Readiness unchanged.** Only no-help doors are recorded as timed attempts, exactly as top-rung doors are today, and Show me still marks them assisted so they do not count.
 - **Out of scope:** ghost-whisper, scarier monster and sound, more art, the heavenscape sky itself (the escape keeps its current ending), test simulation mode, scores and class table, any change to the mouth animation or to scoring rules.
 
 ## Capabilities

@@ -33,7 +33,7 @@ From stage 3, the question SHALL be spoken aloud in Spanish and SHALL be replaya
 - **THEN** the Spanish question text is shown as a fallback so the door can still be played
 
 ### Requirement: The escape is earned with no help
-The student SHALL escape after clearing three stage 5 doors without using Show me and without skipping. Stage 5 doors SHALL keep coming until then. A stage 5 door cleared with help, or skipped, SHALL NOT count towards the escape.
+The student SHALL escape after clearing three stage 5 doors without using Show me. Stage 5 doors SHALL keep coming until then. A stage 5 door cleared with Show me SHALL NOT count towards the escape.
 
 #### Scenario: Three clean no-help doors
 - **WHEN** the student clears three stage 5 doors with no help
@@ -47,6 +47,10 @@ The student SHALL escape after clearing three stage 5 doors without using Show m
 - **WHEN** the student has cleared two clean stage 5 doors and clears a third with help
 - **THEN** another stage 5 door follows
 
+#### Scenario: No microphone is not a penalty
+- **WHEN** the microphone cannot hear and the student reads a stage 5 door aloud and taps to continue
+- **THEN** the door counts towards the escape and nothing is recorded for it
+
 ### Requirement: Pressure stays bounded in the open-ended stage
 The chase SHALL keep closing faster through the fixed doors of stages 1 to 4 and the first stage 5 doors, and SHALL NOT keep speeding up beyond that point however many stage 5 doors are needed.
 
@@ -55,11 +59,15 @@ The chase SHALL keep closing faster through the fixed doors of stages 1 to 4 and
 - **THEN** the two rates are equal
 
 ### Requirement: Only unassisted no-help doors count towards readiness
-Each stage 5 door cleared without help SHALL be recorded as one timed attempt with numbers only, as before. Doors of stages 1 to 4 SHALL NOT be recorded. No audio and no transcript SHALL be stored and no language model SHALL be called during a run.
+Each stage 5 door cleared by voice SHALL be recorded as one timed attempt with numbers only, as before, marked assisted if Show me was used so it does not count towards readiness. Doors of stages 1 to 4, and doors passed by tap, SHALL NOT be recorded. No audio and no transcript SHALL be stored and no language model SHALL be called during a run.
 
 #### Scenario: Recording
 - **WHEN** a student clears a stage 5 door without Show me
 - **THEN** one unassisted attempt for that question is stored with accuracy and response time only
+
+#### Scenario: Assisted door
+- **WHEN** a student clears a stage 5 door after pressing Show me
+- **THEN** the attempt is stored as assisted
 
 #### Scenario: Lower stages are not recorded
 - **WHEN** a student clears a stage 1 to 4 door

@@ -8,11 +8,16 @@ export interface Chase { gap: number; caught: boolean }
 export const START_GAP = 0.8;
 export const PUSH = 0.2;
 /**
+ * The no-help stage has no fixed length, so the rate stops rising at the last door of the old twelve-door run. Tuning
+ * there is unchanged, and a student who needs more no-help doors is never chased harder than at the twelfth.
+ */
+export const RATE_CAP_INDEX = 11;
+/**
  * How fast the gap closes while nothing matches, per second, at a door index. Tuned on paper for roughly eight seconds a
  * door: early doors are comfortable for a student who answers at once, and from about the sixth the gap shrinks even for
  * them unless they are quick, which is what makes the pressure mount (Dolores's test: it was too easy).
  */
-export const closingRate = (doorIndex: number): number => 0.018 + 0.0045 * doorIndex;
+export const closingRate = (doorIndex: number): number => 0.018 + 0.0045 * Math.min(doorIndex, RATE_CAP_INDEX);
 /** While the student is saying words that match the door it closes this much more slowly. */
 export const TRYING_FACTOR = 0.25;
 /** How long after a matched word the slowdown lasts, in seconds. Noise, coughs and wrong words never start it. */

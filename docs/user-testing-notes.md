@@ -2,6 +2,14 @@
 
 Notes only: no audio, no video, no names. Newest first.
 
+## 19 Nov 2026: El Pasillo scaffolding ladder (`el-pasillo-scaffolding-ladder`)
+
+Automated checks only so far; nobody has played it on a phone yet (task 4.1 of the change).
+
+**Checked by the e2e suite with a stand-in recogniser:** the five stages come in order, the question is shown as text when sound is off and can be asked again, a no-help door cleared with Show me does not count towards the way out and another follows, three clean no-help doors end the run with "You wake up.", and only no-help doors post attempts (numbers only).
+
+**Not checked:** how the closing rate feels now that the last stage has no fixed length, whether Tele's spoken question is clear on a Chromebook headset, and whether three clean no-help doors is the right number. Play one run saying everything (it should end) and one making only noise (it should be caught), then record the stage reached here.
+
 ## 12 Nov 2026: memorise lab with live listening (`/lab/memorise`)
 
 Run by the owner on an Android phone and a PC, with one other user, on the Vercel preview of `claude/memorise-live-feedback`. Informal, not the full plan in `docs/user-testing.md`.
