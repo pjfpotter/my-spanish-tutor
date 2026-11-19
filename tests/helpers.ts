@@ -32,12 +32,20 @@ export async function signUpThroughForm(page: Page): Promise<string> {
  * from the form) and opens the desktop. Much faster than the form, which `signUpThroughForm` covers.
  */
 export async function signUp(page: Page, classCode: string = SEED_CLASS_CODE): Promise<string> {
-  const { nicknameOptions } = await import('../lib/profile/profile');
-  const res = await page.request.post('/api/profile', { data: { classCode, privacyAcknowledged: true, nickname: nicknameOptions(1)[0], interests: [] } });
-  expect(res.ok()).toBe(true);
-  const { recoveryCode } = (await res.json()) as { recoveryCode: string };
-  await page.goto('/');
-  return recoveryCode;
+  // Pick from the options the class offers, as a student does, so a nickname a classmate already has is never chosen. If another
+  // test took the same one a moment ago the route says 409, and the next try picks from fresh options.
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const join = await page.request.post('/api/join', { data: { code: classCode } });
+    expect(join.ok()).toBe(true);
+    const { nicknames } = (await join.json()) as { nicknames: string[] };
+    const res = await page.request.post('/api/profile', { data: { classCode, privacyAcknowledged: true, nickname: nicknames[0], interests: [] } });
+    if (res.status() === 409) continue;
+    expect(res.ok()).toBe(true);
+    const { recoveryCode } = (await res.json()) as { recoveryCode: string };
+    await page.goto('/');
+    return recoveryCode;
+  }
+  throw new Error('could not get a free nickname after five tries');
 }
 
 /** The question ids and positions of the course the signed-in student is in, in order. */

@@ -14,17 +14,76 @@ export const INTEREST_TAGS = [
 ] as const;
 export type InterestTag = (typeof INTEREST_TAGS)[number];
 
-const ADJECTIVES = ['Sleepy', 'Fuzzy', 'Zesty', 'Cosmic', 'Wobbly', 'Sneaky', 'Cheeky', 'Funky', 'Spicy', 'Dozy', 'Snazzy', 'Turbo'];
-const NOUNS = ['Llama', 'Taco', 'Otter', 'Burrito', 'Comet', 'Pigeon', 'Cactus', 'Gecko', 'Waffle', 'Panda', 'Toaster', 'Mango'];
+/**
+ * The closed vocabulary nicknames are made from: friendly adjectives and harmless nouns, written by hand and checked by a test
+ * against a list of rude words. The first twelve of each are the original list, so every old nickname is still valid. A student
+ * never types a nickname, and anything not made of these words is refused.
+ */
+export const ADJECTIVES = [
+  'Sleepy', 'Fuzzy', 'Zesty', 'Cosmic', 'Wobbly', 'Sneaky', 'Cheeky', 'Funky', 'Spicy', 'Dozy', 'Snazzy', 'Turbo',
+  'Bouncy', 'Breezy', 'Chilly', 'Clever', 'Cozy', 'Dapper', 'Dreamy', 'Fizzy', 'Giddy', 'Glowing', 'Groovy', 'Jazzy', 'Jolly', 'Lucky',
+  'Mellow', 'Mighty', 'Nifty', 'Peppy', 'Quirky', 'Rowdy', 'Silky', 'Sparky', 'Zoomy', 'Sunny', 'Fancy', 'Toasty', 'Wiggly', 'Zippy',
+] as const;
+export const NOUNS = [
+  'Llama', 'Taco', 'Otter', 'Burrito', 'Comet', 'Pigeon', 'Cactus', 'Gecko', 'Waffle', 'Panda', 'Toaster', 'Mango',
+  'Badger', 'Biscuit', 'Bagel', 'Beetle', 'Cricket', 'Crumpet', 'Donkey', 'Falcon', 'Ferret', 'Gherkin', 'Hamster', 'Hedgehog', 'Kettle', 'Koala',
+  'Lemon', 'Marmot', 'Muffin', 'Noodle', 'Nugget', 'Octopus', 'Parrot', 'Pretzel', 'Pickle', 'Puffin', 'Quokka', 'Radish', 'Walrus', 'Wombat',
+] as const;
 
-/** A few nicknames to choose from. The student only picks; they never type one. */
-export function nicknameOptions(count = 6, random: (max: number) => number = randomInt): string[] {
+/** About one nickname in this many has two adjectives ("Sleepy Cosmic Llama"). */
+const THREE_PART_ONE_IN = 4;
+
+/**
+ * Makes one nickname from the vocabulary: an adjective and a noun, or (one time in four) two different adjectives and a noun.
+ * 1,600 two-part names and 62,400 three-part ones. `random(max)` returns a whole number from 0 to max minus 1.
+ */
+export function generateNickname(random: (max: number) => number = randomInt): string {
+  const first = random(ADJECTIVES.length);
+  const noun = NOUNS[random(NOUNS.length)];
+  if (random(THREE_PART_ONE_IN) !== 0) return `${ADJECTIVES[first]} ${noun}`;
+  let second = random(ADJECTIVES.length - 1);
+  if (second >= first) second++; // a different adjective from the first, without a retry loop
+  return `${ADJECTIVES[first]} ${ADJECTIVES[second]} ${noun}`;
+}
+
+/**
+ * Nicknames to choose from. None is one in `taken` (the nicknames already in the student's class), and no two are alike.
+ * The student only picks; they never type one.
+ */
+export function nicknameOptions(count = 6, random: (max: number) => number = randomInt, taken: Iterable<string> = []): string[] {
+  const used = new Set(taken);
   const out = new Set<string>();
-  while (out.size < count) out.add(`${ADJECTIVES[random(ADJECTIVES.length)]} ${NOUNS[random(NOUNS.length)]}`);
+  for (let tries = 0; out.size < count; tries++) {
+    if (tries > 20_000) throw new Error('could not find enough free nicknames');
+    const n = generateNickname(random);
+    if (!used.has(n)) out.add(n);
+  }
   return [...out];
 }
-export const isNicknameShape = (s: string) =>
-  ADJECTIVES.some((a) => NOUNS.some((n) => s === `${a} ${n}`));
+
+const ADJECTIVE_SET: ReadonlySet<string> = new Set(ADJECTIVES);
+const NOUN_SET: ReadonlySet<string> = new Set(NOUNS);
+/** Is this a nickname the generator could make: one or two different listed adjectives, then a listed noun? */
+export function isNicknameShape(s: string): boolean {
+  const words = s.split(' ');
+  if (words.length < 2 || words.length > 3) return false;
+  const adjectives = words.slice(0, -1);
+  return NOUN_SET.has(words[words.length - 1]) && adjectives.every((a) => ADJECTIVE_SET.has(a)) && new Set(adjectives).size === adjectives.length;
+}
+
+/** How many nicknames a joining student is offered. */
+export const OPTION_COUNT = 6;
+
+/** The nicknames to offer a student joining this class: none that a classmate already has. */
+export async function joinOptions(db: Db, courseId: string, random?: (max: number) => number): Promise<string[]> {
+  return nicknameOptions(OPTION_COUNT, random, await takenNicknames(db, courseId));
+}
+
+/** Nicknames already used by students in a class. */
+export async function takenNicknames(db: Db, courseId: string): Promise<Set<string>> {
+  const { rows } = await db.query<{ nickname: string }>('select nickname from profiles where course_id = $1', [courseId]);
+  return new Set(rows.map((r) => r.nickname));
+}
 
 // No 0, O, 1, I, L: easy to read out and type on a phone.
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
@@ -46,7 +105,11 @@ export interface Profile {
   interests: InterestTag[];
 }
 
-export type CreateResult = { ok: true; profile: Profile; recoveryCode: string } | { ok: false; error: string };
+export type CreateResult =
+  | { ok: true; profile: Profile; recoveryCode: string }
+  | { ok: false; error: string; /** Set when the nickname was refused because a classmate has it: fresh options to pick from. */ taken?: true; nicknames?: string[] };
+
+export const NICKNAME_TAKEN = 'That nickname was just taken. Pick another.';
 
 export async function createProfile(
   db: Db,
@@ -69,6 +132,18 @@ export async function createProfile(
     recoveryCode: code,
     profile: { id: rows[0].id, courseId: input.courseId, nickname: input.nickname, interests: interests as InterestTag[] },
   };
+}
+
+/**
+ * Creates a profile as a student joining through the app: like `createProfile`, but refuses a nickname already used in the class
+ * and hands back fresh options. The check is here and not in `createProfile` so the data layer stays permissive. Two students
+ * submitting the same name in the same instant could both get through; that is rare and the overview copes with it.
+ */
+export async function joinClass(db: Db, input: { courseId: string; nickname: string; interests?: string[] }, random?: (max: number) => number): Promise<CreateResult> {
+  if (isNicknameShape(input.nickname) && (await takenNicknames(db, input.courseId)).has(input.nickname)) {
+    return { ok: false, error: NICKNAME_TAKEN, taken: true, nicknames: await joinOptions(db, input.courseId, random) };
+  }
+  return createProfile(db, { courseId: input.courseId, nickname: input.nickname, interests: input.interests ?? [] });
 }
 
 const toProfile = (r: { id: string; course_id: string; nickname: string; interest_tags: string[] }): Profile => ({

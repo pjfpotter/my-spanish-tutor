@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { TIER_LABEL, type CostReport } from '../../../lib/cost/report';
 import type { OverviewData, Stage } from '../../../lib/overview/overview';
 import { STAGES } from '../../../lib/overview/overview';
+import { studentRowKey } from '../../../lib/overview/row-key';
 import { Win } from '../../components/Win';
 import { CheekySwitch } from './CheekySwitch';
 
@@ -48,7 +49,7 @@ export function OverviewView({ data, cost, sample, cheeky }: { data: OverviewDat
           <caption>Nickname and progress only</caption>
           <thead><tr><th scope="col">Nickname</th><th scope="col">Step</th><th scope="col">Readiness</th></tr></thead>
           <tbody>
-            {data.students.map((s) => <tr key={s.nickname} data-testid="student-row"><th scope="row">{s.nickname}</th><td>{STAGE_LABEL[s.stage]}</td><td><F>{s.readiness}%</F></td></tr>)}
+            {data.students.map((s, i) => <tr key={studentRowKey(i, s.nickname)} data-testid="student-row"><th scope="row">{s.nickname}</th><td>{STAGE_LABEL[s.stage]}</td><td><F>{s.readiness}%</F></td></tr>)}
           </tbody>
         </table>
         {data.students.length === 0 && <p>No one has joined yet.</p>}
