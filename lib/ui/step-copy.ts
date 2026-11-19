@@ -37,6 +37,18 @@ export const STEP_COPY: Record<PhaseId, StepCopy> = {
   },
 };
 
+/**
+ * El Pasillo's result screen: one thing to try next, by the stage the student was caught on. Never more than one, never
+ * a verdict, and it names an action, not a failing.
+ */
+export const STAGE_TRY: Record<1 | 2 | 3 | 4 | 5, string> = {
+  1: 'Read the words out loud a couple of times before you go in. They are right there.',
+  2: 'Try saying the whole answer in one go, even if it comes out rough.',
+  3: 'Listen to the question twice, then say the first few words. The rest tends to follow.',
+  4: 'Start talking the moment the question ends. The first bit pulls the rest along.',
+  5: 'Hear the question again, then start with the first bit you remember.',
+};
+
 export const WELCOME_COPY = {
   what: 'Revise for your Spanish speaking test by talking, not typing.',
   why: 'Tele, a Spanish-only television, asks the questions. You answer out loud, and nothing you say is recorded.',

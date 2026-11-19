@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { startChase, tick, push, wantsLookBehind, fear, isTrying, type Chase } from '../../../lib/dreamcore/chase';
-import { RUNG_NAME, buildRun, emptyBlocks, firstLetters, plaqueOf, type Door } from '../../../lib/dreamcore/doors';
+import { STAGE_NAME, buildRun, countsAsClean, escapeEarned, hearsQuestion, maskedWords, nextNoHelpDoor, plaqueOf, type Door } from '../../../lib/dreamcore/doors';
 import { DOOR_STOP, H, W, drawMirror, image, render, type DoorRect } from '../../../lib/dreamcore/render';
 import { KEY as SAVE_KEY, MUTATIONS, load, settle, type Reward, type Saved } from '../../../lib/dreamcore/rewards';
 import type { LadderAnswer } from '../../../lib/memorise/ladder';
@@ -12,6 +12,7 @@ import { liveMatch, type LiveMatch } from '../../../lib/speech/live-match';
 import { tokenise } from '../../../lib/speech/score';
 import { useLiveSpeech } from '../useLiveSpeech';
 import { useWakeLock } from '../useWakeLock';
+import { readSound, useVoice } from '../useTeleVoice';
 import { PASILLO_COPY } from '../../../lib/ui/step-copy';
 import './dreamcore.css';
 
@@ -21,6 +22,10 @@ interface G {
   chase: Chase; match: LiveMatch | null; baseline: number; words: number; lastVoice: number; lastProgress: number; readyAt: number;
   bits: number; tries: number; triedThisDoor: boolean; look: number; lookHeld: boolean; lookUntil: number; lastLook: number; scare: number;
   lastMatch: number; firstMatchAt: number; assisted: boolean; sessionId: string;
+  /** No-help doors cleared without Show me: three earn the way out. */
+  clean: number; winning: boolean;
+  /** Tele is speaking the question: the microphone may hear it, so it counts for nothing. */
+  hearing: boolean;
   flick: number; burst: number; fade: number; reveal: { until: number; from: number }; beat: number; escaped: boolean; started: number; rect: DoorRect | null;
 }
 
@@ -103,13 +108,14 @@ export function DreamcoreGame({ answers, source, record = false, unmet = [], exi
   };
 
   // ----- speech: one listening session for the whole run; each door counts only the words said after it opened. -----
+  const voice = useVoice();
   const speech = useLiveSpeech({
     onTranscript: (text) => {
       const s = g.current;
       if (!s) return;
       const heard = tokenise(text);
       s.words = heard.length;
-      if (s.phase !== 'ready') return;
+      if (s.phase !== 'ready' || s.hearing) return;
       const door = s.doors[s.doorIndex];
       const next = liveMatch(door.bits, heard.slice(s.baseline).join(' '), s.match);
       if (next.matched > (s.match?.matched ?? 0)) {
@@ -146,7 +152,24 @@ export function DreamcoreGame({ answers, source, record = false, unmet = [], exi
     s.firstMatchAt = -1;
     s.assisted = false;
     if (speech.state === 'idle') speech.start();
+    const door = s.doors[s.doorIndex];
+    if (door && hearsQuestion(door.stage)) hearQuestion(s, door);
     sync();
+  }
+  /** Tele says the question. Whatever the microphone picks up meanwhile is not the student, so it is not counted. */
+  function hearQuestion(s: G, door: Door) {
+    s.hearing = true;
+    void voice.speak(door.question).then(() => {
+      if (g.current !== s || s.doors[s.doorIndex] !== door) return;
+      s.baseline = s.words;
+      s.hearing = false;
+    });
+  }
+  /** The next no-help door, once the fixed stages are done, until the way out is earned. */
+  function appendDoor(s: G): boolean {
+    const d = nextNoHelpDoor(answers, s.doorIndex, s.doors[s.doorIndex - 1]?.itemId, Math.random, new Set(unmet));
+    if (d) s.doors.push(d);
+    return !!d;
   }
   function nextSegment(s: G) {
     s.doorZ = s.camZ + DOOR_STOP + TRAVEL;
@@ -155,14 +178,16 @@ export function DreamcoreGame({ answers, source, record = false, unmet = [], exi
     s.fade = 1;
     sync();
   }
-  function succeed(skipped = false) {
+  function succeed(unheard = false) {
     const s = g.current;
     if (!s || s.phase !== 'ready') return;
     const door = s.doors[s.doorIndex];
     s.bits += door.bits.length;
-    if (!skipped) s.chase = push(s.chase, door.bits.length);
-    // The top rung is the one that counts towards being test ready. Only numbers leave the device: never audio or words.
-    if (record && !skipped && door.rung === 6 && door.itemId) {
+    if (!unheard) s.chase = push(s.chase, door.bits.length);
+    if (countsAsClean(door, s.assisted)) s.clean++;
+    s.winning = escapeEarned(s.clean);
+    // The no-help stage is the one that counts towards being test ready. Only numbers leave the device: never audio or words.
+    if (record && !unheard && door.stage === 5 && door.itemId) {
       const total = tokenise(door.bits.join(' ')).length;
       const lit = s.match ? s.match.hit.flat().filter(Boolean).length : 0;
       void fetch('/api/respond', {
@@ -184,7 +209,8 @@ export function DreamcoreGame({ answers, source, record = false, unmet = [], exi
     const s = g.current;
     if (!s) return;
     speech.stop();
-    const r = settle(savedRef.current, { doors: s.doorIndex, bits: s.bits, escaped, tries: s.tries }, Math.random());
+    voice.stop();
+    const r = settle(savedRef.current, { doors: s.doorIndex, bits: s.bits, escaped, tries: s.tries, stage: escaped ? 5 : (s.doors[s.doorIndex]?.stage ?? 5), clean: s.clean }, Math.random());
     setReward(r);
     setSaved(r.saved);
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(r.saved)); } catch { /* not remembered */ }
@@ -193,18 +219,18 @@ export function DreamcoreGame({ answers, source, record = false, unmet = [], exi
   }
 
   // The loop is set up once, so it calls the latest version of these through a ref.
-  const api = useRef({ sync, startDoor, nextSegment, succeed, endRun, sfx, stop: () => {} });
-  api.current = { sync, startDoor, nextSegment, succeed, endRun, sfx, stop: () => speech.stop() };
+  const api = useRef({ sync, startDoor, nextSegment, appendDoor, succeed, endRun, sfx, stop: () => {} });
+  api.current = { sync, startDoor, nextSegment, appendDoor, succeed, endRun, sfx, stop: () => { speech.stop(); voice.stop(); } };
 
   function begin() {
     openAudio();
     void audio.current?.ctx.resume();
-    const doors = buildRun(answers, Math.random, new Set(unmet));
+    const doors = buildRun(answers, Math.random);
     if (!doors.length) return;
     const t = performance.now() / 1000;
     g.current = {
       phase: 'travel', t, camZ: 0, doorZ: DOOR_STOP + TRAVEL, open: 0, doorIndex: 0, doors, chase: startChase(), match: null, baseline: 0, words: 0,
-      lastVoice: -1e9, lastProgress: t, lastMatch: -1e9, firstMatchAt: -1, assisted: false, sessionId: crypto.randomUUID(), readyAt: t, bits: 0, tries: 0, triedThisDoor: false, look: 0, lookHeld: false, lookUntil: 0, lastLook: t, scare: -1,
+      lastVoice: -1e9, lastProgress: t, lastMatch: -1e9, firstMatchAt: -1, assisted: false, clean: 0, winning: false, hearing: false, sessionId: crypto.randomUUID(), readyAt: t, bits: 0, tries: 0, triedThisDoor: false, look: 0, lookHeld: false, lookUntil: 0, lastLook: t, scare: -1,
       flick: 0, burst: 0.5, fade: 1, reveal: { until: 0, from: 0 }, beat: 0, escaped: false, started: t, rect: null,
     };
     setReward(null);
@@ -250,7 +276,8 @@ export function DreamcoreGame({ answers, source, record = false, unmet = [], exi
           if (s.doorZ - s.camZ < 0.14) {
             s.camZ = s.doorZ + 0.3;
             s.doorIndex++;
-            if (s.doorIndex >= s.doors.length) { s.escaped = true; s.fade = 1; api.current.endRun(true); } else api.current.nextSegment(s);
+            // The way out is earned by clean no-help doors; until then the no-help doors keep coming.
+            if (s.winning || (s.doorIndex >= s.doors.length && !api.current.appendDoor(s))) { s.escaped = true; s.fade = 1; api.current.endRun(true); } else api.current.nextSegment(s);
           }
         }
         // The chase runs while walking and while a door waits, and waits for a student whose microphone is not working.
@@ -334,16 +361,16 @@ export function DreamcoreGame({ answers, source, record = false, unmet = [], exi
   const lookBack = () => { const s = g.current; if (s && s.phase === 'ready') { s.lookHeld = !s.lookHeld; s.lastLook = s.t; sync(); } };
   const peek = () => { const s = g.current; if (s) { s.assisted = true; s.reveal = { from: s.match?.matched ?? 0, until: s.t + 4 }; s.tries++; sync(); } };
   const skip = () => { const s = g.current; if (s) { s.tries++; succeed(true); } };
+  const hearAgain = () => { const s = g.current; const d = s?.doors[s.doorIndex]; if (s && d && s.phase === 'ready') hearQuestion(s, d); };
 
-  const masked = (w: string, i: number): string => {
-    if (!door) return w;
+  const shownWords = door ? maskedWords(door) : [];
+  const wordShown = (w: string, i: number): string => {
     if (ui.lit[i]) return w;
     if (ui.showReal >= 0 && i >= ui.showReal && i < ui.showReal + 3) return w;
-    if (door.rung <= 2) return w;
-    if (door.rung === 3) return firstLetters(w);
-    if (door.rung === 4 || door.rung === 5) return emptyBlocks(w);
-    return '•';
+    return shownWords[i] ?? w;
   };
+  // The Spanish question is spoken. If sound is off, it is shown as text so the door can still be played.
+  const questionText = !!door && hearsQuestion(door.stage) && !readSound();
 
   return (
     <main className="dc" data-testid="dreamcore" data-phase={ui.phase}>
@@ -362,13 +389,13 @@ export function DreamcoreGame({ answers, source, record = false, unmet = [], exi
               </div>
             </div>
             {showPlaque && plaque && door && (
-              <section className="dc-plaque" data-lang={plaque.lang} data-rung={door.rung} style={{ top: `${Math.max(18, (ui.rect ? ui.rect.cy * 100 - 4 : 52))}%` }} aria-live="polite" data-testid="dc-plaque">
-                <p className="dc-rung">{RUNG_NAME[door.rung]}</p>
-                {door.rung >= 5 && <p className="dc-main" lang={door.rung === 5 ? 'en' : 'es'}>{plaque.main}</p>}
-                {door.rung === 6 && plaque.sub && <p className="dc-sub">{plaque.sub}</p>}
+              <section className="dc-plaque" data-lang={plaque.lang} data-stage={door.stage} style={{ top: `${Math.max(18, (ui.rect ? ui.rect.cy * 100 - 4 : 52))}%` }} aria-live="polite" data-testid="dc-plaque">
+                <p className="dc-rung">{STAGE_NAME[door.stage]}</p>
+                {questionText && <p className="dc-main" lang="es">{plaque.main}</p>}
+                {door.stage >= 3 && plaque.sub && <p className="dc-sub">{plaque.sub}</p>}
                 <p className="dc-words" lang="es">
                   {words.map((w, i) => (
-                    <span key={i} className="dc-word" data-lit={ui.lit[i] ? 'yes' : 'no'}>{masked(w, i)}{' '}</span>
+                    <span key={i} className="dc-word" data-lit={ui.lit[i] ? 'yes' : 'no'}>{wordShown(w, i)}{' '}</span>
                   ))}
                 </p>
               </section>
@@ -381,7 +408,8 @@ export function DreamcoreGame({ answers, source, record = false, unmet = [], exi
             <p className="dc-tag">Disc 2 of 2. Do not scratch.</p>
             <p className="dc-copy" data-testid="dc-copy">{PASILLO_COPY.what} {PASILLO_COPY.why}</p>
             <ul>
-              <li>Say what is on each door to open it.</li>
+              <li>Say what is on each door to open it. Every door gives you less help.</li>
+              <li>Get through three with no help to escape.</li>
               <li>Something is behind you. Talking keeps it back.</li>
               <li>You can look round. Do not look for long.</li>
             </ul>
@@ -396,7 +424,9 @@ export function DreamcoreGame({ answers, source, record = false, unmet = [], exi
             <h1>{g.current?.escaped ? 'You wake up.' : 'You wake up. Something is different.'}</h1>
             <canvas ref={mirror} width={96} height={96} className="dc-mirror" aria-label={reward.mutation.line} role="img" />
             <p className="dc-souvenir">{reward.mutation.line}</p>
+            <p className="dc-stage-line" data-testid="dc-stage-line">{reward.stageLine}</p>
             <ul className="dc-effort">{reward.lines.map((l) => <li key={l}>{l}</li>)}</ul>
+            {reward.suggestion && <p className="dc-try" data-testid="dc-try">Next time: {reward.suggestion}</p>}
             <p className="dc-small">Souvenirs: {saved.mutations.length} of {MUTATIONS.length}{reward.newMutation ? ' (new)' : ''}. Stored on this device only.</p>
             <button type="button" className="dc-btn" onClick={begin} data-testid="dc-again">Go in again</button>
             <Link href={exit.href} className="dc-link" data-testid="section-exit">{exit.label}</Link>
@@ -412,6 +442,7 @@ export function DreamcoreGame({ answers, source, record = false, unmet = [], exi
           {noMic && <button type="button" className="dc-btn dc-small-btn" onClick={() => skip()} data-testid="dc-nomic">Read it aloud, then tap here</button>}
           {!noMic && ui.phase === 'ready' && (
             <div className="dc-row">
+              {door && hearsQuestion(door.stage) && <button type="button" className="dc-btn dc-small-btn" onClick={hearAgain} data-testid="dc-hear">Hear the question</button>}
               <button type="button" className="dc-btn dc-small-btn" onClick={peek} data-testid="dc-help">Show me</button>
               <button type="button" className="dc-btn dc-small-btn" onClick={lookBack} aria-pressed={ui.looking} data-testid="dc-look">{ui.looking ? 'Face the door' : 'Look behind'}</button>
             </div>
