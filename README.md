@@ -1,6 +1,6 @@
 # My Spanish Tutor
 
-Uploading my-spanish-tutor-promo.mp4…
+https://github.com/user-attachments/assets/c2ad6a65-dbf2-49ea-940d-fbfaac4d517f
 
 **A phone-first revision game that makes 12 and 13 year olds talk.** Students in England sit a short Spanish speaking test, and most dislike it and feel self-conscious saying Spanish out loud, so they avoid practising the only skill it measures. My Spanish Tutor gives them a private, forgiving, game-like place to practise speaking, on their own phone or a school Chromebook.
 
@@ -9,8 +9,6 @@ Uploading my-spanish-tutor-promo.mp4…
 - **What is next:** [`docs/roadmap.md`](docs/roadmap.md)
 - **Coursework slides** (architecture, data flow, design, security, reflection): https://claude.ai/artifact/RgKkTDGR536xU9sf9DuYhF
 - **Coursework slides as a PDF:** [`docs/My Spanish Tutor Distinction evidence.pdf`](docs/My%20Spanish%20Tutor%20Distinction%20evidence.pdf)
-
-
 
 ## The problem, for people outside teaching
 
