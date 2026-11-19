@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { startChase, tick, push, wantsLookBehind, fear, isTrying, type Chase } from '../../../lib/dreamcore/chase';
-import { STAGE_NAME, buildRun, countsAsClean, escapeEarned, hearsQuestion, maskedWords, nextNoHelpDoor, plaqueOf, type Door } from '../../../lib/dreamcore/doors';
+import { startChase, tick, push, wantsLookBehind, fear, isTrying, spendWhisperGap, type Chase } from '../../../lib/dreamcore/chase';
+import { STAGE_NAME, buildRun, countsAsClean, escapeEarned, hearsQuestion, maskedWords, nextNoHelpDoor, nextUnsaidWord, plaqueOf, spendWhisper, whispersLeft, type Door, type WhisperState } from '../../../lib/dreamcore/doors';
 import { DOOR_STOP, H, W, drawMirror, image, render, type DoorRect } from '../../../lib/dreamcore/render';
 import { KEY as SAVE_KEY, MUTATIONS, load, settle, type Reward, type Saved } from '../../../lib/dreamcore/rewards';
 import type { LadderAnswer } from '../../../lib/memorise/ladder';
@@ -13,6 +13,7 @@ import { tokenise } from '../../../lib/speech/score';
 import { useLiveSpeech } from '../useLiveSpeech';
 import { useWakeLock } from '../useWakeLock';
 import { readSound, useVoice } from '../useTeleVoice';
+import { useGhostWhisper } from '../useGhostWhisper';
 import { PASILLO_COPY } from '../../../lib/ui/step-copy';
 import './dreamcore.css';
 
@@ -26,6 +27,8 @@ interface G {
   clean: number; winning: boolean;
   /** Tele is speaking the question: the microphone may hear it, so it counts for nothing. */
   hearing: boolean;
+  /** Ghost whispers used this run, whether this door has had one (help), and whether one is playing (the microphone would hear it). */
+  whisper: WhisperState; whispered: boolean; whispering: boolean;
   flick: number; burst: number; fade: number; reveal: { until: number; from: number }; beat: number; escaped: boolean; started: number; rect: DoorRect | null;
 }
 
@@ -35,6 +38,8 @@ const SPEED = 5.5;
 /** What the screen shows, updated a few times a second, never per frame. */
 interface Ui {
   phase: Phase; index: number; door: Door | null; lit: boolean[]; showReal: number; gap: number; looking: boolean; clock: string; rect: DoorRect | null; hint: boolean;
+  /** Whisper button: how many are left, whether a ghost word exists for the next unsaid word (and sound is on), and whether Tele or a whisper is speaking. */
+  whisper: { left: number; offer: boolean; busy: boolean };
 }
 
 export function DreamcoreGame({ answers, source, record = false, unmet = [], exit = { href: '/', label: 'Back to the desktop' } }: {
@@ -56,7 +61,7 @@ export function DreamcoreGame({ answers, source, record = false, unmet = [], exi
   const savedRef = useRef(saved);
   savedRef.current = saved;
   const [reward, setReward] = useState<Reward | null>(null);
-  const [ui, setUi] = useState<Ui>({ phase: 'title', index: 0, door: null, lit: [], showReal: -1, gap: 0.8, looking: false, clock: '00:00', rect: null, hint: false });
+  const [ui, setUi] = useState<Ui>({ phase: 'title', index: 0, door: null, lit: [], showReal: -1, gap: 0.8, looking: false, clock: '00:00', rect: null, hint: false, whisper: { left: 3, offer: false, busy: false } });
   const wake = useWakeLock(ui.phase !== 'title' && ui.phase !== 'result');
   void wake;
 
@@ -109,13 +114,14 @@ export function DreamcoreGame({ answers, source, record = false, unmet = [], exi
 
   // ----- speech: one listening session for the whole run; each door counts only the words said after it opened. -----
   const voice = useVoice();
+  const ghost = useGhostWhisper();
   const speech = useLiveSpeech({
     onTranscript: (text) => {
       const s = g.current;
       if (!s) return;
       const heard = tokenise(text);
       s.words = heard.length;
-      if (s.phase !== 'ready' || s.hearing) return;
+      if (s.phase !== 'ready' || s.hearing || s.whispering) return;
       const door = s.doors[s.doorIndex];
       const next = liveMatch(door.bits, heard.slice(s.baseline).join(' '), s.match);
       if (next.matched > (s.match?.matched ?? 0)) {
@@ -139,7 +145,9 @@ export function DreamcoreGame({ answers, source, record = false, unmet = [], exi
     const door = s.doors[s.doorIndex] ?? null;
     const lit = s.match ? s.match.hit.flat() : [];
     const revealing = s.t < s.reveal.until;
-    setUi({ phase: s.phase, index: s.doorIndex, door, lit, showReal: revealing ? s.reveal.from : -1, gap: s.chase.gap, looking: s.look > 0.5, clock: clock(s), rect: s.rect, hint: revealing });
+    const word = s.phase === 'ready' && door ? nextUnsaidWord(door, s.match) : null;
+    const whisper = { left: whispersLeft(s.whisper.used), offer: !!word && readSound() && ghost.has(word), busy: s.hearing || s.whispering };
+    setUi({ phase: s.phase, index: s.doorIndex, door, lit, showReal: revealing ? s.reveal.from : -1, gap: s.chase.gap, looking: s.look > 0.5, clock: clock(s), rect: s.rect, hint: revealing, whisper });
   }
 
   function startDoor(s: G) {
@@ -151,6 +159,8 @@ export function DreamcoreGame({ answers, source, record = false, unmet = [], exi
     s.lastMatch = -1e9;
     s.firstMatchAt = -1;
     s.assisted = false;
+    s.whispered = false;
+    s.whispering = false;
     if (speech.state === 'idle') speech.start();
     const door = s.doors[s.doorIndex];
     if (door && hearsQuestion(door.stage)) hearQuestion(s, door);
@@ -184,7 +194,7 @@ export function DreamcoreGame({ answers, source, record = false, unmet = [], exi
     const door = s.doors[s.doorIndex];
     s.bits += door.bits.length;
     if (!unheard) s.chase = push(s.chase, door.bits.length);
-    if (countsAsClean(door, s.assisted)) s.clean++;
+    if (countsAsClean(door, s.assisted, s.whispered)) s.clean++;
     s.winning = escapeEarned(s.clean);
     // The no-help stage is the one that counts towards being test ready. Only numbers leave the device: never audio or words.
     if (record && !unheard && door.stage === 5 && door.itemId) {
@@ -220,7 +230,7 @@ export function DreamcoreGame({ answers, source, record = false, unmet = [], exi
 
   // The loop is set up once, so it calls the latest version of these through a ref.
   const api = useRef({ sync, startDoor, nextSegment, appendDoor, succeed, endRun, sfx, stop: () => {} });
-  api.current = { sync, startDoor, nextSegment, appendDoor, succeed, endRun, sfx, stop: () => { speech.stop(); voice.stop(); } };
+  api.current = { sync, startDoor, nextSegment, appendDoor, succeed, endRun, sfx, stop: () => { speech.stop(); voice.stop(); ghost.stop(); } };
 
   function begin() {
     openAudio();
@@ -230,7 +240,7 @@ export function DreamcoreGame({ answers, source, record = false, unmet = [], exi
     const t = performance.now() / 1000;
     g.current = {
       phase: 'travel', t, camZ: 0, doorZ: DOOR_STOP + TRAVEL, open: 0, doorIndex: 0, doors, chase: startChase(), match: null, baseline: 0, words: 0,
-      lastVoice: -1e9, lastProgress: t, lastMatch: -1e9, firstMatchAt: -1, assisted: false, clean: 0, winning: false, hearing: false, sessionId: crypto.randomUUID(), readyAt: t, bits: 0, tries: 0, triedThisDoor: false, look: 0, lookHeld: false, lookUntil: 0, lastLook: t, scare: -1,
+      lastVoice: -1e9, lastProgress: t, lastMatch: -1e9, firstMatchAt: -1, assisted: false, clean: 0, winning: false, hearing: false, whisper: { used: 0 }, whispered: false, whispering: false, sessionId: crypto.randomUUID(), readyAt: t, bits: 0, tries: 0, triedThisDoor: false, look: 0, lookHeld: false, lookUntil: 0, lastLook: t, scare: -1,
       flick: 0, burst: 0.5, fade: 1, reveal: { until: 0, from: 0 }, beat: 0, escaped: false, started: t, rect: null,
     };
     setReward(null);
@@ -361,6 +371,41 @@ export function DreamcoreGame({ answers, source, record = false, unmet = [], exi
   const lookBack = () => { const s = g.current; if (s && s.phase === 'ready') { s.lookHeld = !s.lookHeld; s.lastLook = s.t; sync(); } };
   const peek = () => { const s = g.current; if (s) { s.assisted = true; s.reveal = { from: s.match?.matched ?? 0, until: s.t + 4 }; s.tries++; sync(); } };
   const skip = () => { const s = g.current; if (s) { s.tries++; succeed(true); } };
+  /**
+   * Whisper: Tele whispers the first word the recogniser has not understood, in a ghost voice. It is help (the door counts as assisted,
+   * like Show me), costs chase time and one of a few whispers a run. Nothing is spent unless it can be heard. The microphone's words
+   * are ignored while it plays, so the student's own count restarts afterwards.
+   */
+  const whisper = () => {
+    const s = g.current;
+    if (!s || s.phase !== 'ready' || s.hearing || s.whispering || !micRef.current) return;
+    const door = s.doors[s.doorIndex];
+    const word = door ? nextUnsaidWord(door, s.match) : null;
+    if (!word || !readSound() || !ghost.has(word)) return;
+    const spent = spendWhisper(s.whisper);
+    if (!spent.spent) return;
+    const before = { whisper: s.whisper, assisted: s.assisted, whispered: s.whispered, gap: s.chase.gap };
+    s.whisper = spent.state;
+    s.assisted = true;
+    s.whispered = true;
+    s.chase = spendWhisperGap(s.chase);
+    const cost = before.gap - s.chase.gap;
+    s.whispering = true;
+    sync();
+    void ghost.play(word).then((result) => {
+      if (g.current !== s) return;
+      if (result === 'failed' || result === 'none') {
+        // Nothing was heard, so nothing is charged.
+        s.whisper = before.whisper;
+        s.assisted = before.assisted;
+        s.whispered = before.whispered;
+        if (!s.chase.caught) s.chase = { ...s.chase, gap: Math.min(1, s.chase.gap + cost) };
+      }
+      if (s.doors[s.doorIndex] === door) s.baseline = s.words;
+      s.whispering = false;
+      sync();
+    });
+  };
   const hearAgain = () => { const s = g.current; const d = s?.doors[s.doorIndex]; if (s && d && s.phase === 'ready') hearQuestion(s, d); };
 
   const shownWords = door ? maskedWords(door) : [];
@@ -443,10 +488,16 @@ export function DreamcoreGame({ answers, source, record = false, unmet = [], exi
           {!noMic && ui.phase === 'ready' && (
             <div className="dc-row">
               {door && hearsQuestion(door.stage) && <button type="button" className="dc-btn dc-small-btn" onClick={hearAgain} data-testid="dc-hear">Hear the question</button>}
+              {ui.whisper.offer && speech.state === 'listening' && (
+                <button type="button" className="dc-btn dc-small-btn dc-whisper" onClick={whisper} disabled={ui.whisper.left === 0 || ui.whisper.busy} aria-describedby="dc-whisper-note" data-testid="dc-whisper">
+                  {ui.whisper.left === 0 ? 'No whispers left' : `Whisper · ${ui.whisper.left} left`}
+                </button>
+              )}
               <button type="button" className="dc-btn dc-small-btn" onClick={peek} data-testid="dc-help">Show me</button>
               <button type="button" className="dc-btn dc-small-btn" onClick={lookBack} aria-pressed={ui.looking} data-testid="dc-look">{ui.looking ? 'Face the door' : 'Look behind'}</button>
             </div>
           )}
+          {ui.whisper.offer && ui.whisper.left > 0 && speech.state === 'listening' && ui.phase === 'ready' && <p className="dc-small dc-note" id="dc-whisper-note" data-testid="dc-whisper-note">A whisper lets the monster closer.</p>}
         </div>
       )}
     </main>

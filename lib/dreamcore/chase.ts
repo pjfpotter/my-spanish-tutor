@@ -25,6 +25,16 @@ export const TRYING_WINDOW = 2;
 /** True while the last matched word is recent. Only matched progress counts: sound alone does not hold it back. */
 export const isTrying = (now: number, lastProgress: number): boolean => now - lastProgress < TRYING_WINDOW;
 
+/**
+ * How much closer a ghost whisper lets the monster come. A starting value: Dolores's test will say whether it is too cheap or
+ * too dear. About four seconds of chase at the later doors.
+ */
+export const WHISPER_CHASE_COST = 0.1;
+/** A whisper never takes the gap below this, so asking for help can cost ground but never catch the student by itself. */
+export const WHISPER_FLOOR = 0.03;
+/** A ghost whisper was used: the monster comes closer by `WHISPER_CHASE_COST`, but not past `WHISPER_FLOOR`. It never un-catches or pushes back. */
+export const spendWhisperGap = (c: Chase): Chase => (c.caught ? c : { ...c, gap: Math.min(c.gap, Math.max(WHISPER_FLOOR, c.gap - WHISPER_CHASE_COST)) });
+
 export const startChase = (): Chase => ({ gap: START_GAP, caught: false });
 
 export interface Tick { dt: number; doorIndex: number; trying: boolean; micOk: boolean; paused: boolean }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { LAB_ANSWERS } from '../../app/lab/memorise/content';
-import { LOOK_COOLDOWN, RATE_CAP_INDEX, START_GAP, TRYING_WINDOW, closingRate, fear, isTrying, lookChance, push, startChase, tick, wantsLookBehind } from './chase';
-import { ESCAPE_AFTER, FIXED_DOORS, buildRun, countsAsClean, escapeEarned, firstLast, firstSentence, hearsQuestion, maskedWords, nextNoHelpDoor, plaqueOf, stageOf } from './doors';
+import { LOOK_COOLDOWN, RATE_CAP_INDEX, START_GAP, WHISPER_CHASE_COST, WHISPER_FLOOR, spendWhisperGap, TRYING_WINDOW, closingRate, fear, isTrying, lookChance, push, startChase, tick, wantsLookBehind } from './chase';
+import { ESCAPE_AFTER, FIXED_DOORS, nextUnsaidWord, WHISPERS_PER_RUN, spendWhisper, whispersLeft, buildRun, countsAsClean, escapeEarned, firstLast, firstSentence, hearsQuestion, maskedWords, nextNoHelpDoor, plaqueOf, stageOf } from './doors';
 import { tokenise } from '../speech/score';
 import { fresh, load, settle } from './rewards';
 import { STAGE_TRY } from '../ui/step-copy';
@@ -176,5 +176,61 @@ describe('rewards', () => {
   it('survives junk in storage', () => {
     expect(load('{nope')).toEqual(fresh());
     expect(load(JSON.stringify({ mutations: ['x', 'ears'] })).mutations).toEqual(['ears']);
+  });
+});
+
+describe('ghost whispers', () => {
+  it('give a small fixed supply per run, and spending past zero changes nothing', () => {
+    expect(WHISPERS_PER_RUN).toBe(3);
+    expect(whispersLeft(0)).toBe(3);
+    expect(whispersLeft(3)).toBe(0);
+    expect(whispersLeft(9)).toBe(0);
+    let s = { used: 0 };
+    for (let i = 1; i <= 3; i++) {
+      const r = spendWhisper(s);
+      expect(r.spent).toBe(true);
+      expect(r.state.used).toBe(i);
+      s = r.state;
+    }
+    const none = spendWhisper(s);
+    expect(none.spent).toBe(false);
+    expect(none.state).toEqual({ used: 3 });
+    expect(whispersLeft(none.state.used)).toBe(0);
+  });
+  it('a door with a spent whisper is help: it does not count as clean, an unwhispered one still does', () => {
+    const door = nextNoHelpDoor(LAB_ANSWERS, 8, undefined, seeded())!;
+    expect(countsAsClean(door, false, false)).toBe(true);
+    expect(countsAsClean(door, false)).toBe(true);
+    expect(countsAsClean(door, false, true)).toBe(false);
+    expect(countsAsClean(door, true, false)).toBe(false);
+    const [s1] = buildRun(LAB_ANSWERS, seeded());
+    expect(countsAsClean(s1, false, false)).toBe(false);
+  });
+  it('cost the student ground, but never catch them by themselves and never push the monster back', () => {
+    expect(spendWhisperGap({ gap: 0.5, caught: false }).gap).toBeCloseTo(0.5 - WHISPER_CHASE_COST, 6);
+    expect(spendWhisperGap({ gap: 0.05, caught: false })).toEqual({ gap: WHISPER_FLOOR, caught: false });
+    expect(spendWhisperGap({ gap: 0.01, caught: false }).gap).toBe(0.01);
+    expect(spendWhisperGap({ gap: 0.5, caught: true }).gap).toBe(0.5);
+    for (const gap of [0.04, 0.1, 0.8, 1]) expect(spendWhisperGap({ gap, caught: false }).caught).toBe(false);
+  });
+  it('leave the closing speed alone, so only the whisper itself costs time', () => {
+    expect(closingRate(0)).toBeCloseTo(0.018, 6);
+    expect(closingRate(5)).toBeCloseTo(0.018 + 0.0045 * 5, 6);
+    expect(closingRate(11)).toBeCloseTo(0.018 + 0.0045 * 11, 6);
+    expect(closingRate(20)).toBe(closingRate(11));
+  });
+});
+
+describe('the word a whisper offers', () => {
+  const door = { bits: ['Me gusta', 'el fútbol'] };
+  it('is the first word not yet understood, starting with the first word of the door', () => {
+    expect(nextUnsaidWord(door, null)).toBe('Me');
+    expect(nextUnsaidWord(door, { next: { chunk: 0, word: 1 } })).toBe('gusta');
+    expect(nextUnsaidWord(door, { next: { chunk: 1, word: 1 } })).toBe('fútbol');
+  });
+  it('is nothing once every word is understood, or when the position does not exist', () => {
+    expect(nextUnsaidWord(door, { next: null })).toBeNull();
+    expect(nextUnsaidWord(door, { next: { chunk: 5, word: 0 } })).toBeNull();
+    expect(nextUnsaidWord(door, { next: { chunk: 0, word: 9 } })).toBeNull();
   });
 });

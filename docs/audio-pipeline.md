@@ -24,9 +24,17 @@ npm run build-audio                    # DRY RUN, the default: lists what is mis
 npm run build-audio -- --yes           # builds only the missing or stale clips
 npm run build-audio -- --yes --only=lines      # or --only=questions
 npm run build-audio -- --yes --force   # rebuilds even up-to-date clips. This costs money again.
+npm run build-audio -- --only=ghost    # the ghost whisper step on its own: free, no keys needed. Dry run by default.
+npm run build-audio -- --only=ghost --yes                    # builds the missing or stale ghost words
+npm run build-audio -- --only=ghost --yes --words=quiero,tengo   # builds just those words, for a listening test
+npm run build-audio -- --only=ghost --yes --force            # rebuilds every ghost word (also free)
 ```
 
 Needs `ELEVENLABS_API_KEY` and `ELEVENLABS_VOICE_TELE` in `.env.local` (and `ELEVENLABS_MODEL`, default `eleven_multilingual_v2`). With `DATABASE_URL` in `.env` the spend is logged and counts toward the cap across runs.
+
+## Ghost words (the whisper in El Pasillo)
+
+A full build also makes the ghost whisper audio, after the clips. Each distinct word of the slow clips is cut out (using the word times stored in the clip's JSON, with `t1`, the word's end, when the clip has it) and turned into a short whisper with a light glitch, using local ffmpeg. It is **free**: no key, no cost router, no paid call, and no voice settings are needed, so `--only=ghost` runs anywhere the clips are on disk. Files go in `public/audio/ghost/<slot>.mp3` with a `<slot>.json` note, and the app finds them through the generated `lib/audio/built-ghost.ts`. A word is rebuilt only when its source clip changes or the recipe marker `GHOST` in `lib/audio/ghost.ts` is bumped, so a change to the ghost recipe never rebuilds a paid clip. The recipe numbers are `GHOST_RECIPE` in `lib/audio/ffmpeg.ts`. A full build removes ghost files nothing wants; the dry run lists what it would build and remove. A word that is in no slow clip has no ghost file, and the Whisper button is simply not offered for it.
 
 ## Regenerating one clip
 
