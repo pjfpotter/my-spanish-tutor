@@ -13,7 +13,7 @@ export interface Stop {
 export const STOPS: readonly Stop[] = [
   { id: 'hear', title: 'Hear a question', blurb: 'Tele asks in Spanish. English only shows as a subtitle.', path: '/demo/hear' },
   { id: 'memorise', title: 'Memorise an answer', blurb: 'Say an answer a bit at a time. Words light up as Tele hears them.', path: '/demo/memorise' },
-  { id: 'pasillo', title: 'El Pasillo', blurb: 'Say each answer to open the next door. Something is behind you, and only matching words keep it back.', path: '/demo/pasillo' },
+  { id: 'pasillo', title: 'El Pasillo', blurb: 'Say each answer to open the next door. Something is behind you, and only matching words keep it back. The help fades door by door until you are saying it from memory.', path: '/demo/pasillo' },
   { id: 'tutor', title: 'Meet Tele', blurb: 'Poke the tutor and try its feelings.', path: '/demo/tutor' },
   { id: 'rewards', title: 'Rewards', blurb: 'Euros for effort, a streak that never threatens, no real money.', path: '/demo/rewards' },
   { id: 'teacher', title: 'Teacher overview', blurb: 'Sample class data: counts by step and where the class struggles.', path: '/demo/teacher' },
