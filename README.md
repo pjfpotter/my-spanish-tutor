@@ -4,6 +4,8 @@ https://github.com/user-attachments/assets/c2ad6a65-dbf2-49ea-940d-fbfaac4d517f
 
 **A phone-first revision game that makes 12 and 13 year olds talk.** Students in England sit a short Spanish speaking test, and most dislike it and feel self-conscious saying Spanish out loud, so they avoid practising the only skill it measures. My Spanish Tutor gives them a private, forgiving, game-like place to practise speaking, on their own phone or a school Chromebook.
 
+To test the full version, use class code PRBA7K3M 
+
 - **Live app:** https://my-spanish-tutor-phi.vercel.app
 - **Try the demo (no sign-up, nothing saved, uses your microphone):** https://my-spanish-tutor-phi.vercel.app/demo
 - **What is next:** [`docs/roadmap.md`](docs/roadmap.md)
